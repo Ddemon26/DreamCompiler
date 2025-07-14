@@ -22,11 +22,11 @@ Node *parse_expression(Lexer *lexer, Token *token)
     Node *left = create_node(token->type == TOKEN_IDENTIFIER ? NODE_IDENTIFIER : NODE_NUMBER,
                              token->value, NULL, NULL);
     *token = next_token(lexer);
-    if (token->type == TOKEN_PLUS) {
+    if (token->type == TOKEN_PLUS || token->type == TOKEN_MINUS) {
         char *op = token->value;
         *token = next_token(lexer);
         if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER) {
-            fprintf(stderr, "Expected identifier or number after +\n");
+            fprintf(stderr, "Expected identifier or number after %s\n", op);
             exit(1);
         }
         Node *right = create_node(token->type == TOKEN_IDENTIFIER ? NODE_IDENTIFIER : NODE_NUMBER,
