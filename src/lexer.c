@@ -47,6 +47,8 @@ Token next_token(Lexer *lexer)
             token.type = TOKEN_WRITELINE;
         else if (strcmp(token.value, "if") == 0)
             token.type = TOKEN_IF;
+        else if (strcmp(token.value, "while") == 0)
+            token.type = TOKEN_WHILE;
         else
             token.type = TOKEN_IDENTIFIER;
         return token;

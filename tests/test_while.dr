@@ -1,0 +1,5 @@
+int i = 3;
+while (i) {
+    i = i - 1;
+}
+Console.WriteLine(i); // Expected: 0

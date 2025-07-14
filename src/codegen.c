@@ -43,6 +43,12 @@ void generate_c(Compiler *compiler, Node *node)
         fprintf(out, ") {\n");
         generate_c(compiler, node->right);
         fprintf(out, "    }\n");
+    } else if (node->type == NODE_WHILE) {
+        fprintf(out, "    while (");
+        gen_c_expr(out, node->left);
+        fprintf(out, ") {\n");
+        generate_c(compiler, node->right);
+        fprintf(out, "    }\n");
     }
 }
 

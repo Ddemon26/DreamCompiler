@@ -132,16 +132,55 @@ Node *parse_statement(Lexer *lexer, Token *token)
             free(token->value);
             *token = next_token(lexer);
             body = parse_statement(lexer, token);
-            if (token->type != TOKEN_RBRACE) {
-                fprintf(stderr, "Expected } after if body\n");
+            if (token->type != TOKEN_SEMICOLON) {
+                fprintf(stderr, "Expected semicolon\n");
                 exit(1);
             }
             free(token->value);
             *token = next_token(lexer);
+            if (token->type != TOKEN_RBRACE) {
+                fprintf(stderr, "Expected } after if body\n");
+                exit(1);
+            }
         } else {
             body = parse_statement(lexer, token);
         }
         return create_node(NODE_IF, NULL, cond, body);
+    } else if (token->type == TOKEN_WHILE) {
+        free(token->value);
+        *token = next_token(lexer);
+        if (token->type != TOKEN_LPAREN) {
+            fprintf(stderr, "Expected ( after while\n");
+            exit(1);
+        }
+        free(token->value);
+        *token = next_token(lexer);
+        Node *cond = parse_expression(lexer, token);
+        if (token->type != TOKEN_RPAREN) {
+            fprintf(stderr, "Expected ) after condition\n");
+            exit(1);
+        }
+        free(token->value);
+        *token = next_token(lexer);
+        Node *body = NULL;
+        if (token->type == TOKEN_LBRACE) {
+            free(token->value);
+            *token = next_token(lexer);
+            body = parse_statement(lexer, token);
+            if (token->type != TOKEN_SEMICOLON) {
+                fprintf(stderr, "Expected semicolon\n");
+                exit(1);
+            }
+            free(token->value);
+            *token = next_token(lexer);
+            if (token->type != TOKEN_RBRACE) {
+                fprintf(stderr, "Expected } after while body\n");
+                exit(1);
+            }
+        } else {
+            body = parse_statement(lexer, token);
+        }
+        return create_node(NODE_WHILE, NULL, cond, body);
     }
     fprintf(stderr, "Invalid statement\n");
     exit(1);
