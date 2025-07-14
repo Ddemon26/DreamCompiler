@@ -41,3 +41,4 @@ output.c
 .zig-cache
 zig-out/
 *.pdb
+zig-cache/

@@ -15,14 +15,20 @@ Node *create_node(NodeType type, char *value, Node *left, Node *right)
 
 Node *parse_expression(Lexer *lexer, Token *token)
 {
-    if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER) {
-        fprintf(stderr, "Expected identifier or number\n");
+    if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER &&
+        token->type != TOKEN_STRING) {
+        fprintf(stderr, "Expected identifier, number or string\n");
         exit(1);
     }
-    Node *left = create_node(token->type == TOKEN_IDENTIFIER ? NODE_IDENTIFIER : NODE_NUMBER,
-                             token->value, NULL, NULL);
+    NodeType left_type = NODE_IDENTIFIER;
+    if (token->type == TOKEN_NUMBER)
+        left_type = NODE_NUMBER;
+    else if (token->type == TOKEN_STRING)
+        left_type = NODE_STRING;
+    Node *left = create_node(left_type, token->value, NULL, NULL);
     *token = next_token(lexer);
-    if (token->type == TOKEN_PLUS || token->type == TOKEN_MINUS) {
+    if ((token->type == TOKEN_PLUS || token->type == TOKEN_MINUS) &&
+        left_type != NODE_STRING) {
         char *op = token->value;
         *token = next_token(lexer);
         if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER) {
@@ -93,12 +99,17 @@ Node *parse_statement(Lexer *lexer, Token *token)
         }
         free(token->value);
         *token = next_token(lexer);
-        if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER) {
-            fprintf(stderr, "Expected identifier or number\n");
+        if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER &&
+            token->type != TOKEN_STRING) {
+            fprintf(stderr, "Expected identifier, number or string\n");
             exit(1);
         }
-        Node *arg = create_node(token->type == TOKEN_IDENTIFIER ? NODE_IDENTIFIER : NODE_NUMBER,
-                               token->value, NULL, NULL);
+        NodeType arg_type = NODE_IDENTIFIER;
+        if (token->type == TOKEN_NUMBER)
+            arg_type = NODE_NUMBER;
+        else if (token->type == TOKEN_STRING)
+            arg_type = NODE_STRING;
+        Node *arg = create_node(arg_type, token->value, NULL, NULL);
         *token = next_token(lexer);
         if (token->type != TOKEN_RPAREN) {
             fprintf(stderr, "Expected )\n");

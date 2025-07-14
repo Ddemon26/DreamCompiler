@@ -54,6 +54,19 @@ Token next_token(Lexer *lexer)
         return token;
     }
 
+    if (lexer->source[lexer->pos] == '"') {
+        lexer->pos++; // skip opening quote
+        int start = lexer->pos;
+        while (lexer->source[lexer->pos] && lexer->source[lexer->pos] != '"')
+            lexer->pos++;
+        int len = lexer->pos - start;
+        token.value = strndup(lexer->source + start, len);
+        token.type = TOKEN_STRING;
+        if (lexer->source[lexer->pos] == '"')
+            lexer->pos++; // skip closing quote
+        return token;
+    }
+
     if (isdigit((unsigned char)lexer->source[lexer->pos])) {
         int start = lexer->pos;
         while (isdigit((unsigned char)lexer->source[lexer->pos]))
