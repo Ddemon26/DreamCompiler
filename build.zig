@@ -20,7 +20,12 @@ pub fn build(b: *std.Build) void {
     });
 
     exe.addCSourceFiles(.{
-        .files = &.{ "src/dream.c" },
+        .files = &.{
+            "src/main.c",
+            "src/lexer.c",
+            "src/parser.c",
+            "src/codegen.c",
+        },
         .flags = &.{
             "-std=c11",
             "-Wall",
