@@ -200,7 +200,7 @@ Node* parse_statement(Lexer* lexer, Token* token) {
             fprintf(stderr, "Expected identifier or number\n");
             exit(1);
         }
-        Node* arg = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_BINARY_OP, token->value, NULL, NULL);
+        Node* arg = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_NUMBER, token->value, NULL, NULL);
         *token = next_token(lexer);
         if (token->type != TOKEN_RPAREN) {
             fprintf(stderr, "Expected )\n");
