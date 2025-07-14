@@ -60,7 +60,7 @@ The following guides explain how to set up and use Dream on Linux and Windows. T
 2. **Clone the repository** using *Git Bash* or *Command Prompt*:
 
    ```cmd
-   git clone https://github.com/yourname/DreamCompiler.git
+   git clone https://github.com/Ddemon26/DreamCompiler.git
    cd DreamCompiler
    ```
 
