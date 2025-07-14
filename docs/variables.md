@@ -19,5 +19,5 @@ int y = 10;   // Declares and assigns 10 to y
 
 Notes
 
-Variables are stored on the stack in the generated assembly.
+Variables are stored as local `long` values in the generated C code.
 Only int type is supported currently.
