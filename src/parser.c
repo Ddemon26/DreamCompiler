@@ -27,7 +27,8 @@ Node *parse_expression(Lexer *lexer, Token *token)
         left_type = NODE_STRING;
     Node *left = create_node(left_type, token->value, NULL, NULL);
     *token = next_token(lexer);
-    if ((token->type == TOKEN_PLUS || token->type == TOKEN_MINUS) &&
+    if ((token->type == TOKEN_PLUS || token->type == TOKEN_MINUS ||
+         token->type == TOKEN_STAR) &&
         left_type != NODE_STRING) {
         char *op = token->value;
         *token = next_token(lexer);
