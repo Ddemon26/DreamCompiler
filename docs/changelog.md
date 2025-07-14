@@ -1,5 +1,5 @@
 Dream Compiler Changelog
-Version 0.1 (2025-07-14)
+Version 1.0.1 (2025-07-14)
 
 Initial compiler implementation in dream.c.
 Supported features:
@@ -12,40 +12,40 @@ Console output (Console.WriteLine(x);)
 Added /docs with variables.md, arithmetic.md, console.md, usage.md.
 Added /tests with test_variables.dr, test_arithmetic.dr, test_console.dr.
 
-Version 0.2 (2025-07-15)
+Version 1.0.2 (2025-07-14)
 
 * Added support for initializing variables with a value (e.g., `int x = 5;`).
 * Console.WriteLine now prints numbers in decimal using printf.
 
-Version 0.3 (2025-07-16)
+Version 1.0.3 (2025-07-14)
 
 * Compiler now generates C code (`output.c`) instead of x86-64 assembly.
 * Updated documentation and build instructions accordingly.
 
-Version 0.4 (2025-07-17)
+Version 1.0.4 (2025-07-14)
 
 * Added basic `if` statement support. Conditions can reference variables or numbers and execute a single statement when true.
 * Updated documentation and added new test.
 
-Version 0.5 (2025-07-18)
+Version 1.0.5 (2025-07-14)
 
 * Added subtraction operator (-) for arithmetic expressions.
 * Updated documentation and usage guide.
 * Added new test case for subtraction.
 
-Version 0.6 (2025-07-19)
+Version 1.0.6 (2025-07-14)
 
 * Introduced `while` loops for basic iteration.
 * Added documentation and usage examples.
 * Added regression test for loops.
 
-Version 0.7 (2025-07-20)
+Version 1.0.7 (2025-07-14)
 
 * Console.WriteLine now accepts quoted string literals.
 * Updated documentation and usage guide.
 * Added new test case for string output.
 
-Version 0.8 (2025-07-21)
+Version 1.0.8 (2025-07-14)
 
 * Added multiplication operator (*) for arithmetic expressions.
 * Updated documentation and usage guide.
