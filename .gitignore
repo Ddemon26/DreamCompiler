@@ -34,9 +34,8 @@
 
 # Build artifacts
 /build
-output.asm
-output.o
 dream
+output.c
 
 # Zig
 .zig-cache

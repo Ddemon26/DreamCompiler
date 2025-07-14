@@ -1,6 +1,6 @@
 ﻿Dream Language Usage Guide
 Overview
-Dream is a programming language with C#-like, semicolon-based syntax, compiled to x86-64 assembly. This guide covers the current syntax and usage.
+Dream is a programming language with C#-like, semicolon-based syntax, compiled to C code. This guide covers the current syntax and usage.
 Syntax
 
 Variable Declaration: int <identifier>; or int <identifier> = <value>;
@@ -17,9 +17,8 @@ Console.WriteLine(x); // Outputs 15
 Compilation
 
 Write a .dr file (e.g., example.dr).
-Compile: dream.exe example.dr (generates output.asm).
-Assemble: nasm -f win64 output.asm -o output.obj.
-Link: gcc output.obj -o dream_exec.exe.
+Compile: dream.exe example.dr (generates output.c).
+Compile C: gcc output.c -o dream_exec.exe.
 Run: dream_exec.exe.
 
 Notes
