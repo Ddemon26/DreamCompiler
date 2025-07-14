@@ -1,4 +1,4 @@
-﻿Variables in Dream
+Variables in Dream
 Overview
 The Dream language supports variable declarations and assignments with a C#-like syntax, using the int type for integers.
 Syntax

@@ -1,2 +1,2 @@
-﻿int x = 25;
+int x = 25;
 Console.WriteLine(x); // Expected: 25

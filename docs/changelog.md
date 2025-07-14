@@ -1,4 +1,4 @@
-﻿Dream Compiler Changelog
+Dream Compiler Changelog
 Version 0.1 (2025-07-14)
 
 Initial compiler implementation in dream.c.
