@@ -9,6 +9,7 @@ The compiler currently supports:
 - Integer variable declarations and assignments
 - Basic arithmetic using `+`
 - Console output via `Console.WriteLine`
+- Simple `if` statements
 
 More features such as conditionals, loops and functions are planned for future versions. See the [changelog](docs/changelog.md) for the current status.
 

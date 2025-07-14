@@ -7,12 +7,14 @@ Variable Declaration: int <identifier>; or int <identifier> = <value>;
 Assignment: <identifier> = <expression>;
 Arithmetic: <identifier> = <expression> + <expression>;
 Console Output: Console.WriteLine(<expression>);
+Conditional: if (<expression>) <statement>
 
 Example Program
 int x = 5;
 int y = 10;
 x = y + 5;          // x = 15
 Console.WriteLine(x); // Outputs 15
+if (x) Console.WriteLine(y);
 
 Compilation
 
