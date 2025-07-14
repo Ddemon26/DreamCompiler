@@ -112,7 +112,7 @@ Documentation for individual language features lives under [`docs`](docs). Start
 
 ## Contributing
 
-Contributions are welcome. Please keep code style simple and document any new language feature under `docs/` with a matching test case under `tests/`. Install additional dependencies in [`_startup.sh`](_startup.sh) if required.
+Contributions are welcome. Please keep code style simple and document any new language feature under `docs/` with a matching test case under `tests/`. Install additional dependencies in [`codex/_startup.sh`](codex/_startup.sh) if required.
 
 ## License
 

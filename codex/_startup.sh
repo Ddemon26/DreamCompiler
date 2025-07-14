@@ -1,16 +1,17 @@
 #!/bin/bash
-# _startup.sh: Manages dependencies for the Dream compiler CLI agent
+# _startup.sh: Install dependencies for the Dream compiler CLI agent
+
+set -e
 
 echo "Updating package lists..."
 sudo apt update
 
 echo "Installing core dependencies..."
-sudo apt install -y gcc nasm binutils
+sudo apt install -y build-essential zig
 
-# Add new dependencies here as needed by the agent
-# Example: sudo apt install -y make
+# Add additional dependencies below as needed
 
-echo "Removing unused dependencies..."
+echo "Cleaning up..."
 sudo apt autoremove -y
 
 echo "Dependency setup complete."
