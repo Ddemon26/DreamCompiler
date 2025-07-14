@@ -18,7 +18,11 @@ typedef struct {
 
 // Node types for AST
 typedef enum {
-    NODE_VAR_DECL, NODE_ASSIGN, NODE_WRITELINE, NODE_BINARY_OP
+    NODE_VAR_DECL,
+    NODE_ASSIGN,
+    NODE_WRITELINE,
+    NODE_BINARY_OP,
+    NODE_NUMBER
 } NodeType;
 
 // AST node structure
@@ -45,6 +49,12 @@ typedef struct {
 // Lexer functions
 Token next_token(Lexer* lexer) {
     while (isspace(lexer->source[lexer->pos])) lexer->pos++;
+
+    // Skip // comments
+    if (lexer->source[lexer->pos] == '/' && lexer->source[lexer->pos + 1] == '/') {
+        while (lexer->source[lexer->pos] && lexer->source[lexer->pos] != '\n') lexer->pos++;
+        return next_token(lexer);
+    }
 
     Token token = {TOKEN_UNKNOWN, NULL};
     if (lexer->source[lexer->pos] == '\0') {
@@ -95,6 +105,28 @@ Node* create_node(NodeType type, char* value, Node* left, Node* right) {
     return node;
 }
 
+// Parse a simple expression: identifier/number with optional + identifier/number
+Node* parse_expression(Lexer* lexer, Token* token) {
+    if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER) {
+        fprintf(stderr, "Expected identifier or number\n");
+        exit(1);
+    }
+    Node* left = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_NUMBER, token->value, NULL, NULL);
+    *token = next_token(lexer);
+    if (token->type == TOKEN_PLUS) {
+        char* op = token->value;
+        *token = next_token(lexer);
+        if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER) {
+            fprintf(stderr, "Expected identifier or number after +\n");
+            exit(1);
+        }
+        Node* right = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_NUMBER, token->value, NULL, NULL);
+        *token = next_token(lexer);
+        return create_node(NODE_BINARY_OP, op, left, right);
+    }
+    return left;
+}
+
 Node* parse_statement(Lexer* lexer, Token* token) {
     if (token->type == TOKEN_INT) {
         free(token->value);
@@ -105,40 +137,29 @@ Node* parse_statement(Lexer* lexer, Token* token) {
         }
         char* var_name = token->value;
         *token = next_token(lexer);
+        Node* init = NULL;
+        if (token->type == TOKEN_EQUALS) {
+            free(token->value);
+            *token = next_token(lexer);
+            init = parse_expression(lexer, token);
+        }
         if (token->type != TOKEN_SEMICOLON) {
             fprintf(stderr, "Expected semicolon\n");
             exit(1);
         }
-        return create_node(NODE_VAR_DECL, var_name, NULL, NULL);
+        return create_node(NODE_VAR_DECL, var_name, init, NULL);
     } else if (token->type == TOKEN_IDENTIFIER) {
         char* var_name = token->value;
         *token = next_token(lexer);
         if (token->type == TOKEN_EQUALS) {
             free(token->value);
             *token = next_token(lexer);
-            if (token->type == TOKEN_IDENTIFIER || token->type == TOKEN_NUMBER) {
-                Node* left = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_BINARY_OP, token->value, NULL, NULL);
-                *token = next_token(lexer);
-                if (token->type == TOKEN_PLUS) {
-                    char* op = token->value;
-                    *token = next_token(lexer);
-                    if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER) {
-                        fprintf(stderr, "Expected identifier or number after +\n");
-                        exit(1);
-                    }
-                    Node* right = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_BINARY_OP, token->value, NULL, NULL);
-                    *token = next_token(lexer);
-                    if (token->type != TOKEN_SEMICOLON) {
-                        fprintf(stderr, "Expected semicolon\n");
-                        exit(1);
-                    }
-                    return create_node(NODE_BINARY_OP, op, left, right);
-                } else if (token->type == TOKEN_SEMICOLON) {
-                    return create_node(NODE_ASSIGN, var_name, left, NULL);
-                }
+            Node* expr = parse_expression(lexer, token);
+            if (token->type != TOKEN_SEMICOLON) {
+                fprintf(stderr, "Expected semicolon\n");
+                exit(1);
             }
-            fprintf(stderr, "Invalid assignment\n");
-            exit(1);
+            return create_node(NODE_ASSIGN, var_name, expr, NULL);
         }
     } else if (token->type == TOKEN_CONSOLE) {
         free(token->value);
@@ -183,71 +204,60 @@ Node* parse_statement(Lexer* lexer, Token* token) {
     exit(1);
 }
 
+// Evaluate an expression and leave the result in RAX
+static void gen_expr(Compiler* compiler, Node* expr, char** var_map) {
+    if (!expr) return;
+    if (expr->type == NODE_BINARY_OP) {
+        gen_expr(compiler, expr->left, var_map);
+        fprintf(compiler->output, "    push rax\n");
+        gen_expr(compiler, expr->right, var_map);
+        fprintf(compiler->output, "    mov rbx, rax\n");
+        fprintf(compiler->output, "    pop rax\n");
+        if (strcmp(expr->value, "+") == 0) {
+            fprintf(compiler->output, "    add rax, rbx\n");
+        }
+    } else if (expr->type == NODE_VAR_DECL) {
+        for (int i = 0; i < compiler->var_count; i++) {
+            if (strcmp(var_map[i], expr->value) == 0) {
+                fprintf(compiler->output, "    mov rax, [rbp-%d]\n", (i + 1) * 8);
+                break;
+            }
+        }
+    } else if (expr->type == NODE_NUMBER) {
+        fprintf(compiler->output, "    mov rax, %s\n", expr->value);
+    } else {
+        fprintf(stderr, "Unknown expression type\n");
+    }
+}
+
 // Code generation
 void generate_assembly(Compiler* compiler, Node* node) {
     static int var_index = 0;
     static char* var_map[100];
 
     if (node->type == NODE_VAR_DECL) {
-        var_map[var_index++] = node->value;
-        fprintf(compiler->output, "    mov rax, 0\n");
-        fprintf(compiler->output, "    mov [rsp-%d], rax\n", var_index * 8);
+        var_map[var_index++] = strdup(node->value);
+        if (node->left) {
+            gen_expr(compiler, node->left, var_map);
+        } else {
+            fprintf(compiler->output, "    mov rax, 0\n");
+        }
+        fprintf(compiler->output, "    mov [rbp-%d], rax\n", var_index * 8);
         compiler->var_count++;
     } else if (node->type == NODE_ASSIGN) {
-        if (node->left->type == NODE_BINARY_OP) {
-            fprintf(compiler->output, "    mov rax, %s\n", node->left->value);
-            for (int i = 0; i < compiler->var_count; i++) {
-                if (strcmp(var_map[i], node->value) == 0) {
-                    fprintf(compiler->output, "    mov [rsp-%d], rax\n", (i + 1) * 8);
-                    break;
-                }
-            }
-        }
-    } else if (node->type == NODE_BINARY_OP) {
-        if (node->left->type == NODE_BINARY_OP) {
-            fprintf(compiler->output, "    mov rax, %s\n", node->left->value);
-        } else {
-            for (int i = 0; i < compiler->var_count; i++) {
-                if (strcmp(var_map[i], node->left->value) == 0) {
-                    fprintf(compiler->output, "    mov rax, [rsp-%d]\n", (i + 1) * 8);
-                    break;
-                }
-            }
-        }
-        if (node->right->type == NODE_BINARY_OP) {
-            fprintf(compiler->output, "    mov rbx, %s\n", node->right->value);
-        } else {
-            for (int i = 0; i < compiler->var_count; i++) {
-                if (strcmp(var_map[i], node->right->value) == 0) {
-                    fprintf(compiler->output, "    mov rbx, [rsp-%d]\n", (i + 1) * 8);
-                    break;
-                }
-            }
-        }
-        if (strcmp(node->value, "+") == 0) {
-            fprintf(compiler->output, "    add rax, rbx\n");
-        }
+        gen_expr(compiler, node->left, var_map);
         for (int i = 0; i < compiler->var_count; i++) {
-            if (strcmp(var_map[i], node->left->value) == 0) {
-                fprintf(compiler->output, "    mov [rsp-%d], rax\n", (i + 1) * 8);
+            if (strcmp(var_map[i], node->value) == 0) {
+                fprintf(compiler->output, "    mov [rbp-%d], rax\n", (i + 1) * 8);
                 break;
             }
         }
     } else if (node->type == NODE_WRITELINE) {
-        if (node->left->type == NODE_BINARY_OP) {
-            fprintf(compiler->output, "    mov rsi, %s\n", node->left->value);
-        } else {
-            for (int i = 0; i < compiler->var_count; i++) {
-                if (strcmp(var_map[i], node->left->value) == 0) {
-                    fprintf(compiler->output, "    mov rsi, [rsp-%d]\n", (i + 1) * 8);
-                    break;
-                }
-            }
-        }
-        fprintf(compiler->output, "    mov rax, 1\n"); // syscall: write
-        fprintf(compiler->output, "    mov rdi, 1\n"); // stdout
-        fprintf(compiler->output, "    mov rdx, 1\n"); // length
-        fprintf(compiler->output, "    syscall\n");
+        gen_expr(compiler, node->left, var_map);
+        fprintf(compiler->output, "    mov rsi, rax\n");
+        fprintf(compiler->output, "    mov rdi, fmt\n");
+        fprintf(compiler->output, "    xor rax, rax\n");
+        fprintf(compiler->output, "    call printf\n");
     }
 }
 
@@ -276,10 +286,14 @@ int main(int argc, char* argv[]) {
     Compiler compiler = {fopen("output.asm", "w"), 0};
 
     // Write assembly preamble
+    fprintf(compiler.output, "extern printf\n");
+    fprintf(compiler.output, "section .data\n");
+    fprintf(compiler.output, "fmt db \"%%ld\",10,0\n");
     fprintf(compiler.output, "section .text\n");
-    fprintf(compiler.output, "global _start\n");
-    fprintf(compiler.output, "_start:\n");
-    fprintf(compiler.output, "    sub rsp, 1024\n"); // Reserve stack space
+    fprintf(compiler.output, "global main\n");
+    fprintf(compiler.output, "main:\n");
+    fprintf(compiler.output, "    sub rsp, 1032\n"); // Reserve stack space and align
+    fprintf(compiler.output, "    mov rbp, rsp\n");
 
     // Parse and generate code
     Token token = next_token(&lexer);
@@ -294,9 +308,9 @@ int main(int argc, char* argv[]) {
     }
 
     // Write assembly epilogue
-    fprintf(compiler.output, "    mov rax, 60\n"); // syscall: exit
-    fprintf(compiler.output, "    mov rdi, 0\n");
-    fprintf(compiler.output, "    syscall\n");
+    fprintf(compiler.output, "    add rsp, 1032\n");
+    fprintf(compiler.output, "    mov rax, 0\n");
+    fprintf(compiler.output, "    ret\n");
 
     fclose(compiler.output);
     free(source);
@@ -304,6 +318,6 @@ int main(int argc, char* argv[]) {
 
     // Assemble and link
     system("nasm -f elf64 output.asm -o output.o");
-    system("ld output.o -o dream");
+    system("gcc output.o -no-pie -o dream");
     return 0;
 }

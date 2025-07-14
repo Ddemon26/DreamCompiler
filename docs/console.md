@@ -14,5 +14,5 @@ Console.WriteLine(x);   // Outputs 15 (as ASCII)
 
 Notes
 
-Currently outputs raw ASCII values.
-Future updates will support formatted string output.
+Console.WriteLine now prints integers using printf so the output appears in
+decimal form.
