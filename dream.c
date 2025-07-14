@@ -4,13 +4,18 @@
 #include <ctype.h>
 
 #ifdef _WIN32
-char* strndup(const char* src)
-{
-    size_t len = strlen(src);
-    char* dest = malloc(len + 1);
-    if (dest) strcpy(dest, src);
-    return dest;
-}
+    static char *strndup(const char *src, size_t n)
+    {
+        size_t len = strlen(src);
+        if (n < len) len = n;
+
+        char *dest = malloc(len + 1);
+        if (!dest) return NULL;
+
+        memcpy(dest, src, len);
+        dest[len] = '\0';
+        return dest;
+    }
 #endif
 
 // Token types
