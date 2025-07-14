@@ -11,3 +11,9 @@ Console output (Console.WriteLine(x);)
 
 Added /docs with variables.md, arithmetic.md, console.md, usage.md.
 Added /tests with test_variables.dr, test_arithmetic.dr, test_console.dr.
+
+Version 0.2 (2025-07-15)
+
+* Added support for initializing variables with a value (e.g., `int x = 5;`).
+* Console.WriteLine now prints numbers in decimal using printf.
+
