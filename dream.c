@@ -3,6 +3,16 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef _WIN32
+char* strndup(const char* src)
+{
+    size_t len = strlen(src);
+    char* dest = malloc(len + 1);
+    if (dest) strcpy(dest, src);
+    return dest;
+}
+#endif
+
 // Token types
 typedef enum {
     TOKEN_INT, TOKEN_IDENTIFIER, TOKEN_NUMBER, TOKEN_PLUS, TOKEN_SEMICOLON,
