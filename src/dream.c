@@ -55,10 +55,9 @@ typedef struct {
     int line;
 } Lexer;
 
-// Compiler context
+// Compiler context (only output file needed for C generation)
 typedef struct {
     FILE* output;
-    int var_count;
 } Compiler;
 
 // Lexer functions
@@ -219,60 +218,40 @@ Node* parse_statement(Lexer* lexer, Token* token) {
     exit(1);
 }
 
-// Evaluate an expression and leave the result in RAX
-static void gen_expr(Compiler* compiler, Node* expr, char** var_map) {
+// Generate a C expression recursively
+static void gen_c_expr(FILE* out, Node* expr) {
     if (!expr) return;
     if (expr->type == NODE_BINARY_OP) {
-        gen_expr(compiler, expr->left, var_map);
-        fprintf(compiler->output, "    push rax\n");
-        gen_expr(compiler, expr->right, var_map);
-        fprintf(compiler->output, "    mov rbx, rax\n");
-        fprintf(compiler->output, "    pop rax\n");
-        if (strcmp(expr->value, "+") == 0) {
-            fprintf(compiler->output, "    add rax, rbx\n");
-        }
-    } else if (expr->type == NODE_VAR_DECL) {
-        for (int i = 0; i < compiler->var_count; i++) {
-            if (strcmp(var_map[i], expr->value) == 0) {
-                fprintf(compiler->output, "    mov rax, [rbp-%d]\n", (i + 1) * 8);
-                break;
-            }
-        }
+        fputc('(', out);
+        gen_c_expr(out, expr->left);
+        fprintf(out, " %s ", expr->value);
+        gen_c_expr(out, expr->right);
+        fputc(')', out);
+    } else if (expr->type == NODE_VAR_DECL && expr->left == NULL && expr->right == NULL) {
+        fprintf(out, "%s", expr->value);
     } else if (expr->type == NODE_NUMBER) {
-        fprintf(compiler->output, "    mov rax, %s\n", expr->value);
-    } else {
-        fprintf(stderr, "Unknown expression type\n");
+        fprintf(out, "%s", expr->value);
     }
 }
 
-// Code generation
-void generate_assembly(Compiler* compiler, Node* node) {
-    static int var_index = 0;
-    static char* var_map[100];
-
+// Generate C statements
+static void generate_c(Compiler* compiler, Node* node) {
+    FILE* out = compiler->output;
     if (node->type == NODE_VAR_DECL) {
-        var_map[var_index++] = strdup(node->value);
+        fprintf(out, "    long %s", node->value);
         if (node->left) {
-            gen_expr(compiler, node->left, var_map);
-        } else {
-            fprintf(compiler->output, "    mov rax, 0\n");
+            fprintf(out, " = ");
+            gen_c_expr(out, node->left);
         }
-        fprintf(compiler->output, "    mov [rbp-%d], rax\n", var_index * 8);
-        compiler->var_count++;
+        fprintf(out, ";\n");
     } else if (node->type == NODE_ASSIGN) {
-        gen_expr(compiler, node->left, var_map);
-        for (int i = 0; i < compiler->var_count; i++) {
-            if (strcmp(var_map[i], node->value) == 0) {
-                fprintf(compiler->output, "    mov [rbp-%d], rax\n", (i + 1) * 8);
-                break;
-            }
-        }
+        fprintf(out, "    %s = ", node->value);
+        gen_c_expr(out, node->left);
+        fprintf(out, ";\n");
     } else if (node->type == NODE_WRITELINE) {
-        gen_expr(compiler, node->left, var_map);
-        fprintf(compiler->output, "    mov rsi, rax\n");
-        fprintf(compiler->output, "    mov rdi, fmt\n");
-        fprintf(compiler->output, "    xor rax, rax\n");
-        fprintf(compiler->output, "    call printf\n");
+        fprintf(out, "    printf(\"%%ld\\n\", ");
+        gen_c_expr(out, node->left);
+        fprintf(out, ");\n");
     }
 }
 
@@ -298,23 +277,20 @@ int main(int argc, char* argv[]) {
 
     // Initialize lexer and compiler
     Lexer lexer = {source, 0, 1};
-    Compiler compiler = {fopen("output.asm", "w"), 0};
+    if ((unsigned char)source[0] == 0xEF && (unsigned char)source[1] == 0xBB && (unsigned char)source[2] == 0xBF) {
+        lexer.pos = 3; // Skip UTF-8 BOM
+    }
+    Compiler compiler = {fopen("output.c", "w")};
 
-    // Write assembly preamble
-    fprintf(compiler.output, "extern printf\n");
-    fprintf(compiler.output, "section .data\n");
-    fprintf(compiler.output, "fmt db \"%%ld\",10,0\n");
-    fprintf(compiler.output, "section .text\n");
-    fprintf(compiler.output, "global main\n");
-    fprintf(compiler.output, "main:\n");
-    fprintf(compiler.output, "    sub rsp, 1032\n"); // Reserve stack space and align
-    fprintf(compiler.output, "    mov rbp, rsp\n");
+    // Write C preamble
+    fprintf(compiler.output, "#include <stdio.h>\n");
+    fprintf(compiler.output, "int main() {\n");
 
     // Parse and generate code
     Token token = next_token(&lexer);
     while (token.type != TOKEN_EOF) {
         Node* node = parse_statement(&lexer, &token);
-        generate_assembly(&compiler, node);
+        generate_c(&compiler, node);
         free(node->value);
         if (node->left) free(node->left->value), free(node->left);
         if (node->right) free(node->right->value), free(node->right);
@@ -322,17 +298,15 @@ int main(int argc, char* argv[]) {
         token = next_token(&lexer);
     }
 
-    // Write assembly epilogue
-    fprintf(compiler.output, "    add rsp, 1032\n");
-    fprintf(compiler.output, "    mov rax, 0\n");
-    fprintf(compiler.output, "    ret\n");
+    // Write C epilogue
+    fprintf(compiler.output, "    return 0;\n");
+    fprintf(compiler.output, "}\n");
 
     fclose(compiler.output);
     free(source);
     free(token.value);
 
-    // Assemble and link
-    system("nasm -f elf64 output.asm -o output.o");
-    system("gcc output.o -no-pie -o dream");
+    // Compile generated C code
+    system("gcc output.c -o dream");
     return 0;
 }

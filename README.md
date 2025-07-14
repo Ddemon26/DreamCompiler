@@ -1,6 +1,6 @@
 # Dream Compiler
 
-Dream is a minimal compiler that transforms a C#-like language into x86‑64 assembly. The project is experimental but aims to grow into a fully featured compiler. This repository contains the source for the compiler, example code, tests and documentation.
+Dream is a minimal compiler that transforms a C#-like language into C code. The project is experimental but aims to grow into a fully featured compiler. This repository contains the source for the compiler, example code, tests and documentation.
 
 ## Features
 
@@ -101,7 +101,7 @@ Invoke the compiler with a `.dr` source file:
 ./DreamCompiler path/to/file.dr
 ```
 
-The compiler writes `output.asm` and assembles it into a runnable executable called `dream` in the current directory. Run the resulting program with:
+The compiler writes `output.c` and compiles it into a runnable executable called `dream` in the current directory. Run the resulting program with:
 
 ```bash
 ./dream
