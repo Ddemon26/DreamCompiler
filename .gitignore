@@ -31,3 +31,9 @@
 *.out
 *.app
 /.idea
+
+# Build artifacts
+/build
+output.asm
+output.o
+dream
