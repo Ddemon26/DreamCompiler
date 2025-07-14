@@ -12,7 +12,7 @@ pub fn build(b: *std.Build) void {
 
     exe.addCSourceFiles(.{
         .files = &.{
-            "dream.c",
+            "src/dream.c",
         },
     });
 
