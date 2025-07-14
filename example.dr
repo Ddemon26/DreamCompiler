@@ -4,4 +4,7 @@ int c;
 c = a + b;
 Console.WriteLine(c);
 if (c) Console.WriteLine(a);
+while (c) {
+    c = c - 1;
+}
 

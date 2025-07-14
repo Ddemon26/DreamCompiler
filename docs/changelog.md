@@ -32,3 +32,9 @@ Version 0.5 (2025-07-18)
 * Added subtraction operator (-) for arithmetic expressions.
 * Updated documentation and usage guide.
 * Added new test case for subtraction.
+
+Version 0.6 (2025-07-19)
+
+* Introduced `while` loops for basic iteration.
+* Added documentation and usage examples.
+* Added regression test for loops.
