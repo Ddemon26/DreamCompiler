@@ -45,3 +45,9 @@ Version 0.7 (2025-07-20)
 * Updated documentation and usage guide.
 * Added new test case for string output.
 
+Version 0.8 (2025-07-21)
+
+* Added multiplication operator (*) for arithmetic expressions.
+* Updated documentation and usage guide.
+* Added regression test for multiplication.
+

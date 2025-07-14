@@ -1,0 +1,4 @@
+int x = 2;
+int y = 3;
+x = x * y;
+Console.WriteLine(x); // Expected: 6
