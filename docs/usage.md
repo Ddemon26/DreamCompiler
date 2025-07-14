@@ -7,6 +7,7 @@ Variable Declaration: int <identifier>; or int <identifier> = <value>;
 Assignment: <identifier> = <expression>;
 Arithmetic: <identifier> = <expression> + <expression> or <expression> - <expression>;
 Console Output: Console.WriteLine(<expression>);
+    <expression> may be a variable, number, or quoted string.
 Conditional: if (<expression>) <statement>
 Loop: while (<expression>) <statement>
 
@@ -15,7 +16,8 @@ int x = 5;
 int y = 10;
 x = y + 5;          // x = 15
 x = y - 3;          // x = 7
-Console.WriteLine(x); // Outputs 15
+Console.WriteLine(x);       // Outputs 15
+Console.WriteLine("hi"); // Outputs "hi"
 if (x) Console.WriteLine(y);
 while (x) Console.WriteLine(y);
 
@@ -32,3 +34,4 @@ Notes
 
 Semicolons (;) are required to terminate statements.
 Run in CLion or via a batch file for Windows compatibility.
+

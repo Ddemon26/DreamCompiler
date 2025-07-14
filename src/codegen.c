@@ -16,6 +16,8 @@ void gen_c_expr(FILE *out, Node *expr)
         fprintf(out, "%s", expr->value);
     } else if (expr->type == NODE_NUMBER) {
         fprintf(out, "%s", expr->value);
+    } else if (expr->type == NODE_STRING) {
+        fprintf(out, "\"%s\"", expr->value);
     }
 }
 
@@ -34,7 +36,11 @@ void generate_c(Compiler *compiler, Node *node)
         gen_c_expr(out, node->left);
         fprintf(out, ";\n");
     } else if (node->type == NODE_WRITELINE) {
-        fprintf(out, "    printf(\"%%ld\\n\", ");
+        if (node->left && node->left->type == NODE_STRING) {
+            fprintf(out, "    printf(\"%%s\\n\", ");
+        } else {
+            fprintf(out, "    printf(\"%%ld\\n\", ");
+        }
         gen_c_expr(out, node->left);
         fprintf(out, ");\n");
     } else if (node->type == NODE_IF) {

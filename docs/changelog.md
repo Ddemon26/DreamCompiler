@@ -38,3 +38,10 @@ Version 0.6 (2025-07-19)
 * Introduced `while` loops for basic iteration.
 * Added documentation and usage examples.
 * Added regression test for loops.
+
+Version 0.7 (2025-07-20)
+
+* Console.WriteLine now accepts quoted string literals.
+* Updated documentation and usage guide.
+* Added new test case for string output.
+
