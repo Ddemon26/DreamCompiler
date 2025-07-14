@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +23,8 @@
 typedef enum {
     TOKEN_INT, TOKEN_IDENTIFIER, TOKEN_NUMBER, TOKEN_PLUS, TOKEN_SEMICOLON,
     TOKEN_EQUALS, TOKEN_CONSOLE, TOKEN_DOT, TOKEN_WRITELINE, TOKEN_LPAREN,
-    TOKEN_RPAREN, TOKEN_EOF, TOKEN_UNKNOWN
+    TOKEN_RPAREN, TOKEN_IF, TOKEN_LBRACE, TOKEN_RBRACE,
+    TOKEN_EOF, TOKEN_UNKNOWN
 } TokenType;
 
 // Token structure
@@ -37,6 +39,7 @@ typedef enum {
     NODE_ASSIGN,
     NODE_WRITELINE,
     NODE_BINARY_OP,
+    NODE_IF,
     NODE_IDENTIFIER,
     NODE_NUMBER
 } NodeType;
@@ -85,6 +88,7 @@ Token next_token(Lexer* lexer) {
         if (strcmp(token.value, "int") == 0) token.type = TOKEN_INT;
         else if (strcmp(token.value, "Console") == 0) token.type = TOKEN_CONSOLE;
         else if (strcmp(token.value, "WriteLine") == 0) token.type = TOKEN_WRITELINE;
+        else if (strcmp(token.value, "if") == 0) token.type = TOKEN_IF;
         else token.type = TOKEN_IDENTIFIER;
         return token;
     }
@@ -105,6 +109,8 @@ Token next_token(Lexer* lexer) {
         case '.': token.type = TOKEN_DOT; token.value = strdup("."); lexer->pos++; break;
         case '(': token.type = TOKEN_LPAREN; token.value = strdup("("); lexer->pos++; break;
         case ')': token.type = TOKEN_RPAREN; token.value = strdup(")"); lexer->pos++; break;
+        case '{': token.type = TOKEN_LBRACE; token.value = strdup("{"); lexer->pos++; break;
+        case '}': token.type = TOKEN_RBRACE; token.value = strdup("}"); lexer->pos++; break;
         default: token.type = TOKEN_UNKNOWN; token.value = strndup(lexer->source + lexer->pos++, 1); break;
     }
     return token;
@@ -214,6 +220,37 @@ Node* parse_statement(Lexer* lexer, Token* token) {
             exit(1);
         }
         return create_node(NODE_WRITELINE, NULL, arg, NULL);
+    } else if (token->type == TOKEN_IF) {
+        free(token->value);
+        *token = next_token(lexer);
+        if (token->type != TOKEN_LPAREN) {
+            fprintf(stderr, "Expected ( after if\n");
+            exit(1);
+        }
+        free(token->value);
+        *token = next_token(lexer);
+        Node* cond = parse_expression(lexer, token);
+        if (token->type != TOKEN_RPAREN) {
+            fprintf(stderr, "Expected ) after condition\n");
+            exit(1);
+        }
+        free(token->value);
+        *token = next_token(lexer);
+        Node* body = NULL;
+        if (token->type == TOKEN_LBRACE) {
+            free(token->value);
+            *token = next_token(lexer);
+            body = parse_statement(lexer, token);
+            if (token->type != TOKEN_RBRACE) {
+                fprintf(stderr, "Expected } after if body\n");
+                exit(1);
+            }
+            free(token->value);
+            *token = next_token(lexer);
+        } else {
+            body = parse_statement(lexer, token);
+        }
+        return create_node(NODE_IF, NULL, cond, body);
     }
     fprintf(stderr, "Invalid statement\n");
     exit(1);
@@ -253,6 +290,12 @@ static void generate_c(Compiler* compiler, Node* node) {
         fprintf(out, "    printf(\"%%ld\\n\", ");
         gen_c_expr(out, node->left);
         fprintf(out, ");\n");
+    } else if (node->type == NODE_IF) {
+        fprintf(out, "    if (");
+        gen_c_expr(out, node->left);
+        fprintf(out, ") {\n");
+        generate_c(compiler, node->right);
+        fprintf(out, "    }\n");
     }
 }
 

@@ -22,3 +22,7 @@ Version 0.3 (2025-07-16)
 * Compiler now generates C code (`output.c`) instead of x86-64 assembly.
 * Updated documentation and build instructions accordingly.
 
+Version 0.4 (2025-07-17)
+
+* Added basic `if` statement support. Conditions can reference variables or numbers and execute a single statement when true.
+* Updated documentation and added new test.
