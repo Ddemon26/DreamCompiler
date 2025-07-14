@@ -5,7 +5,7 @@ Syntax
 
 Variable Declaration: int <identifier>; or int <identifier> = <value>;
 Assignment: <identifier> = <expression>;
-Arithmetic: <identifier> = <expression> + <expression>;
+Arithmetic: <identifier> = <expression> + <expression> or <expression> - <expression>;
 Console Output: Console.WriteLine(<expression>);
 Conditional: if (<expression>) <statement>
 
@@ -13,6 +13,7 @@ Example Program
 int x = 5;
 int y = 10;
 x = y + 5;          // x = 15
+x = y - 3;          // x = 7
 Console.WriteLine(x); // Outputs 15
 if (x) Console.WriteLine(y);
 

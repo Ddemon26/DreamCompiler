@@ -68,6 +68,11 @@ Token next_token(Lexer *lexer)
         token.value = strdup("+");
         lexer->pos++;
         break;
+    case '-':
+        token.type = TOKEN_MINUS;
+        token.value = strdup("-");
+        lexer->pos++;
+        break;
     case ';':
         token.type = TOKEN_SEMICOLON;
         token.value = strdup(";");

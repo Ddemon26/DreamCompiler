@@ -26,3 +26,9 @@ Version 0.4 (2025-07-17)
 
 * Added basic `if` statement support. Conditions can reference variables or numbers and execute a single statement when true.
 * Updated documentation and added new test.
+
+Version 0.5 (2025-07-18)
+
+* Added subtraction operator (-) for arithmetic expressions.
+* Updated documentation and usage guide.
+* Added new test case for subtraction.
