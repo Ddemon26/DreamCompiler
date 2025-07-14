@@ -1,4 +1,4 @@
-﻿Dream Language Usage Guide
+Dream Language Usage Guide
 Overview
 Dream is a programming language with C#-like, semicolon-based syntax, compiled to C code. This guide covers the current syntax and usage.
 Syntax
@@ -16,10 +16,12 @@ Console.WriteLine(x); // Outputs 15
 
 Compilation
 
-Write a .dr file (e.g., example.dr).
-Compile: dream.exe example.dr (generates output.c).
-Compile C: gcc output.c -o dream_exec.exe.
-Run: dream_exec.exe.
+Write a `.dr` file (e.g., `example.dr`).
+Compile and run:
+```
+zig build run -- example.dr
+```
+The compiler uses the `CC` environment variable for the back-end C compilation step. If `CC` is not set, `gcc` is used by default.
 
 Notes
 

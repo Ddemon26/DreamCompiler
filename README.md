@@ -22,7 +22,7 @@ The following guides explain how to set up and use Dream on Linux and Windows. T
 
    ```bash
    sudo apt update
-   sudo apt install -y build-essential cmake nasm gcc
+   sudo apt install -y build-essential zig gcc
    ```
 
 2. **Clone the repository**
@@ -35,27 +35,24 @@ The following guides explain how to set up and use Dream on Linux and Windows. T
 3. **Build the compiler**
 
    ```bash
-   mkdir build && cd build
-   cmake ..
-   cmake --build .
+   zig build
    ```
 
 4. **Compile and run the example**
 
    ```bash
-   ./DreamCompiler ../example.dr
-   ./dream
+   zig build run -- example.dr
    ```
 
 5. **Run the tests (optional)**
 
    ```bash
-   for f in ../tests/*.dr; do ./DreamCompiler $f; ./dream; done
+   for f in tests/*.dr; do zig build run -- $f; done
    ```
 
 ### Windows
 
-1. **Install tools**: [Git for Windows](https://git-scm.com/), [CMake](https://cmake.org/download/), [MinGW‑w64](http://mingw-w64.org/doku.php) and [NASM](https://www.nasm.us/). Make sure `gcc`, `cmake` and `nasm` are in your `PATH`.
+1. **Install tools**: [Git for Windows](https://git-scm.com/) and [Zig](https://ziglang.org/download/). Ensure `zig` is available from the command prompt.
 
 2. **Clone the repository** using *Git Bash* or *Command Prompt*:
 
@@ -67,38 +64,33 @@ The following guides explain how to set up and use Dream on Linux and Windows. T
 3. **Build the compiler**
 
    ```cmd
-   mkdir build && cd build
-   cmake ..
-   cmake --build .
+   zig build
    ```
 
 4. **Compile and run the example**
 
    ```cmd
-   DreamCompiler ..\example.dr
-   dream.exe
+   zig build run -- example.dr
    ```
 
-5. **Run the tests (optional)** following a similar loop in `cmd` or PowerShell.
+5. **Run the tests (optional)** using a simple loop in `cmd` or PowerShell.
 
 ## Building
 
-Dream uses CMake. The quickest way to build on a Unix‑like system is:
+Dream is built with Zig. The simplest approach is:
 
 ```bash
-mkdir build && cd build
-cmake ..
-cmake --build .
+zig build
 ```
 
-This produces the `DreamCompiler` executable inside the `build` directory.
+This places the `DreamCompiler` executable under `zig-out/bin`.
 
 ## Using the Compiler
 
 Invoke the compiler with a `.dr` source file:
 
 ```bash
-./DreamCompiler path/to/file.dr
+./zig-out/bin/DreamCompiler path/to/file.dr
 ```
 
 The compiler writes `output.c` and compiles it into a runnable executable called `dream` in the current directory. Run the resulting program with:
@@ -111,7 +103,7 @@ An example program is provided in [example.dr](example.dr).
 
 ## Tests
 
-Simple language features are covered by tests in the [`tests`](tests) directory. After building the compiler, run each test file through `DreamCompiler` and then execute the generated `dream` binary.
+Simple language features are covered by tests in the [`tests`](tests) directory. After building the compiler, run each test file using `zig build run -- <file>` which will compile the test and execute the resulting program.
 
 ## Documentation
 

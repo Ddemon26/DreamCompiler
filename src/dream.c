@@ -37,6 +37,7 @@ typedef enum {
     NODE_ASSIGN,
     NODE_WRITELINE,
     NODE_BINARY_OP,
+    NODE_IDENTIFIER,
     NODE_NUMBER
 } NodeType;
 
@@ -125,7 +126,7 @@ Node* parse_expression(Lexer* lexer, Token* token) {
         fprintf(stderr, "Expected identifier or number\n");
         exit(1);
     }
-    Node* left = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_NUMBER, token->value, NULL, NULL);
+    Node* left = create_node(token->type == TOKEN_IDENTIFIER ? NODE_IDENTIFIER : NODE_NUMBER, token->value, NULL, NULL);
     *token = next_token(lexer);
     if (token->type == TOKEN_PLUS) {
         char* op = token->value;
@@ -134,7 +135,7 @@ Node* parse_expression(Lexer* lexer, Token* token) {
             fprintf(stderr, "Expected identifier or number after +\n");
             exit(1);
         }
-        Node* right = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_NUMBER, token->value, NULL, NULL);
+        Node* right = create_node(token->type == TOKEN_IDENTIFIER ? NODE_IDENTIFIER : NODE_NUMBER, token->value, NULL, NULL);
         *token = next_token(lexer);
         return create_node(NODE_BINARY_OP, op, left, right);
     }
@@ -200,7 +201,7 @@ Node* parse_statement(Lexer* lexer, Token* token) {
             fprintf(stderr, "Expected identifier or number\n");
             exit(1);
         }
-        Node* arg = create_node(token->type == TOKEN_IDENTIFIER ? NODE_VAR_DECL : NODE_NUMBER, token->value, NULL, NULL);
+        Node* arg = create_node(token->type == TOKEN_IDENTIFIER ? NODE_IDENTIFIER : NODE_NUMBER, token->value, NULL, NULL);
         *token = next_token(lexer);
         if (token->type != TOKEN_RPAREN) {
             fprintf(stderr, "Expected )\n");
@@ -227,7 +228,7 @@ static void gen_c_expr(FILE* out, Node* expr) {
         fprintf(out, " %s ", expr->value);
         gen_c_expr(out, expr->right);
         fputc(')', out);
-    } else if (expr->type == NODE_VAR_DECL && expr->left == NULL && expr->right == NULL) {
+    } else if (expr->type == NODE_IDENTIFIER || (expr->type == NODE_VAR_DECL && expr->left == NULL && expr->right == NULL)) {
         fprintf(out, "%s", expr->value);
     } else if (expr->type == NODE_NUMBER) {
         fprintf(out, "%s", expr->value);
@@ -253,6 +254,14 @@ static void generate_c(Compiler* compiler, Node* node) {
         gen_c_expr(out, node->left);
         fprintf(out, ");\n");
     }
+}
+
+static void free_node(Node* n) {
+    if (!n) return;
+    if (n->value) free(n->value);
+    free_node(n->left);
+    free_node(n->right);
+    free(n);
 }
 
 int main(int argc, char* argv[]) {
@@ -291,10 +300,7 @@ int main(int argc, char* argv[]) {
     while (token.type != TOKEN_EOF) {
         Node* node = parse_statement(&lexer, &token);
         generate_c(&compiler, node);
-        free(node->value);
-        if (node->left) free(node->left->value), free(node->left);
-        if (node->right) free(node->right->value), free(node->right);
-        free(node);
+        free_node(node);
         token = next_token(&lexer);
     }
 
@@ -307,6 +313,10 @@ int main(int argc, char* argv[]) {
     free(token.value);
 
     // Compile generated C code
-    system("gcc output.c -o dream");
+    const char* cc = getenv("CC");
+    if (!cc) cc = "gcc";
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "%s output.c -o dream", cc);
+    system(cmd);
     return 0;
 }

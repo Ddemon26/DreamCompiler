@@ -1,4 +1,4 @@
-﻿Arithmetic in Dream
+Arithmetic in Dream
 Overview
 Dream supports basic arithmetic operations, currently limited to addition (+).
 Syntax

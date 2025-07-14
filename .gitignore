@@ -39,4 +39,4 @@ output.c
 
 # Zig
 .zig-cache
-zig-out
+zig-out/
