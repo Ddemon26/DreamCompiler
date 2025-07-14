@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     if (!cc)
         cc = "gcc";
     char cmd[256];
-    snprintf(cmd, sizeof(cmd), "%s output.c -o dream", cc);
+    snprintf(cmd, sizeof(cmd), "%s output.c -o dream.exe", cc);
     system(cmd);
     return 0;
 }
