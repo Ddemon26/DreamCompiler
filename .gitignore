@@ -37,3 +37,7 @@
 output.asm
 output.o
 dream
+
+# Zig
+.zig-cache
+zig-out

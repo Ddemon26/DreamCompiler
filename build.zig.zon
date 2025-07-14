@@ -1,0 +1,16 @@
+.{
+    .name = .DreamCompiler,
+    .version = "0.0.0",
+    .fingerprint = 0x3e8d916559da46ce,
+    .minimum_zig_version = "0.15.0-dev.631+9a3540d61",
+    .dependencies = .{},
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        // For example...
+        //"LICENSE",
+        //"README.md",
+    },
+}
