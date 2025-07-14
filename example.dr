@@ -1,6 +1,0 @@
-int x;
-int y;
-x = 5;
-y = 10;
-x = y + 5;
-Console.WriteLine(x);
