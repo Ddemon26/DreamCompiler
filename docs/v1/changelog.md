@@ -330,3 +330,9 @@ Version 1.0.61 (2025-08-08)
 
 * Added support for declaring multiple variables in one statement.
 * Updated variable documentation and added a new regression test.
+
+Version 1.0.62 (2025-08-09)
+
+* Added `struct` keyword as an alias for `class`.
+* Updated grammar, documentation and syntax files.
+* Added a regression test for struct declarations.

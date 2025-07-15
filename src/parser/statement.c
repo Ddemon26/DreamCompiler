@@ -235,17 +235,20 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       exit(1);
     }
       return create_node(NODE_FUNC_DEF, func_name, body, params, NULL);
-  } else if (token->type == TOKEN_CLASS) {
+  } else if (token->type == TOKEN_CLASS || token->type == TOKEN_STRUCT) {
+    int is_struct = token->type == TOKEN_STRUCT;
     free(token->value);
     *token = next_token(lexer);
     if (token->type != TOKEN_IDENTIFIER) {
-      fprintf(stderr, "Expected identifier after class\n");
+      fprintf(stderr, "Expected identifier after %s\n",
+              is_struct ? "struct" : "class");
       exit(1);
     }
     char *class_name = token->value;
     *token = next_token(lexer);
     if (token->type != TOKEN_LBRACE) {
-      fprintf(stderr, "Expected { after class name\n");
+      fprintf(stderr, "Expected { after %s name\n",
+              is_struct ? "struct" : "class");
       exit(1);
     }
     free(token->value);
@@ -256,7 +259,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       Node *field = parse_statement(lexer, token);
       if (field->type != NODE_VAR_DECL && field->type != NODE_STR_DECL &&
           field->type != NODE_BOOL_DECL && field->type != NODE_FLOAT_DECL) {
-        fprintf(stderr, "Only variable declarations allowed in class\n");
+        fprintf(stderr, "Only variable declarations allowed in %s\n",
+                is_struct ? "struct" : "class");
         exit(1);
       }
       if (token->type != TOKEN_SEMICOLON) {
