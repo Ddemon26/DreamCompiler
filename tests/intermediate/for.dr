@@ -1,0 +1,5 @@
+int sum = 0;
+for (int i = 0; i < 3; i = i + 1) {
+    sum = sum + i;
+}
+Console.WriteLine(sum); // Expected: 3
