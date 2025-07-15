@@ -62,8 +62,8 @@ StringLiteral       ::= "\"" StringCharacters* "\""
 ### 1.7 Keywords
 
 ```
-keyword ::=
-    "break" | "bool" | "case" | "class" | "continue" | "default" |
+keyword ::= 
+    "break" | "bool" | "case" | "class" | "struct" | "continue" | "default" |
     "do" | "else" | "false" | "for" | "func" | "if" | "int" | "return" |
     "string" | "switch" | "true" | "while"
 ```
@@ -110,10 +110,11 @@ PredefinedType      ::= "int" | "bool" | "string" | "float"
 
 ### 3.3 Declarations
 
-#### 3.3.1 Class
+#### 3.3.1 Class and Struct
 
 ```
 ClassDeclaration    ::= "class" Identifier "{" { ClassMemberDeclaration } "}"
+StructDeclaration   ::= "struct" Identifier "{" { ClassMemberDeclaration } "}"
 ClassMemberDeclaration ::= FunctionDeclaration | VariableDeclaration | ";"
 ```
 

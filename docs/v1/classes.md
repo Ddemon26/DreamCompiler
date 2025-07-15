@@ -3,6 +3,7 @@
 Dream now supports simple class definitions to group related variables.
 A class declares a name and a list of fields. Only variable declarations
 are allowed inside the class body.
+The `struct` keyword is an alias for `class` and behaves the same way.
 
 ```
 class Person {
