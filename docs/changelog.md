@@ -63,3 +63,7 @@ Version 1.0.10 (2025-07-14)
 * Added less-than (<) and greater-than (>) comparison operators.
 * Updated documentation and usage guide.
 * Added regression test for comparisons.
+
+Version 1.0.11 (2025-07-14)
+
+* Documentation site now supports optional dark mode.
