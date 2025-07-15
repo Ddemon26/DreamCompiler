@@ -79,6 +79,12 @@ Token next_token(Lexer *lexer) {
       token.type = TOKEN_WHILE;
     else if (strcmp(token.value, "for") == 0)
       token.type = TOKEN_FOR;
+    else if (strcmp(token.value, "switch") == 0)
+      token.type = TOKEN_SWITCH;
+    else if (strcmp(token.value, "case") == 0)
+      token.type = TOKEN_CASE;
+    else if (strcmp(token.value, "default") == 0)
+      token.type = TOKEN_DEFAULT;
     else if (strcmp(token.value, "do") == 0)
       token.type = TOKEN_DO;
     else if (strcmp(token.value, "break") == 0)
@@ -180,6 +186,11 @@ Token next_token(Lexer *lexer) {
   case ';':
     token.type = TOKEN_SEMICOLON;
     token.value = strdup(";");
+    lexer->pos++;
+    break;
+  case ':':
+    token.type = TOKEN_COLON;
+    token.value = strdup(":");
     lexer->pos++;
     break;
   case '=':

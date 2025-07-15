@@ -15,6 +15,7 @@ The compiler currently supports:
 - `while` loops
 - `do-while` loops
 - `for` loops
+- `switch` statements
 - `break` and `continue` statements
 - `return` statements
 - `++` and `--` increment/decrement operators

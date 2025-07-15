@@ -196,6 +196,22 @@ void generate_c(Compiler *compiler, Node *node) {
     } else {
       fprintf(out, "    return 0;\n");
     }
+  } else if (node->type == NODE_SWITCH) {
+    fprintf(out, "    switch (");
+    gen_c_expr_unwrapped(compiler, out, node->left);
+    fprintf(out, ") {\n");
+    Node *c = node->right;
+    while (c) {
+      fprintf(out, "    case %s:\n", c->value);
+      generate_c(compiler, c->left);
+      fprintf(out, "        break;\n");
+      c = c->right;
+    }
+    if (node->else_branch) {
+      fprintf(out, "    default:\n");
+      generate_c(compiler, node->else_branch);
+    }
+    fprintf(out, "    }\n");
   } else if (node->type == NODE_BLOCK) {
     Node *cur = node;
     while (cur) {

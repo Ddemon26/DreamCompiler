@@ -425,6 +425,106 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     Node *head = create_node(NODE_BLOCK, NULL, init, NULL, NULL);
     head->right = create_node(NODE_BLOCK, NULL, while_node, NULL, NULL);
     return head;
+  } else if (token->type == TOKEN_SWITCH) {
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_LPAREN) {
+      fprintf(stderr, "Expected ( after switch\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *expr = parse_expression(lexer, token);
+    if (token->type != TOKEN_RPAREN) {
+      fprintf(stderr, "Expected ) after switch expression\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_LBRACE) {
+      fprintf(stderr, "Expected { after switch\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *cases = NULL;
+    Node **cur_case = &cases;
+    Node *default_body = NULL;
+    while (token->type != TOKEN_RBRACE) {
+      if (token->type == TOKEN_CASE) {
+        free(token->value);
+        *token = next_token(lexer);
+        if (token->type != TOKEN_NUMBER) {
+          fprintf(stderr, "Expected number after case\n");
+          exit(1);
+        }
+        char *val = token->value;
+        *token = next_token(lexer);
+        if (token->type != TOKEN_COLON) {
+          fprintf(stderr, "Expected : after case value\n");
+          exit(1);
+        }
+        free(token->value);
+        *token = next_token(lexer);
+        Node *body = NULL;
+        if (token->type == TOKEN_LBRACE) {
+          free(token->value);
+          *token = next_token(lexer);
+          body = parse_block(lexer, token);
+          if (token->type != TOKEN_RBRACE) {
+            fprintf(stderr, "Expected } after case block\n");
+            exit(1);
+          }
+          free(token->value);
+          *token = next_token(lexer);
+        } else {
+          body = parse_statement(lexer, token);
+          if (token->type != TOKEN_SEMICOLON) {
+            fprintf(stderr, "Expected semicolon\n");
+            exit(1);
+          }
+          free(token->value);
+          *token = next_token(lexer);
+        }
+        Node *case_node = create_node(NODE_CASE, val, body, NULL, NULL);
+        *cur_case = case_node;
+        cur_case = &case_node->right;
+      } else if (token->type == TOKEN_DEFAULT) {
+        free(token->value);
+        *token = next_token(lexer);
+        if (token->type != TOKEN_COLON) {
+          fprintf(stderr, "Expected : after default\n");
+          exit(1);
+        }
+        free(token->value);
+        *token = next_token(lexer);
+        if (token->type == TOKEN_LBRACE) {
+          free(token->value);
+          *token = next_token(lexer);
+          default_body = parse_block(lexer, token);
+          if (token->type != TOKEN_RBRACE) {
+            fprintf(stderr, "Expected } after default block\n");
+            exit(1);
+          }
+          free(token->value);
+          *token = next_token(lexer);
+        } else {
+          default_body = parse_statement(lexer, token);
+          if (token->type != TOKEN_SEMICOLON) {
+            fprintf(stderr, "Expected semicolon\n");
+            exit(1);
+          }
+          free(token->value);
+          *token = next_token(lexer);
+        }
+      } else {
+        fprintf(stderr, "Expected case or default in switch\n");
+        exit(1);
+      }
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    return create_node(NODE_SWITCH, NULL, expr, cases, default_body);
   } else if (token->type == TOKEN_DO) {
     free(token->value);
     *token = next_token(lexer);

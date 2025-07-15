@@ -234,3 +234,8 @@ Version 1.0.43 (2025-07-24)
 Version 1.0.44 (2025-07-25)
 
 * Added operator and punctuation tokens for syntax highlighting.
+
+Version 1.0.45 (2025-07-26)
+
+* Added `switch` statements with `case` and `default` clauses.
+* Updated documentation and added a new test case.
