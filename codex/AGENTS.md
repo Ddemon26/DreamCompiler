@@ -17,7 +17,7 @@ Responsibilities
 - Add any required system dependencies to `codex/_startup.sh`.
 - Break down large or monolithic source files into smaller modules when practical.
 - Keep editor syntax highlighting in `vscode/` and `idea/` aligned with
-  `tokens.json`. After changing tokens or language features, run
+  `idea/tokens.json`. After changing tokens or language features, run
   `node scripts/genFromTokens.js` and rebuild both extensions.
 
 Workflow
