@@ -16,10 +16,12 @@ pub fn build(b: *std.Build) void {
 
     exe.addCSourceFiles(.{
         .files = &.{
-            "src/main.c",
-            "src/lexer.c",
-            "src/parser.c",
-            "src/codegen.c",
+            "src/driver/main.c",
+            "src/lexer/lexer.c",
+            "src/parser/expression.c",
+            "src/parser/statement.c",
+            "src/codegen/codegen.c",
+            "src/ast/node.c",
         },
         .flags = &.{
             "-std=c11",

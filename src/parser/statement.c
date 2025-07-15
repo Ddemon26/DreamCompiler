@@ -1,54 +1,7 @@
-#include "dream.h"
+#include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-Node *create_node(NodeType type, char *value, Node *left, Node *right,
-                  Node *else_branch) {
-  Node *node = malloc(sizeof(Node));
-  node->type = type;
-  node->value = value ? strdup(value) : NULL;
-  node->left = left;
-  node->right = right;
-  node->else_branch = else_branch;
-  return node;
-}
-
-Node *parse_expression(Lexer *lexer, Token *token) {
-  int unary_minus = 0;
-  if (token->type == TOKEN_MINUS) {
-    unary_minus = 1;
-    free(token->value);
-    *token = next_token(lexer);
-  }
-  if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER &&
-      token->type != TOKEN_STRING) {
-    fprintf(stderr, "Expected identifier, number or string\n");
-    exit(1);
-  }
-  NodeType left_type = NODE_IDENTIFIER;
-  if (token->type == TOKEN_NUMBER)
-    left_type = NODE_NUMBER;
-  else if (token->type == TOKEN_STRING)
-    left_type = NODE_STRING;
-  Node *left = create_node(left_type, token->value, NULL, NULL, NULL);
-  *token = next_token(lexer);
-  if (unary_minus)
-    left = create_node(NODE_UNARY_OP, "-", left, NULL, NULL);
-  if ((token->type == TOKEN_PLUS || token->type == TOKEN_MINUS ||
-       token->type == TOKEN_STAR || token->type == TOKEN_SLASH ||
-       token->type == TOKEN_PERCENT || token->type == TOKEN_LT ||
-       token->type == TOKEN_GT || token->type == TOKEN_LE ||
-       token->type == TOKEN_GE || token->type == TOKEN_EQEQ ||
-       token->type == TOKEN_NEQ) &&
-      left_type != NODE_STRING) {
-    char *op = token->value;
-    *token = next_token(lexer);
-    Node *right = parse_expression(lexer, token);
-    return create_node(NODE_BINARY_OP, op, left, right, NULL);
-  }
-  return left;
-}
 
 Node *parse_statement(Lexer *lexer, Token *token) {
   if (token->type == TOKEN_INT) {
@@ -257,13 +210,3 @@ Node *parse_statement(Lexer *lexer, Token *token) {
   exit(1);
 }
 
-void free_node(Node *n) {
-  if (!n)
-    return;
-  if (n->value)
-    free(n->value);
-  free_node(n->left);
-  free_node(n->right);
-  free_node(n->else_branch);
-  free(n);
-}
