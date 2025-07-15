@@ -256,3 +256,8 @@ Version 1.0.48 (2025-07-28)
 * Extended syntax highlighting tokens with identifiers, bracket punctuation and documentation comments.
 * Fixed block comment handling in the lexer generator.
 * Regenerated editor grammars.
+
+Version 1.0.49 (2025-07-29)
+
+* Fixed syntax highlighting regressions for keywords and block comments.
+* Regenerated editor grammars.
