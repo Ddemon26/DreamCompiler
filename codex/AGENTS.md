@@ -56,3 +56,7 @@ Example Execution
 [Agent] All tests passed!
 [Agent] Committing changes...
 ```
+
+Pull Request Template
+---------------------
+All pull request descriptions should follow `codex/BOT_PR_TEMPLATE.md`. Fill out each section of that template to describe the changes, tests, documentation updates and any dependency modifications.
