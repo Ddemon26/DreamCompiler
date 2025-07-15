@@ -226,3 +226,7 @@ Version 1.0.42 (2025-07-23)
 
 * `Console.WriteLine` now prints boolean variables as `true` or `false`.
 * Updated documentation to mention boolean output.
+
+Version 1.0.43 (2025-07-24)
+
+* Fixed uninitialized boolean variable tracking in the driver.
