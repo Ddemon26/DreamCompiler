@@ -1,16 +1,17 @@
 If Statements in Dream
 ======================
 
-Dream now supports simple conditional execution using the `if` keyword.
+Dream supports conditional execution using the `if` keyword and an optional `else` clause.
 
 Syntax
 ------
 
 ```
 if (<expression>) <statement>
+else <statement>
 ```
 
-The condition can be a variable or number. Only one statement may follow the condition. Braces are optional but allowed for clarity.
+The `else` section is optional. Each branch may be a single statement or a statement enclosed in braces.
 
 Example
 -------
@@ -18,7 +19,7 @@ Example
 ```
 int x = 1;
 if (x) Console.WriteLine(x);
+else Console.WriteLine(0);
 ```
 
 This prints `1` because `x` is nonzero.
-

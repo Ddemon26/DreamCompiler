@@ -100,3 +100,8 @@ Version 1.0.17 (2025-07-15)
 
 * Reverted to generating `build/bin/dream.c` so the C file lives inside
   the build directory. The compilation command now matches this path.
+
+Version 1.0.18 (2025-07-15)
+
+* Added `else` clauses to `if` statements.
+* Updated documentation and added a new test case.
