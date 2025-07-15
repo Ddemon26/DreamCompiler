@@ -85,10 +85,11 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     return create_node(inc ? NODE_PRE_INC : NODE_PRE_DEC, name, NULL, NULL, NULL);
   }
   if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
-      token->type == TOKEN_BOOL_TYPE) {
+      token->type == TOKEN_BOOL_TYPE || token->type == TOKEN_FLOAT_TYPE) {
     TokenType decl_type = token->type;
     int is_string = decl_type == TOKEN_STRING_TYPE;
     int is_bool = decl_type == TOKEN_BOOL_TYPE;
+    int is_float = decl_type == TOKEN_FLOAT_TYPE;
     free(token->value);
     *token = next_token(lexer);
     if (token->type != TOKEN_IDENTIFIER) {
@@ -96,6 +97,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
         fprintf(stderr, "Expected identifier after string\n");
       else if (decl_type == TOKEN_BOOL_TYPE)
         fprintf(stderr, "Expected identifier after bool\n");
+      else if (decl_type == TOKEN_FLOAT_TYPE)
+        fprintf(stderr, "Expected identifier after float\n");
       else
         fprintf(stderr, "Expected identifier after int\n");
       exit(1);
@@ -116,6 +119,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       return create_node(NODE_STR_DECL, var_name, init, NULL, NULL);
     if (is_bool)
       return create_node(NODE_BOOL_DECL, var_name, init, NULL, NULL);
+    if (is_float)
+      return create_node(NODE_FLOAT_DECL, var_name, init, NULL, NULL);
     return create_node(NODE_VAR_DECL, var_name, init, NULL, NULL);
   } else if (token->type == TOKEN_FUNC) {
     free(token->value);
@@ -138,10 +143,12 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       while (1) {
         int is_string = 0;
         int is_bool_param = 0;
+        int is_float_param = 0;
         if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
-            token->type == TOKEN_BOOL_TYPE) {
+            token->type == TOKEN_BOOL_TYPE || token->type == TOKEN_FLOAT_TYPE) {
           is_string = token->type == TOKEN_STRING_TYPE;
           is_bool_param = token->type == TOKEN_BOOL_TYPE;
+          is_float_param = token->type == TOKEN_FLOAT_TYPE;
           free(token->value);
           *token = next_token(lexer);
         } else {
@@ -159,6 +166,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
           decl_type_node = NODE_STR_DECL;
         else if (is_bool_param)
           decl_type_node = NODE_BOOL_DECL;
+        else if (is_float_param)
+          decl_type_node = NODE_FLOAT_DECL;
         Node *decl = create_node(decl_type_node,
                                  pname, NULL, NULL, NULL);
         free(pname);

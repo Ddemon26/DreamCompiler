@@ -23,8 +23,8 @@ Console.WriteLine(" world");  // Outputs "hello world" then a newline
 
 ## Notes
 
-`Console.WriteLine` prints integers using `printf` with the `%ld` format. Values
-are cast to `long` in the generated C code to avoid warnings. Strings are
-emitted directly as C string literals. Boolean values, including the result of
-boolean expressions, are printed as the words `true` or `false`.
+`Console.WriteLine` prints integers using `printf` with the `%ld` format. Float
+values use `%f`. Values are cast in the generated C code to avoid warnings.
+Strings are emitted directly as C string literals. Boolean values, including the
+result of boolean expressions, are printed as the words `true` or `false`.
 

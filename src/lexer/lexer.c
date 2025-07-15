@@ -58,6 +58,8 @@ Token next_token(Lexer *lexer) {
       token.type = TOKEN_STRING_TYPE;
     else if (strcmp(token.value, "bool") == 0)
       token.type = TOKEN_BOOL_TYPE;
+    else if (strcmp(token.value, "float") == 0)
+      token.type = TOKEN_FLOAT_TYPE;
     else if (strcmp(token.value, "true") == 0) {
       free(token.value);
       token.value = strdup("1");
@@ -140,6 +142,12 @@ Token next_token(Lexer *lexer) {
     int start = lexer->pos;
     while (isdigit((unsigned char)lexer->source[lexer->pos]))
       lexer->pos++;
+    if (lexer->source[lexer->pos] == '.' &&
+        isdigit((unsigned char)lexer->source[lexer->pos + 1])) {
+      lexer->pos++; // skip '.'
+      while (isdigit((unsigned char)lexer->source[lexer->pos]))
+        lexer->pos++;
+    }
     int len = lexer->pos - start;
     token.value = strndup(lexer->source + start, len);
     token.type = TOKEN_NUMBER;

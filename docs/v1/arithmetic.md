@@ -46,4 +46,5 @@ x += 3;      // x = x + 3
 Operands can be variables or literal numbers.
 The result is stored in the left-hand variable.
 Negative numbers can be written by prefixing a value with `-`, e.g. `int x = -5;`.
+Float literals use a decimal point, for example `float f = 1.5;`.
 Parentheses may be used to group sub-expressions, e.g. `int x = (2 + 3) * 4;`.

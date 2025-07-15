@@ -11,11 +11,11 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(if|else|while|for|do|break|continue|return|int|string|bool|true|false|func|Console|WriteLine|Write|switch|case|default)\\b"
+          "match": "\\b(if|else|while|for|do|break|continue|return|int|string|bool|float|true|false|func|Console|WriteLine|Write|switch|case|default)\\b"
         },
         {
           "name": "constant.numeric",
-          "match": "\\b\\d+\\b"
+          "match": "\\b\\d+(?:\\.\\d+)?\\b"
         },
         {
           "name": "string.quoted.double",
