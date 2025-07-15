@@ -92,6 +92,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     int is_float = decl_type == TOKEN_FLOAT_TYPE;
     free(token->value);
     *token = next_token(lexer);
+
     if (token->type != TOKEN_IDENTIFIER) {
       if (is_string)
         fprintf(stderr, "Expected identifier after string\n");
@@ -103,6 +104,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
         fprintf(stderr, "Expected identifier after int\n");
       exit(1);
     }
+
     char *var_name = token->value;
     *token = next_token(lexer);
     Node *init = NULL;
@@ -111,17 +113,50 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       *token = next_token(lexer);
       init = parse_expression(lexer, token);
     }
+
+    NodeType ntype = is_string
+                         ? NODE_STR_DECL
+                         : is_bool  ? NODE_BOOL_DECL
+                         : is_float ? NODE_FLOAT_DECL
+                                     : NODE_VAR_DECL;
+    Node *first_decl = create_node(ntype, var_name, init, NULL, NULL);
+
+    Node *head = NULL;
+    Node **cur = NULL;
+
+    if (token->type == TOKEN_COMMA) {
+      head = create_node(NODE_BLOCK, NULL, first_decl, NULL, NULL);
+      cur = &head->right;
+      while (token->type == TOKEN_COMMA) {
+        free(token->value);
+        *token = next_token(lexer);
+        if (token->type != TOKEN_IDENTIFIER) {
+          fprintf(stderr, "Expected identifier after ,\n");
+          exit(1);
+        }
+        char *name2 = token->value;
+        *token = next_token(lexer);
+        Node *init2 = NULL;
+        if (token->type == TOKEN_EQUALS) {
+          free(token->value);
+          *token = next_token(lexer);
+          init2 = parse_expression(lexer, token);
+        }
+        Node *decl2 = create_node(ntype, name2, init2, NULL, NULL);
+        Node *blk = create_node(NODE_BLOCK, NULL, decl2, NULL, NULL);
+        *cur = blk;
+        cur = &blk->right;
+      }
+    }
+
     if (token->type != TOKEN_SEMICOLON) {
       fprintf(stderr, "Expected semicolon\n");
       exit(1);
     }
-    if (is_string)
-      return create_node(NODE_STR_DECL, var_name, init, NULL, NULL);
-    if (is_bool)
-      return create_node(NODE_BOOL_DECL, var_name, init, NULL, NULL);
-    if (is_float)
-      return create_node(NODE_FLOAT_DECL, var_name, init, NULL, NULL);
-    return create_node(NODE_VAR_DECL, var_name, init, NULL, NULL);
+
+    if (head)
+      return head;
+    return first_decl;
   } else if (token->type == TOKEN_FUNC) {
     free(token->value);
     *token = next_token(lexer);

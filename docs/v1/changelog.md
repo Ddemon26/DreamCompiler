@@ -325,3 +325,8 @@ Version 1.0.60 (2025-08-07)
 
 * Added object instantiation for classes and field access via `.`.
 * Updated class documentation and added a new regression test.
+
+Version 1.0.61 (2025-08-08)
+
+* Added support for declaring multiple variables in one statement.
+* Updated variable documentation and added a new regression test.
