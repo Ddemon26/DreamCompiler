@@ -11,6 +11,17 @@ class Person {
 }
 ```
 
-Class definitions do not require a trailing semicolon. Methods and object
-instantiation are not yet implemented; classes are currently emitted as
-C `struct` types.
+Class definitions do not require a trailing semicolon. You can now declare
+variables of a class type to create objects. Field access uses the `.` operator.
+Methods are still unimplemented; classes are emitted as C `struct` types.
+
+```
+class Person {
+    int age;
+    string name;
+}
+
+Person p;
+p.age = 30;
+Console.WriteLine(p.age);
+```

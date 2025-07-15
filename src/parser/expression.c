@@ -3,7 +3,80 @@
 #include <stdlib.h>
 #include <string.h>
 
-Node *parse_expression(Lexer *lexer, Token *token) {
+/* Precedence climbing expression parser. Each binary operator is mapped
+   to a precedence and associativity for single-pass parsing. */
+
+typedef struct {
+  int prec;
+  char assoc; /* 'L' or 'R' */
+} OpInfo;
+
+static int is_binary_op(TokenType type) {
+  switch (type) {
+  case TOKEN_PLUS:
+  case TOKEN_MINUS:
+  case TOKEN_STAR:
+  case TOKEN_SLASH:
+  case TOKEN_PERCENT:
+  case TOKEN_CARET:
+  case TOKEN_SHL:
+  case TOKEN_SHR:
+  case TOKEN_LT:
+  case TOKEN_GT:
+  case TOKEN_LE:
+  case TOKEN_GE:
+  case TOKEN_EQEQ:
+  case TOKEN_NEQ:
+  case TOKEN_AND:
+  case TOKEN_OR:
+  case TOKEN_BITAND:
+  case TOKEN_BITOR:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+static OpInfo get_op_info(TokenType type) {
+  switch (type) {
+  case TOKEN_OR:
+    return (OpInfo){1, 'L'};
+  case TOKEN_AND:
+    return (OpInfo){2, 'L'};
+  case TOKEN_BITOR:
+    return (OpInfo){3, 'L'};
+  case TOKEN_CARET: /* bitwise XOR */
+    return (OpInfo){4, 'L'};
+  case TOKEN_BITAND:
+    return (OpInfo){5, 'L'};
+  case TOKEN_EQEQ:
+  case TOKEN_NEQ:
+    return (OpInfo){6, 'L'};
+  case TOKEN_LT:
+  case TOKEN_GT:
+  case TOKEN_LE:
+  case TOKEN_GE:
+    return (OpInfo){7, 'L'};
+  case TOKEN_SHL:
+  case TOKEN_SHR:
+    return (OpInfo){8, 'L'};
+  case TOKEN_PLUS:
+  case TOKEN_MINUS:
+    return (OpInfo){9, 'L'};
+  case TOKEN_STAR:
+  case TOKEN_SLASH:
+  case TOKEN_PERCENT:
+    return (OpInfo){10, 'L'};
+  default:
+    return (OpInfo){0, 'L'};
+  }
+}
+
+static Node *compute_expr(Lexer *lexer, Token *token, int min_prec);
+static Node *compute_atom(Lexer *lexer, Token *token);
+
+/* Parse literals, identifiers, function calls and unary operators. */
+static Node *compute_atom(Lexer *lexer, Token *token) {
   int unary_minus = 0;
   int unary_not = 0;
   int prefix_inc = 0;
@@ -21,6 +94,7 @@ Node *parse_expression(Lexer *lexer, Token *token) {
     free(token->value);
     *token = next_token(lexer);
   }
+
   Node *left = NULL;
   if (prefix_inc || prefix_dec) {
     if (token->type != TOKEN_IDENTIFIER) {
@@ -30,12 +104,13 @@ Node *parse_expression(Lexer *lexer, Token *token) {
     }
     char *name = token->value;
     *token = next_token(lexer);
-    left = create_node(prefix_inc ? NODE_PRE_INC : NODE_PRE_DEC, name, NULL, NULL, NULL);
+    left = create_node(prefix_inc ? NODE_PRE_INC : NODE_PRE_DEC, name, NULL, NULL,
+                       NULL);
     free(name);
   } else if (token->type == TOKEN_LPAREN) {
     free(token->value);
     *token = next_token(lexer);
-    left = parse_expression(lexer, token);
+    left = compute_expr(lexer, token, 0);
     if (token->type != TOKEN_RPAREN) {
       fprintf(stderr, "Expected )\n");
       exit(1);
@@ -62,7 +137,7 @@ Node *parse_expression(Lexer *lexer, Token *token) {
       Node **cur = &args;
       if (token->type != TOKEN_RPAREN) {
         while (1) {
-          Node *arg_expr = parse_expression(lexer, token);
+          Node *arg_expr = compute_expr(lexer, token, 0);
           Node *blk = create_node(NODE_BLOCK, NULL, arg_expr, NULL, NULL);
           *cur = blk;
           cur = &blk->right;
@@ -87,6 +162,19 @@ Node *parse_expression(Lexer *lexer, Token *token) {
       free(name);
     }
   }
+
+  while (token->type == TOKEN_DOT) {
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_IDENTIFIER) {
+      fprintf(stderr, "Expected field name after .\n");
+      exit(1);
+    }
+    char *fname = token->value;
+    *token = next_token(lexer);
+    left = create_node(NODE_MEMBER, fname, left, NULL, NULL);
+  }
+
   if (left->type == NODE_IDENTIFIER &&
       (token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS)) {
     int inc = token->type == TOKEN_PLUSPLUS;
@@ -101,21 +189,30 @@ Node *parse_expression(Lexer *lexer, Token *token) {
     left = create_node(NODE_UNARY_OP, "-", left, NULL, NULL);
   if (unary_not)
     left = create_node(NODE_UNARY_OP, "!", left, NULL, NULL);
-  if (token->type == TOKEN_PLUS ||
-      ((token->type == TOKEN_MINUS || token->type == TOKEN_STAR ||
-        token->type == TOKEN_SLASH || token->type == TOKEN_PERCENT || token->type == TOKEN_CARET ||
-        token->type == TOKEN_SHL || token->type == TOKEN_SHR ||
-        token->type == TOKEN_LT || token->type == TOKEN_GT ||
-        token->type == TOKEN_LE || token->type == TOKEN_GE ||
-        token->type == TOKEN_EQEQ || token->type == TOKEN_NEQ ||
-        token->type == TOKEN_AND || token->type == TOKEN_OR ||
-        token->type == TOKEN_BITAND || token->type == TOKEN_BITOR) &&
-       left->type != NODE_STRING)) {
+  return left;
+}
+
+/* Parse binary operator chains with precedence climbing. */
+static Node *compute_expr(Lexer *lexer, Token *token, int min_prec) {
+  Node *lhs = compute_atom(lexer, token);
+  while (is_binary_op(token->type)) {
+    OpInfo info = get_op_info(token->type);
+    if (info.prec < min_prec)
+      break;
+    if (lhs->type == NODE_STRING && token->type != TOKEN_PLUS)
+      break;
+    int next_min = info.assoc == 'L' ? info.prec + 1 : info.prec;
     char *op = token->value;
     *token = next_token(lexer);
-    Node *right = parse_expression(lexer, token);
-    return create_node(NODE_BINARY_OP, op, left, right, NULL);
+    Node *rhs = compute_expr(lexer, token, next_min);
+    lhs = create_node(NODE_BINARY_OP, op, lhs, rhs, NULL);
+    free(op);
   }
+  return lhs;
+}
+
+Node *parse_expression(Lexer *lexer, Token *token) {
+  Node *expr = compute_expr(lexer, token, 0);
   if (token->type == TOKEN_QUESTION) {
     free(token->value);
     *token = next_token(lexer);
@@ -127,7 +224,7 @@ Node *parse_expression(Lexer *lexer, Token *token) {
     free(token->value);
     *token = next_token(lexer);
     Node *false_expr = parse_expression(lexer, token);
-    return create_node(NODE_TERNARY, NULL, left, true_expr, false_expr);
+    expr = create_node(NODE_TERNARY, NULL, expr, true_expr, false_expr);
   }
-  return left;
+  return expr;
 }

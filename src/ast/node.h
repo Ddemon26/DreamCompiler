@@ -32,7 +32,10 @@ typedef enum {
   NODE_RETURN,
   NODE_FUNC_DEF,
   NODE_FUNC_CALL,
-  NODE_CLASS_DEF
+  NODE_CLASS_DEF,
+  NODE_OBJ_DECL,
+  NODE_MEMBER,
+  NODE_MEMBER_ASSIGN
 } NodeType;
 
 typedef struct Node {
