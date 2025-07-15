@@ -10,7 +10,7 @@
     <fileType name="Dream File"
               implementationClass="com.dream.DreamFileType"
               fieldName="INSTANCE"
-              language="Dream"
+              language="dream"
               extensions="dr"
               icon="/icons/Dream.svg"/>
     <lang.syntaxHighlighterFactory language="dream" implementationClass="com.dream.DreamSyntaxHighlighterFactory"/>
