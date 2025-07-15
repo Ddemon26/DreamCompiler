@@ -57,7 +57,7 @@
         if (!cc)
             cc = "gcc";
         char cmd[256];
-        snprintf(cmd, sizeof(cmd), "%s output.c -o build/bin/dream.exe", cc);
+        snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o build/bin/dream.exe", cc);
         system(cmd);
         return 0;
     }

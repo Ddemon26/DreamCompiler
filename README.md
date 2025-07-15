@@ -51,7 +51,7 @@ Compile a `.dr` file directly:
 ./zig-out/bin/DreamCompiler path/to/file.dr
 ```
 
-This writes `output.c` and builds a runnable program called `dream` in the current directory. Execute it with:
+This writes `build/bin/dream.c` and builds a runnable program called `dream` in the current directory. Execute it with:
 
 ```bash
 ./dream
