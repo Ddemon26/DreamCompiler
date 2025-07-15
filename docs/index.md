@@ -20,6 +20,6 @@ Use the version dropdown in the sidebar to view documentation for other releases
 - [While Loops](v1/loops.md)
 
 ### Other
-- [Changelog](changelog.md)
+- [Changelog](v1/changelog.md)
 
 

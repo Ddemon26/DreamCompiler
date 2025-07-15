@@ -13,7 +13,7 @@ The compiler currently supports:
 - Simple `if` statements
 - `while` loops
 
-More features such as functions are planned for future versions. See the [changelog](docs/changelog.md) for details.
+More features such as functions are planned for future versions. See the [changelog](docs/v1/changelog.md) for details.
 
 ## Getting Started
 
