@@ -11,7 +11,7 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(if|else|while|for|do|break|continue|return|int|string|bool|true|false|func|Console|WriteLine)\\b"
+          "match": "\\b(if|else|while|for|do|switch|case|default|break|continue|return|int|string|bool|true|false|func|Console|WriteLine)\\b"
         },
         {
           "name": "constant.numeric",
@@ -36,6 +36,10 @@
         {
           "name": "punctuation.terminator.statement",
           "match": ";"
+        },
+        {
+          "name": "punctuation.separator.colon",
+          "match": ":"
         },
         {
           "name": "punctuation.separator.comma",

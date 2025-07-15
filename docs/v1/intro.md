@@ -6,7 +6,7 @@ This short guide explains the purpose of Dream and points you to the rest of the
 
 - Dream aims to be easy to read with semicolon-terminated statements.
  - Dream currently supports `int`, `bool` and `string` variable types.
- - Control flow includes `if` statements, `while` loops and `do-while` loops with braced blocks.
+ - Control flow includes `if` statements, `switch` statements, `while` loops and `do-while` loops with braced blocks.
 
 Use the sidebar or the table of contents to explore specific topics such as variables, arithmetic and comparison operators.
 
