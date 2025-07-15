@@ -31,6 +31,6 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
         if (tokenType == DreamTokenTypes.NUMBER) return pack(NUMBER);
         if (tokenType == DreamTokenTypes.STRING) return pack(STRING);
         if (tokenType == DreamTokenTypes.COMMENT || tokenType == DreamTokenTypes.COMMENTBLOCK) return pack(COMMENT);
-        return EMPTY;
+        return TextAttributesKey.EMPTY_ARRAY;
     }
 }

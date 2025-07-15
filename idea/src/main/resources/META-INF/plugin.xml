@@ -7,10 +7,12 @@
   <depends>com.intellij.modules.platform</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <fileTypeFactory implementation="com.dream.DreamFileTypeFactory"/>
-    <lang.syntaxHighlighterFactory language="dream" implementationClass="com.dream.DreamSyntaxHighlighterFactory"/>
-    <fileType extensions="mlg"
+    <fileType name="Dream File"
+              implementationClass="com.dream.DreamFileType"
+              fieldName="INSTANCE"
               language="Dream"
+              extensions="mlg"
               icon="/icons/Dream.svg"/>
+    <lang.syntaxHighlighterFactory language="dream" implementationClass="com.dream.DreamSyntaxHighlighterFactory"/>
   </extensions>
 </idea-plugin>
