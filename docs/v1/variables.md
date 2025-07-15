@@ -1,12 +1,12 @@
 # Variables in Dream
 
 ## Overview
-The Dream language supports variable declarations and assignments with a C#-like syntax. Two types are now available: `int` for integers and `string` for string values.
+The Dream language supports variable declarations and assignments with a C#-like syntax. Three types are now available: `int` for integers, `string` for string values and `bool` for boolean flags.
 
 ## Syntax
 
-**Declaration**: `int <identifier>;` or `string <identifier>;`
-: Declares a variable. Integer variables default to `0` while string variables default to `null`.
+**Declaration**: `int <identifier>;`, `string <identifier>;` or `bool <identifier>;`
+: Declares a variable. Integer and boolean variables default to `0` while string variables default to `null`.
 
 **Assignment**: `<identifier> = <expression>;`
 : Assigns a value (number or expression) to a variable.
@@ -17,8 +17,9 @@ The Dream language supports variable declarations and assignments with a C#-like
 int x;        // Declares x, initialized to 0
 x = 42;       // Assigns 42 to x
 int y = 10;   // Declares and assigns 10 to y
+bool flag = true; // Boolean variable initialized to 1
 ```
 
 ## Notes
 
-Integer variables are stored as local `long` values in the generated C code. `string` variables compile to `const char*` pointers.
+Integer and boolean variables are stored as local `long` values in the generated C code. `string` variables compile to `const char*` pointers.
