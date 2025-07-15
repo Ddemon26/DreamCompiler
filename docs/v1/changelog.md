@@ -156,3 +156,8 @@ Version 1.0.27 (2025-07-16)
 Version 1.0.28 (2025-07-16)
 
 * Updated IntelliJ plugin build configuration to target Java 21.
+
+Version 1.0.29 (2025-07-17)
+
+* Fixed JetBrains syntax highlighting by using the correct language id in plugin.xml.
+
