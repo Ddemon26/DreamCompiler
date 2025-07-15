@@ -1,0 +1,4 @@
+int x = 20;
+int y = 4;
+x = x / y;
+Console.WriteLine(x); // Expected: 5
