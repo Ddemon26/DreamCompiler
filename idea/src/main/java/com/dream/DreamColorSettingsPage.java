@@ -39,12 +39,22 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
     @Override
     public String getDemoText() {
         return """
-// sample Dream file
-func main() {
-    int x = 5, y = 10
-    Console.WriteLine(\"hello\")
-    /* block comment */
+// This is a single-line comment.
+/*
+  This is a
+  multi-line block comment.
+*/
+func calculateSum(a, b) {
+    // Using keywords, numbers, and operators
+    let result = a + b;
+    let pi = 3.14;
+    let message = "The result is: ";
+    Console.WriteLine(message + result); // Function call with dot
+    return result;
 }
+
+// Calling the function with parentheses and a semicolon
+let sum = calculateSum(10, 20);
 """;
     }
 
