@@ -42,3 +42,7 @@ output.c
 zig-out/
 *.pdb
 zig-cache/
+# IDE builds and packages
+idea/gradle/wrapper/gradle-wrapper.jar
+idea/build/
+vscode/*.vsix

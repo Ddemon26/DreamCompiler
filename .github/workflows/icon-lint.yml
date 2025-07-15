@@ -1,0 +1,14 @@
+name: Icon Lint
+on: [pull_request]
+jobs:
+  check-icons:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: validate svg size
+        run: |
+          for f in assets/icons/*.svg; do
+            if ! grep -q 'viewBox="0 0 16 16"' "$f"; then
+              echo "$f has wrong viewBox"; exit 1; fi
+          done
+

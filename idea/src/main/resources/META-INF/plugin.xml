@@ -1,0 +1,16 @@
+<idea-plugin>
+  <id>com.dream</id>
+  <name>Dream Support</name>
+  <vendor>Dream</vendor>
+  <description>Syntax highlighting for Dream</description>
+
+  <depends>com.intellij.modules.platform</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <fileTypeFactory implementation="com.dream.DreamFileTypeFactory"/>
+    <lang.syntaxHighlighterFactory language="dream" implementationClass="com.dream.DreamSyntaxHighlighterFactory"/>
+    <fileType extensions="mlg"
+              language="Dream"
+              icon="/icons/Dream.svg"/>
+  </extensions>
+</idea-plugin>
