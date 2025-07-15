@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
   mkdir("build", 0755);
   mkdir("build/bin", 0755);
 #endif
-  Compiler compiler = {fopen("build/bin/dream.c", "w"), NULL, 0};
+  Compiler compiler = {fopen("build/bin/dream.c", "w"), NULL, 0, NULL, 0};
   if (!compiler.output) {
     fprintf(stderr, "Failed to open output file\n");
     return 1;
