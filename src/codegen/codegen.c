@@ -110,6 +110,9 @@ static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
     fprintf(out, "(%s++)", expr->value);
   } else if (expr->type == NODE_POST_DEC) {
     fprintf(out, "(%s--)", expr->value);
+  } else if (expr->type == NODE_MEMBER) {
+    gen_c_expr_impl(compiler, out, expr->left, 0);
+    fprintf(out, ".%s", expr->value);
   } else if (expr->type == NODE_IDENTIFIER ||
              (expr->type == NODE_VAR_DECL && expr->left == NULL &&
               expr->right == NULL)) {
@@ -218,7 +221,8 @@ void generate_c_function(Compiler *compiler, Node *node) {
 void generate_c(Compiler *compiler, Node *node) {
   FILE *out = compiler->output;
   if (node->type == NODE_VAR_DECL || node->type == NODE_STR_DECL ||
-      node->type == NODE_BOOL_DECL || node->type == NODE_FLOAT_DECL) {
+      node->type == NODE_BOOL_DECL || node->type == NODE_FLOAT_DECL ||
+      node->type == NODE_OBJ_DECL) {
     if (node->type == NODE_STR_DECL) {
       compiler->string_vars = realloc(compiler->string_vars, sizeof(char *) * (compiler->string_var_count + 1));
       compiler->string_vars[compiler->string_var_count++] = strdup(node->value);
@@ -234,6 +238,8 @@ void generate_c(Compiler *compiler, Node *node) {
       ctype = "const char*";
     else if (node->type == NODE_FLOAT_DECL)
       ctype = "double";
+    else if (node->type == NODE_OBJ_DECL)
+      ctype = node->right->value;
     fprintf(out, "    %s %s", ctype, node->value);
     if (node->left) {
       fprintf(out, " = ");
@@ -243,6 +249,12 @@ void generate_c(Compiler *compiler, Node *node) {
   } else if (node->type == NODE_ASSIGN) {
     fprintf(out, "    %s = ", node->value);
     gen_c_expr(compiler, out, node->left);
+    fprintf(out, ";\n");
+  } else if (node->type == NODE_MEMBER_ASSIGN) {
+    fprintf(out, "    ");
+    gen_c_expr(compiler, out, node->left);
+    fprintf(out, " = ");
+    gen_c_expr(compiler, out, node->right);
     fprintf(out, ";\n");
   } else if (node->type == NODE_PRE_INC) {
     fprintf(out, "    ++%s;\n", node->value);
