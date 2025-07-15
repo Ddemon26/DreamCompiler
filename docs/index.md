@@ -7,10 +7,12 @@ Welcome to the documentation for the Dream language and compiler. The pages belo
 Use the version dropdown in the sidebar to view documentation for other releases.
 
 ### Getting Started
+
 - [Introduction](v1/intro.md)
 - [Usage Guide](v1/usage.md)
 
 ### Language Basics
+
 - [Variables](v1/variables.md)
 - [Arithmetic](v1/arithmetic.md)
 - [Parentheses](v1/parentheses.md)
@@ -21,11 +23,13 @@ Use the version dropdown in the sidebar to view documentation for other releases
 - [Functions](v1/functions.md)
 
 ### Control Flow
+
 - [If Statements](v1/if.md)
 - [Loops](v1/loops.md)
 - [Return](v1/return.md)
 
 ### Other
+
 - [Changelog](v1/changelog.md)
 - [Source Architecture](v1/architecture.md)
 

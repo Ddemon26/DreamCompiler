@@ -1,4 +1,5 @@
 # Dream Compiler Changelog
+
 Version 1.0.1 (2025-07-14)
 
 Initial compiler implementation in dream.c.
@@ -225,19 +226,3 @@ Version 1.0.42 (2025-07-23)
 
 * `Console.WriteLine` now prints boolean variables as `true` or `false`.
 * Updated documentation to mention boolean output.
-
-Version 1.0.43 (2025-07-24)
-
-* Fixed JetBrains code style page hanging by registering a language code style provider.
-
-Version 1.0.44 (2025-07-25)
-
-* Reorganized tests into feature directories and updated the README instructions.
-* Added missing pages to the HTML documentation index and improved markdown formatting.
-
-
-Version 1.0.45 (2025-07-26)
-
-* Restored tokens.json for editor integrations.
-* Regenerated lexer and token files.
-

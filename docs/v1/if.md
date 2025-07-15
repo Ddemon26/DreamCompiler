@@ -3,7 +3,7 @@
 Dream supports conditional execution using the `if` keyword. `else` and `else if` clauses provide alternate branches.
 
 Syntax
-------
+- -----
 
 ```
 if (<expression>) <statement>
@@ -14,7 +14,7 @@ else <statement>
 The `else` section is optional. Each branch may be a single statement or a block enclosed in braces. Braced blocks can contain multiple statements separated by semicolons.
 
 Example
--------
+- ------
 
 ```
 int x = 1;

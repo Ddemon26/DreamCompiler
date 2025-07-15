@@ -3,7 +3,7 @@
 Dream supports looping using the `while`, `do` and `for` keywords.
 
 Syntax
-------
+- -----
 
 ```
 while (<expression>) <statement>
@@ -20,7 +20,7 @@ The `while` loop executes the statement repeatedly while the expression evaluate
 Inside loop bodies you can use `break` to exit the loop immediately or `continue` to skip to the next iteration.
 
 Example
--------
+- ------
 
 ```
 int i = 2;

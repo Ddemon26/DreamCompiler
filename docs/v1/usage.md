@@ -1,24 +1,27 @@
 # Dream Language Usage Guide
 
 ## Overview
+
 Dream is a programming language with C#-like, semicolon-based syntax compiled to C code. This guide covers the current syntax and usage.
 
 ## Syntax
 
-- Variable Declaration: `int <identifier>;`, `int <identifier> = <value>;`, `bool <identifier>;` or `string <identifier>;`
-- Assignment: `<identifier> = <expression>;`
-- Arithmetic: `<identifier> = <expression> + <expression>` or `<expression> - <expression>` or `<expression> * <expression>` or `<expression> / <expression>` or `<expression> % <expression>`
-- Comparison: `<expression> < <expression>` or `<expression> > <expression>` or `<expression> <= <expression>` or `<expression> >= <expression>` or `<expression> == <expression>` or `<expression> != <expression>`
-- Logical: `!<expression>` or `<expression> && <expression>` or `<expression> || <expression>`
-- Console Output: `Console.WriteLine(<expression>);` where `<expression>` may be a variable, number or quoted string
-- Conditional: `if (<expression>) <statement> [else <statement>]`
-- Loop: `while (<expression>) <statement>` or `do <statement> while (<expression>)` or `for (<init>; <condition>; <increment>) <statement>`
-- Function: `func <name>(<type> <param>[, <type> <param>]*) { <statements> }`
-- Return: `return [<expression>];`
-- Increment/Decrement: `<identifier>++` | `++<identifier>` | `<identifier>--` | `--<identifier>`
-- Comments: `//` single line or `/* block */`
+Variable Declaration: int <identifier>; or int <identifier> = <value>; or bool <identifier>; or string <identifier>;
+Assignment: <identifier> = <expression>;
+Arithmetic: <identifier> = <expression> + <expression> or <expression> - <expression> or <expression> * <expression> or <expression> / <expression> or <expression> % <expression>;
+Comparison: <expression> < <expression> or <expression> > <expression> or <expression> <= <expression> or <expression> >= <expression> or <expression> == <expression> or <expression> != <expression>;
+Logical: !<expression> or <expression> && <expression> or <expression> || <expression>;
+Console Output: Console.WriteLine(<expression>);
+    <expression> may be a variable, number, or quoted string.
+Conditional: if (<expression>) <statement> [else <statement>]
+Loop: while (<expression>) <statement> or do <statement> while (<expression>) or for (<init>; <condition>; <increment>) <statement>;
+Function: func <name>(<type> <param>[, <type> <param>]*) { <statements> }
+Return: return [<expression>];
+Increment/Decrement: <identifier>++ | ++<identifier> | <identifier>-- | --<identifier>
+Comments: // single line or /* block */
 
 ## Example Program
+
 int x = 5;
 int y = 10;
 x = y + 5;          // x = 15

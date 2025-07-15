@@ -1,6 +1,7 @@
 # Console Output in Dream
 
 ## Overview
+
 Dream provides `Console.WriteLine` for outputting values to the console, similar to C#.
 
 ## Syntax

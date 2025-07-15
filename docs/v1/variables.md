@@ -1,6 +1,7 @@
 # Variables in Dream
 
 ## Overview
+
 The Dream language supports variable declarations and assignments with a C#-like syntax. Three types are now available: `int` for integers, `string` for string values and `bool` for boolean flags.
 
 ## Syntax

@@ -3,7 +3,7 @@
 Dream now supports comparison and equality operators for building conditions.
 
 Syntax
-------
+- -----
 
 ```
 <expression> < <expression>
@@ -18,7 +18,7 @@ These expressions evaluate to a nonzero value when true and zero otherwise.
 They are typically used in `if` statements and `while` loops.
 
 Example
--------
+- ------
 
 ```
 int x = 5;

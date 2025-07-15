@@ -3,7 +3,7 @@
 Dream allows grouping expressions with parentheses to control evaluation order.
 
 Syntax
-------
+- -----
 
 ```
 (<expression>)
@@ -12,7 +12,7 @@ Syntax
 Parentheses can appear anywhere an expression is expected and may be nested.
 
 Example
--------
+- ------
 
 ```
 int x = (2 + 3) * 4;
