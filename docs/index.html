@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
+<button id="theme-toggle" class="theme-toggle">Dark Mode</button>
 <div class="layout">
     <aside class="sidebar">
         <nav class="nav">
@@ -37,6 +38,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.getElementById('content');
         const navLinks = document.querySelectorAll('.nav a');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeLink = document.querySelector('link[rel="stylesheet"]');
+
+        // Apply saved theme
+        if (localStorage.getItem('theme') === 'dark') {
+            themeLink.setAttribute('href', 'index-dark.css');
+            themeToggle.textContent = 'Light Mode';
+        }
 
         // Function to load and render markdown
         async function loadMarkdown(file) {
@@ -60,6 +69,20 @@
                 navLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
             });
+        });
+
+        // Toggle light/dark mode
+        themeToggle.addEventListener('click', () => {
+            const current = themeLink.getAttribute('href');
+            if (current === 'index.css') {
+                themeLink.setAttribute('href', 'index-dark.css');
+                themeToggle.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeLink.setAttribute('href', 'index.css');
+                themeToggle.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            }
         });
 
         // Load default page (optional: load usage.md by default)
