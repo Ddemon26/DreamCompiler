@@ -20,6 +20,7 @@
             <ul>
                 <li class="category"><span>Getting Started</span>
                     <ul>
+                        <li><a href="#" data-md="intro.md">Introduction</a></li>
                         <li><a href="#" data-md="usage.md">Usage Guide</a></li>
                     </ul>
                 </li>
@@ -27,6 +28,7 @@
                     <ul>
                         <li><a href="#" data-md="variables.md">Variables</a></li>
                         <li><a href="#" data-md="arithmetic.md">Arithmetic</a></li>
+                        <li><a href="#" data-md="parentheses.md">Parentheses</a></li>
                         <li><a href="#" data-md="comparison.md">Comparison</a></li>
                         <li><a href="#" data-md="console.md">Console Output</a></li>
                     </ul>
@@ -38,6 +40,7 @@
                     </ul>
                 </li>
                 <li><a href="#" data-md="changelog.md">Changelog</a></li>
+                <li><a href="#" data-md="architecture.md">Source Architecture</a></li>
             </ul>
         </nav>
     </aside>
@@ -125,11 +128,11 @@
             }
         });
 
-        // Load default page (optional: load usage.md by default)
-        const defaultLink = document.querySelector('.nav a[data-md="usage.md"]');
+        // Load default page (intro.md by default)
+        const defaultLink = document.querySelector('.nav a[data-md="intro.md"]');
         if (defaultLink) {
             defaultLink.classList.add('active');
-            loadMarkdown(resolvePath('usage.md'));
+            loadMarkdown(resolvePath('intro.md'));
             // Open the "Getting Started" category by default
             const gettingStarted = document.querySelector('.category:first-child');
             if (gettingStarted) {

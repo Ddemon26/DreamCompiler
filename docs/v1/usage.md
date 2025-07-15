@@ -1,7 +1,9 @@
-Dream Language Usage Guide
-Overview
-Dream is a programming language with C#-like, semicolon-based syntax, compiled to C code. This guide covers the current syntax and usage.
-Syntax
+# Dream Language Usage Guide
+
+## Overview
+Dream is a programming language with C#-like, semicolon-based syntax compiled to C code. This guide covers the current syntax and usage.
+
+## Syntax
 
 Variable Declaration: int <identifier>; or int <identifier> = <value>;
 Assignment: <identifier> = <expression>;
@@ -12,7 +14,7 @@ Console Output: Console.WriteLine(<expression>);
 Conditional: if (<expression>) <statement> [else <statement>]
 Loop: while (<expression>) <statement>
 
-Example Program
+## Example Program
 int x = 5;
 int y = 10;
 x = y + 5;          // x = 15
@@ -24,7 +26,7 @@ Console.WriteLine("hi"); // Outputs "hi"
 if (x) Console.WriteLine(y);
 while (x) Console.WriteLine(y);
 
-Compilation
+## Compilation
 
 Write a `.dr` file (e.g., `example.dr`).
 Compile and run:
@@ -33,8 +35,9 @@ zig build run -- example.dr
 ```
 The compiler uses the `CC` environment variable for the back-end C compilation step. If `CC` is not set, `gcc` is used by default.
 
-Notes
+## Notes
 
 Semicolons (;) are required to terminate statements.
 Run in CLion or via a batch file for Windows compatibility.
+
 

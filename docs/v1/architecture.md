@@ -1,5 +1,4 @@
-Dream Compiler Architecture
-===========================
+# Dream Compiler Architecture
 
 This document describes the layout of the `src/` directory and ways to avoid monolithic "god" files.
 
@@ -27,3 +26,4 @@ src/
 ```
 
 Dividing the code this way keeps each component focused and reduces the risk of oversized modules.
+

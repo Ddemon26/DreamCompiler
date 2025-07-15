@@ -1,5 +1,4 @@
-If Statements in Dream
-======================
+# If Statements in Dream
 
 Dream supports conditional execution using the `if` keyword and an optional `else` clause.
 
@@ -27,3 +26,4 @@ if (x) {
 ```
 
 This prints `1` because `x` is nonzero.
+

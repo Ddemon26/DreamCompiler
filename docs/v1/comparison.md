@@ -1,5 +1,4 @@
-Comparison Operators in Dream
-=============================
+# Comparison Operators in Dream
 
 Dream now supports comparison and equality operators for building conditions.
 
@@ -26,4 +25,5 @@ int x = 5;
 int y = 5;
 if (x == y) Console.WriteLine(x); // prints 5
 ```
+
 
