@@ -176,3 +176,8 @@ Version 1.0.32 (2025-07-18)
 
 * Lexer now supports C-style block comments.
 * Documented comments and added a regression test.
+
+Version 1.0.33 (2025-07-18)
+
+* Standardized syntax token scopes so default editor themes highlight Dream files.
+* Regenerated VS Code grammar from updated token list.

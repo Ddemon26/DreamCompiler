@@ -10,23 +10,23 @@
     "tokens": {
       "patterns": [
         {
-          "name": "keyword.control.dream",
+          "name": "keyword.control",
           "match": "\\b(if|else|while|for|do|break|continue|return|int|func)\\b"
         },
         {
-          "name": "constant.numeric.dream",
+          "name": "constant.numeric",
           "match": "\\b\\d+\\b"
         },
         {
-          "name": "string.quoted.double.dream",
+          "name": "string.quoted.double",
           "match": "\"([^\\\"\\n]|\\\\.)*\""
         },
         {
-          "name": "comment.line.double-slash.dream",
+          "name": "comment.line.double-slash",
           "match": "//.*"
         },
         {
-          "name": "comment.block.dream",
+          "name": "comment.block",
           "match": "/\\*[^*]*\\*+([^/*][^*]*\\*+)*/"
         }
       ]
