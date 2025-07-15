@@ -32,7 +32,14 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
     @NotNull
     @Override
     public String getDemoText() {
-        return "int x = 5;\nif (x > 0) {\n    Console.WriteLine(x);\n}";
+        return """
+// sample Dream file
+func main() {
+    int x = 5, y = 10
+    Console.WriteLine(\"hello\")
+    /* block comment */
+}
+""";
     }
 
     @Nullable

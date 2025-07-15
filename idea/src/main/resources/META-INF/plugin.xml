@@ -7,7 +7,7 @@
   <depends>com.intellij.modules.platform</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <fileType name="Dream File"
+    <fileType name="Dream file"
               implementationClass="com.dream.DreamFileType"
               fieldName="INSTANCE"
               language="dream"

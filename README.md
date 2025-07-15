@@ -104,9 +104,10 @@ npx vsce package
 
 ```bash
 cd idea
-./gradlew buildPlugin
+./gradlew build
+./gradlew test
 ```
-The build will automatically regenerate the lexer and token definitions from `tokens.json`.
+The build automatically regenerates the lexer and token definitions from `tokens.json`.
 
 The resulting VSIX and plugin zip live in their respective directories.
 
