@@ -70,6 +70,29 @@ body {
     font-weight: bold;
 }
 
+.version-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+#version-select {
+    margin-bottom: 1rem;
+    width: 100%;
+    padding: 0.25rem;
+}
+
+.nav li.category > span {
+    font-weight: bold;
+    display: block;
+    padding: 0.25rem 0;
+}
+
+.nav li.category ul {
+    margin-left: 1rem;
+    margin-top: 0.25rem;
+}
+
 .main-content {
     flex: 1;
     padding: 2rem;

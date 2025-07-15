@@ -67,3 +67,8 @@ Version 1.0.10 (2025-07-14)
 Version 1.0.11 (2025-07-14)
 
 * Documentation site now supports optional dark mode.
+
+Version 1.0.12 (2025-07-14)
+
+* Restructured documentation index with category submenus.
+* Added version selection dropdown.
