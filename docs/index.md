@@ -21,5 +21,6 @@ Use the version dropdown in the sidebar to view documentation for other releases
 
 ### Other
 - [Changelog](v1/changelog.md)
+- [Source Architecture](v1/architecture.md)
 
 

@@ -1,4 +1,4 @@
-#include "dream.h"
+#include "codegen.h"
 #include <stdio.h>
 
 void gen_c_expr(FILE *out, Node *expr) {

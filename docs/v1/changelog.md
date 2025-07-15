@@ -105,3 +105,8 @@ Version 1.0.18 (2025-07-14)
 
 * Added unary minus support for numeric expressions.
 * Updated arithmetic documentation and added a new test case.
+
+Version 1.0.19 (2025-07-15)
+
+* Reorganized source files into subdirectories (`lexer`, `parser`, `ast`, `codegen`, `driver`).
+* Updated build script and documentation to reflect the new layout.

@@ -15,11 +15,13 @@ Responsibilities
 - Maintain matching test cases in `tests/` and ensure they pass.
 - Record notable changes in `docs/changelog.md`.
 - Add any required system dependencies to `codex/_startup.sh`.
+- Break down large or monolithic source files into smaller modules when practical.
 
 Workflow
 --------
 When the command `go` is issued the agent should:
 1. Inspect the current compiler implementation and documentation.
+   - Look for large modules that could be split into focused files before adding new features.
 2. Implement the next logical feature or fix.
 3. Update docs and tests accordingly.
 4. Build with `zig build` and run all tests using `zig build run -- <test>`.

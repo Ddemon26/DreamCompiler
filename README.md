@@ -63,6 +63,7 @@ An example program is provided in [example.dr](example.dr).
 
 Documentation for language features lives under [`docs`](docs). Start with [index.md](docs/index.md) to browse the available guides.
 
+See [Source Architecture](docs/v1/architecture.md) for an overview of the compiler layout.
 ## Contributing
 
 Contributions are welcome. Document any new language feature under `docs/` with a matching test case in `tests/`. Add additional dependencies to [`codex/_startup.sh`](codex/_startup.sh) if required.
