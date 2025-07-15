@@ -1,0 +1,5 @@
+int i = 2;
+while (i) {
+    i = i - 1;
+    Console.WriteLine(i);
+}

@@ -115,3 +115,8 @@ Version 1.0.20 (2025-07-15)
 
 * Added parentheses for grouping expressions.
 * Documented the feature and added a new test case.
+
+Version 1.0.21 (2025-07-15)
+
+* Braced blocks can now contain multiple statements in `if` and `while`.
+* Updated documentation and added regression tests.

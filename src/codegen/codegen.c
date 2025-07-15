@@ -65,5 +65,11 @@ void generate_c(Compiler *compiler, Node *node) {
     fprintf(out, ") {\n");
     generate_c(compiler, node->right);
     fprintf(out, "    }\n");
+  } else if (node->type == NODE_BLOCK) {
+    Node *cur = node;
+    while (cur) {
+      generate_c(compiler, cur->left);
+      cur = cur->right;
+    }
   }
 }
