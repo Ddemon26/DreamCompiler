@@ -13,14 +13,30 @@
     <aside class="sidebar">
         <nav class="nav">
             <h2>Documentation</h2>
+            <label for="version-select" class="version-label">Version:</label>
+            <select id="version-select">
+                <option value="v1" selected>v1</option>
+            </select>
             <ul>
-                <li><a href="#" data-md="v1/usage.md">Usage Guide</a></li>
-                <li><a href="#" data-md="v1/variables.md">Variables</a></li>
-                <li><a href="#" data-md="v1/arithmetic.md">Arithmetic</a></li>
-                <li><a href="#" data-md="v1/comparison.md">Comparison</a></li>
-                <li><a href="#" data-md="v1/console.md">Console Output</a></li>
-                <li><a href="#" data-md="v1/if.md">If Statements</a></li>
-                <li><a href="#" data-md="v1/loops.md">While Loops</a></li>
+                <li class="category"><span>Getting Started</span>
+                    <ul>
+                        <li><a href="#" data-md="usage.md">Usage Guide</a></li>
+                    </ul>
+                </li>
+                <li class="category"><span>Language Basics</span>
+                    <ul>
+                        <li><a href="#" data-md="variables.md">Variables</a></li>
+                        <li><a href="#" data-md="arithmetic.md">Arithmetic</a></li>
+                        <li><a href="#" data-md="comparison.md">Comparison</a></li>
+                        <li><a href="#" data-md="console.md">Console Output</a></li>
+                    </ul>
+                </li>
+                <li class="category"><span>Control Flow</span>
+                    <ul>
+                        <li><a href="#" data-md="if.md">If Statements</a></li>
+                        <li><a href="#" data-md="loops.md">While Loops</a></li>
+                    </ul>
+                </li>
                 <li><a href="#" data-md="changelog.md">Changelog</a></li>
             </ul>
         </nav>
@@ -40,6 +56,8 @@
         const navLinks = document.querySelectorAll('.nav a');
         const themeToggle = document.getElementById('theme-toggle');
         const themeLink = document.querySelector('link[rel="stylesheet"]');
+        const versionSelect = document.getElementById('version-select');
+        let currentVersion = versionSelect.value;
 
         // Apply saved theme
         if (localStorage.getItem('theme') === 'dark') {
@@ -59,16 +77,29 @@
             }
         }
 
+        function resolvePath(mdFile) {
+            if (mdFile.includes('/')) return mdFile;
+            return `${currentVersion}/${mdFile}`;
+        }
+
         // Handle nav link clicks
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const mdFile = link.getAttribute('data-md');
-                loadMarkdown(mdFile);
+                loadMarkdown(resolvePath(mdFile));
                 // Update active link
                 navLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
             });
+        });
+
+        versionSelect.addEventListener('change', () => {
+            currentVersion = versionSelect.value;
+            const active = document.querySelector('.nav a.active');
+            if (active && active.dataset.md !== 'changelog.md') {
+                loadMarkdown(resolvePath(active.dataset.md));
+            }
         });
 
         // Toggle light/dark mode
@@ -86,10 +117,10 @@
         });
 
         // Load default page (optional: load usage.md by default)
-        const defaultLink = document.querySelector('.nav a[data-md="v1/usage.md"]');
+        const defaultLink = document.querySelector('.nav a[data-md="usage.md"]');
         if (defaultLink) {
             defaultLink.classList.add('active');
-            loadMarkdown('v1/usage.md');
+            loadMarkdown(resolvePath('usage.md'));
         }
     });
 </script>
