@@ -11,12 +11,16 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+}
+
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+    compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
 }
 
 tasks.withType<JavaCompile> {
@@ -24,7 +28,7 @@ tasks.withType<JavaCompile> {
 }
 
 intellij {
-    version.set("2025.1")
+    version.set("2024.1")
     type.set("IC")
 }
 
@@ -45,14 +49,13 @@ tasks {
 
     withType<org.jetbrains.grammarkit.tasks.GenerateLexerTask> {
         sourceFile.set(file("src/main/java/com/dream/DreamLexer.flex"))
-        targetDir.set("build/generated-src/flex/com/dream")
+        targetDir.set("src/main/java/com/dream")
         targetClass.set("DreamLexer")
         purgeOldFiles.set(true)
         dependsOn(generateTokens)
     }
 }
 
-sourceSets["main"].java.srcDir("build/generated-src/flex")
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn("generateLexer")
