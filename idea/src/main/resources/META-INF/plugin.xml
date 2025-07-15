@@ -16,5 +16,6 @@
     <lang.syntaxHighlighterFactory language="dream" implementationClass="com.dream.DreamSyntaxHighlighterFactory"/>
     <colorSettingsPage implementation="com.dream.DreamColorSettingsPage"/>
     <codeStyleSettingsProvider implementation="com.dream.DreamCodeStyleSettingsProvider"/>
+    <langCodeStyleSettingsProvider implementation="com.dream.DreamLanguageCodeStyleSettingsProvider"/>
   </extensions>
 </idea-plugin>
