@@ -204,7 +204,11 @@ Token next_token(Lexer *lexer) {
     }
     break;
   case '<':
-    if (lexer->source[lexer->pos + 1] == '=') {
+    if (lexer->source[lexer->pos + 1] == '<') {
+      token.type = TOKEN_SHL;
+      token.value = strdup("<<");
+      lexer->pos += 2;
+    } else if (lexer->source[lexer->pos + 1] == '=') {
       token.type = TOKEN_LE;
       token.value = strdup("<=");
       lexer->pos += 2;
@@ -215,7 +219,11 @@ Token next_token(Lexer *lexer) {
     }
     break;
   case '>':
-    if (lexer->source[lexer->pos + 1] == '=') {
+    if (lexer->source[lexer->pos + 1] == '>') {
+      token.type = TOKEN_SHR;
+      token.value = strdup(">>");
+      lexer->pos += 2;
+    } else if (lexer->source[lexer->pos + 1] == '=') {
       token.type = TOKEN_GE;
       token.value = strdup(">=");
       lexer->pos += 2;

@@ -17,7 +17,7 @@ package com.dream;
   \/\/.* { return DreamTokenTypes.COMMENT; }
   "/\*[\s\S]*?\\*\/" { return DreamTokenTypes.COMMENTBLOCK; }
   [a-zA-Z_][a-zA-Z0-9_]* { return DreamTokenTypes.IDENTIFIER; }
-  "++"|"--"|"+="|"-="|"*="|"/="|"%="|"+"|"-"|"*"|"/"|"%"|"^"|"<="|">="|"=="|"!="|"<"|">"|"&&"|"||"|"!"|"="|"?" { return DreamTokenTypes.OPERATOR; }
+  "++"|"--"|"+="|"-="|"*="|"/="|"%="|"+"|"-"|"*"|"/"|"%"|"^"|"<<"|">>"|"<="|">="|"=="|"!="|"<"|">"|"&&"|"||"|"!"|"="|"?" { return DreamTokenTypes.OPERATOR; }
   ; { return DreamTokenTypes.SEMICOLON; }
   , { return DreamTokenTypes.COMMA; }
   \. { return DreamTokenTypes.DOT; }

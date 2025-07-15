@@ -1,0 +1,5 @@
+int a = 1;
+int b = a << 3;
+Console.WriteLine(b);
+int c = b >> 2;
+Console.WriteLine(c);

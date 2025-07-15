@@ -7,7 +7,8 @@ operator implemented and subtraction (`-`) is now also available. Multiplication
 using the `*` operator has been introduced as well. Division with the `/`
 operator is now supported. Modulo with the `%` operator is now available too.
 Bitwise XOR with the `^` operator is now supported. Bitwise AND (`&`) and
-bitwise OR (`|`) operators are now available as well.
+bitwise OR (`|`) operators are now available as well. Bitwise left shift (`<<`)
+and right shift (`>>`) operators are now available too.
 
 ## Syntax
 
@@ -35,6 +36,12 @@ bitwise OR (`|`) operators are now available as well.
 **Bitwise OR**: `<identifier> = <expression> | <expression>;`
 : Computes the bitwise inclusive-or of two expressions.
 
+**Left Shift**: `<identifier> = <expression> << <expression>;`
+: Shifts the left operand left by the given number of bits.
+
+**Right Shift**: `<identifier> = <expression> >> <expression>;`
+: Shifts the left operand right by the given number of bits.
+
 **Compound assignment**: `<identifier> <op>= <expression>;`
 : Shorthand for `<identifier> = <identifier> <op> <expression>` using
   `+=`, `-=`, `*=`, `/=` and `%=`.
@@ -52,6 +59,8 @@ x = y % 4;   // x = 2
 x = y ^ 3;   // bitwise XOR
 x = y & 1;   // bitwise AND
 x = y | 2;   // bitwise OR
+x = y << 2;  // left shift
+x = y >> 1;  // right shift
 x += 3;      // x = x + 3
 ```
 
