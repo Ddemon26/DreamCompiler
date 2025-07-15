@@ -51,3 +51,9 @@ Version 1.0.8 (2025-07-14)
 * Updated documentation and usage guide.
 * Added regression test for multiplication.
 
+Version 1.0.9 (2025-07-14)
+
+* Added division operator (/) for arithmetic expressions.
+* Updated documentation and usage guide.
+* Added regression test for division.
+

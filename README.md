@@ -7,8 +7,8 @@ Dream is a minimal compiler that transforms a C#-like language into C code. The 
 The compiler currently supports:
 
 - Integer variables and assignments
-- Basic arithmetic with `+` and `-`
-- Console output via `Console.WriteLine`
+- Arithmetic with `+`, `-`, `*` and `/`
+- Console output via `Console.WriteLine` (numbers and strings)
 - Simple `if` statements
 - `while` loops
 
