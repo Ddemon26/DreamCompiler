@@ -210,3 +210,8 @@ Version 1.0.39 (2025-07-20)
 
 * Introduced `bool` variables and boolean literals.
 * Updated documentation, syntax highlighting and added a new test case.
+
+Version 1.0.40 (2025-07-21)
+
+* Added increment (`++`) and decrement (`--`) operators.
+* Updated loops documentation and added a new test case.

@@ -22,12 +22,30 @@ static Node *parse_block(Lexer *lexer, Token *token) {
 }
 
 static Node *parse_for_increment(Lexer *lexer, Token *token) {
+  if (token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS) {
+    int inc = token->type == TOKEN_PLUSPLUS;
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_IDENTIFIER) {
+      fprintf(stderr, "Expected identifier after %s\n", inc ? "++" : "--");
+      exit(1);
+    }
+    char *name = token->value;
+    *token = next_token(lexer);
+    return create_node(inc ? NODE_PRE_INC : NODE_PRE_DEC, name, NULL, NULL, NULL);
+  }
   if (token->type != TOKEN_IDENTIFIER) {
     fprintf(stderr, "Invalid for increment\n");
     exit(1);
   }
   char *var_name = token->value;
   *token = next_token(lexer);
+  if (token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS) {
+    int inc = token->type == TOKEN_PLUSPLUS;
+    free(token->value);
+    *token = next_token(lexer);
+    return create_node(inc ? NODE_POST_INC : NODE_POST_DEC, var_name, NULL, NULL, NULL);
+  }
   if (token->type != TOKEN_EQUALS) {
     fprintf(stderr, "Expected = in for increment\n");
     exit(1);
@@ -39,6 +57,22 @@ static Node *parse_for_increment(Lexer *lexer, Token *token) {
 }
 
 Node *parse_statement(Lexer *lexer, Token *token) {
+  if (token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS) {
+    int inc = token->type == TOKEN_PLUSPLUS;
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_IDENTIFIER) {
+      fprintf(stderr, "Expected identifier after %s\n", inc ? "++" : "--");
+      exit(1);
+    }
+    char *name = token->value;
+    *token = next_token(lexer);
+    if (token->type != TOKEN_SEMICOLON) {
+      fprintf(stderr, "Expected semicolon\n");
+      exit(1);
+    }
+    return create_node(inc ? NODE_PRE_INC : NODE_PRE_DEC, name, NULL, NULL, NULL);
+  }
   if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
       token->type == TOKEN_BOOL_TYPE) {
     TokenType decl_type = token->type;
@@ -139,6 +173,16 @@ Node *parse_statement(Lexer *lexer, Token *token) {
   } else if (token->type == TOKEN_IDENTIFIER) {
     char *var_name = token->value;
     *token = next_token(lexer);
+    if (token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS) {
+      int inc = token->type == TOKEN_PLUSPLUS;
+      free(token->value);
+      *token = next_token(lexer);
+      if (token->type != TOKEN_SEMICOLON) {
+        fprintf(stderr, "Expected semicolon\n");
+        exit(1);
+      }
+      return create_node(inc ? NODE_POST_INC : NODE_POST_DEC, var_name, NULL, NULL, NULL);
+    }
     if (token->type == TOKEN_EQUALS) {
       free(token->value);
       *token = next_token(lexer);

@@ -119,9 +119,15 @@ Token next_token(Lexer *lexer) {
 
   switch (lexer->source[lexer->pos]) {
   case '+':
-    token.type = TOKEN_PLUS;
-    token.value = strdup("+");
-    lexer->pos++;
+    if (lexer->source[lexer->pos + 1] == '+') {
+      token.type = TOKEN_PLUSPLUS;
+      token.value = strdup("++");
+      lexer->pos += 2;
+    } else {
+      token.type = TOKEN_PLUS;
+      token.value = strdup("+");
+      lexer->pos++;
+    }
     break;
   case '*':
     token.type = TOKEN_STAR;
@@ -161,9 +167,15 @@ Token next_token(Lexer *lexer) {
     }
     break;
   case '-':
-    token.type = TOKEN_MINUS;
-    token.value = strdup("-");
-    lexer->pos++;
+    if (lexer->source[lexer->pos + 1] == '-') {
+      token.type = TOKEN_MINUSMINUS;
+      token.value = strdup("--");
+      lexer->pos += 2;
+    } else {
+      token.type = TOKEN_MINUS;
+      token.value = strdup("-");
+      lexer->pos++;
+    }
     break;
   case ';':
     token.type = TOKEN_SEMICOLON;

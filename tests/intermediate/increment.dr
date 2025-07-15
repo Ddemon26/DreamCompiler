@@ -1,0 +1,10 @@
+int a = 0;
+a++;
+Console.WriteLine(a);
+++a;
+Console.WriteLine(a);
+int b = 2;
+b--;
+Console.WriteLine(b);
+--b;
+Console.WriteLine(b);
