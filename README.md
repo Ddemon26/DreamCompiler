@@ -8,6 +8,7 @@ The compiler currently supports:
 
 - Integer variables and assignments
 - Arithmetic with `+`, `-`, `*` and `/`
+- Comparison operators `<` and `>`
 - Console output via `Console.WriteLine` (numbers and strings)
 - Simple `if` statements
 - `while` loops
