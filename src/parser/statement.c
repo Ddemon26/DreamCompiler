@@ -77,6 +77,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       token->type == TOKEN_BOOL_TYPE) {
     TokenType decl_type = token->type;
     int is_string = decl_type == TOKEN_STRING_TYPE;
+    int is_bool = decl_type == TOKEN_BOOL_TYPE;
     free(token->value);
     *token = next_token(lexer);
     if (token->type != TOKEN_IDENTIFIER) {
@@ -102,6 +103,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     }
     if (is_string)
       return create_node(NODE_STR_DECL, var_name, init, NULL, NULL);
+    if (is_bool)
+      return create_node(NODE_BOOL_DECL, var_name, init, NULL, NULL);
     return create_node(NODE_VAR_DECL, var_name, init, NULL, NULL);
   } else if (token->type == TOKEN_FUNC) {
     free(token->value);
@@ -123,9 +126,11 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     if (token->type != TOKEN_RPAREN) {
       while (1) {
         int is_string = 0;
+        int is_bool_param = 0;
         if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
             token->type == TOKEN_BOOL_TYPE) {
           is_string = token->type == TOKEN_STRING_TYPE;
+          is_bool_param = token->type == TOKEN_BOOL_TYPE;
           free(token->value);
           *token = next_token(lexer);
         } else {
@@ -138,7 +143,12 @@ Node *parse_statement(Lexer *lexer, Token *token) {
         }
         char *pname = token->value;
         *token = next_token(lexer);
-        Node *decl = create_node(is_string ? NODE_STR_DECL : NODE_VAR_DECL,
+        NodeType decl_type_node = NODE_VAR_DECL;
+        if (is_string)
+          decl_type_node = NODE_STR_DECL;
+        else if (is_bool_param)
+          decl_type_node = NODE_BOOL_DECL;
+        Node *decl = create_node(decl_type_node,
                                  pname, NULL, NULL, NULL);
         free(pname);
         Node *blk = create_node(NODE_BLOCK, NULL, decl, NULL, NULL);

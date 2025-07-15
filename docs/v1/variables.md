@@ -23,3 +23,4 @@ bool flag = true; // Boolean variable initialized to 1
 ## Notes
 
 Integer and boolean variables are stored as local `long` values in the generated C code. `string` variables compile to `const char*` pointers.
+When printed with `Console.WriteLine`, boolean variables appear as `true` or `false`.
