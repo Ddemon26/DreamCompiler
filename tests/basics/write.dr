@@ -1,0 +1,2 @@
+Console.Write("hello"); // Expected: hello
+Console.WriteLine(" world"); // Expected: hello world\n

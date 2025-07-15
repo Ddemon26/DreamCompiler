@@ -250,10 +250,11 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     }
     free(token->value);
     *token = next_token(lexer);
-    if (token->type != TOKEN_WRITELINE) {
-      fprintf(stderr, "Expected WriteLine\n");
+    if (token->type != TOKEN_WRITELINE && token->type != TOKEN_WRITE) {
+      fprintf(stderr, "Expected WriteLine or Write\n");
       exit(1);
     }
+    int no_newline = token->type == TOKEN_WRITE;
     free(token->value);
     *token = next_token(lexer);
     if (token->type != TOKEN_LPAREN) {
@@ -273,7 +274,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       fprintf(stderr, "Expected semicolon\n");
       exit(1);
     }
-    return create_node(NODE_WRITELINE, NULL, arg, NULL, NULL);
+    return create_node(no_newline ? NODE_WRITE : NODE_WRITELINE, NULL, arg, NULL, NULL);
   } else if (token->type == TOKEN_IF) {
     free(token->value);
     *token = next_token(lexer);
