@@ -71,6 +71,10 @@ void generate_c(Compiler *compiler, Node *node) {
     fprintf(out, "    } while (");
     gen_c_expr(out, node->left);
     fprintf(out, ");\n");
+  } else if (node->type == NODE_BREAK) {
+    fprintf(out, "    break;\n");
+  } else if (node->type == NODE_CONTINUE) {
+    fprintf(out, "    continue;\n");
   } else if (node->type == NODE_BLOCK) {
     Node *cur = node;
     while (cur) {
