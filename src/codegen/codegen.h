@@ -6,9 +6,11 @@
 
 typedef struct {
   FILE *output;
+  char **string_vars;
+  int string_var_count;
 } Compiler;
 
-void gen_c_expr(FILE *out, Node *expr);
+void gen_c_expr(Compiler *compiler, FILE *out, Node *expr);
 void generate_c(Compiler *compiler, Node *node);
 void generate_c_function(Compiler *compiler, Node *node);
 

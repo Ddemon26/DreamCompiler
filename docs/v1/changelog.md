@@ -190,3 +190,8 @@ Version 1.0.34 (2025-07-18)
 Version 1.0.35 (2025-07-18)
 
 * Fixed printf warnings by casting numeric output to `long`.
+
+Version 1.0.36 (2025-07-15)
+
+* Added `string` variable support and a new test.
+* Updated tokens and regenerated editor grammars.

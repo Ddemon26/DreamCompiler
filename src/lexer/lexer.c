@@ -54,6 +54,8 @@ Token next_token(Lexer *lexer) {
     token.value = strndup(lexer->source + start, len);
     if (strcmp(token.value, "int") == 0)
       token.type = TOKEN_INT;
+    else if (strcmp(token.value, "string") == 0)
+      token.type = TOKEN_STRING_TYPE;
     else if (strcmp(token.value, "Console") == 0)
       token.type = TOKEN_CONSOLE;
     else if (strcmp(token.value, "WriteLine") == 0)

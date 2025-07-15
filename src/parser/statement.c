@@ -39,11 +39,15 @@ static Node *parse_for_increment(Lexer *lexer, Token *token) {
 }
 
 Node *parse_statement(Lexer *lexer, Token *token) {
-  if (token->type == TOKEN_INT) {
+  if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE) {
+    int is_string = token->type == TOKEN_STRING_TYPE;
     free(token->value);
     *token = next_token(lexer);
     if (token->type != TOKEN_IDENTIFIER) {
-      fprintf(stderr, "Expected identifier after int\n");
+      if (is_string)
+        fprintf(stderr, "Expected identifier after string\n");
+      else
+        fprintf(stderr, "Expected identifier after int\n");
       exit(1);
     }
     char *var_name = token->value;
@@ -58,6 +62,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       fprintf(stderr, "Expected semicolon\n");
       exit(1);
     }
+    if (is_string)
+      return create_node(NODE_STR_DECL, var_name, init, NULL, NULL);
     return create_node(NODE_VAR_DECL, var_name, init, NULL, NULL);
   } else if (token->type == TOKEN_FUNC) {
     free(token->value);
