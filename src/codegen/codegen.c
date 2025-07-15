@@ -11,20 +11,25 @@ static int is_string_var(Compiler *compiler, const char *name) {
   return 0;
 }
 
-void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
+static void gen_c_expr_internal(Compiler *compiler, FILE *out, Node *expr,
+                                int top) {
   if (!expr)
     return;
   if (expr->type == NODE_BINARY_OP) {
-    fputc('(', out);
-    gen_c_expr(compiler, out, expr->left);
+    if (!top)
+      fputc('(', out);
+    gen_c_expr_internal(compiler, out, expr->left, 0);
     fprintf(out, " %s ", expr->value);
-    gen_c_expr(compiler, out, expr->right);
-    fputc(')', out);
+    gen_c_expr_internal(compiler, out, expr->right, 0);
+    if (!top)
+      fputc(')', out);
   } else if (expr->type == NODE_UNARY_OP) {
-    fputc('(', out);
+    if (!top)
+      fputc('(', out);
     fprintf(out, "%s", expr->value);
-    gen_c_expr(compiler, out, expr->left);
-    fputc(')', out);
+    gen_c_expr_internal(compiler, out, expr->left, 0);
+    if (!top)
+      fputc(')', out);
   } else if (expr->type == NODE_IDENTIFIER ||
              (expr->type == NODE_VAR_DECL && expr->left == NULL &&
               expr->right == NULL)) {
@@ -36,6 +41,10 @@ void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
   } else if (expr->type == NODE_FUNC_CALL) {
     fprintf(out, "%s()", expr->value);
   }
+}
+
+void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
+  gen_c_expr_internal(compiler, out, expr, 1);
 }
 
 void generate_c_function(Compiler *compiler, Node *node) {

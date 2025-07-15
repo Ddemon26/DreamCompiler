@@ -7,20 +7,19 @@ but aims to grow into a fully featured compiler. This repository contains the so
 
 The compiler currently supports:
 
-- Integer variables and assignments
-- Arithmetic with `+`, `-`, `*` and `/`
+- Integer and string variables with assignments
+- Arithmetic with `+`, `-`, `*`, `/` and `%`
 - Comparison operators `<`, `>`, `<=`, `>=`, `==` and `!=`
 - Console output via `Console.WriteLine` (numbers and strings)
 - Simple `if` statements with optional `else`
-- `while` loops
-- `do-while` loops
-- `for` loops
+- `while`, `do-while` and `for` loops
 - `break` and `continue` statements
 - `return` statements
+- Functions with no parameters
 - Braced blocks supporting multiple statements
 - Line (`//`) and block (`/* */`) comments
 
-More features such as functions are planned for future versions. See the [changelog](docs/v1/changelog.md) for details.
+See the [changelog](docs/v1/changelog.md) for a detailed history of features.
 
 ## Getting Started
 
