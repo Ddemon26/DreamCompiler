@@ -12,6 +12,7 @@ Use the version dropdown in the sidebar to view documentation for other releases
 ### Language Basics
 - [Variables](v1/variables.md)
 - [Arithmetic](v1/arithmetic.md)
+- [Parentheses](v1/parentheses.md)
 - [Comparison](v1/comparison.md)
 - [Console Output](v1/console.md)
 

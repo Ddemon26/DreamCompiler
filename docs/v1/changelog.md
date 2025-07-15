@@ -110,3 +110,8 @@ Version 1.0.19 (2025-07-15)
 
 * Reorganized source files into subdirectories (`lexer`, `parser`, `ast`, `codegen`, `driver`).
 * Updated build script and documentation to reflect the new layout.
+
+Version 1.0.20 (2025-07-15)
+
+* Added parentheses for grouping expressions.
+* Documented the feature and added a new test case.
