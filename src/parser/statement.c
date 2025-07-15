@@ -21,6 +21,23 @@ static Node *parse_block(Lexer *lexer, Token *token) {
   return head;
 }
 
+static Node *parse_for_increment(Lexer *lexer, Token *token) {
+  if (token->type != TOKEN_IDENTIFIER) {
+    fprintf(stderr, "Invalid for increment\n");
+    exit(1);
+  }
+  char *var_name = token->value;
+  *token = next_token(lexer);
+  if (token->type != TOKEN_EQUALS) {
+    fprintf(stderr, "Expected = in for increment\n");
+    exit(1);
+  }
+  free(token->value);
+  *token = next_token(lexer);
+  Node *expr = parse_expression(lexer, token);
+  return create_node(NODE_ASSIGN, var_name, expr, NULL, NULL);
+}
+
 Node *parse_statement(Lexer *lexer, Token *token) {
   if (token->type == TOKEN_INT) {
     free(token->value);
@@ -209,6 +226,73 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       }
     }
     return create_node(NODE_WHILE, NULL, cond, body, NULL);
+  } else if (token->type == TOKEN_FOR) {
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_LPAREN) {
+      fprintf(stderr, "Expected ( after for\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *init = parse_statement(lexer, token);
+    if (token->type != TOKEN_SEMICOLON) {
+      fprintf(stderr, "Expected semicolon after for init\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *cond = parse_expression(lexer, token);
+    if (token->type != TOKEN_SEMICOLON) {
+      fprintf(stderr, "Expected semicolon after for condition\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *post = parse_for_increment(lexer, token);
+    if (token->type != TOKEN_RPAREN) {
+      fprintf(stderr, "Expected ) after for clauses\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *body = NULL;
+    int has_block = 0;
+    if (token->type == TOKEN_LBRACE) {
+      has_block = 1;
+      free(token->value);
+      *token = next_token(lexer);
+      body = parse_block(lexer, token);
+      if (token->type != TOKEN_RBRACE) {
+        fprintf(stderr, "Expected } after for body\n");
+        exit(1);
+      }
+    } else {
+      body = parse_statement(lexer, token);
+      if (token->type != TOKEN_SEMICOLON) {
+        fprintf(stderr, "Expected semicolon\n");
+        exit(1);
+      }
+    }
+    Node *post_block = create_node(NODE_BLOCK, NULL, post, NULL, NULL);
+    Node *body_block = NULL;
+    if (has_block) {
+      if (body) {
+        Node *tail = body;
+        while (tail->right)
+          tail = tail->right;
+        tail->right = post_block;
+        body_block = body;
+      } else {
+        body_block = post_block;
+      }
+    } else {
+      body_block = create_node(NODE_BLOCK, NULL, body, post_block, NULL);
+    }
+    Node *while_node = create_node(NODE_WHILE, NULL, cond, body_block, NULL);
+    Node *head = create_node(NODE_BLOCK, NULL, init, NULL, NULL);
+    head->right = create_node(NODE_BLOCK, NULL, while_node, NULL, NULL);
+    return head;
   } else if (token->type == TOKEN_DO) {
     free(token->value);
     *token = next_token(lexer);

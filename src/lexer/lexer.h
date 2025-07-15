@@ -32,6 +32,7 @@ typedef enum {
   TOKEN_IF,
   TOKEN_ELSE,
   TOKEN_WHILE,
+  TOKEN_FOR,
   TOKEN_DO,
   TOKEN_LBRACE,
   TOKEN_RBRACE,

@@ -137,3 +137,9 @@ Version 1.0.24 (2025-07-15)
 * Updated documentation and usage guide.
 * Added regression test for do-while loops.
 
+Version 1.0.25 (2025-07-15)
+
+* Added `for` loops supporting initialization, condition and increment clauses.
+* Updated documentation and usage guide.
+* Added regression test for for loops.
+
