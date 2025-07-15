@@ -23,6 +23,7 @@ Use the version dropdown in the sidebar to view documentation for other releases
 - [String Literals](v1/strings.md)
 - [Comments](v1/comments.md)
 - [Functions](v1/functions.md)
+- [Classes](v1/classes.md)
 
 ### Control Flow
 

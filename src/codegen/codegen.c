@@ -161,6 +161,23 @@ void gen_c_expr_unwrapped(Compiler *compiler, FILE *out, Node *expr) {
   gen_c_expr_impl(compiler, out, expr, 0);
 }
 
+void generate_c_class(Compiler *compiler, Node *node) {
+  FILE *out = compiler->output;
+  fprintf(out, "typedef struct %s {\n", node->value);
+  Node *field = node->left;
+  while (field) {
+    Node *decl = field->left;
+    const char *ctype = "long";
+    if (decl->type == NODE_STR_DECL)
+      ctype = "const char*";
+    else if (decl->type == NODE_FLOAT_DECL)
+      ctype = "double";
+    fprintf(out, "    %s %s;\n", ctype, decl->value);
+    field = field->right;
+  }
+  fprintf(out, "} %s;\n", node->value);
+}
+
 void generate_c_function(Compiler *compiler, Node *node) {
   FILE *out = compiler->output;
   fprintf(out, "long %s(", node->value);
@@ -335,5 +352,7 @@ void generate_c(Compiler *compiler, Node *node) {
       generate_c(compiler, cur->left);
       cur = cur->right;
     }
+  } else if (node->type == NODE_CLASS_DEF) {
+    /* class definitions are handled before code generation */
   }
 }

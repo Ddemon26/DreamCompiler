@@ -308,3 +308,9 @@ Version 1.0.57 (2025-08-04)
 * Added bitwise shift operators (`<<` and `>>`).
 * Updated arithmetic documentation and syntax highlighting.
 * Added new regression test.
+
+Version 1.0.58 (2025-08-05)
+
+* Added basic `class` definitions.
+* Documented the feature and generated syntax highlighting.
+* Added a regression test.

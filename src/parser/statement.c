@@ -199,7 +199,42 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       fprintf(stderr, "Expected } after function body\n");
       exit(1);
     }
-    return create_node(NODE_FUNC_DEF, func_name, body, params, NULL);
+      return create_node(NODE_FUNC_DEF, func_name, body, params, NULL);
+  } else if (token->type == TOKEN_CLASS) {
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_IDENTIFIER) {
+      fprintf(stderr, "Expected identifier after class\n");
+      exit(1);
+    }
+    char *class_name = token->value;
+    *token = next_token(lexer);
+    if (token->type != TOKEN_LBRACE) {
+      fprintf(stderr, "Expected { after class name\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *fields = NULL;
+    Node **cur_field = &fields;
+    while (token->type != TOKEN_RBRACE) {
+      Node *field = parse_statement(lexer, token);
+      if (field->type != NODE_VAR_DECL && field->type != NODE_STR_DECL &&
+          field->type != NODE_BOOL_DECL && field->type != NODE_FLOAT_DECL) {
+        fprintf(stderr, "Only variable declarations allowed in class\n");
+        exit(1);
+      }
+      if (token->type != TOKEN_SEMICOLON) {
+        fprintf(stderr, "Expected semicolon\n");
+        exit(1);
+      }
+      Node *blk = create_node(NODE_BLOCK, NULL, field, NULL, NULL);
+      *cur_field = blk;
+      cur_field = &blk->right;
+      free(token->value);
+      *token = next_token(lexer);
+    }
+    return create_node(NODE_CLASS_DEF, class_name, fields, NULL, NULL);
   } else if (token->type == TOKEN_IDENTIFIER) {
     char *var_name = token->value;
     *token = next_token(lexer);
