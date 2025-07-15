@@ -302,3 +302,9 @@ Version 1.0.56 (2025-08-03)
 * Added bitwise AND (`&`) and OR (`|`) operators.
 * Updated arithmetic documentation and syntax highlighting.
 * Added new regression tests.
+
+Version 1.0.57 (2025-08-04)
+
+* Added bitwise shift operators (`<<` and `>>`).
+* Updated arithmetic documentation and syntax highlighting.
+* Added new regression test.
