@@ -20,7 +20,7 @@
           "dream"
         ],
         "extensions": [
-          ".mlg"
+        ".dr"
         ],
         "configuration": "./language-configuration.json",
         "icon": {

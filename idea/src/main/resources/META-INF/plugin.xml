@@ -11,7 +11,7 @@
               implementationClass="com.dream.DreamFileType"
               fieldName="INSTANCE"
               language="Dream"
-              extensions="mlg"
+              extensions="dr"
               icon="/icons/Dream.svg"/>
     <lang.syntaxHighlighterFactory language="dream" implementationClass="com.dream.DreamSyntaxHighlighterFactory"/>
   </extensions>

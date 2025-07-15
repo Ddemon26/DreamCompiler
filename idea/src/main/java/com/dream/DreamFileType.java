@@ -29,7 +29,7 @@ public class DreamFileType extends LanguageFileType {
     @NotNull
     @Override
     public String getDefaultExtension() {
-        return "mlg";
+        return "dr";
     }
 
     @Nullable
