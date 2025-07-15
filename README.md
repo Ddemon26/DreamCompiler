@@ -76,3 +76,32 @@ Contributions are welcome. Document any new language feature under `docs/` with 
 ## License
 
 Dream Compiler is released under the [MIT License](LICENSE).
+
+## Syntax Highlighting
+
+Generate the VS Code grammar and JetBrains lexer from `tokens.json`:
+
+```bash
+node scripts/genFromTokens.js
+```
+
+### VS Code
+
+```bash
+cd vscode
+npm install
+npx vsce package
+```
+
+### JetBrains Plugin
+
+```bash
+cd idea
+./gradlew buildPlugin
+```
+
+The resulting VSIX and plugin zip live in their respective directories.
+
+## Custom file icon
+
+Both editors show a Dream logo for `.mlg` files after installing the extensions.

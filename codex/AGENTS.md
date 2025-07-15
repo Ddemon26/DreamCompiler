@@ -16,6 +16,9 @@ Responsibilities
 - Record notable changes in `docs/changelog.md`.
 - Add any required system dependencies to `codex/_startup.sh`.
 - Break down large or monolithic source files into smaller modules when practical.
+- Keep editor syntax highlighting in `vscode/` and `idea/` aligned with
+  `tokens.json`. After changing tokens or language features, run
+  `node scripts/genFromTokens.js` and rebuild both extensions.
 
 Workflow
 --------
@@ -23,7 +26,9 @@ When the command `go` is issued the agent should:
 1. Inspect the current compiler implementation and documentation.
    - Look for large modules that could be split into focused files before adding new features.
 2. Implement the next logical feature or fix.
-3. Update docs and tests accordingly.
+3. Update docs, tests, and syntax highlighting accordingly. Regenerate the
+   grammar and lexer with `node scripts/genFromTokens.js` and rebuild the
+   VS Code and JetBrains extensions.
 4. Build with `zig build` and run all tests using `zig build run -- <test>`.
 5. Commit the changes once tests succeed.
 
