@@ -1,6 +1,6 @@
 # Dream Compiler
 
-Dream is a advanced compiler that transforms a C#-like language called Dream into C code. The project is experimental 
+Dream is an advanced compiler that transforms a C#-like language called Dream into C code. The project is experimental
 but aims to grow into a fully featured compiler. This repository contains the source, example code, tests and documentation.
 
 ## Features

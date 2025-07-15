@@ -51,6 +51,6 @@ The compiler uses the `CC` environment variable for the back-end C compilation s
 ## Notes
 
 Semicolons (;) are required to terminate statements.
-Run in CLion or via a batch file for Windows compatibility.
+Run the compiler in CLion or via a batch script on Windows for compatibility.
 
 
