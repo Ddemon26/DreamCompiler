@@ -11,4 +11,5 @@ public interface DreamTokenTypes {
     IElementType STRING = new DreamElementType("STRING");
     IElementType COMMENT = new DreamElementType("COMMENT");
     IElementType COMMENTBLOCK = new DreamElementType("COMMENTBLOCK");
+    IElementType COMMA = new DreamElementType("COMMA");
 }
