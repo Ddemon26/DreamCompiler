@@ -8,12 +8,12 @@ The compiler currently supports:
 
 - Integer variables and assignments
 - Arithmetic with `+`, `-`, `*` and `/`
-- Comparison operators `<` and `>`
+ - Comparison operators `<`, `>`, `==` and `!=`
 - Console output via `Console.WriteLine` (numbers and strings)
 - Simple `if` statements
 - `while` loops
 
-More features such as functions and string output are planned for future versions. See the [changelog](docs/changelog.md) for details.
+More features such as functions are planned for future versions. See the [changelog](docs/changelog.md) for details.
 
 ## Getting Started
 

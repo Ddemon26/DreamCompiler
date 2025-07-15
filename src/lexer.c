@@ -114,9 +114,26 @@ Token next_token(Lexer *lexer)
         lexer->pos++;
         break;
     case '=':
-        token.type = TOKEN_EQUALS;
-        token.value = strdup("=");
-        lexer->pos++;
+        if (lexer->source[lexer->pos + 1] == '=') {
+            token.type = TOKEN_EQEQ;
+            token.value = strdup("==");
+            lexer->pos += 2;
+        } else {
+            token.type = TOKEN_EQUALS;
+            token.value = strdup("=");
+            lexer->pos++;
+        }
+        break;
+    case '!':
+        if (lexer->source[lexer->pos + 1] == '=') {
+            token.type = TOKEN_NEQ;
+            token.value = strdup("!=");
+            lexer->pos += 2;
+        } else {
+            token.type = TOKEN_UNKNOWN;
+            token.value = strndup(lexer->source + lexer->pos, 1);
+            lexer->pos++;
+        }
         break;
     case '.':
         token.type = TOKEN_DOT;
