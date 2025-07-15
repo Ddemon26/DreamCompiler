@@ -1,27 +1,27 @@
 # Functions in Dream
 
-Dream allows defining reusable blocks of code using the `func` keyword. Functions currently take no parameters and return an integer value using the `return` statement.
+Dream allows defining reusable blocks of code using the `func` keyword. Functions now support parameters and return an integer value using the `return` statement.
 
 ## Syntax
 
 ```
-func <name>() {
+func <name>(<type> <param>[, <type> <param>]*) {
     <statements>
 }
 ```
 
-Call a function using its name followed by `()`.
+Call a function using its name followed by `()` and optionally arguments.
 
 ```
-<name>();
+<name>(<args>);
 ```
 
 ## Example
 
 ```dream
-func GetFive() {
-    return 5;
+func Add(int a, int b) {
+    return a + b;
 }
 
-Console.WriteLine(GetFive());
+Console.WriteLine(Add(2, 3));
 ```

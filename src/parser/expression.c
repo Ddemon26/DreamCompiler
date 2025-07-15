@@ -41,13 +41,29 @@ Node *parse_expression(Lexer *lexer, Token *token) {
     if (left_type == NODE_IDENTIFIER && token->type == TOKEN_LPAREN) {
       free(token->value);
       *token = next_token(lexer);
+      Node *args = NULL;
+      Node **cur = &args;
       if (token->type != TOKEN_RPAREN) {
-        fprintf(stderr, "Expected ) after call\n");
-        exit(1);
+        while (1) {
+          Node *arg_expr = parse_expression(lexer, token);
+          Node *blk = create_node(NODE_BLOCK, NULL, arg_expr, NULL, NULL);
+          *cur = blk;
+          cur = &blk->right;
+          if (token->type == TOKEN_COMMA) {
+            free(token->value);
+            *token = next_token(lexer);
+            continue;
+          }
+          break;
+        }
+        if (token->type != TOKEN_RPAREN) {
+          fprintf(stderr, "Expected ) after call\n");
+          exit(1);
+        }
       }
       free(token->value);
       *token = next_token(lexer);
-      left = create_node(NODE_FUNC_CALL, name, NULL, NULL, NULL);
+      left = create_node(NODE_FUNC_CALL, name, args, NULL, NULL);
       free(name);
     } else {
       left = create_node(left_type, name, NULL, NULL, NULL);

@@ -34,13 +34,41 @@ void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
   } else if (expr->type == NODE_STRING) {
     fprintf(out, "\"%s\"", expr->value);
   } else if (expr->type == NODE_FUNC_CALL) {
-    fprintf(out, "%s()", expr->value);
+    fprintf(out, "%s(", expr->value);
+    Node *arg = expr->left;
+    int first = 1;
+    while (arg) {
+      if (!first)
+        fprintf(out, ", ");
+      gen_c_expr(compiler, out, arg->left);
+      first = 0;
+      arg = arg->right;
+    }
+    fprintf(out, ")");
   }
 }
 
 void generate_c_function(Compiler *compiler, Node *node) {
   FILE *out = compiler->output;
-  fprintf(out, "long %s() {\n", node->value);
+  fprintf(out, "long %s(", node->value);
+  Node *param = node->right;
+  int first = 1;
+  while (param) {
+    Node *decl = param->left;
+    if (!first)
+      fprintf(out, ", ");
+    fprintf(out, "%s %s",
+            decl->type == NODE_STR_DECL ? "const char*" : "long",
+            decl->value);
+    if (decl->type == NODE_STR_DECL) {
+      compiler->string_vars = realloc(compiler->string_vars,
+                                      sizeof(char *) * (compiler->string_var_count + 1));
+      compiler->string_vars[compiler->string_var_count++] = strdup(decl->value);
+    }
+    first = 0;
+    param = param->right;
+  }
+  fprintf(out, ") {\n");
   generate_c(compiler, node->left);
   fprintf(out, "    return 0;\n");
   fprintf(out, "}\n");

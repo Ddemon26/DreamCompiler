@@ -28,6 +28,10 @@
         {
           "name": "comment.block",
           "match": "/\\*[^*]*\\*+([^/*][^*]*\\*+)*/"
+        },
+        {
+          "name": "punctuation.separator.comma",
+          "match": ","
         }
       ]
     }

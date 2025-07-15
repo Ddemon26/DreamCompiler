@@ -15,6 +15,7 @@ package com.dream;
   \"([^\\\"\\n]|\\\\.)*\" { return DreamTokenTypes.STRING; }
   //.* { return DreamTokenTypes.COMMENT; }
   "/\\*[^*]*\\*+([^/*][^*]*\\*+)*/" { return DreamTokenTypes.COMMENTBLOCK; }
+  , { return DreamTokenTypes.COMMA; }
   [\t\r\n ]+ { return com.intellij.psi.TokenType.WHITE_SPACE; }
   . { return com.intellij.psi.TokenType.BAD_CHARACTER; }
 }

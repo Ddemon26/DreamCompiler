@@ -14,6 +14,7 @@ Console Output: Console.WriteLine(<expression>);
     <expression> may be a variable, number, or quoted string.
 Conditional: if (<expression>) <statement> [else <statement>]
 Loop: while (<expression>) <statement> or do <statement> while (<expression>) or for (<init>; <condition>; <increment>) <statement>;
+Function: func <name>(<type> <param>[, <type> <param>]*) { <statements> }
 Return: return [<expression>];
 Comments: // single line or /* block */
 
