@@ -2,19 +2,23 @@
 
 ## Overview
 
-Dream provides `Console.WriteLine` for outputting values to the console, similar to C#.
+Dream provides `Console.WriteLine` and `Console.Write` for outputting values to the console, similar to C#.
 
 ## Syntax
 
+`Console.Write(<expression>);`
+: Prints the value without a trailing newline.
+
 `Console.WriteLine(<expression>);`
-: Prints the value of a variable, number or quoted string.
+: Prints the value followed by a newline.
 
 ## Examples
 
 ```dream
 int x = 15;
 Console.WriteLine(x);          // Outputs 15
-Console.WriteLine("hello");   // Outputs the string "hello"
+Console.Write("hello");       // Outputs the string "hello" without newline
+Console.WriteLine(" world");  // Outputs "hello world" then a newline
 ```
 
 ## Notes

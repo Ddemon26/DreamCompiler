@@ -71,6 +71,8 @@ Token next_token(Lexer *lexer) {
       token.type = TOKEN_CONSOLE;
     else if (strcmp(token.value, "WriteLine") == 0)
       token.type = TOKEN_WRITELINE;
+    else if (strcmp(token.value, "Write") == 0)
+      token.type = TOKEN_WRITE;
     else if (strcmp(token.value, "if") == 0)
       token.type = TOKEN_IF;
     else if (strcmp(token.value, "else") == 0)

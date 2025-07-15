@@ -267,3 +267,10 @@ Version 1.0.50 (2025-07-30)
 * Console.WriteLine now prints boolean expressions as 'true' or 'false'.
 * Updated documentation and added a new test case.
 
+
+Version 1.0.51 (2025-07-31)
+
+* Added `Console.Write` for output without a newline.
+* Updated documentation and README.
+* Added new regression test.
+* Regenerated editor grammars.

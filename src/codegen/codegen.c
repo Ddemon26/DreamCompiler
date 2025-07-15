@@ -189,6 +189,29 @@ void generate_c(Compiler *compiler, Node *node) {
       gen_c_expr(compiler, out, node->left);
       fprintf(out, ");\n");
     }
+  } else if (node->type == NODE_WRITE) {
+    int is_str = 0;
+    int is_bool = 0;
+    if (node->left) {
+      if (node->left->type == NODE_STRING)
+        is_str = 1;
+      else if (node->left->type == NODE_IDENTIFIER)
+        is_str = is_string_var(compiler, node->left->value);
+      is_bool = is_boolean_expr(compiler, node->left);
+    }
+    if (is_str) {
+      fprintf(out, "    printf(\"%%s\", ");
+      gen_c_expr(compiler, out, node->left);
+      fprintf(out, ");\n");
+    } else if (is_bool) {
+      fprintf(out, "    printf(\"%%s\", ");
+      gen_c_expr(compiler, out, node->left);
+      fprintf(out, " ? \"true\" : \"false\");\n");
+    } else {
+      fprintf(out, "    printf(\"%%ld\", (long)");
+      gen_c_expr(compiler, out, node->left);
+      fprintf(out, ");\n");
+    }
   } else if (node->type == NODE_IF) {
     fprintf(out, "    if (");
     gen_c_expr_unwrapped(compiler, out, node->left);
