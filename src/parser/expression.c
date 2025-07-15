@@ -103,7 +103,7 @@ Node *parse_expression(Lexer *lexer, Token *token) {
     left = create_node(NODE_UNARY_OP, "!", left, NULL, NULL);
   if (token->type == TOKEN_PLUS ||
       ((token->type == TOKEN_MINUS || token->type == TOKEN_STAR ||
-        token->type == TOKEN_SLASH || token->type == TOKEN_PERCENT ||
+        token->type == TOKEN_SLASH || token->type == TOKEN_PERCENT || token->type == TOKEN_CARET ||
         token->type == TOKEN_LT || token->type == TOKEN_GT ||
         token->type == TOKEN_LE || token->type == TOKEN_GE ||
         token->type == TOKEN_EQEQ || token->type == TOKEN_NEQ ||

@@ -6,6 +6,7 @@ Dream supports basic arithmetic operations. Addition (`+`) was the first
 operator implemented and subtraction (`-`) is now also available. Multiplication
 using the `*` operator has been introduced as well. Division with the `/`
 operator is now supported. Modulo with the `%` operator is now available too.
+Bitwise XOR with the `^` operator is now supported.
 
 ## Syntax
 
@@ -24,6 +25,9 @@ operator is now supported. Modulo with the `%` operator is now available too.
 **Modulo**: `<identifier> = <expression> % <expression>;`
 : Stores the remainder of dividing the left expression by the right.
 
+**Bitwise XOR**: `<identifier> = <expression> ^ <expression>;`
+: Computes the bitwise exclusive-or of two expressions.
+
 **Compound assignment**: `<identifier> <op>= <expression>;`
 : Shorthand for `<identifier> = <identifier> <op> <expression>` using
   `+=`, `-=`, `*=`, `/=` and `%=`.
@@ -38,6 +42,7 @@ x = y - 3;   // x = 7
 x = y * 2;   // x = 20
 x = y / 5;   // x = 2
 x = y % 4;   // x = 2
+x = y ^ 3;   // bitwise XOR
 x += 3;      // x = x + 3
 ```
 

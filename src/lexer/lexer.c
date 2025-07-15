@@ -299,6 +299,11 @@ Token next_token(Lexer *lexer) {
       lexer->pos++;
     }
     break;
+  case '^':
+    token.type = TOKEN_CARET;
+    token.value = strdup("^");
+    lexer->pos++;
+    break;
   case '.':
     token.type = TOKEN_DOT;
     token.value = strdup(".");

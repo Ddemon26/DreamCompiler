@@ -24,7 +24,7 @@ function escapeFlex(re){
 for(const t of tokens){
   let pattern = escapeFlex(t.regex);
   if (t.name === 'operator') {
-    const ops = ['++','--','+=','-=','*=','/=','%=','+','-','*','/','%','<=','>=','==','!=','<','>','&&','||','!','=','?'];
+    const ops = ['++','--','+=','-=','*=','/=','%=','+','-','*','/','%','^','<=','>=','==','!=','<','>','&&','||','!','=','?'];
     pattern = ops.map(op => `"${op}"`).join('|');
   } else if (t.regex.startsWith('\/\\*')) {
     pattern = `"${pattern}"`;
