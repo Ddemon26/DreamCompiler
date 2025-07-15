@@ -15,6 +15,7 @@ Conditional Operator: <expression> ? <expression> : <expression>;
 Console Output: Console.WriteLine(<expression>);
     <expression> may be a variable, number, or quoted string.
     String literals support escape sequences such as `\n`, `\t`, `\\` and `\"`.
+    Strings can be concatenated using `+`.
 Conditional: if (<expression>) <statement> [else <statement>]
 Loop: while (<expression>) <statement> or do <statement> while (<expression>) or for (<init>; <condition>; <increment>) <statement>;
 Switch: switch (<expression>) { case <number>: <statement> ... }

@@ -39,11 +39,34 @@ static int is_boolean_expr(Compiler *compiler, Node *expr) {
   return 0;
 }
 
+static int is_string_expr(Compiler *compiler, Node *expr) {
+  if (!expr)
+    return 0;
+  if (expr->type == NODE_STRING)
+    return 1;
+  if (expr->type == NODE_IDENTIFIER)
+    return is_string_var(compiler, expr->value);
+  if (expr->type == NODE_BINARY_OP && strcmp(expr->value, "+") == 0)
+    return is_string_expr(compiler, expr->left) ||
+           is_string_expr(compiler, expr->right);
+  return 0;
+}
+
 static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
                             int wrap) {
   if (!expr)
     return;
   if (expr->type == NODE_BINARY_OP) {
+    if (strcmp(expr->value, "+") == 0 &&
+        (is_string_expr(compiler, expr->left) ||
+         is_string_expr(compiler, expr->right))) {
+      fprintf(out, "dream_concat(");
+      gen_c_expr_impl(compiler, out, expr->left, 0);
+      fprintf(out, ", ");
+      gen_c_expr_impl(compiler, out, expr->right, 0);
+      fprintf(out, ")");
+      return;
+    }
     if (wrap)
       fputc('(', out);
     gen_c_expr_impl(compiler, out, expr->left, 1);
@@ -177,15 +200,8 @@ void generate_c(Compiler *compiler, Node *node) {
   } else if (node->type == NODE_POST_DEC) {
     fprintf(out, "    %s--;\n", node->value);
   } else if (node->type == NODE_WRITELINE) {
-    int is_str = 0;
-    int is_bool = 0;
-    if (node->left) {
-      if (node->left->type == NODE_STRING)
-        is_str = 1;
-      else if (node->left->type == NODE_IDENTIFIER)
-        is_str = is_string_var(compiler, node->left->value);
-      is_bool = is_boolean_expr(compiler, node->left);
-    }
+    int is_str = is_string_expr(compiler, node->left);
+    int is_bool = is_boolean_expr(compiler, node->left);
     if (is_str) {
       fprintf(out, "    printf(\"%%s\\n\", ");
       gen_c_expr(compiler, out, node->left);
@@ -200,15 +216,8 @@ void generate_c(Compiler *compiler, Node *node) {
       fprintf(out, ");\n");
     }
   } else if (node->type == NODE_WRITE) {
-    int is_str = 0;
-    int is_bool = 0;
-    if (node->left) {
-      if (node->left->type == NODE_STRING)
-        is_str = 1;
-      else if (node->left->type == NODE_IDENTIFIER)
-        is_str = is_string_var(compiler, node->left->value);
-      is_bool = is_boolean_expr(compiler, node->left);
-    }
+    int is_str = is_string_expr(compiler, node->left);
+    int is_bool = is_boolean_expr(compiler, node->left);
     if (is_str) {
       fprintf(out, "    printf(\"%%s\", ");
       gen_c_expr(compiler, out, node->left);

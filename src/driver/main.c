@@ -45,6 +45,16 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   fprintf(compiler.output, "#include <stdio.h>\n");
+  fprintf(compiler.output, "#include <stdlib.h>\n");
+  fprintf(compiler.output, "#include <string.h>\n");
+  fprintf(compiler.output,
+          "static char* dream_concat(const char* a, const char* b) {\n"
+          "  size_t len = strlen(a) + strlen(b);\n"
+          "  char* s = malloc(len + 1);\n"
+          "  strcpy(s, a);\n"
+          "  strcat(s, b);\n"
+          "  return s;\n"
+          "}\n");
   Token token = next_token(&lexer);
   Node *program = NULL;
   Node **current = &program;

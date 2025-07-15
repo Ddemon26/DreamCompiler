@@ -13,3 +13,10 @@ Example:
 Console.WriteLine("Line 1\nLine 2");
 Console.WriteLine("She said \"hi\"");
 ```
+
+Strings can be concatenated using the `+` operator:
+
+```dream
+string greeting = "Hello, " + "world";
+Console.WriteLine(greeting);
+```

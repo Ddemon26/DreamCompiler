@@ -1,0 +1,4 @@
+string a = "hello ";
+string b = "world";
+string c = a + b;
+Console.WriteLine(c);
