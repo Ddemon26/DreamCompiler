@@ -186,3 +186,7 @@ Version 1.0.34 (2025-07-18)
 
 * Synchronized JetBrains token definitions with `tokens.json`.
 * Updated generator to copy tokens into the plugin resources.
+
+Version 1.0.35 (2025-07-18)
+
+* Fixed printf warnings by casting numeric output to `long`.

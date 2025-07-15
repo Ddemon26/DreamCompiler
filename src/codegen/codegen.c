@@ -52,11 +52,13 @@ void generate_c(Compiler *compiler, Node *node) {
   } else if (node->type == NODE_WRITELINE) {
     if (node->left && node->left->type == NODE_STRING) {
       fprintf(out, "    printf(\"%%s\\n\", ");
+      gen_c_expr(out, node->left);
+      fprintf(out, ");\n");
     } else {
-      fprintf(out, "    printf(\"%%ld\\n\", ");
+      fprintf(out, "    printf(\"%%ld\\n\", (long)");
+      gen_c_expr(out, node->left);
+      fprintf(out, ");\n");
     }
-    gen_c_expr(out, node->left);
-    fprintf(out, ");\n");
   } else if (node->type == NODE_IF) {
     fprintf(out, "    if (");
     gen_c_expr(out, node->left);
