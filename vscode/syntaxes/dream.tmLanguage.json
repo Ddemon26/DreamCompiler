@@ -24,6 +24,10 @@
         {
           "name": "comment.line.double-slash.dream",
           "match": "//.*"
+        },
+        {
+          "name": "comment.block.dream",
+          "match": "/\\*[^*]*\\*+([^/*][^*]*\\*+)*/"
         }
       ]
     }

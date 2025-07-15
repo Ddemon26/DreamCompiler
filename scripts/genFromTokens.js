@@ -17,7 +17,9 @@ function escapeFlex(re){
   return re.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 for(const t of tokens){
-  flex += `  ${escapeFlex(t.regex)} { return DreamTokenTypes.${t.name.toUpperCase()}; }\n`;
+  const escaped = escapeFlex(t.regex);
+  const pattern = t.regex.startsWith('\/\\*') ? `"${escaped}"` : escaped;
+  flex += `  ${pattern} { return DreamTokenTypes.${t.name.toUpperCase()}; }\n`;
 }
 flex += '  [\\t\\r\\n ]+ { return com.intellij.psi.TokenType.WHITE_SPACE; }\n  . { return com.intellij.psi.TokenType.BAD_CHARACTER; }\n}\n';
 fs.mkdirSync('idea/src/main/java/com/dream', { recursive: true });

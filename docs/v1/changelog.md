@@ -166,3 +166,8 @@ Version 1.0.30 (2025-07-17)
 
 * Added simple functions with the `func` keyword.
 * Updated documentation and added a new test case.
+
+Version 1.0.31 (2025-07-17)
+
+* Added block comment token for syntax highlighting.
+* Regenerated VS Code and JetBrains grammars.
