@@ -31,9 +31,10 @@ ZIG_TAR="${ZIG_DIR}.tar.xz"
 # Fetch and install Zig from the official release archive
 curl -L "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_TAR}" -o "/tmp/${ZIG_TAR}"
 tar -C /tmp -xf "/tmp/${ZIG_TAR}"
-sudo mv "/tmp/${ZIG_DIR}/zig" /usr/local/bin/
-sudo chmod +x /usr/local/bin/zig
-rm -rf "/tmp/${ZIG_DIR}" "/tmp/${ZIG_TAR}"
+sudo mv "/tmp/${ZIG_DIR}" /usr/local/zig
+sudo ln -sf /usr/local/zig/zig /usr/local/bin/zig
+sudo chmod +x /usr/local/zig/zig
+rm -rf "/tmp/${ZIG_TAR}"
 
 # Add additional dependencies below as needed
 

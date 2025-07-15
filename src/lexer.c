@@ -93,6 +93,16 @@ Token next_token(Lexer *lexer)
         token.value = strdup("/");
         lexer->pos++;
         break;
+    case '<':
+        token.type = TOKEN_LT;
+        token.value = strdup("<");
+        lexer->pos++;
+        break;
+    case '>':
+        token.type = TOKEN_GT;
+        token.value = strdup(">");
+        lexer->pos++;
+        break;
     case '-':
         token.type = TOKEN_MINUS;
         token.value = strdup("-");

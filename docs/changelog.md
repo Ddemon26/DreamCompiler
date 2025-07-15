@@ -57,3 +57,9 @@ Version 1.0.9 (2025-07-14)
 * Updated documentation and usage guide.
 * Added regression test for division.
 
+
+Version 1.0.10 (2025-07-14)
+
+* Added less-than (<) and greater-than (>) comparison operators.
+* Updated documentation and usage guide.
+* Added regression test for comparisons.
