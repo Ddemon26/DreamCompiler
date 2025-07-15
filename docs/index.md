@@ -15,6 +15,7 @@ Use the version dropdown in the sidebar to view documentation for other releases
 - [Arithmetic](v1/arithmetic.md)
 - [Parentheses](v1/parentheses.md)
 - [Comparison](v1/comparison.md)
+- [Logical Operators](v1/logical.md)
 - [Console Output](v1/console.md)
 
 ### Control Flow

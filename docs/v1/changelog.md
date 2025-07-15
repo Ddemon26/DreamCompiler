@@ -121,3 +121,8 @@ Version 1.0.21 (2025-07-15)
 * Braced blocks can now contain multiple statements in `if` and `while`.
 * Updated documentation and added regression tests.
 
+Version 1.0.22 (2025-07-15)
+
+* Added logical AND (&&) and OR (||) operators.
+* Updated documentation and added a new test case.
+

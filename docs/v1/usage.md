@@ -9,6 +9,7 @@ Variable Declaration: int <identifier>; or int <identifier> = <value>;
 Assignment: <identifier> = <expression>;
 Arithmetic: <identifier> = <expression> + <expression> or <expression> - <expression> or <expression> * <expression> or <expression> / <expression> or <expression> % <expression>;
 Comparison: <expression> < <expression> or <expression> > <expression> or <expression> <= <expression> or <expression> >= <expression> or <expression> == <expression> or <expression> != <expression>;
+Logical: <expression> && <expression> or <expression> || <expression>;
 Console Output: Console.WriteLine(<expression>);
     <expression> may be a variable, number, or quoted string.
 Conditional: if (<expression>) <statement> [else <statement>]
@@ -24,6 +25,8 @@ x = y % 3;          // x = 1
 Console.WriteLine(x);       // Outputs 15
 Console.WriteLine("hi"); // Outputs "hi"
 if (x) Console.WriteLine(y);
+if (x && y) Console.WriteLine(x); // Prints if both nonzero
+if (x || y) Console.WriteLine(y); // Prints if either nonzero
 while (x) Console.WriteLine(y);
 
 ## Compilation
