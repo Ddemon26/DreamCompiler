@@ -66,6 +66,16 @@ static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
       arg = arg->right;
     }
     fprintf(out, ")");
+  } else if (expr->type == NODE_TERNARY) {
+    if (wrap)
+      fputc('(', out);
+    gen_c_expr_impl(compiler, out, expr->left, 1);
+    fprintf(out, " ? ");
+    gen_c_expr_impl(compiler, out, expr->right, 1);
+    fprintf(out, " : ");
+    gen_c_expr_impl(compiler, out, expr->else_branch, 1);
+    if (wrap)
+      fputc(')', out);
   }
 }
 

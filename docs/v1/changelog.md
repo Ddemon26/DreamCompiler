@@ -239,3 +239,8 @@ Version 1.0.45 (2025-07-26)
 
 * Added `switch` statements with `case` and `default` clauses.
 * Updated documentation and added a new test case.
+
+Version 1.0.46 (2025-07-27)
+
+* Added ternary conditional operator with `? :`.
+* Updated documentation and syntax highlighting.

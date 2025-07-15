@@ -114,5 +114,18 @@ Node *parse_expression(Lexer *lexer, Token *token) {
     Node *right = parse_expression(lexer, token);
     return create_node(NODE_BINARY_OP, op, left, right, NULL);
   }
+  if (token->type == TOKEN_QUESTION) {
+    free(token->value);
+    *token = next_token(lexer);
+    Node *true_expr = parse_expression(lexer, token);
+    if (token->type != TOKEN_COLON) {
+      fprintf(stderr, "Expected : in ternary expression\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *false_expr = parse_expression(lexer, token);
+    return create_node(NODE_TERNARY, NULL, left, true_expr, false_expr);
+  }
   return left;
 }
