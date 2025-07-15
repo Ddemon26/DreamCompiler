@@ -340,6 +340,22 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       exit(1);
     }
     return create_node(NODE_DO_WHILE, NULL, cond, body, NULL);
+  } else if (token->type == TOKEN_BREAK) {
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_SEMICOLON) {
+      fprintf(stderr, "Expected semicolon\n");
+      exit(1);
+    }
+    return create_node(NODE_BREAK, NULL, NULL, NULL, NULL);
+  } else if (token->type == TOKEN_CONTINUE) {
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_SEMICOLON) {
+      fprintf(stderr, "Expected semicolon\n");
+      exit(1);
+    }
+    return create_node(NODE_CONTINUE, NULL, NULL, NULL, NULL);
   }
   fprintf(stderr, "Invalid statement\n");
   exit(1);

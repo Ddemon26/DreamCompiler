@@ -143,3 +143,8 @@ Version 1.0.25 (2025-07-15)
 * Updated documentation and usage guide.
 * Added regression test for for loops.
 
+Version 1.0.26 (2025-07-15)
+
+* Added `break` and `continue` statements for loops.
+* Documented the feature and added a new test case.
+

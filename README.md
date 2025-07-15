@@ -14,6 +14,8 @@ The compiler currently supports:
 - Simple `if` statements with optional `else`
 - `while` loops
 - `do-while` loops
+- `for` loops
+- `break` and `continue` statements
 - Braced blocks supporting multiple statements
 
 More features such as functions are planned for future versions. See the [changelog](docs/v1/changelog.md) for details.
