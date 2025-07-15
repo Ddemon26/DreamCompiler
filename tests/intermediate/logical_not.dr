@@ -1,0 +1,3 @@
+int a = 1;
+if (!a) Console.WriteLine(a); // Expected: (no output)
+if (!0) Console.WriteLine(a); // Expected: 1

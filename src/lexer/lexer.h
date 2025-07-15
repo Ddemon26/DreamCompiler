@@ -19,6 +19,7 @@ typedef enum {
   TOKEN_GE,
   TOKEN_EQEQ,
   TOKEN_NEQ,
+  TOKEN_NOT,
   TOKEN_AND,
   TOKEN_OR,
   TOKEN_SEMICOLON,

@@ -150,8 +150,8 @@ Token next_token(Lexer *lexer) {
       token.value = strdup("!=");
       lexer->pos += 2;
     } else {
-      token.type = TOKEN_UNKNOWN;
-      token.value = strndup(lexer->source + lexer->pos, 1);
+      token.type = TOKEN_NOT;
+      token.value = strdup("!");
       lexer->pos++;
     }
     break;
