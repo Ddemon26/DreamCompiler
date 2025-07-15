@@ -59,14 +59,15 @@ public class DreamLexer implements com.intellij.lexer.FlexLexer {
   private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
-    "\11\0\1\1\1\2\2\3\1\2\22\0\1\1\1\0"+
-    "\1\4\5\0\1\5\1\6\1\7\1\10\1\11\2\0"+
-    "\1\12\23\0\1\13\10\0\1\14\12\0\1\15\3\0"+
-    "\1\16\1\17\1\20\1\21\2\0\1\22\1\23\1\24"+
-    "\1\25\1\26\1\27\1\30\1\31\1\32\1\0\1\33"+
-    "\1\34\1\0\1\35\1\36\2\0\1\37\1\40\1\41"+
-    "\1\42\1\0\1\43\15\0\1\3\u01a2\0\2\3\326\0"+
-    "\u0100\3";
+    "\11\0\1\1\1\2\2\3\1\2\22\0\1\1\1\4"+
+    "\1\5\2\0\1\6\1\7\1\0\1\10\1\11\1\12"+
+    "\1\13\1\14\1\15\1\16\1\17\12\20\1\0\1\21"+
+    "\1\4\1\22\1\4\4\0\1\23\10\0\1\24\12\0"+
+    "\1\25\3\0\1\26\1\27\1\30\1\31\2\0\1\32"+
+    "\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42"+
+    "\1\0\1\43\1\44\1\0\1\45\1\46\2\0\1\47"+
+    "\1\50\1\51\1\52\1\0\1\53\3\0\1\54\1\55"+
+    "\1\54\7\0\1\3\u01a2\0\2\3\326\0\u0100\3";
 
   private static int [] zzUnpackcmap_blocks() {
     int [] result = new int[1024];
@@ -93,11 +94,13 @@ public class DreamLexer implements com.intellij.lexer.FlexLexer {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\1\0\1\1\1\2\1\1\1\3\2\1\1\0\1\4"+
-    "\1\0\1\5\61\0\1\6\2\0\1\7\35\0\1\10";
+    "\1\0\1\1\1\2\1\3\1\1\1\3\1\1\1\4"+
+    "\1\3\1\5\1\3\1\6\1\3\1\7\1\10\14\1"+
+    "\1\11\1\3\1\0\1\12\1\0\1\13\6\0\1\14"+
+    "\70\0\1\15";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[94];
+    int [] result = new int[97];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -122,21 +125,22 @@ public class DreamLexer implements com.intellij.lexer.FlexLexer {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\44\0\110\0\154\0\44\0\220\0\264\0\154"+
-    "\0\44\0\330\0\374\0\u0120\0\u0144\0\u0168\0\u018c\0\u01b0"+
-    "\0\u01d4\0\u01f8\0\u021c\0\u0240\0\u0264\0\u0288\0\u02ac\0\u02d0"+
-    "\0\u02f4\0\u0318\0\u033c\0\u0360\0\u0384\0\u03a8\0\u03cc\0\u03f0"+
-    "\0\u0414\0\u0438\0\u045c\0\u0480\0\u04a4\0\u04c8\0\u04ec\0\u0510"+
-    "\0\u0534\0\u0558\0\u057c\0\u05a0\0\u05c4\0\u05e8\0\u060c\0\u0630"+
-    "\0\u0654\0\u0678\0\u069c\0\u06c0\0\u06e4\0\u0708\0\u072c\0\u0750"+
-    "\0\u0774\0\u0798\0\u07bc\0\u07e0\0\44\0\u0804\0\u0828\0\44"+
-    "\0\u084c\0\u0870\0\u0894\0\u08b8\0\u08dc\0\u0900\0\u0924\0\u0948"+
-    "\0\u096c\0\u0990\0\u09b4\0\u09d8\0\u09fc\0\u0a20\0\u0a44\0\u0a68"+
-    "\0\u0a8c\0\u0ab0\0\u0ad4\0\u0af8\0\u0b1c\0\u0b40\0\u0b64\0\u0b88"+
-    "\0\u0bac\0\u0bd0\0\u0bf4\0\u0c18\0\u0c3c\0\44";
+    "\0\0\0\56\0\134\0\212\0\270\0\56\0\346\0\56"+
+    "\0\u0114\0\56\0\u0142\0\56\0\u0170\0\u019e\0\56\0\u01cc"+
+    "\0\u01fa\0\u0228\0\u0256\0\u0284\0\u02b2\0\u02e0\0\u030e\0\u033c"+
+    "\0\u036a\0\u0398\0\u03c6\0\56\0\u03f4\0\270\0\56\0\u0422"+
+    "\0\u0450\0\u047e\0\u04ac\0\u04da\0\u0508\0\u0536\0\u0564\0\56"+
+    "\0\u0592\0\u02b2\0\u05c0\0\u05ee\0\u061c\0\u064a\0\u0678\0\u06a6"+
+    "\0\u06d4\0\u0702\0\u0730\0\u075e\0\u078c\0\u07ba\0\u07e8\0\u0816"+
+    "\0\u0844\0\u0872\0\u08a0\0\u08ce\0\u08fc\0\u092a\0\u0958\0\u0986"+
+    "\0\u09b4\0\u09e2\0\u0a10\0\u0a3e\0\u0a6c\0\u0a9a\0\u0ac8\0\u0af6"+
+    "\0\u0b24\0\u0b52\0\u0b80\0\u0bae\0\u0bdc\0\u0c0a\0\u0c38\0\u0c66"+
+    "\0\u0c94\0\u0cc2\0\u0cf0\0\u0d1e\0\u0d4c\0\u0d7a\0\u0da8\0\u0dd6"+
+    "\0\u0e04\0\u0e32\0\u0e60\0\u0e8e\0\u0ebc\0\u0eea\0\u0f18\0\u0f46"+
+    "\0\56";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[94];
+    int [] result = new int[97];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -159,37 +163,37 @@ public class DreamLexer implements com.intellij.lexer.FlexLexer {
   private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\2\2\3\1\0\1\4\4\2\1\5\1\6\4\2"+
-    "\1\7\24\2\45\0\2\3\41\0\4\10\1\11\12\10"+
-    "\1\12\15\10\1\0\6\10\12\0\1\13\4\0\1\14"+
-    "\47\0\1\15\37\0\1\16\24\0\2\13\2\0\40\13"+
-    "\7\0\1\17\47\0\1\20\1\0\1\21\1\0\1\22"+
-    "\3\0\1\23\1\24\1\25\1\26\1\27\2\0\1\30"+
-    "\4\0\1\31\1\32\1\33\1\0\1\34\2\10\2\0"+
-    "\40\10\16\0\1\35\63\0\1\36\44\0\1\37\31\0"+
-    "\1\40\54\0\1\41\1\42\42\0\1\43\43\0\1\44"+
-    "\41\0\1\45\31\0\1\26\13\0\1\46\3\0\1\47"+
-    "\30\0\1\44\5\0\1\50\34\0\1\51\56\0\1\52"+
-    "\41\0\1\53\35\0\1\54\33\0\1\55\57\0\1\56"+
-    "\40\0\1\57\30\0\1\60\5\0\1\40\54\0\1\61"+
-    "\33\0\1\62\52\0\1\63\25\0\1\64\64\0\1\65"+
-    "\42\0\1\44\41\0\1\66\47\0\1\44\43\0\1\67"+
-    "\41\0\1\70\46\0\1\65\33\0\1\71\20\0\1\72"+
-    "\74\0\1\73\44\0\1\74\25\0\1\75\54\0\1\44"+
-    "\31\0\1\76\62\0\1\77\25\0\1\100\46\0\1\44"+
-    "\41\0\1\44\61\0\1\101\33\0\1\102\45\0\1\65"+
-    "\27\0\1\103\61\0\1\71\33\0\1\104\50\0\1\44"+
-    "\42\0\1\105\50\0\1\106\41\0\1\107\15\0\1\110"+
-    "\50\0\1\111\64\0\1\53\43\0\1\44\36\0\1\44"+
-    "\32\0\1\112\56\0\1\113\20\0\1\114\71\0\1\65"+
-    "\16\0\1\115\40\0\1\116\54\0\1\117\46\0\1\120"+
-    "\34\0\1\121\40\0\1\122\54\0\1\123\41\0\1\124"+
-    "\46\0\1\125\31\0\1\126\54\0\1\127\32\0\1\130"+
-    "\53\0\1\131\33\0\1\132\44\0\1\133\41\0\1\134"+
-    "\44\0\1\135\46\0\1\136\31\0";
+    "\1\2\2\3\1\0\1\4\1\5\1\6\1\7\2\10"+
+    "\1\6\1\11\1\12\1\13\1\14\1\15\1\16\1\17"+
+    "\1\4\1\20\1\2\1\21\5\2\1\22\1\23\1\24"+
+    "\1\25\1\26\2\2\1\27\4\2\1\30\1\31\1\32"+
+    "\1\2\1\33\1\34\1\35\57\0\2\3\75\0\1\6"+
+    "\33\0\2\36\1\0\2\36\1\37\21\36\1\40\26\36"+
+    "\7\0\1\6\61\0\1\6\57\0\1\6\57\0\1\41"+
+    "\7\0\1\42\46\0\1\16\103\0\1\43\56\0\1\44"+
+    "\54\0\1\45\1\46\54\0\1\47\55\0\1\50\53\0"+
+    "\1\51\43\0\1\52\13\0\1\53\3\0\1\54\42\0"+
+    "\1\50\5\0\1\55\46\0\1\56\70\0\1\57\53\0"+
+    "\1\60\47\0\1\61\71\0\1\6\2\36\1\0\53\36"+
+    "\2\41\2\0\52\41\12\0\1\62\110\0\1\63\52\0"+
+    "\1\64\61\0\1\65\45\0\1\66\64\0\1\67\60\0"+
+    "\1\70\54\0\1\50\53\0\1\71\61\0\1\50\55\0"+
+    "\1\72\53\0\1\73\60\0\1\70\45\0\1\74\41\0"+
+    "\1\75\77\0\1\76\56\0\1\77\50\0\1\50\43\0"+
+    "\1\100\74\0\1\101\42\0\1\50\53\0\1\50\73\0"+
+    "\1\102\45\0\1\103\57\0\1\70\42\0\1\104\72\0"+
+    "\1\74\45\0\1\105\62\0\1\50\54\0\1\106\62\0"+
+    "\1\107\53\0\1\110\22\0\1\111\67\0\1\112\76\0"+
+    "\1\60\55\0\1\50\50\0\1\50\45\0\1\113\67\0"+
+    "\1\114\25\0\1\115\110\0\1\70\37\0\1\116\40\0"+
+    "\1\117\56\0\1\120\52\0\1\121\73\0\1\122\60\0"+
+    "\1\123\43\0\1\124\50\0\1\125\73\0\1\126\53\0"+
+    "\1\127\60\0\1\130\36\0\1\131\73\0\1\132\37\0"+
+    "\1\133\72\0\1\134\40\0\1\135\56\0\1\136\53\0"+
+    "\1\137\56\0\1\140\62\0\1\141\36\0";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[3168];
+    int [] result = new int[3956];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -227,11 +231,12 @@ public class DreamLexer implements com.intellij.lexer.FlexLexer {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\1\11\2\1\1\11\2\1\1\0\1\11\1\0"+
-    "\1\1\61\0\1\11\2\0\1\11\35\0\1\11";
+    "\1\0\1\11\3\1\1\11\1\1\1\11\1\1\1\11"+
+    "\1\1\1\11\2\1\1\11\14\1\1\11\1\1\1\0"+
+    "\1\11\1\0\1\1\6\0\1\11\70\0\1\11";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[94];
+    int [] result = new int[97];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -544,42 +549,67 @@ public class DreamLexer implements com.intellij.lexer.FlexLexer {
             { return com.intellij.psi.TokenType.BAD_CHARACTER;
             }
           // fall through
-          case 9: break;
+          case 14: break;
           case 2:
             { return com.intellij.psi.TokenType.WHITE_SPACE;
             }
           // fall through
-          case 10: break;
-          case 3:
-            { return DreamTokenTypes.COMMA;
-            }
-          // fall through
-          case 11: break;
-          case 4:
-            { return DreamTokenTypes.STRING;
-            }
-          // fall through
-          case 12: break;
-          case 5:
-            { return DreamTokenTypes.LINE_COMMENT;
-            }
-          // fall through
-          case 13: break;
-          case 6:
-            { return DreamTokenTypes.NUMBER;
-            }
-          // fall through
-          case 14: break;
-          case 7:
-            { return DreamTokenTypes.KEYWORD;
-            }
-          // fall through
           case 15: break;
-          case 8:
-            { return DreamTokenTypes.BLOCK_COMMENT;
+          case 3:
+            { return DreamTokenTypes.OPERATOR;
             }
           // fall through
           case 16: break;
+          case 4:
+            { return DreamTokenTypes.PAREN;
+            }
+          // fall through
+          case 17: break;
+          case 5:
+            { return DreamTokenTypes.COMMA;
+            }
+          // fall through
+          case 18: break;
+          case 6:
+            { return DreamTokenTypes.DOT;
+            }
+          // fall through
+          case 19: break;
+          case 7:
+            { return DreamTokenTypes.NUMBER;
+            }
+          // fall through
+          case 20: break;
+          case 8:
+            { return DreamTokenTypes.SEMICOLON;
+            }
+          // fall through
+          case 21: break;
+          case 9:
+            { return DreamTokenTypes.BRACE;
+            }
+          // fall through
+          case 22: break;
+          case 10:
+            { return DreamTokenTypes.STRING;
+            }
+          // fall through
+          case 23: break;
+          case 11:
+            { return DreamTokenTypes.COMMENT;
+            }
+          // fall through
+          case 24: break;
+          case 12:
+            { return DreamTokenTypes.KEYWORD;
+            }
+          // fall through
+          case 25: break;
+          case 13:
+            { return DreamTokenTypes.COMMENTBLOCK;
+            }
+          // fall through
+          case 26: break;
           default:
             zzScanError(ZZ_NO_MATCH);
           }
