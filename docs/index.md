@@ -20,6 +20,7 @@ Use the version dropdown in the sidebar to view documentation for other releases
 - [Logical Operators](v1/logical.md)
 - [Conditional Operator](v1/conditional.md)
 - [Console Output](v1/console.md)
+- [String Literals](v1/strings.md)
 - [Comments](v1/comments.md)
 - [Functions](v1/functions.md)
 

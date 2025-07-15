@@ -274,3 +274,8 @@ Version 1.0.51 (2025-07-31)
 * Updated documentation and README.
 * Added new regression test.
 * Regenerated editor grammars.
+Version 1.0.52 (2025-07-31)
+
+* Added support for escape sequences in string literals.
+
+* Updated documentation and added a regression test.

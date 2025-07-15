@@ -73,7 +73,17 @@ static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
   } else if (expr->type == NODE_NUMBER) {
     fprintf(out, "%s", expr->value);
   } else if (expr->type == NODE_STRING) {
-    fprintf(out, "\"%s\"", expr->value);
+    fputc('"', out);
+    for (const char *p = expr->value; *p; p++) {
+      switch (*p) {
+      case '\\': fputs("\\\\", out); break;
+      case '"': fputs("\\\"", out); break;
+      case '\n': fputs("\\n", out); break;
+      case '\t': fputs("\\t", out); break;
+      default: fputc(*p, out); break;
+      }
+    }
+    fputc('"', out);
   } else if (expr->type == NODE_FUNC_CALL) {
     fprintf(out, "%s(", expr->value);
     Node *arg = expr->left;
