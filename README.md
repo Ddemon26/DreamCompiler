@@ -105,4 +105,4 @@ The resulting VSIX and plugin zip live in their respective directories.
 
 ## Custom file icon
 
-Both editors show a Dream logo for `.mlg` files after installing the extensions.
+Both editors show a Dream logo for `.dr` files after installing the extensions.
