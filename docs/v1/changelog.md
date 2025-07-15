@@ -296,3 +296,9 @@ Version 1.0.55 (2025-08-02)
 * Added bitwise XOR operator (`^`).
 * Updated arithmetic documentation and editor token definitions.
 * Added new regression test.
+
+Version 1.0.56 (2025-08-03)
+
+* Added bitwise AND (`&`) and OR (`|`) operators.
+* Updated arithmetic documentation and syntax highlighting.
+* Added new regression tests.
