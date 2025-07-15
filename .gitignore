@@ -46,3 +46,5 @@ zig-cache/
 idea/gradle/wrapper/gradle-wrapper.jar
 idea/build/
 vscode/*.vsix
+/idea/.idea
+/idea/.gradle
