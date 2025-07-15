@@ -108,7 +108,7 @@ cd idea
 ./gradlew build
 ./gradlew test
 ```
-The build automatically regenerates the lexer and token definitions from `tokens.json`.
+The build automatically regenerates the lexer and token definitions from `idea/tokens.json`.
 
 The resulting VSIX and plugin zip live in their respective directories.
 
