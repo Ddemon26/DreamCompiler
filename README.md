@@ -8,10 +8,11 @@ The compiler currently supports:
 
 - Integer variables and assignments
 - Arithmetic with `+`, `-`, `*` and `/`
- - Comparison operators `<`, `>`, `<=`, `>=`, `==` and `!=`
+- Comparison operators `<`, `>`, `<=`, `>=`, `==` and `!=`
 - Console output via `Console.WriteLine` (numbers and strings)
-- Simple `if` statements
+- Simple `if` statements with optional `else`
 - `while` loops
+- Braced blocks supporting multiple statements
 
 More features such as functions are planned for future versions. See the [changelog](docs/v1/changelog.md) for details.
 

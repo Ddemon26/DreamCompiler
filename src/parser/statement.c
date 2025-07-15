@@ -3,6 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+static Node *parse_block(Lexer *lexer, Token *token) {
+  Node *head = NULL;
+  Node **current = &head;
+  while (token->type != TOKEN_RBRACE && token->type != TOKEN_EOF) {
+    Node *stmt = parse_statement(lexer, token);
+    if (token->type != TOKEN_SEMICOLON) {
+      fprintf(stderr, "Expected semicolon\n");
+      exit(1);
+    }
+    Node *block_node = create_node(NODE_BLOCK, NULL, stmt, NULL, NULL);
+    *current = block_node;
+    current = &block_node->right;
+    free(token->value);
+    *token = next_token(lexer);
+  }
+  return head;
+}
+
 Node *parse_statement(Lexer *lexer, Token *token) {
   if (token->type == TOKEN_INT) {
     free(token->value);
@@ -102,13 +120,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     if (token->type == TOKEN_LBRACE) {
       free(token->value);
       *token = next_token(lexer);
-      body = parse_statement(lexer, token);
-      if (token->type != TOKEN_SEMICOLON) {
-        fprintf(stderr, "Expected semicolon\n");
-        exit(1);
-      }
-      free(token->value);
-      *token = next_token(lexer);
+      body = parse_block(lexer, token);
       if (token->type != TOKEN_RBRACE) {
         fprintf(stderr, "Expected } after if body\n");
         exit(1);
@@ -146,13 +158,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       if (token->type == TOKEN_LBRACE) {
         free(token->value);
         *token = next_token(lexer);
-        else_body = parse_statement(lexer, token);
-        if (token->type != TOKEN_SEMICOLON) {
-          fprintf(stderr, "Expected semicolon\n");
-          exit(1);
-        }
-        free(token->value);
-        *token = next_token(lexer);
+        else_body = parse_block(lexer, token);
         if (token->type != TOKEN_RBRACE) {
           fprintf(stderr, "Expected } after else body\n");
           exit(1);
@@ -190,19 +196,17 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     if (token->type == TOKEN_LBRACE) {
       free(token->value);
       *token = next_token(lexer);
-      body = parse_statement(lexer, token);
-      if (token->type != TOKEN_SEMICOLON) {
-        fprintf(stderr, "Expected semicolon\n");
-        exit(1);
-      }
-      free(token->value);
-      *token = next_token(lexer);
+      body = parse_block(lexer, token);
       if (token->type != TOKEN_RBRACE) {
         fprintf(stderr, "Expected } after while body\n");
         exit(1);
       }
     } else {
       body = parse_statement(lexer, token);
+      if (token->type != TOKEN_SEMICOLON) {
+        fprintf(stderr, "Expected semicolon\n");
+        exit(1);
+      }
     }
     return create_node(NODE_WHILE, NULL, cond, body, NULL);
   }
