@@ -37,3 +37,4 @@ Notes
 Operands can be variables or literal numbers.
 Result is stored in the left-hand variable.
 Negative numbers can be written by prefixing a value with `-`, e.g. `int x = -5;`.
+Parentheses may be used to group sub-expressions, e.g. `int x = (2 + 3) * 4;`.

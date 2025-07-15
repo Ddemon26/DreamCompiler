@@ -27,6 +27,7 @@ pub fn build(b: *std.Build) void {
             "-std=c11",
             "-Wall",
             "-Wextra",
+            "-D_GNU_SOURCE",
         },
     });
 
