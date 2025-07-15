@@ -33,6 +33,11 @@ tasks {
         enabled = false
     }
 
+    val generateTokens by registering(Exec::class) {
+        workingDir = rootDir
+        commandLine("node", "scripts/genFromTokens.js")
+    }
+
     patchPluginXml {
         sinceBuild.set("251")
         untilBuild.set("251.*")
@@ -43,6 +48,7 @@ tasks {
         targetDir.set("build/generated-src/flex/com/dream")
         targetClass.set("DreamLexer")
         purgeOldFiles.set(true)
+        dependsOn(generateTokens)
     }
 }
 
