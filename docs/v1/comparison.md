@@ -1,7 +1,7 @@
 Comparison Operators in Dream
 =============================
 
-Dream now supports basic comparison operators for building conditions.
+Dream now supports comparison and equality operators for building conditions.
 
 Syntax
 ------
@@ -9,6 +9,8 @@ Syntax
 ```
 <expression> < <expression>
 <expression> > <expression>
+<expression> == <expression>
+<expression> != <expression>
 ```
 
 These expressions evaluate to a nonzero value when true and zero otherwise.
@@ -19,7 +21,7 @@ Example
 
 ```
 int x = 5;
-int y = 3;
-if (x > y) Console.WriteLine(x); // prints 5
+int y = 5;
+if (x == y) Console.WriteLine(x); // prints 5
 ```
 

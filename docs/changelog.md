@@ -72,3 +72,9 @@ Version 1.0.12 (2025-07-14)
 
 * Restructured documentation index with category submenus.
 * Added version selection dropdown.
+
+Version 1.0.13 (2025-07-14)
+
+* Added equality operators (== and !=) for expressions.
+* Updated documentation and usage guide.
+* Added regression test for equality.
