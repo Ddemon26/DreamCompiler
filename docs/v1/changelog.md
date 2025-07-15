@@ -244,3 +244,9 @@ Version 1.0.46 (2025-07-27)
 
 * Added ternary conditional operator with `? :`.
 * Updated documentation and syntax highlighting.
+
+Version 1.0.47 (2025-07-27)
+
+* Added compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=`).
+* Updated arithmetic documentation and editor token definitions.
+* Added regression test for compound assignments.

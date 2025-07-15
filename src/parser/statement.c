@@ -46,14 +46,25 @@ static Node *parse_for_increment(Lexer *lexer, Token *token) {
     *token = next_token(lexer);
     return create_node(inc ? NODE_POST_INC : NODE_POST_DEC, var_name, NULL, NULL, NULL);
   }
-  if (token->type != TOKEN_EQUALS) {
-    fprintf(stderr, "Expected = in for increment\n");
+  if (token->type != TOKEN_EQUALS && token->type != TOKEN_PLUSEQ &&
+      token->type != TOKEN_MINUSEQ && token->type != TOKEN_STAREQ &&
+      token->type != TOKEN_SLASHEQ && token->type != TOKEN_MODEQ) {
+    fprintf(stderr, "Expected = or compound operator in for increment\n");
     exit(1);
   }
+  TokenType assign_type = token->type;
   free(token->value);
   *token = next_token(lexer);
   Node *expr = parse_expression(lexer, token);
-  return create_node(NODE_ASSIGN, var_name, expr, NULL, NULL);
+  if (assign_type == TOKEN_EQUALS)
+    return create_node(NODE_ASSIGN, var_name, expr, NULL, NULL);
+  const char *op = assign_type == TOKEN_PLUSEQ   ? "+" :
+                   assign_type == TOKEN_MINUSEQ  ? "-" :
+                   assign_type == TOKEN_STAREQ   ? "*" :
+                   assign_type == TOKEN_SLASHEQ  ? "/" : "%";
+  Node *left_expr = create_node(NODE_IDENTIFIER, var_name, NULL, NULL, NULL);
+  Node *binary = create_node(NODE_BINARY_OP, (char *)op, left_expr, expr, NULL);
+  return create_node(NODE_ASSIGN, var_name, binary, NULL, NULL);
 }
 
 Node *parse_statement(Lexer *lexer, Token *token) {
@@ -193,7 +204,10 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       }
       return create_node(inc ? NODE_POST_INC : NODE_POST_DEC, var_name, NULL, NULL, NULL);
     }
-    if (token->type == TOKEN_EQUALS) {
+    if (token->type == TOKEN_EQUALS || token->type == TOKEN_PLUSEQ ||
+        token->type == TOKEN_MINUSEQ || token->type == TOKEN_STAREQ ||
+        token->type == TOKEN_SLASHEQ || token->type == TOKEN_MODEQ) {
+      TokenType assign_type = token->type;
       free(token->value);
       *token = next_token(lexer);
       Node *expr = parse_expression(lexer, token);
@@ -201,7 +215,17 @@ Node *parse_statement(Lexer *lexer, Token *token) {
         fprintf(stderr, "Expected semicolon\n");
         exit(1);
       }
-      return create_node(NODE_ASSIGN, var_name, expr, NULL, NULL);
+      if (assign_type == TOKEN_EQUALS) {
+        return create_node(NODE_ASSIGN, var_name, expr, NULL, NULL);
+      }
+      const char *op = assign_type == TOKEN_PLUSEQ   ? "+" :
+                       assign_type == TOKEN_MINUSEQ  ? "-" :
+                       assign_type == TOKEN_STAREQ   ? "*" :
+                       assign_type == TOKEN_SLASHEQ  ? "/" : "%";
+      Node *left_expr = create_node(NODE_IDENTIFIER, var_name, NULL, NULL, NULL);
+      Node *binary = create_node(NODE_BINARY_OP, (char *)op, left_expr, expr,
+                                 NULL);
+      return create_node(NODE_ASSIGN, var_name, binary, NULL, NULL);
     } else if (token->type == TOKEN_LPAREN) {
       free(token->value);
       *token = next_token(lexer);

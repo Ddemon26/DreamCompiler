@@ -15,7 +15,7 @@ package com.dream;
   \"([^\\\"\\n]|\\\\.)*\" { return DreamTokenTypes.STRING; }
   //.* { return DreamTokenTypes.COMMENT; }
   "/\\*[^*]*\\*+([^/*][^*]*\\*+)*/" { return DreamTokenTypes.COMMENTBLOCK; }
-  \\+\\+|--|\\+|-|\\*|\\/|%|<=|>=|==|!=|<|>|&&|\\|\\||!|=|\\? { return DreamTokenTypes.OPERATOR; }
+  \\+\\+|--|\\+=|-=|\\*=|/=|%=|\\+|-|\\*|\\/|%|<=|>=|==|!=|<|>|&&|\\|\\||!|=|\\? { return DreamTokenTypes.OPERATOR; }
   ; { return DreamTokenTypes.SEMICOLON; }
   , { return DreamTokenTypes.COMMA; }
   \\. { return DreamTokenTypes.DOT; }

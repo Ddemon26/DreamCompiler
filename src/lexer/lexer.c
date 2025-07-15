@@ -129,6 +129,10 @@ Token next_token(Lexer *lexer) {
       token.type = TOKEN_PLUSPLUS;
       token.value = strdup("++");
       lexer->pos += 2;
+    } else if (lexer->source[lexer->pos + 1] == '=') {
+      token.type = TOKEN_PLUSEQ;
+      token.value = strdup("+=");
+      lexer->pos += 2;
     } else {
       token.type = TOKEN_PLUS;
       token.value = strdup("+");
@@ -136,19 +140,37 @@ Token next_token(Lexer *lexer) {
     }
     break;
   case '*':
-    token.type = TOKEN_STAR;
-    token.value = strdup("*");
-    lexer->pos++;
+    if (lexer->source[lexer->pos + 1] == '=') {
+      token.type = TOKEN_STAREQ;
+      token.value = strdup("*=");
+      lexer->pos += 2;
+    } else {
+      token.type = TOKEN_STAR;
+      token.value = strdup("*");
+      lexer->pos++;
+    }
     break;
   case '/':
-    token.type = TOKEN_SLASH;
-    token.value = strdup("/");
-    lexer->pos++;
+    if (lexer->source[lexer->pos + 1] == '=') {
+      token.type = TOKEN_SLASHEQ;
+      token.value = strdup("/=");
+      lexer->pos += 2;
+    } else {
+      token.type = TOKEN_SLASH;
+      token.value = strdup("/");
+      lexer->pos++;
+    }
     break;
   case '%':
-    token.type = TOKEN_PERCENT;
-    token.value = strdup("%");
-    lexer->pos++;
+    if (lexer->source[lexer->pos + 1] == '=') {
+      token.type = TOKEN_MODEQ;
+      token.value = strdup("%=");
+      lexer->pos += 2;
+    } else {
+      token.type = TOKEN_PERCENT;
+      token.value = strdup("%");
+      lexer->pos++;
+    }
     break;
   case '<':
     if (lexer->source[lexer->pos + 1] == '=') {
@@ -176,6 +198,10 @@ Token next_token(Lexer *lexer) {
     if (lexer->source[lexer->pos + 1] == '-') {
       token.type = TOKEN_MINUSMINUS;
       token.value = strdup("--");
+      lexer->pos += 2;
+    } else if (lexer->source[lexer->pos + 1] == '=') {
+      token.type = TOKEN_MINUSEQ;
+      token.value = strdup("-=");
       lexer->pos += 2;
     } else {
       token.type = TOKEN_MINUS;

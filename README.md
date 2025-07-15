@@ -87,7 +87,8 @@ Dream Compiler is released under the [MIT License](LICENSE).
 
 ## Syntax Highlighting
 
-Generate the VS Code grammar from `tokens.json`:
+Generate the VS Code grammar from `tokens.json` at the repository root. The generator
+also syncs copies under `idea/` used by the JetBrains plugin:
 
 ```bash
 node scripts/genFromTokens.js
@@ -108,7 +109,7 @@ cd idea
 ./gradlew build
 ./gradlew test
 ```
-The build automatically regenerates the lexer and token definitions from `idea/tokens.json`.
+The build automatically regenerates the lexer and token definitions from the root `tokens.json`.
 
 The resulting VSIX and plugin zip live in their respective directories.
 
