@@ -131,3 +131,9 @@ Version 1.0.23 (2025-07-15)
 * Added logical NOT (!) operator for expressions.
 * Updated documentation and added a new test case.
 
+Version 1.0.24 (2025-07-15)
+
+* Added `do-while` loops for post-test iteration.
+* Updated documentation and usage guide.
+* Added regression test for do-while loops.
+
