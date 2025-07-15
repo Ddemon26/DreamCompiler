@@ -23,7 +23,7 @@
         },
         {
           "name": "comment.block.documentation",
-          "match": "/\\*\\*[^*]*\\*+([^/*][^*]*\\*+)*/|///.*"
+          "match": "/\\*\\*[^]*?\\*/|///.*"
         },
         {
           "name": "comment.line.double-slash",
@@ -31,7 +31,7 @@
         },
         {
           "name": "comment.block",
-          "match": "/\\*[^*]*\\*+([^/*][^*]*\\*+)*/"
+          "match": "/\\*[\\s\\S]*?\\*/"
         },
         {
           "name": "variable.other",
