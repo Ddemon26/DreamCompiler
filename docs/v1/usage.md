@@ -13,7 +13,7 @@ Logical: !<expression> or <expression> && <expression> or <expression> || <expre
 Console Output: Console.WriteLine(<expression>);
     <expression> may be a variable, number, or quoted string.
 Conditional: if (<expression>) <statement> [else <statement>]
-Loop: while (<expression>) <statement>
+Loop: while (<expression>) <statement> or do <statement> while (<expression>);
 
 ## Example Program
 int x = 5;

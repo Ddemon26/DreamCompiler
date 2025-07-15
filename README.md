@@ -13,6 +13,7 @@ The compiler currently supports:
 - Console output via `Console.WriteLine` (numbers and strings)
 - Simple `if` statements with optional `else`
 - `while` loops
+- `do-while` loops
 - Braced blocks supporting multiple statements
 
 More features such as functions are planned for future versions. See the [changelog](docs/v1/changelog.md) for details.
