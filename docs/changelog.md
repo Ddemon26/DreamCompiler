@@ -78,3 +78,9 @@ Version 1.0.13 (2025-07-14)
 * Added equality operators (== and !=) for expressions.
 * Updated documentation and usage guide.
 * Added regression test for equality.
+
+Version 1.0.14 (2025-07-14)
+
+* Added <= and >= comparison operators.
+* Updated documentation and usage guide.
+* Added regression test for the new operators.
