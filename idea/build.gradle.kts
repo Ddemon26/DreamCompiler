@@ -29,3 +29,7 @@ tasks.named<org.jetbrains.grammarkit.tasks.GenerateLexerTask>("generateLexer") {
 sourceSets["main"].java.srcDir("build/generated-src/flex")
 
 tasks.named<JavaCompile>("compileJava") { dependsOn("generateLexer") }
+
+tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileKotlin") {
+    dependsOn("generateLexer")
+}
