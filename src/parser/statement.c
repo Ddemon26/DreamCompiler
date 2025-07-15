@@ -356,6 +356,18 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       exit(1);
     }
     return create_node(NODE_CONTINUE, NULL, NULL, NULL, NULL);
+  } else if (token->type == TOKEN_RETURN) {
+    free(token->value);
+    *token = next_token(lexer);
+    Node *expr = NULL;
+    if (token->type != TOKEN_SEMICOLON) {
+      expr = parse_expression(lexer, token);
+    }
+    if (token->type != TOKEN_SEMICOLON) {
+      fprintf(stderr, "Expected semicolon\n");
+      exit(1);
+    }
+    return create_node(NODE_RETURN, NULL, expr, NULL, NULL);
   }
   fprintf(stderr, "Invalid statement\n");
   exit(1);
