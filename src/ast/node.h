@@ -31,7 +31,8 @@ typedef enum {
   NODE_CONTINUE,
   NODE_RETURN,
   NODE_FUNC_DEF,
-  NODE_FUNC_CALL
+  NODE_FUNC_CALL,
+  NODE_CLASS_DEF
 } NodeType;
 
 typedef struct Node {

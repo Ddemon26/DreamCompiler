@@ -18,5 +18,6 @@ void gen_c_expr(Compiler *compiler, FILE *out, Node *expr);
 void gen_c_expr_unwrapped(Compiler *compiler, FILE *out, Node *expr);
 void generate_c(Compiler *compiler, Node *node);
 void generate_c_function(Compiler *compiler, Node *node);
+void generate_c_class(Compiler *compiler, Node *node);
 
 #endif

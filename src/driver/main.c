@@ -69,6 +69,12 @@ int main(int argc, char *argv[]) {
 
   Node *cur = program;
   while (cur) {
+    if (cur->left->type == NODE_CLASS_DEF)
+      generate_c_class(&compiler, cur->left);
+    cur = cur->right;
+  }
+  cur = program;
+  while (cur) {
     if (cur->left->type == NODE_FUNC_DEF)
       generate_c_function(&compiler, cur->left);
     cur = cur->right;
