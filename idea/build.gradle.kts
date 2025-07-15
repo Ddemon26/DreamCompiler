@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("org.jetbrains.kotlin.jvm") version "1.9.23"
     id("org.jetbrains.intellij") version "1.17.2"
     id("org.jetbrains.grammarkit") version "2022.3.2"
 }
@@ -28,4 +29,3 @@ tasks.named<org.jetbrains.grammarkit.tasks.GenerateLexerTask>("generateLexer") {
 sourceSets["main"].java.srcDir("build/generated-src/flex")
 
 tasks.named<JavaCompile>("compileJava") { dependsOn("generateLexer") }
-
