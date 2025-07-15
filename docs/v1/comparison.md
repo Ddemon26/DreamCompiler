@@ -9,6 +9,8 @@ Syntax
 ```
 <expression> < <expression>
 <expression> > <expression>
+<expression> <= <expression>
+<expression> >= <expression>
 <expression> == <expression>
 <expression> != <expression>
 ```

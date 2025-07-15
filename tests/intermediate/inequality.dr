@@ -1,0 +1,4 @@
+int a = 3;
+int b = 5;
+if (a <= b) Console.WriteLine(a); // Expected: 3
+if (b >= a) Console.WriteLine(b); // Expected: 5
