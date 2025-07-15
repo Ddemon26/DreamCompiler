@@ -25,6 +25,14 @@ void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
     fprintf(out, "%s", expr->value);
     gen_c_expr(compiler, out, expr->left);
     fputc(')', out);
+  } else if (expr->type == NODE_PRE_INC) {
+    fprintf(out, "(++%s)", expr->value);
+  } else if (expr->type == NODE_PRE_DEC) {
+    fprintf(out, "(--%s)", expr->value);
+  } else if (expr->type == NODE_POST_INC) {
+    fprintf(out, "(%s++)", expr->value);
+  } else if (expr->type == NODE_POST_DEC) {
+    fprintf(out, "(%s--)", expr->value);
   } else if (expr->type == NODE_IDENTIFIER ||
              (expr->type == NODE_VAR_DECL && expr->left == NULL &&
               expr->right == NULL)) {

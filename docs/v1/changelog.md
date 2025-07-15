@@ -215,3 +215,8 @@ Version 1.0.40 (2025-07-21)
 
 * Added increment (`++`) and decrement (`--`) operators.
 * Updated loops documentation and added a new test case.
+
+Version 1.0.41 (2025-07-22)
+
+* Increment and decrement operators can now be used inside expressions.
+* Documented the feature and added a new regression test.

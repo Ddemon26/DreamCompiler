@@ -6,16 +6,33 @@
 Node *parse_expression(Lexer *lexer, Token *token) {
   int unary_minus = 0;
   int unary_not = 0;
-  if (token->type == TOKEN_MINUS || token->type == TOKEN_NOT) {
+  int prefix_inc = 0;
+  int prefix_dec = 0;
+  if (token->type == TOKEN_MINUS || token->type == TOKEN_NOT ||
+      token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS) {
     if (token->type == TOKEN_MINUS)
       unary_minus = 1;
-    else
+    else if (token->type == TOKEN_NOT)
       unary_not = 1;
+    else if (token->type == TOKEN_PLUSPLUS)
+      prefix_inc = 1;
+    else
+      prefix_dec = 1;
     free(token->value);
     *token = next_token(lexer);
   }
   Node *left = NULL;
-  if (token->type == TOKEN_LPAREN) {
+  if (prefix_inc || prefix_dec) {
+    if (token->type != TOKEN_IDENTIFIER) {
+      fprintf(stderr, "Expected identifier after %s\n",
+              prefix_inc ? "++" : "--");
+      exit(1);
+    }
+    char *name = token->value;
+    *token = next_token(lexer);
+    left = create_node(prefix_inc ? NODE_PRE_INC : NODE_PRE_DEC, name, NULL, NULL, NULL);
+    free(name);
+  } else if (token->type == TOKEN_LPAREN) {
     free(token->value);
     *token = next_token(lexer);
     left = parse_expression(lexer, token);
@@ -69,6 +86,16 @@ Node *parse_expression(Lexer *lexer, Token *token) {
       left = create_node(left_type, name, NULL, NULL, NULL);
       free(name);
     }
+  }
+  if (left->type == NODE_IDENTIFIER &&
+      (token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS)) {
+    int inc = token->type == TOKEN_PLUSPLUS;
+    free(token->value);
+    *token = next_token(lexer);
+    Node *tmp = left;
+    left = create_node(inc ? NODE_POST_INC : NODE_POST_DEC, tmp->value, NULL,
+                       NULL, NULL);
+    free_node(tmp);
   }
   if (unary_minus)
     left = create_node(NODE_UNARY_OP, "-", left, NULL, NULL);

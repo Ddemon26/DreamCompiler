@@ -16,6 +16,7 @@ Conditional: if (<expression>) <statement> [else <statement>]
 Loop: while (<expression>) <statement> or do <statement> while (<expression>) or for (<init>; <condition>; <increment>) <statement>;
 Function: func <name>(<type> <param>[, <type> <param>]*) { <statements> }
 Return: return [<expression>];
+Increment/Decrement: <identifier>++ | ++<identifier> | <identifier>-- | --<identifier>
 Comments: // single line or /* block */
 
 ## Example Program
