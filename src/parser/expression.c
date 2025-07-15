@@ -5,8 +5,12 @@
 
 Node *parse_expression(Lexer *lexer, Token *token) {
   int unary_minus = 0;
-  if (token->type == TOKEN_MINUS) {
-    unary_minus = 1;
+  int unary_not = 0;
+  if (token->type == TOKEN_MINUS || token->type == TOKEN_NOT) {
+    if (token->type == TOKEN_MINUS)
+      unary_minus = 1;
+    else
+      unary_not = 1;
     free(token->value);
     *token = next_token(lexer);
   }
@@ -37,6 +41,8 @@ Node *parse_expression(Lexer *lexer, Token *token) {
   }
   if (unary_minus)
     left = create_node(NODE_UNARY_OP, "-", left, NULL, NULL);
+  if (unary_not)
+    left = create_node(NODE_UNARY_OP, "!", left, NULL, NULL);
   if ((token->type == TOKEN_PLUS || token->type == TOKEN_MINUS ||
        token->type == TOKEN_STAR || token->type == TOKEN_SLASH ||
        token->type == TOKEN_PERCENT || token->type == TOKEN_LT ||

@@ -126,3 +126,8 @@ Version 1.0.22 (2025-07-15)
 * Added logical AND (&&) and OR (||) operators.
 * Updated documentation and added a new test case.
 
+Version 1.0.23 (2025-07-15)
+
+* Added logical NOT (!) operator for expressions.
+* Updated documentation and added a new test case.
+

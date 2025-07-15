@@ -1,10 +1,11 @@
 # Logical Operators in Dream
 
-Dream now supports logical conjunction and disjunction using the `&&` and `||` operators.
+Dream now supports logical conjunction and disjunction using the `&&` and `||` operators. Logical negation with the `!` operator is also available.
 
 ## Syntax
 
 ```
+!<expression>
 <expression> && <expression>
 <expression> || <expression>
 ```
@@ -18,4 +19,5 @@ int a = 1;
 int b = 0;
 if (a && b) Console.WriteLine(a);
 if (a || b) Console.WriteLine(a); // prints 1
+if (!b) Console.WriteLine(a);     // prints 1
 ```
