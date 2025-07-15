@@ -80,9 +80,42 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     }
     free(token->value);
     *token = next_token(lexer);
+    Node *params = NULL;
+    Node **cur_param = &params;
     if (token->type != TOKEN_RPAREN) {
-      fprintf(stderr, "Expected ) after function params\n");
-      exit(1);
+      while (1) {
+        int is_string = 0;
+        if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE) {
+          is_string = token->type == TOKEN_STRING_TYPE;
+          free(token->value);
+          *token = next_token(lexer);
+        } else {
+          fprintf(stderr, "Expected parameter type\n");
+          exit(1);
+        }
+        if (token->type != TOKEN_IDENTIFIER) {
+          fprintf(stderr, "Expected parameter name\n");
+          exit(1);
+        }
+        char *pname = token->value;
+        *token = next_token(lexer);
+        Node *decl = create_node(is_string ? NODE_STR_DECL : NODE_VAR_DECL,
+                                 pname, NULL, NULL, NULL);
+        free(pname);
+        Node *blk = create_node(NODE_BLOCK, NULL, decl, NULL, NULL);
+        *cur_param = blk;
+        cur_param = &blk->right;
+        if (token->type == TOKEN_COMMA) {
+          free(token->value);
+          *token = next_token(lexer);
+          continue;
+        }
+        break;
+      }
+      if (token->type != TOKEN_RPAREN) {
+        fprintf(stderr, "Expected ) after function params\n");
+        exit(1);
+      }
     }
     free(token->value);
     *token = next_token(lexer);
@@ -97,7 +130,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       fprintf(stderr, "Expected } after function body\n");
       exit(1);
     }
-    return create_node(NODE_FUNC_DEF, func_name, body, NULL, NULL);
+    return create_node(NODE_FUNC_DEF, func_name, body, params, NULL);
   } else if (token->type == TOKEN_IDENTIFIER) {
     char *var_name = token->value;
     *token = next_token(lexer);

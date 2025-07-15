@@ -200,3 +200,8 @@ Version 1.0.37 (2025-07-18)
 
 * Added support for `else if` chains.
 * Updated documentation and added a regression test.
+
+Version 1.0.38 (2025-07-19)
+
+* Functions now accept parameters.
+* Updated documentation and added a new test case.

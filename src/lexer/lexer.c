@@ -218,6 +218,11 @@ Token next_token(Lexer *lexer) {
     token.value = strdup(")");
     lexer->pos++;
     break;
+  case ',':
+    token.type = TOKEN_COMMA;
+    token.value = strdup(",");
+    lexer->pos++;
+    break;
   case '{':
     token.type = TOKEN_LBRACE;
     token.value = strdup("{");
