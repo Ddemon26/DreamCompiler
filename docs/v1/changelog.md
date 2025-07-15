@@ -250,3 +250,9 @@ Version 1.0.47 (2025-07-27)
 * Added compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=`).
 * Updated arithmetic documentation and editor token definitions.
 * Added regression test for compound assignments.
+
+Version 1.0.48 (2025-07-28)
+
+* Extended syntax highlighting tokens with identifiers, bracket punctuation and documentation comments.
+* Fixed block comment handling in the lexer generator.
+* Regenerated editor grammars.
