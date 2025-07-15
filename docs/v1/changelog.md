@@ -235,3 +235,9 @@ Version 1.0.44 (2025-07-25)
 * Reorganized tests into feature directories and updated the README instructions.
 * Added missing pages to the HTML documentation index and improved markdown formatting.
 
+
+Version 1.0.45 (2025-07-26)
+
+* Restored tokens.json for editor integrations.
+* Regenerated lexer and token files.
+
