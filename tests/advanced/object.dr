@@ -1,0 +1,8 @@
+class Person {
+    int age;
+    string name;
+}
+Person p;
+p.age = 30;
+Console.WriteLine(p.age);
+

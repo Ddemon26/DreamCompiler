@@ -163,6 +163,18 @@ static Node *compute_atom(Lexer *lexer, Token *token) {
     }
   }
 
+  while (token->type == TOKEN_DOT) {
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_IDENTIFIER) {
+      fprintf(stderr, "Expected field name after .\n");
+      exit(1);
+    }
+    char *fname = token->value;
+    *token = next_token(lexer);
+    left = create_node(NODE_MEMBER, fname, left, NULL, NULL);
+  }
+
   if (left->type == NODE_IDENTIFIER &&
       (token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS)) {
     int inc = token->type == TOKEN_PLUSPLUS;

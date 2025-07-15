@@ -320,3 +320,8 @@ Version 1.0.59 (2025-08-06)
 * Rewrote expression parsing using a precedence climbing algorithm.
 * Documented the new parser architecture.
 * Added regression tests for mixed precedence and grouping.
+
+Version 1.0.60 (2025-08-07)
+
+* Added object instantiation for classes and field access via `.`.
+* Updated class documentation and added a new regression test.
