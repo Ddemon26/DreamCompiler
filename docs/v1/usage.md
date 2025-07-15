@@ -11,6 +11,7 @@ Assignment: <identifier> = <expression>;
 Arithmetic: <identifier> = <expression> + <expression> or <expression> - <expression> or <expression> * <expression> or <expression> / <expression> or <expression> % <expression>;
 Comparison: <expression> < <expression> or <expression> > <expression> or <expression> <= <expression> or <expression> >= <expression> or <expression> == <expression> or <expression> != <expression>;
 Logical: !<expression> or <expression> && <expression> or <expression> || <expression>;
+Conditional Operator: <expression> ? <expression> : <expression>;
 Console Output: Console.WriteLine(<expression>);
     <expression> may be a variable, number, or quoted string.
 Conditional: if (<expression>) <statement> [else <statement>]

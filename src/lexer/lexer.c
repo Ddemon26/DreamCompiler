@@ -193,6 +193,11 @@ Token next_token(Lexer *lexer) {
     token.value = strdup(":");
     lexer->pos++;
     break;
+  case '?':
+    token.type = TOKEN_QUESTION;
+    token.value = strdup("?");
+    lexer->pos++;
+    break;
   case '=':
     if (lexer->source[lexer->pos + 1] == '=') {
       token.type = TOKEN_EQEQ;
