@@ -2,21 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dream Compiler Docs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Compiler Documentation</title>
     <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <h1>Dream Compiler Documentation</h1>
-    <p>Welcome to the Dream language documentation. Select a topic below.</p>
-    <ul>
-        <li><a href="v1/usage.md">Usage Guide</a></li>
-        <li><a href="v1/variables.md">Variables</a></li>
-        <li><a href="v1/arithmetic.md">Arithmetic</a></li>
-        <li><a href="v1/console.md">Console Output</a></li>
-        <li><a href="v1/if.md">If Statements</a></li>
-        <li><a href="v1/loops.md">While Loops</a></li>
-        <li><a href="changelog.md">Changelog</a></li>
-    </ul>
+<div class="layout">
+    <aside class="sidebar">
+        <nav class="nav">
+            <h2>Documentation</h2>
+            <ul>
+                <li><a href="#" data-md="v1/usage.md">Usage Guide</a></li>
+                <li><a href="#" data-md="v1/variables.md">Variables</a></li>
+                <li><a href="#" data-md="v1/arithmetic.md">Arithmetic</a></li>
+                <li><a href="#" data-md="v1/console.md">Console Output</a></li>
+                <li><a href="#" data-md="v1/if.md">If Statements</a></li>
+                <li><a href="#" data-md="v1/loops.md">While Loops</a></li>
+                <li><a href="#" data-md="changelog.md">Changelog</a></li>
+            </ul>
+        </nav>
+    </aside>
+    <main class="main-content">
+        <div id="content">
+            <header>
+                <h1>Dream Compiler Documentation</h1>
+                <p>Welcome to the documentation for the Dream language and compiler. Use the sidebar to explore the available guides and features.</p>
+            </header>
+        </div>
+    </main>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const contentDiv = document.getElementById('content');
+        const navLinks = document.querySelectorAll('.nav a');
+
+        // Function to load and render markdown
+        async function loadMarkdown(file) {
+            try {
+                const response = await fetch(file);
+                if (!response.ok) throw new Error('Failed to load markdown file');
+                const markdown = await response.text();
+                contentDiv.innerHTML = marked.parse(markdown);
+            } catch (error) {
+                contentDiv.innerHTML = '<h1>Error</h1><p>Could not load the documentation page.</p>';
+            }
+        }
+
+        // Handle nav link clicks
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const mdFile = link.getAttribute('data-md');
+                loadMarkdown(mdFile);
+                // Update active link
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+
+        // Load default page (optional: load usage.md by default)
+        const defaultLink = document.querySelector('.nav a[data-md="v1/usage.md"]');
+        if (defaultLink) {
+            defaultLink.classList.add('active');
+            loadMarkdown('v1/usage.md');
+        }
+    });
+</script>
 </body>
 </html>
-
