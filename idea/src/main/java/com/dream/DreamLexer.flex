@@ -13,11 +13,11 @@ package com.dream;
   \\b(if|else|while|for|do|break|continue|return|int|string|bool|true|false|func|Console|WriteLine|switch|case|default)\\b { return DreamTokenTypes.KEYWORD; }
   \\b\\d+\\b { return DreamTokenTypes.NUMBER; }
   \"([^\\\"\\n]|\\\\.)*\" { return DreamTokenTypes.STRING; }
-  /\\*\\*[^*]*\\*+(?:[^\/\*][^*]*\\*+)\*\/|///.* { return DreamTokenTypes.COMMENTDOC; }
-  //.* { return DreamTokenTypes.COMMENT; }
-  /\\*[^*]*\\*+([^\/\*][^*]*\\*+)\*\/ { return DreamTokenTypes.COMMENTBLOCK; }
+  "/*""**"([^*]|"*"+[^/*])*"*"+"/" | "///".* { return DreamTokenTypes.COMMENTDOC; }
+  "//".* { return DreamTokenTypes.COMMENT; }
+  "/*"[^*]*"*"+([^/*][^*]*"*"+)*"/" { return DreamTokenTypes.COMMENTBLOCK; }
   [a-zA-Z_][a-zA-Z0-9_]* { return DreamTokenTypes.IDENTIFIER; }
-  \\+\\+|--|\\+=|-=|\\*=|/=|%=|\\+|-|\\*|\\/|%|<=|>=|==|!=|<|>|&&|\\|\\||!|=|\\? { return DreamTokenTypes.OPERATOR; }
+  "++"|"--"|"+="|"-="|"*="|"/="|"%="|"+"|"-"|"*"|"/"|"%"|"<="|">="|"=="|"!="|"<"|">"|"&&"|"||"|"!"|"="|"?" { return DreamTokenTypes.OPERATOR; }
   ; { return DreamTokenTypes.SEMICOLON; }
   , { return DreamTokenTypes.COMMA; }
   \\. { return DreamTokenTypes.DOT; }
