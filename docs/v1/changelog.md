@@ -181,3 +181,8 @@ Version 1.0.33 (2025-07-18)
 
 * Standardized syntax token scopes so default editor themes highlight Dream files.
 * Regenerated VS Code grammar from updated token list.
+
+Version 1.0.34 (2025-07-18)
+
+* Synchronized JetBrains token definitions with `tokens.json`.
+* Updated generator to copy tokens into the plugin resources.
