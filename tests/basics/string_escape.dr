@@ -1,0 +1,2 @@
+Console.Write("hi\n");
+Console.WriteLine("She said \"hi\"");

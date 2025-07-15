@@ -104,14 +104,35 @@ Token next_token(Lexer *lexer) {
 
   if (lexer->source[lexer->pos] == '"') {
     lexer->pos++; // skip opening quote
-    int start = lexer->pos;
-    while (lexer->source[lexer->pos] && lexer->source[lexer->pos] != '"')
-      lexer->pos++;
-    int len = lexer->pos - start;
-    token.value = strndup(lexer->source + start, len);
-    token.type = TOKEN_STRING;
+    char *buf = NULL;
+    int len = 0;
+    int cap = 0;
+    while (lexer->source[lexer->pos] && lexer->source[lexer->pos] != '"') {
+      char c = lexer->source[lexer->pos++];
+      if (c == '\\' && lexer->source[lexer->pos]) {
+        char next = lexer->source[lexer->pos++];
+        switch (next) {
+        case 'n': c = '\n'; break;
+        case 't': c = '\t'; break;
+        case '\\': c = '\\'; break;
+        case '"': c = '"'; break;
+        default: c = next; break;
+        }
+      }
+      if (len + 1 >= cap) {
+        cap = cap ? cap * 2 : 16;
+        buf = realloc(buf, cap);
+      }
+      buf[len++] = c;
+    }
     if (lexer->source[lexer->pos] == '"')
       lexer->pos++; // skip closing quote
+    if (buf) {
+      buf = realloc(buf, len + 1);
+      buf[len] = '\0';
+    }
+    token.value = buf ? buf : strdup("");
+    token.type = TOKEN_STRING;
     return token;
   }
 
