@@ -18,6 +18,7 @@ Console.WriteLine("hello");   // Outputs the string "hello"
 
 ## Notes
 
-`Console.WriteLine` prints integers using `printf` so the output appears in
-decimal form. Strings are emitted directly as C string literals.
+`Console.WriteLine` prints integers using `printf` with the `%ld` format. Values
+are cast to `long` in the generated C code to avoid warnings. Strings are
+emitted directly as C string literals.
 
