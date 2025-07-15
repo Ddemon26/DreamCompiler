@@ -13,10 +13,10 @@ import java.util.Map;
 
 public class DreamColorSettingsPage implements ColorSettingsPage {
     private static final AttributesDescriptor[] DESCRIPTORS = new AttributesDescriptor[]{
-            new AttributesDescriptor("Keyword", DreamSyntaxHighlighter.KEYWORD),
-            new AttributesDescriptor("Number", DreamSyntaxHighlighter.NUMBER),
-            new AttributesDescriptor("String", DreamSyntaxHighlighter.STRING),
-            new AttributesDescriptor("Comment", DreamSyntaxHighlighter.COMMENT)
+            new AttributesDescriptor("Keyword", DreamSyntaxHighlighter.KEYWORD_KEYS),
+            new AttributesDescriptor("Number", DreamSyntaxHighlighter.NUMBER_KEYS),
+            new AttributesDescriptor("String", DreamSyntaxHighlighter.STRING_KEYS),
+            new AttributesDescriptor("Comment", DreamSyntaxHighlighter.COMMENT_KEYS)
     };
 
     @Override
@@ -32,7 +32,11 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
     @NotNull
     @Override
     public String getDemoText() {
-        return "int x = 5;\nif (x > 0) {\n    Console.WriteLine(x);\n}";
+        return "// greeting\n" +
+                "/* example block */\n" +
+                "string msg = \"hi\";\n" +
+                "int x = 5, y = 10;\n" +
+                "if (true) {\n    Console.WriteLine(msg, x + y);\n}";
     }
 
     @Nullable

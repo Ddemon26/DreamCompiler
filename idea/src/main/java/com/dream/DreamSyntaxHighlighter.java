@@ -1,6 +1,5 @@
 package com.dream;
 
-import com.intellij.lexer.FlexAdapter;
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
@@ -19,18 +18,18 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
         return lexer;
     }
 
-    public static final TextAttributesKey KEYWORD = TextAttributesKey.createTextAttributesKey("DREAM_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
-    public static final TextAttributesKey NUMBER = TextAttributesKey.createTextAttributesKey("DREAM_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
-    public static final TextAttributesKey STRING = TextAttributesKey.createTextAttributesKey("DREAM_STRING", DefaultLanguageHighlighterColors.STRING);
-    public static final TextAttributesKey COMMENT = TextAttributesKey.createTextAttributesKey("DREAM_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
+    public static final TextAttributesKey KEYWORD_KEYS = TextAttributesKey.createTextAttributesKey("DREAM_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
+    public static final TextAttributesKey NUMBER_KEYS = TextAttributesKey.createTextAttributesKey("DREAM_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
+    public static final TextAttributesKey STRING_KEYS = TextAttributesKey.createTextAttributesKey("DREAM_STRING", DefaultLanguageHighlighterColors.STRING);
+    public static final TextAttributesKey COMMENT_KEYS = TextAttributesKey.createTextAttributesKey("DREAM_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
 
     @NotNull
     @Override
     public TextAttributesKey[] getTokenHighlights(IElementType tokenType) {
-        if (tokenType == DreamTokenTypes.KEYWORD) return pack(KEYWORD);
-        if (tokenType == DreamTokenTypes.NUMBER) return pack(NUMBER);
-        if (tokenType == DreamTokenTypes.STRING) return pack(STRING);
-        if (tokenType == DreamTokenTypes.COMMENT || tokenType == DreamTokenTypes.COMMENTBLOCK) return pack(COMMENT);
+        if (tokenType == DreamTokenTypes.KEYWORD) return pack(KEYWORD_KEYS);
+        if (tokenType == DreamTokenTypes.NUMBER) return pack(NUMBER_KEYS);
+        if (tokenType == DreamTokenTypes.STRING) return pack(STRING_KEYS);
+        if (tokenType == DreamTokenTypes.LINE_COMMENT || tokenType == DreamTokenTypes.BLOCK_COMMENT) return pack(COMMENT_KEYS);
         return TextAttributesKey.EMPTY_ARRAY;
     }
 }

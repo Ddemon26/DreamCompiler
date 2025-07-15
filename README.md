@@ -104,12 +104,14 @@ npx vsce package
 
 ```bash
 cd idea
-./gradlew buildPlugin
+gradle build -x test
+gradle test    # optional, requires IDE downloads
 ```
-The build will automatically regenerate the lexer and token definitions from `tokens.json`.
+The build automatically regenerates the lexer and token definitions from `tokens.json`.
 
 The resulting VSIX and plugin zip live in their respective directories.
 
 ## Custom file icon
 
 Both editors show a Dream logo for `.dr` files after installing the extensions.
+

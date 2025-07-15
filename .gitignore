@@ -35,6 +35,7 @@
 # Build artifacts
 /build
 dream
+!idea/src/main/kotlin/com/dream
 output.c
 
 # Zig

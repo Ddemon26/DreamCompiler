@@ -13,10 +13,12 @@ repositories {
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+    compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
 }
 
 tasks.withType<JavaCompile> {
@@ -56,4 +58,8 @@ sourceSets["main"].java.srcDir("build/generated-src/flex")
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn("generateLexer")
+}
+
+dependencies {
+    testImplementation(kotlin("test"))
 }
