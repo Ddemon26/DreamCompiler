@@ -152,3 +152,7 @@ Version 1.0.27 (2025-07-16)
 
 * Added `return` statements to exit the program early.
 * Updated documentation and added a regression test.
+
+Version 1.0.28 (2025-07-16)
+
+* Updated IntelliJ plugin build configuration to target Java 21.

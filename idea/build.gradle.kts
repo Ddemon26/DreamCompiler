@@ -22,7 +22,7 @@ tasks.withType<JavaCompile> {
 }
 
 intellij {
-    version.set("2024.2")
+    version.set("2025.1")
     type.set("IC")
 }
 
@@ -32,8 +32,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("242")
-        untilBuild.set("242.*")
+        sinceBuild.set("251")
+        untilBuild.set("251.*")
     }
 
     withType<org.jetbrains.grammarkit.tasks.GenerateLexerTask> {
