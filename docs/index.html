@@ -57,6 +57,7 @@
         const themeToggle = document.getElementById('theme-toggle');
         const themeLink = document.querySelector('link[rel="stylesheet"]');
         const versionSelect = document.getElementById('version-select');
+        const categories = document.querySelectorAll('.category');
         let currentVersion = versionSelect.value;
 
         // Apply saved theme
@@ -94,6 +95,14 @@
             });
         });
 
+        // Handle category toggle
+        categories.forEach(category => {
+            const span = category.querySelector('span');
+            span.addEventListener('click', () => {
+                category.classList.toggle('open');
+            });
+        });
+
         versionSelect.addEventListener('change', () => {
             currentVersion = versionSelect.value;
             const active = document.querySelector('.nav a.active');
@@ -121,6 +130,11 @@
         if (defaultLink) {
             defaultLink.classList.add('active');
             loadMarkdown(resolvePath('usage.md'));
+            // Open the "Getting Started" category by default
+            const gettingStarted = document.querySelector('.category:first-child');
+            if (gettingStarted) {
+                gettingStarted.classList.add('open');
+            }
         }
     });
 </script>

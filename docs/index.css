@@ -86,11 +86,28 @@ body {
     font-weight: bold;
     display: block;
     padding: 0.25rem 0;
+    cursor: pointer;
+}
+
+.nav li.category > span::before {
+    content: '▶ ';
+    display: inline-block;
+    transition: transform 0.2s;
+    color: #005566;
+}
+
+.nav li.category.open > span::before {
+    transform: rotate(90deg);
 }
 
 .nav li.category ul {
     margin-left: 1rem;
     margin-top: 0.25rem;
+    display: none;
+}
+
+.nav li.category.open ul {
+    display: block;
 }
 
 .main-content {
