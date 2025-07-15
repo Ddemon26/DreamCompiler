@@ -284,3 +284,9 @@ Version 1.0.53 (2025-07-31)
 
 * Added string concatenation using the `+` operator.
 * Updated documentation and added a new regression test.
+
+Version 1.0.54 (2025-08-01)
+
+* Added float variables and decimal number support.
+* Updated documentation and console printing.
+* Added new regression test.
