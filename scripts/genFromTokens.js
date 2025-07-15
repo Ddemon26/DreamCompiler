@@ -1,5 +1,7 @@
 const fs = require('fs');
-const tokens = JSON.parse(fs.readFileSync('tokens.json','utf8'));
+// Canonical token definitions live at the repository root
+const TOKEN_FILE = 'tokens.json';
+const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE, 'utf8'));
 
 // TextMate grammar
 const tmGrammar = {
@@ -28,3 +30,8 @@ fs.writeFileSync('idea/src/main/java/com/dream/DreamLexer.flex', flex);
 // Keep JetBrains tokens.json in sync
 fs.mkdirSync('idea/src/main/resources', { recursive: true });
 fs.writeFileSync('idea/src/main/resources/tokens.json', JSON.stringify(tokens, null, 2));
+// Mirror token file into the plugin root if not a symlink
+if (!fs.existsSync('idea/tokens.json') ||
+    !fs.lstatSync('idea/tokens.json').isSymbolicLink()) {
+  fs.writeFileSync('idea/tokens.json', JSON.stringify(tokens, null, 2));
+}
