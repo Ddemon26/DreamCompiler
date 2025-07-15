@@ -230,3 +230,7 @@ Version 1.0.42 (2025-07-23)
 Version 1.0.43 (2025-07-24)
 
 * Fixed uninitialized boolean variable tracking in the driver.
+
+Version 1.0.44 (2025-07-25)
+
+* Added operator and punctuation tokens for syntax highlighting.

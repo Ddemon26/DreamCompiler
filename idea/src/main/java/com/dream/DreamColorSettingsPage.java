@@ -16,7 +16,13 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
             new AttributesDescriptor("Keyword", DreamSyntaxHighlighter.KEYWORD),
             new AttributesDescriptor("Number", DreamSyntaxHighlighter.NUMBER),
             new AttributesDescriptor("String", DreamSyntaxHighlighter.STRING),
-            new AttributesDescriptor("Comment", DreamSyntaxHighlighter.COMMENT)
+            new AttributesDescriptor("Comment", DreamSyntaxHighlighter.COMMENT),
+            new AttributesDescriptor("Operator", DreamSyntaxHighlighter.OPERATOR),
+            new AttributesDescriptor("Semicolon", DreamSyntaxHighlighter.SEMICOLON),
+            new AttributesDescriptor("Comma", DreamSyntaxHighlighter.COMMA),
+            new AttributesDescriptor("Dot", DreamSyntaxHighlighter.DOT),
+            new AttributesDescriptor("Parentheses", DreamSyntaxHighlighter.PAREN),
+            new AttributesDescriptor("Braces", DreamSyntaxHighlighter.BRACE)
     };
 
     @Override
