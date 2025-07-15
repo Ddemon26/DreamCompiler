@@ -8,7 +8,6 @@ jobs:
       - name: validate svg size
         run: |
           for f in assets/icons/*.svg; do
-            if ! grep -q 'viewBox="0 0 16 16"' "$f"; then
+            if ! grep -q 'viewBox="0 0 128 128"' "$f"; then
               echo "$f has wrong viewBox"; exit 1; fi
           done
-
