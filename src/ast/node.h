@@ -5,6 +5,7 @@
 
 typedef enum {
   NODE_VAR_DECL,
+  NODE_STR_DECL,
   NODE_ASSIGN,
   NODE_WRITELINE,
   NODE_BINARY_OP,
