@@ -91,6 +91,14 @@ void generate_c(Compiler *compiler, Node *node) {
     fprintf(out, "    %s = ", node->value);
     gen_c_expr(compiler, out, node->left);
     fprintf(out, ";\n");
+  } else if (node->type == NODE_PRE_INC) {
+    fprintf(out, "    ++%s;\n", node->value);
+  } else if (node->type == NODE_PRE_DEC) {
+    fprintf(out, "    --%s;\n", node->value);
+  } else if (node->type == NODE_POST_INC) {
+    fprintf(out, "    %s++;\n", node->value);
+  } else if (node->type == NODE_POST_DEC) {
+    fprintf(out, "    %s--;\n", node->value);
   } else if (node->type == NODE_WRITELINE) {
     int is_str = 0;
     if (node->left) {

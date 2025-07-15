@@ -17,6 +17,7 @@ The compiler currently supports:
 - `for` loops
 - `break` and `continue` statements
 - `return` statements
+- `++` and `--` increment/decrement operators
 - Basic functions with the `func` keyword
 - `string` variables for text storage
 - `bool` variables and `true`/`false` literals
