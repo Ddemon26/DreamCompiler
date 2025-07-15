@@ -39,13 +39,17 @@ static Node *parse_for_increment(Lexer *lexer, Token *token) {
 }
 
 Node *parse_statement(Lexer *lexer, Token *token) {
-  if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE) {
-    int is_string = token->type == TOKEN_STRING_TYPE;
+  if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
+      token->type == TOKEN_BOOL_TYPE) {
+    TokenType decl_type = token->type;
+    int is_string = decl_type == TOKEN_STRING_TYPE;
     free(token->value);
     *token = next_token(lexer);
     if (token->type != TOKEN_IDENTIFIER) {
       if (is_string)
         fprintf(stderr, "Expected identifier after string\n");
+      else if (decl_type == TOKEN_BOOL_TYPE)
+        fprintf(stderr, "Expected identifier after bool\n");
       else
         fprintf(stderr, "Expected identifier after int\n");
       exit(1);
@@ -85,7 +89,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     if (token->type != TOKEN_RPAREN) {
       while (1) {
         int is_string = 0;
-        if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE) {
+        if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
+            token->type == TOKEN_BOOL_TYPE) {
           is_string = token->type == TOKEN_STRING_TYPE;
           free(token->value);
           *token = next_token(lexer);

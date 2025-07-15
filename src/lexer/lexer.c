@@ -56,6 +56,17 @@ Token next_token(Lexer *lexer) {
       token.type = TOKEN_INT;
     else if (strcmp(token.value, "string") == 0)
       token.type = TOKEN_STRING_TYPE;
+    else if (strcmp(token.value, "bool") == 0)
+      token.type = TOKEN_BOOL_TYPE;
+    else if (strcmp(token.value, "true") == 0) {
+      free(token.value);
+      token.value = strdup("1");
+      token.type = TOKEN_NUMBER;
+    } else if (strcmp(token.value, "false") == 0) {
+      free(token.value);
+      token.value = strdup("0");
+      token.type = TOKEN_NUMBER;
+    }
     else if (strcmp(token.value, "Console") == 0)
       token.type = TOKEN_CONSOLE;
     else if (strcmp(token.value, "WriteLine") == 0)

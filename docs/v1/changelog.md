@@ -205,3 +205,8 @@ Version 1.0.38 (2025-07-19)
 
 * Functions now accept parameters.
 * Updated documentation and added a new test case.
+
+Version 1.0.39 (2025-07-20)
+
+* Introduced `bool` variables and boolean literals.
+* Updated documentation, syntax highlighting and added a new test case.

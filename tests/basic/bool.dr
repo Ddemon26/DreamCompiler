@@ -1,0 +1,4 @@
+bool flag = true;
+Console.WriteLine(flag);
+flag = false;
+Console.WriteLine(flag);

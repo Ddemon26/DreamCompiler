@@ -5,7 +5,7 @@ Dream is a programming language with C#-like, semicolon-based syntax compiled to
 
 ## Syntax
 
-Variable Declaration: int <identifier>; or int <identifier> = <value>;
+Variable Declaration: int <identifier>; or int <identifier> = <value>; or bool <identifier>; or string <identifier>;
 Assignment: <identifier> = <expression>;
 Arithmetic: <identifier> = <expression> + <expression> or <expression> - <expression> or <expression> * <expression> or <expression> / <expression> or <expression> % <expression>;
 Comparison: <expression> < <expression> or <expression> > <expression> or <expression> <= <expression> or <expression> >= <expression> or <expression> == <expression> or <expression> != <expression>;

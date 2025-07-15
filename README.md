@@ -19,6 +19,7 @@ The compiler currently supports:
 - `return` statements
 - Basic functions with the `func` keyword
 - `string` variables for text storage
+- `bool` variables and `true`/`false` literals
 - Braced blocks supporting multiple statements
 - Line (`//`) and block (`/* */`) comments
 See the [changelog](docs/v1/changelog.md) for details on recent additions.
