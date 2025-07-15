@@ -148,3 +148,7 @@ Version 1.0.26 (2025-07-15)
 * Added `break` and `continue` statements for loops.
 * Documented the feature and added a new test case.
 
+Version 1.0.27 (2025-07-16)
+
+* Added `return` statements to exit the program early.
+* Updated documentation and added a regression test.

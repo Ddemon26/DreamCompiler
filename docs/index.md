@@ -21,6 +21,7 @@ Use the version dropdown in the sidebar to view documentation for other releases
 ### Control Flow
 - [If Statements](v1/if.md)
 - [Loops](v1/loops.md)
+- [Return](v1/return.md)
 
 ### Other
 - [Changelog](v1/changelog.md)

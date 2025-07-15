@@ -60,6 +60,8 @@ Token next_token(Lexer *lexer) {
       token.type = TOKEN_BREAK;
     else if (strcmp(token.value, "continue") == 0)
       token.type = TOKEN_CONTINUE;
+    else if (strcmp(token.value, "return") == 0)
+      token.type = TOKEN_RETURN;
     else
       token.type = TOKEN_IDENTIFIER;
     return token;
