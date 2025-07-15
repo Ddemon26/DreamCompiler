@@ -161,3 +161,8 @@ Version 1.0.29 (2025-07-17)
 
 * Fixed JetBrains syntax highlighting by using the correct language id in plugin.xml.
 
+
+Version 1.0.30 (2025-07-17)
+
+* Added simple functions with the `func` keyword.
+* Updated documentation and added a new test case.

@@ -11,7 +11,7 @@
       "patterns": [
         {
           "name": "keyword.control.dream",
-          "match": "\\b(if|else|while|for|do|break|continue|return|int)\\b"
+          "match": "\\b(if|else|while|for|do|break|continue|return|int|func)\\b"
         },
         {
           "name": "constant.numeric.dream",

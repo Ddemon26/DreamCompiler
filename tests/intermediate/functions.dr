@@ -1,0 +1,11 @@
+func PrintOne() {
+    Console.WriteLine(1);
+}
+
+PrintOne();
+
+func GetTwo() {
+    return 2;
+}
+
+Console.WriteLine(GetTwo());

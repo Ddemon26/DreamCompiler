@@ -59,6 +59,39 @@ Node *parse_statement(Lexer *lexer, Token *token) {
       exit(1);
     }
     return create_node(NODE_VAR_DECL, var_name, init, NULL, NULL);
+  } else if (token->type == TOKEN_FUNC) {
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_IDENTIFIER) {
+      fprintf(stderr, "Expected identifier after func\n");
+      exit(1);
+    }
+    char *func_name = token->value;
+    *token = next_token(lexer);
+    if (token->type != TOKEN_LPAREN) {
+      fprintf(stderr, "Expected ( after function name\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_RPAREN) {
+      fprintf(stderr, "Expected ) after function params\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    if (token->type != TOKEN_LBRACE) {
+      fprintf(stderr, "Expected { before function body\n");
+      exit(1);
+    }
+    free(token->value);
+    *token = next_token(lexer);
+    Node *body = parse_block(lexer, token);
+    if (token->type != TOKEN_RBRACE) {
+      fprintf(stderr, "Expected } after function body\n");
+      exit(1);
+    }
+    return create_node(NODE_FUNC_DEF, func_name, body, NULL, NULL);
   } else if (token->type == TOKEN_IDENTIFIER) {
     char *var_name = token->value;
     *token = next_token(lexer);
@@ -71,6 +104,20 @@ Node *parse_statement(Lexer *lexer, Token *token) {
         exit(1);
       }
       return create_node(NODE_ASSIGN, var_name, expr, NULL, NULL);
+    } else if (token->type == TOKEN_LPAREN) {
+      free(token->value);
+      *token = next_token(lexer);
+      if (token->type != TOKEN_RPAREN) {
+        fprintf(stderr, "Expected ) after call\n");
+        exit(1);
+      }
+      free(token->value);
+      *token = next_token(lexer);
+      if (token->type != TOKEN_SEMICOLON) {
+        fprintf(stderr, "Expected semicolon\n");
+        exit(1);
+      }
+      return create_node(NODE_FUNC_CALL, var_name, NULL, NULL, NULL);
     }
   } else if (token->type == TOKEN_CONSOLE) {
     free(token->value);
@@ -93,18 +140,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     }
     free(token->value);
     *token = next_token(lexer);
-    if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER &&
-        token->type != TOKEN_STRING) {
-      fprintf(stderr, "Expected identifier, number or string\n");
-      exit(1);
-    }
-    NodeType arg_type = NODE_IDENTIFIER;
-    if (token->type == TOKEN_NUMBER)
-      arg_type = NODE_NUMBER;
-    else if (token->type == TOKEN_STRING)
-      arg_type = NODE_STRING;
-    Node *arg = create_node(arg_type, token->value, NULL, NULL, NULL);
-    *token = next_token(lexer);
+    Node *arg = parse_expression(lexer, token);
     if (token->type != TOKEN_RPAREN) {
       fprintf(stderr, "Expected )\n");
       exit(1);

@@ -18,7 +18,9 @@ typedef enum {
   NODE_STRING,
   NODE_BREAK,
   NODE_CONTINUE,
-  NODE_RETURN
+  NODE_RETURN,
+  NODE_FUNC_DEF,
+  NODE_FUNC_CALL
 } NodeType;
 
 typedef struct Node {

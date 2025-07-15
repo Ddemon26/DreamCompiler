@@ -45,16 +45,35 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   fprintf(compiler.output, "#include <stdio.h>\n");
-  fprintf(compiler.output, "int main() {\n");
   Token token = next_token(&lexer);
+  Node *program = NULL;
+  Node **current = &program;
   while (token.type != TOKEN_EOF) {
-    Node *node = parse_statement(&lexer, &token);
-    generate_c(&compiler, node);
-    free_node(node);
+    Node *stmt = parse_statement(&lexer, &token);
+    Node *block = create_node(NODE_BLOCK, NULL, stmt, NULL, NULL);
+    *current = block;
+    current = &block->right;
+    free(token.value);
     token = next_token(&lexer);
+  }
+
+  Node *cur = program;
+  while (cur) {
+    if (cur->left->type == NODE_FUNC_DEF)
+      generate_c_function(&compiler, cur->left);
+    cur = cur->right;
+  }
+
+  fprintf(compiler.output, "int main() {\n");
+  cur = program;
+  while (cur) {
+    if (cur->left->type != NODE_FUNC_DEF)
+      generate_c(&compiler, cur->left);
+    cur = cur->right;
   }
   fprintf(compiler.output, "    return 0;\n");
   fprintf(compiler.output, "}\n");
+  free_node(program);
   fclose(compiler.output);
   free(source);
   free(token.value);

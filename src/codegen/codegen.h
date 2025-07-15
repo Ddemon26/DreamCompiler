@@ -10,5 +10,6 @@ typedef struct {
 
 void gen_c_expr(FILE *out, Node *expr);
 void generate_c(Compiler *compiler, Node *node);
+void generate_c_function(Compiler *compiler, Node *node);
 
 #endif
