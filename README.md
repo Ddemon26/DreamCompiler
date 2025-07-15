@@ -60,7 +60,7 @@ An example program is provided in [example.dr](example.dr).
 
 ## Documentation
 
-Documentation for language features lives under [`docs`](docs). Start with [usage.md](docs/v1/usage.md) for an overview.
+Documentation for language features lives under [`docs`](docs). Start with [index.md](docs/index.md) to browse the available guides.
 
 ## Contributing
 
