@@ -230,3 +230,8 @@ Version 1.0.43 (2025-07-24)
 
 * Fixed JetBrains code style page hanging by registering a language code style provider.
 
+Version 1.0.44 (2025-07-25)
+
+* Reorganized tests into feature directories and updated the README instructions.
+* Added missing pages to the HTML documentation index and improved markdown formatting.
+

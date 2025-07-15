@@ -48,7 +48,9 @@ The steps below show how to build and use Dream on both Linux and Windows.
    ```
 5. **Run the tests (optional)**
    ```bash
-   for f in tests/*.dr; do zig build run -- "$f"; done
+   for f in tests/*/*.dr; do
+       zig build run -- "$f"
+   done
    ```
 
 The resulting compiler binary is placed under `zig-out/bin`.
