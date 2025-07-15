@@ -279,3 +279,8 @@ Version 1.0.52 (2025-07-31)
 * Added support for escape sequences in string literals.
 
 * Updated documentation and added a regression test.
+
+Version 1.0.53 (2025-07-31)
+
+* Added string concatenation using the `+` operator.
+* Updated documentation and added a new regression test.
