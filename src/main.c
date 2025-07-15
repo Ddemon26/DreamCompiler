@@ -8,7 +8,8 @@
     #include <sys/stat.h>
     #endif
 
-    int main(int argc, char *argv[]) {
+    int main(int argc, char *argv[])
+    {
         if (argc != 2) {
             fprintf(stderr, "Usage: %s <input.dr>\n", argv[0]);
             return 1;
@@ -26,8 +27,8 @@
         source[size] = '\0';
         fclose(file);
         Lexer lexer = {source, 0, 1};
-        if ((unsigned char) source[0] == 0xEF && (unsigned char) source[1] == 0xBB &&
-            (unsigned char) source[2] == 0xBF) {
+        if ((unsigned char)source[0] == 0xEF && (unsigned char)source[1] == 0xBB &&
+            (unsigned char)source[2] == 0xBF) {
             lexer.pos = 3;
         }
         Compiler compiler = {fopen("build/bin/dream.c", "w")};
@@ -56,7 +57,7 @@
         if (!cc)
             cc = "gcc";
         char cmd[256];
-        snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o build/bin/dream.exe", cc);
+        snprintf(cmd, sizeof(cmd), "%s output.c -o build/bin/dream.exe", cc);
         system(cmd);
         return 0;
     }
