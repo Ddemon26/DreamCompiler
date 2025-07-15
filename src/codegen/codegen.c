@@ -23,7 +23,17 @@ void gen_c_expr(FILE *out, Node *expr) {
     fprintf(out, "%s", expr->value);
   } else if (expr->type == NODE_STRING) {
     fprintf(out, "\"%s\"", expr->value);
+  } else if (expr->type == NODE_FUNC_CALL) {
+    fprintf(out, "%s()", expr->value);
   }
+}
+
+void generate_c_function(Compiler *compiler, Node *node) {
+  FILE *out = compiler->output;
+  fprintf(out, "long %s() {\n", node->value);
+  generate_c(compiler, node->left);
+  fprintf(out, "    return 0;\n");
+  fprintf(out, "}\n");
 }
 
 void generate_c(Compiler *compiler, Node *node) {

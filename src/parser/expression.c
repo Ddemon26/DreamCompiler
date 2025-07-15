@@ -36,8 +36,23 @@ Node *parse_expression(Lexer *lexer, Token *token) {
       left_type = NODE_NUMBER;
     else if (token->type == TOKEN_STRING)
       left_type = NODE_STRING;
-    left = create_node(left_type, token->value, NULL, NULL, NULL);
+    char *name = token->value;
     *token = next_token(lexer);
+    if (left_type == NODE_IDENTIFIER && token->type == TOKEN_LPAREN) {
+      free(token->value);
+      *token = next_token(lexer);
+      if (token->type != TOKEN_RPAREN) {
+        fprintf(stderr, "Expected ) after call\n");
+        exit(1);
+      }
+      free(token->value);
+      *token = next_token(lexer);
+      left = create_node(NODE_FUNC_CALL, name, NULL, NULL, NULL);
+      free(name);
+    } else {
+      left = create_node(left_type, name, NULL, NULL, NULL);
+      free(name);
+    }
   }
   if (unary_minus)
     left = create_node(NODE_UNARY_OP, "-", left, NULL, NULL);
