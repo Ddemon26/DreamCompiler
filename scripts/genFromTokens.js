@@ -24,3 +24,7 @@ for(const t of tokens){
 flex += '  [\\t\\r\\n ]+ { return com.intellij.psi.TokenType.WHITE_SPACE; }\n  . { return com.intellij.psi.TokenType.BAD_CHARACTER; }\n}\n';
 fs.mkdirSync('idea/src/main/java/com/dream', { recursive: true });
 fs.writeFileSync('idea/src/main/java/com/dream/DreamLexer.flex', flex);
+
+// Keep JetBrains tokens.json in sync
+fs.mkdirSync('idea/src/main/resources', { recursive: true });
+fs.writeFileSync('idea/src/main/resources/tokens.json', JSON.stringify(tokens, null, 2));
