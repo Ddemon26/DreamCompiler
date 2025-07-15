@@ -19,6 +19,26 @@ static int is_bool_var(Compiler *compiler, const char *name) {
   return 0;
 }
 
+static int is_boolean_expr(Compiler *compiler, Node *expr) {
+  if (!expr)
+    return 0;
+  if (expr->type == NODE_IDENTIFIER)
+    return is_bool_var(compiler, expr->value);
+  if (expr->type == NODE_UNARY_OP && strcmp(expr->value, "!") == 0)
+    return 1;
+  if (expr->type == NODE_BINARY_OP) {
+    const char *op = expr->value;
+    if (strcmp(op, "==") == 0 || strcmp(op, "!=") == 0 || strcmp(op, "<") == 0 ||
+        strcmp(op, ">") == 0 || strcmp(op, "<=") == 0 || strcmp(op, ">=") == 0 ||
+        strcmp(op, "&&") == 0 || strcmp(op, "||") == 0)
+      return 1;
+  }
+  if (expr->type == NODE_NUMBER &&
+      (strcmp(expr->value, "0") == 0 || strcmp(expr->value, "1") == 0))
+    return 1;
+  return 0;
+}
+
 static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
                             int wrap) {
   if (!expr)
@@ -154,8 +174,7 @@ void generate_c(Compiler *compiler, Node *node) {
         is_str = 1;
       else if (node->left->type == NODE_IDENTIFIER)
         is_str = is_string_var(compiler, node->left->value);
-      if (node->left->type == NODE_IDENTIFIER)
-        is_bool = is_bool_var(compiler, node->left->value);
+      is_bool = is_boolean_expr(compiler, node->left);
     }
     if (is_str) {
       fprintf(out, "    printf(\"%%s\\n\", ");

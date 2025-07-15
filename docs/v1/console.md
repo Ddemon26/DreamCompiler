@@ -21,6 +21,6 @@ Console.WriteLine("hello");   // Outputs the string "hello"
 
 `Console.WriteLine` prints integers using `printf` with the `%ld` format. Values
 are cast to `long` in the generated C code to avoid warnings. Strings are
-emitted directly as C string literals. Boolean variables are printed as the
-words `true` or `false`.
+emitted directly as C string literals. Boolean values, including the result of
+boolean expressions, are printed as the words `true` or `false`.
 

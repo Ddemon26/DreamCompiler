@@ -261,3 +261,9 @@ Version 1.0.49 (2025-07-29)
 
 * Fixed syntax highlighting regressions for keywords and block comments.
 * Regenerated editor grammars.
+
+Version 1.0.50 (2025-07-30)
+
+* Console.WriteLine now prints boolean expressions as 'true' or 'false'.
+* Updated documentation and added a new test case.
+
