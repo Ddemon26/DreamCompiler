@@ -9,7 +9,7 @@ Arithmetic: <identifier> = <expression> + <expression> or <expression> - <expres
 Comparison: <expression> < <expression> or <expression> > <expression> or <expression> <= <expression> or <expression> >= <expression> or <expression> == <expression> or <expression> != <expression>;
 Console Output: Console.WriteLine(<expression>);
     <expression> may be a variable, number, or quoted string.
-Conditional: if (<expression>) <statement>
+Conditional: if (<expression>) <statement> [else <statement>]
 Loop: while (<expression>) <statement>
 
 Example Program

@@ -1,0 +1,3 @@
+int x = 0;
+if (x) Console.WriteLine(1);
+else Console.WriteLine(2);
