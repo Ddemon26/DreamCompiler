@@ -314,3 +314,9 @@ Version 1.0.58 (2025-08-05)
 * Added basic `class` definitions.
 * Documented the feature and generated syntax highlighting.
 * Added a regression test.
+
+Version 1.0.59 (2025-08-06)
+
+* Rewrote expression parsing using a precedence climbing algorithm.
+* Documented the new parser architecture.
+* Added regression tests for mixed precedence and grouping.

@@ -1,0 +1,3 @@
+int x = 2 ^ 3 ^ 2;
+Console.WriteLine(x);
+// Expected: 3
