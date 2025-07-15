@@ -290,3 +290,9 @@ Version 1.0.54 (2025-08-01)
 * Added float variables and decimal number support.
 * Updated documentation and console printing.
 * Added new regression test.
+
+Version 1.0.55 (2025-08-02)
+
+* Added bitwise XOR operator (`^`).
+* Updated arithmetic documentation and editor token definitions.
+* Added new regression test.
