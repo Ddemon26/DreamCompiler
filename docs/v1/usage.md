@@ -15,6 +15,7 @@ Console Output: Console.WriteLine(<expression>);
 Conditional: if (<expression>) <statement> [else <statement>]
 Loop: while (<expression>) <statement> or do <statement> while (<expression>) or for (<init>; <condition>; <increment>) <statement>;
 Return: return [<expression>];
+Comments: // single line or /* block */
 
 ## Example Program
 int x = 5;

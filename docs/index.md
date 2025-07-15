@@ -17,6 +17,7 @@ Use the version dropdown in the sidebar to view documentation for other releases
 - [Comparison](v1/comparison.md)
 - [Logical Operators](v1/logical.md)
 - [Console Output](v1/console.md)
+- [Comments](v1/comments.md)
 - [Functions](v1/functions.md)
 
 ### Control Flow

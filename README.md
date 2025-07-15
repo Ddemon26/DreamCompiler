@@ -18,6 +18,7 @@ The compiler currently supports:
 - `break` and `continue` statements
 - `return` statements
 - Braced blocks supporting multiple statements
+- Line (`//`) and block (`/* */`) comments
 
 More features such as functions are planned for future versions. See the [changelog](docs/v1/changelog.md) for details.
 

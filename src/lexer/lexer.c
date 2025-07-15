@@ -28,6 +28,18 @@ Token next_token(Lexer *lexer) {
     return next_token(lexer);
   }
 
+  if (lexer->source[lexer->pos] == '/' &&
+      lexer->source[lexer->pos + 1] == '*') {
+    lexer->pos += 2;
+    while (lexer->source[lexer->pos] &&
+           !(lexer->source[lexer->pos] == '*' &&
+             lexer->source[lexer->pos + 1] == '/'))
+      lexer->pos++;
+    if (lexer->source[lexer->pos])
+      lexer->pos += 2;
+    return next_token(lexer);
+  }
+
   Token token = {TOKEN_UNKNOWN, NULL};
   if (lexer->source[lexer->pos] == '\0') {
     token.type = TOKEN_EOF;
