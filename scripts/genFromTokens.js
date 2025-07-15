@@ -1,8 +1,6 @@
 const fs = require('fs');
-const path = require('path');
 // Canonical token definitions live at the repository root
-const TOKEN_FILE = path.join(__dirname, '..', 'tokens.json');
-const ROOT = path.dirname(TOKEN_FILE);
+const TOKEN_FILE = 'tokens.json';
 const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE, 'utf8'));
 
 // TextMate grammar
@@ -12,31 +10,36 @@ const tmGrammar = {
   patterns: [{include:'#tokens'}],
   repository: { tokens: { patterns: tokens.map(t=>({name:t.scope, match:t.regex})) } }
 };
-fs.mkdirSync(path.join(ROOT, 'vscode/syntaxes'), { recursive: true });
-fs.writeFileSync(path.join(ROOT, 'vscode/syntaxes/dream.tmLanguage.json'), JSON.stringify(tmGrammar, null, 2));
+fs.mkdirSync('vscode/syntaxes', { recursive: true });
+fs.writeFileSync('vscode/syntaxes/dream.tmLanguage.json', JSON.stringify(tmGrammar, null, 2));
 
 // JFlex lexer
 let flex = `package com.dream;\n\n%%\n%public\n%class DreamLexer\n%implements com.intellij.lexer.FlexLexer\n%unicode\n%function advance\n%type com.intellij.psi.tree.IElementType\n\n%%\n<YYINITIAL> {\n`;
 function escapeFlex(re){
   return re
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
+    .replace(/\/\//g, '\\/\\/')
     .replace(/\/\*/g, '\\/\\*')
     .replace(/\*\//g, '\\*\\/');
 }
 for(const t of tokens){
-  const pattern = escapeFlex(t.regex);
+  let pattern = escapeFlex(t.regex);
+  if (t.name === 'operator') {
+    const ops = ['++','--','+=','-=','*=','/=','%=','+','-','*','/','%','<=','>=','==','!=','<','>','&&','||','!','=','?'];
+    pattern = ops.map(op => `"${op}"`).join('|');
+  } else if (t.regex.startsWith('\/\\*')) {
+    pattern = `"${pattern}"`;
+  }
   flex += `  ${pattern} { return DreamTokenTypes.${t.name.toUpperCase()}; }\n`;
 }
 flex += '  [\\t\\r\\n ]+ { return com.intellij.psi.TokenType.WHITE_SPACE; }\n  . { return com.intellij.psi.TokenType.BAD_CHARACTER; }\n}\n';
-fs.mkdirSync(path.join(ROOT, 'idea/src/main/java/com/dream'), { recursive: true });
-fs.writeFileSync(path.join(ROOT, 'idea/src/main/java/com/dream/DreamLexer.flex'), flex);
+fs.mkdirSync('idea/src/main/java/com/dream', { recursive: true });
+fs.writeFileSync('idea/src/main/java/com/dream/DreamLexer.flex', flex);
 
 // Keep JetBrains tokens.json in sync
-fs.mkdirSync(path.join(ROOT, 'idea/src/main/resources'), { recursive: true });
-fs.writeFileSync(path.join(ROOT, 'idea/src/main/resources/tokens.json'), JSON.stringify(tokens, null, 2));
+fs.mkdirSync('idea/src/main/resources', { recursive: true });
+fs.writeFileSync('idea/src/main/resources/tokens.json', JSON.stringify(tokens, null, 2));
 // Mirror token file into the plugin root if not a symlink
-const ideaTokenPath = path.join(ROOT, 'idea/tokens.json');
-if (!fs.existsSync(ideaTokenPath) || !fs.lstatSync(ideaTokenPath).isSymbolicLink()) {
-  fs.writeFileSync(ideaTokenPath, JSON.stringify(tokens, null, 2));
+if (!fs.existsSync('idea/tokens.json') ||
+    !fs.lstatSync('idea/tokens.json').isSymbolicLink()) {
+  fs.writeFileSync('idea/tokens.json', JSON.stringify(tokens, null, 2));
 }
