@@ -30,8 +30,28 @@
           "match": "/\\*[^*]*\\*+([^/*][^*]*\\*+)*/"
         },
         {
+          "name": "keyword.operator",
+          "match": "\\+\\+|--|\\+|-|\\*|\\/|%|<=|>=|==|!=|<|>|&&|\\|\\||!|="
+        },
+        {
+          "name": "punctuation.terminator.statement",
+          "match": ";"
+        },
+        {
           "name": "punctuation.separator.comma",
           "match": ","
+        },
+        {
+          "name": "punctuation.accessor",
+          "match": "\\."
+        },
+        {
+          "name": "punctuation.section.parens",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.section.braces",
+          "match": "[{}]"
         }
       ]
     }
