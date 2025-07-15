@@ -11,20 +11,25 @@ static int is_string_var(Compiler *compiler, const char *name) {
   return 0;
 }
 
-void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
+static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
+                            int wrap) {
   if (!expr)
     return;
   if (expr->type == NODE_BINARY_OP) {
-    fputc('(', out);
-    gen_c_expr(compiler, out, expr->left);
+    if (wrap)
+      fputc('(', out);
+    gen_c_expr_impl(compiler, out, expr->left, 1);
     fprintf(out, " %s ", expr->value);
-    gen_c_expr(compiler, out, expr->right);
-    fputc(')', out);
+    gen_c_expr_impl(compiler, out, expr->right, 1);
+    if (wrap)
+      fputc(')', out);
   } else if (expr->type == NODE_UNARY_OP) {
-    fputc('(', out);
+    if (wrap)
+      fputc('(', out);
     fprintf(out, "%s", expr->value);
-    gen_c_expr(compiler, out, expr->left);
-    fputc(')', out);
+    gen_c_expr_impl(compiler, out, expr->left, 1);
+    if (wrap)
+      fputc(')', out);
   } else if (expr->type == NODE_PRE_INC) {
     fprintf(out, "(++%s)", expr->value);
   } else if (expr->type == NODE_PRE_DEC) {
@@ -48,12 +53,20 @@ void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
     while (arg) {
       if (!first)
         fprintf(out, ", ");
-      gen_c_expr(compiler, out, arg->left);
+      gen_c_expr_impl(compiler, out, arg->left, 1);
       first = 0;
       arg = arg->right;
     }
     fprintf(out, ")");
   }
+}
+
+void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
+  gen_c_expr_impl(compiler, out, expr, 1);
+}
+
+void gen_c_expr_unwrapped(Compiler *compiler, FILE *out, Node *expr) {
+  gen_c_expr_impl(compiler, out, expr, 0);
 }
 
 void generate_c_function(Compiler *compiler, Node *node) {
@@ -126,7 +139,7 @@ void generate_c(Compiler *compiler, Node *node) {
     }
   } else if (node->type == NODE_IF) {
     fprintf(out, "    if (");
-    gen_c_expr(compiler, out, node->left);
+    gen_c_expr_unwrapped(compiler, out, node->left);
     fprintf(out, ") {\n");
     generate_c(compiler, node->right);
     fprintf(out, "    }");
@@ -138,7 +151,7 @@ void generate_c(Compiler *compiler, Node *node) {
     fprintf(out, "\n");
   } else if (node->type == NODE_WHILE) {
     fprintf(out, "    while (");
-    gen_c_expr(compiler, out, node->left);
+    gen_c_expr_unwrapped(compiler, out, node->left);
     fprintf(out, ") {\n");
     generate_c(compiler, node->right);
     fprintf(out, "    }\n");
@@ -146,7 +159,7 @@ void generate_c(Compiler *compiler, Node *node) {
     fprintf(out, "    do {\n");
     generate_c(compiler, node->right);
     fprintf(out, "    } while (");
-    gen_c_expr(compiler, out, node->left);
+    gen_c_expr_unwrapped(compiler, out, node->left);
     fprintf(out, ");\n");
   } else if (node->type == NODE_BREAK) {
     fprintf(out, "    break;\n");
