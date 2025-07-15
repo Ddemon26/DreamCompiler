@@ -2,7 +2,7 @@
   <id>com.dream</id>
   <name>Dream Support</name>
   <vendor>Dream</vendor>
-  <description>Syntax highlighting for Dream</description>
+  <description>Provides syntax highlighting, code formatting, and other language support features for the Dream programming language.</description>
 
   <depends>com.intellij.modules.platform</depends>
 
