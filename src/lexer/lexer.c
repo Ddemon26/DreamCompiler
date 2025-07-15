@@ -283,8 +283,8 @@ Token next_token(Lexer *lexer) {
       token.value = strdup("&&");
       lexer->pos += 2;
     } else {
-      token.type = TOKEN_UNKNOWN;
-      token.value = strndup(lexer->source + lexer->pos, 1);
+      token.type = TOKEN_BITAND;
+      token.value = strdup("&");
       lexer->pos++;
     }
     break;
@@ -294,8 +294,8 @@ Token next_token(Lexer *lexer) {
       token.value = strdup("||");
       lexer->pos += 2;
     } else {
-      token.type = TOKEN_UNKNOWN;
-      token.value = strndup(lexer->source + lexer->pos, 1);
+      token.type = TOKEN_BITOR;
+      token.value = strdup("|");
       lexer->pos++;
     }
     break;
