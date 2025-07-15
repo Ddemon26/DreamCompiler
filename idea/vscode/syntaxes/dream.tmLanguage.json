@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vscode/master/extensions/theme-defaults/test/colorize-fixtures/TMGrammarSchema.json",
+  "scopeName": "source.dream",
+  "patterns": [
+    {
+      "include": "#tokens"
+    }
+  ],
+  "repository": {
+    "tokens": {
+      "patterns": [
+        {
+          "name": "keyword.control",
+          "match": "\\b(if|else|while|for|do|break|continue|return|int|string|bool|true|false|func|Console|WriteLine)\\b"
+        },
+        {
+          "name": "constant.numeric",
+          "match": "\\b\\d+\\b"
+        },
+        {
+          "name": "string.quoted.double",
+          "match": "\"([^\\\"\\n]|\\\\.)*\""
+        },
+        {
+          "name": "comment.line.double-slash",
+          "match": "//.*"
+        },
+        {
+          "name": "comment.block",
+          "match": "/\\*[^*]*\\*+([^/*][^*]*\\*+)*/"
+        },
+        {
+          "name": "punctuation.separator.comma",
+          "match": ","
+        }
+      ]
+    }
+  }
+}
