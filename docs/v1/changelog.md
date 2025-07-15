@@ -171,3 +171,8 @@ Version 1.0.31 (2025-07-17)
 
 * Added block comment token for syntax highlighting.
 * Regenerated VS Code and JetBrains grammars.
+
+Version 1.0.32 (2025-07-18)
+
+* Lexer now supports C-style block comments.
+* Documented comments and added a regression test.

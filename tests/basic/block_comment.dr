@@ -1,0 +1,4 @@
+int x = 5;
+/* this is a
+   block comment */
+Console.WriteLine(x); // Expected: 5
