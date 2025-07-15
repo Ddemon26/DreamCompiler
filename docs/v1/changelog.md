@@ -1,4 +1,4 @@
-Dream Compiler Changelog
+# Dream Compiler Changelog
 Version 1.0.1 (2025-07-14)
 
 Initial compiler implementation in dream.c.
@@ -120,3 +120,4 @@ Version 1.0.21 (2025-07-15)
 
 * Braced blocks can now contain multiple statements in `if` and `while`.
 * Updated documentation and added regression tests.
+

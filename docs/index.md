@@ -7,6 +7,7 @@ Welcome to the documentation for the Dream language and compiler. The pages belo
 Use the version dropdown in the sidebar to view documentation for other releases.
 
 ### Getting Started
+- [Introduction](v1/intro.md)
 - [Usage Guide](v1/usage.md)
 
 ### Language Basics
