@@ -4,21 +4,28 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const exe = b.addExecutable(.{
-        .name = "DreamCompiler",
+    const module = b.createModule(.{
         .target = target,
         .optimize = optimize,
     });
 
-    exe.addCSourceFiles(&.{
-        "src/main.c",
-        "src/lexer.c",
-        "src/parser.c",
-        "src/codegen.c",
-    }, &.{
-        "-std=c11",
-        "-Wall",
-        "-Wextra",
+    const exe = b.addExecutable(.{
+        .name = "DreamCompiler",
+        .root_module = module,
+    });
+
+    exe.addCSourceFiles(.{
+        .files = &.{
+            "src/main.c",
+            "src/lexer.c",
+            "src/parser.c",
+            "src/codegen.c",
+        },
+        .flags = &.{
+            "-std=c11",
+            "-Wall",
+            "-Wextra",
+        },
     });
 
     exe.linkLibC();
