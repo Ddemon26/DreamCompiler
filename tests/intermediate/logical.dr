@@ -1,0 +1,4 @@
+int a = 1;
+int b = 0;
+if (a && b) Console.WriteLine(a); // Expected: (no output)
+if (a || b) Console.WriteLine(a); // Expected: 1

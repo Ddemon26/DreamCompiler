@@ -42,7 +42,8 @@ Node *parse_expression(Lexer *lexer, Token *token) {
        token->type == TOKEN_PERCENT || token->type == TOKEN_LT ||
        token->type == TOKEN_GT || token->type == TOKEN_LE ||
        token->type == TOKEN_GE || token->type == TOKEN_EQEQ ||
-       token->type == TOKEN_NEQ) &&
+       token->type == TOKEN_NEQ || token->type == TOKEN_AND ||
+       token->type == TOKEN_OR) &&
       left->type != NODE_STRING) {
     char *op = token->value;
     *token = next_token(lexer);
