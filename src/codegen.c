@@ -10,6 +10,11 @@ void gen_c_expr(FILE *out, Node *expr) {
     fprintf(out, " %s ", expr->value);
     gen_c_expr(out, expr->right);
     fputc(')', out);
+  } else if (expr->type == NODE_UNARY_OP) {
+    fputc('(', out);
+    fprintf(out, "%s", expr->value);
+    gen_c_expr(out, expr->left);
+    fputc(')', out);
   } else if (expr->type == NODE_IDENTIFIER ||
              (expr->type == NODE_VAR_DECL && expr->left == NULL &&
               expr->right == NULL)) {

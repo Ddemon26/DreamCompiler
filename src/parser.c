@@ -15,6 +15,12 @@ Node *create_node(NodeType type, char *value, Node *left, Node *right,
 }
 
 Node *parse_expression(Lexer *lexer, Token *token) {
+  int unary_minus = 0;
+  if (token->type == TOKEN_MINUS) {
+    unary_minus = 1;
+    free(token->value);
+    *token = next_token(lexer);
+  }
   if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER &&
       token->type != TOKEN_STRING) {
     fprintf(stderr, "Expected identifier, number or string\n");
@@ -27,6 +33,8 @@ Node *parse_expression(Lexer *lexer, Token *token) {
     left_type = NODE_STRING;
   Node *left = create_node(left_type, token->value, NULL, NULL, NULL);
   *token = next_token(lexer);
+  if (unary_minus)
+    left = create_node(NODE_UNARY_OP, "-", left, NULL, NULL);
   if ((token->type == TOKEN_PLUS || token->type == TOKEN_MINUS ||
        token->type == TOKEN_STAR || token->type == TOKEN_SLASH ||
        token->type == TOKEN_PERCENT || token->type == TOKEN_LT ||
@@ -36,14 +44,7 @@ Node *parse_expression(Lexer *lexer, Token *token) {
       left_type != NODE_STRING) {
     char *op = token->value;
     *token = next_token(lexer);
-    if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER) {
-      fprintf(stderr, "Expected identifier or number after %s\n", op);
-      exit(1);
-    }
-    Node *right = create_node(token->type == TOKEN_IDENTIFIER ? NODE_IDENTIFIER
-                                                              : NODE_NUMBER,
-                              token->value, NULL, NULL, NULL);
-    *token = next_token(lexer);
+    Node *right = parse_expression(lexer, token);
     return create_node(NODE_BINARY_OP, op, left, right, NULL);
   }
   return left;

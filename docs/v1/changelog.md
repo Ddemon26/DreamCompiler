@@ -100,3 +100,8 @@ Version 1.0.17 (2025-07-14)
 
 * Added `else` clauses to `if` statements.
 * Updated documentation and added a new test case.
+
+Version 1.0.18 (2025-07-14)
+
+* Added unary minus support for numeric expressions.
+* Updated arithmetic documentation and added a new test case.
