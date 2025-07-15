@@ -17,4 +17,7 @@ public interface DreamTokenTypes {
     IElementType DOT = new DreamElementType("DOT");
     IElementType PAREN = new DreamElementType("PAREN");
     IElementType BRACE = new DreamElementType("BRACE");
+    IElementType IDENTIFIER = new DreamElementType("IDENTIFIER");
+    IElementType BRACKET = new DreamElementType("BRACKET");
+    IElementType COMMENTDOC = new DreamElementType("COMMENTDOC");
 }
