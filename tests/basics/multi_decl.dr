@@ -1,0 +1,4 @@
+int a, b = 2, c;
+a = 1;
+c = a + b;
+Console.WriteLine(c); // Expected: 3

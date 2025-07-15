@@ -8,6 +8,8 @@ The Dream language supports variable declarations and assignments with a C#-like
 
 **Declaration**: `int <identifier>;`, `float <identifier>;`, `string <identifier>;` or `bool <identifier>;`
 : Declares a variable. Integer and boolean variables default to `0` while string variables default to `null`.
+  Multiple variables of the same type may be declared in a single statement by separating them with commas:
+  `int a, b = 1, c;`.
 
 **Assignment**: `<identifier> = <expression>;`
 : Assigns a value (number or expression) to a variable.
@@ -20,6 +22,7 @@ x = 42;       // Assigns 42 to x
 int y = 10;   // Declares and assigns 10 to y
 float z = 1.5; // Float variable
 bool flag = true; // Boolean variable initialized to 1
+int a, b = 2, c; // Multiple variables in one statement
 ```
 
 ## Notes
