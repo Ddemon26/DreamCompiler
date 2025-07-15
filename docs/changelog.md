@@ -84,3 +84,9 @@ Version 1.0.14 (2025-07-14)
 * Added <= and >= comparison operators.
 * Updated documentation and usage guide.
 * Added regression test for the new operators.
+
+Version 1.0.15 (2025-07-15)
+
+* Added modulo operator (%) for arithmetic expressions.
+* Updated documentation and usage guide.
+* Added regression test for modulo.
