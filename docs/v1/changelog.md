@@ -195,3 +195,8 @@ Version 1.0.36 (2025-07-15)
 
 * Added `string` variable support and a new test.
 * Updated tokens and regenerated editor grammars.
+
+Version 1.0.37 (2025-07-18)
+
+* Added support for `else if` chains.
+* Updated documentation and added a regression test.

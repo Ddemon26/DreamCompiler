@@ -226,12 +226,10 @@ Node *parse_statement(Lexer *lexer, Token *token) {
         *token = next_token(lexer);
       } else {
         else_body = parse_statement(lexer, token);
-        if (token->type != TOKEN_SEMICOLON) {
-          fprintf(stderr, "Expected semicolon\n");
-          exit(1);
+        if (token->type == TOKEN_SEMICOLON) {
+          free(token->value);
+          *token = next_token(lexer);
         }
-        free(token->value);
-        *token = next_token(lexer);
       }
     }
     return create_node(NODE_IF, NULL, cond, body, else_body);

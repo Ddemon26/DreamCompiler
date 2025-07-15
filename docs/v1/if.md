@@ -1,12 +1,13 @@
 # If Statements in Dream
 
-Dream supports conditional execution using the `if` keyword and an optional `else` clause.
+Dream supports conditional execution using the `if` keyword. `else` and `else if` clauses provide alternate branches.
 
 Syntax
 ------
 
 ```
 if (<expression>) <statement>
+else if (<expression>) <statement>
 else <statement>
 ```
 
@@ -26,4 +27,16 @@ if (x) {
 ```
 
 This prints `1` because `x` is nonzero.
+
+You can chain conditions using `else if`:
+
+```
+int y = 0;
+if (y == 1)
+    Console.WriteLine(1);
+else if (y == 0)
+    Console.WriteLine(2);
+else
+    Console.WriteLine(3);
+```
 
