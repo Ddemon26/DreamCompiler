@@ -90,3 +90,13 @@ Version 1.0.15 (2025-07-15)
 * Added modulo operator (%) for arithmetic expressions.
 * Updated documentation and usage guide.
 * Added regression test for modulo.
+
+Version 1.0.16 (2025-07-15)
+
+* Fixed compiler crash when output file directory was missing.
+  The generated C code now writes to `output.c` before compilation.
+
+Version 1.0.17 (2025-07-15)
+
+* Reverted to generating `build/bin/dream.c` so the C file lives inside
+  the build directory. The compilation command now matches this path.
