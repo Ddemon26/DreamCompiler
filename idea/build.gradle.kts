@@ -9,27 +9,43 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.jvmTarget = "17"
+}
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-Xlint:deprecation")
+}
+
 intellij {
     version.set("2024.2")
     type.set("IC")
 }
 
-tasks.patchPluginXml {
-    sinceBuild.set("241")
-    untilBuild.set("*")
-}
+tasks {
+    buildSearchableOptions {
+        enabled = false
+    }
 
-tasks.named<org.jetbrains.grammarkit.tasks.GenerateLexerTask>("generateLexer") {
-    sourceFile.set(file("src/main/java/com/dream/DreamLexer.flex"))
-    targetDir.set("build/generated-src/flex/com/dream")
-    targetClass.set("DreamLexer")
-    purgeOldFiles.set(true)
+    patchPluginXml {
+        sinceBuild.set("242")
+        untilBuild.set("242.*")
+    }
+
+    withType<org.jetbrains.grammarkit.tasks.GenerateLexerTask> {
+        sourceFile.set(file("src/main/java/com/dream/DreamLexer.flex"))
+        targetDir.set("build/generated-src/flex/com/dream")
+        targetClass.set("DreamLexer")
+        purgeOldFiles.set(true)
+    }
 }
 
 sourceSets["main"].java.srcDir("build/generated-src/flex")
 
-tasks.named<JavaCompile>("compileJava") { dependsOn("generateLexer") }
-
-tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileKotlin") {
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn("generateLexer")
 }
