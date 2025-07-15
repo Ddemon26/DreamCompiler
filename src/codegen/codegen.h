@@ -8,6 +8,8 @@ typedef struct {
   FILE *output;
   char **string_vars;
   int string_var_count;
+  char **bool_vars;
+  int bool_var_count;
 } Compiler;
 
 void gen_c_expr(Compiler *compiler, FILE *out, Node *expr);

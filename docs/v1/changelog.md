@@ -220,3 +220,8 @@ Version 1.0.41 (2025-07-22)
 
 * Increment and decrement operators can now be used inside expressions.
 * Documented the feature and added a new regression test.
+
+Version 1.0.42 (2025-07-23)
+
+* `Console.WriteLine` now prints boolean variables as `true` or `false`.
+* Updated documentation to mention boolean output.

@@ -11,6 +11,14 @@ static int is_string_var(Compiler *compiler, const char *name) {
   return 0;
 }
 
+static int is_bool_var(Compiler *compiler, const char *name) {
+  for (int i = 0; i < compiler->bool_var_count; i++) {
+    if (strcmp(compiler->bool_vars[i], name) == 0)
+      return 1;
+  }
+  return 0;
+}
+
 static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
                             int wrap) {
   if (!expr)
@@ -85,6 +93,10 @@ void generate_c_function(Compiler *compiler, Node *node) {
       compiler->string_vars = realloc(compiler->string_vars,
                                       sizeof(char *) * (compiler->string_var_count + 1));
       compiler->string_vars[compiler->string_var_count++] = strdup(decl->value);
+    } else if (decl->type == NODE_BOOL_DECL) {
+      compiler->bool_vars = realloc(compiler->bool_vars,
+                                    sizeof(char *) * (compiler->bool_var_count + 1));
+      compiler->bool_vars[compiler->bool_var_count++] = strdup(decl->value);
     }
     first = 0;
     param = param->right;
@@ -97,10 +109,14 @@ void generate_c_function(Compiler *compiler, Node *node) {
 
 void generate_c(Compiler *compiler, Node *node) {
   FILE *out = compiler->output;
-  if (node->type == NODE_VAR_DECL || node->type == NODE_STR_DECL) {
+  if (node->type == NODE_VAR_DECL || node->type == NODE_STR_DECL ||
+      node->type == NODE_BOOL_DECL) {
     if (node->type == NODE_STR_DECL) {
       compiler->string_vars = realloc(compiler->string_vars, sizeof(char *) * (compiler->string_var_count + 1));
       compiler->string_vars[compiler->string_var_count++] = strdup(node->value);
+    } else if (node->type == NODE_BOOL_DECL) {
+      compiler->bool_vars = realloc(compiler->bool_vars, sizeof(char *) * (compiler->bool_var_count + 1));
+      compiler->bool_vars[compiler->bool_var_count++] = strdup(node->value);
     }
     fprintf(out, "    %s %s", node->type == NODE_STR_DECL ? "const char*" : "long", node->value);
     if (node->left) {
@@ -122,16 +138,23 @@ void generate_c(Compiler *compiler, Node *node) {
     fprintf(out, "    %s--;\n", node->value);
   } else if (node->type == NODE_WRITELINE) {
     int is_str = 0;
+    int is_bool = 0;
     if (node->left) {
       if (node->left->type == NODE_STRING)
         is_str = 1;
       else if (node->left->type == NODE_IDENTIFIER)
         is_str = is_string_var(compiler, node->left->value);
+      if (node->left->type == NODE_IDENTIFIER)
+        is_bool = is_bool_var(compiler, node->left->value);
     }
     if (is_str) {
       fprintf(out, "    printf(\"%%s\\n\", ");
       gen_c_expr(compiler, out, node->left);
       fprintf(out, ");\n");
+    } else if (is_bool) {
+      fprintf(out, "    printf(\"%%s\\n\", ");
+      gen_c_expr(compiler, out, node->left);
+      fprintf(out, " ? \"true\" : \"false\");\n");
     } else {
       fprintf(out, "    printf(\"%%ld\\n\", (long)");
       gen_c_expr(compiler, out, node->left);
