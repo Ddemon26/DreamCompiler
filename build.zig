@@ -1,5 +1,9 @@
 const std = @import("std");
 
+fn execFromStep(b: *std.Build, argv: struct { path: []const u8 }) *std.Build.Step {
+    return &b.addSystemCommand(&.{ argv.path }).step;
+}
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -8,6 +12,11 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
+    const dev_refactor = b.option(bool, "dev-refactor", "generate DFA tables") orelse false;
+    if (dev_refactor) {
+        _ = execFromStep(b, .{ .path = "tools/lexgen.zig" });
+    }
 
     const exe = b.addExecutable(.{
         .name = "DreamCompiler",
