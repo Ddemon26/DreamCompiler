@@ -1,6 +1,6 @@
 #include "../lexer/lexer.h"
 #include "../parser/parser.h"
-#include "../codegen/codegen.h"
+#include "../../codegen/c_emit.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,11 +11,22 @@
 #endif
 
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <input.dr>\n", argv[0]);
+  int emit_c = 1;
+  const char *input = NULL;
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--emit-c") == 0)
+      emit_c = 1;
+    else if (strcmp(argv[i], "--emit-obj") == 0)
+      emit_c = 0;
+    else
+      input = argv[i];
+  }
+  if (!input) {
+    fprintf(stderr, "Usage: %s [--emit-c|--emit-obj] <input.dr>\n", argv[0]);
     return 1;
   }
-  FILE *file = fopen(argv[1], "r");
+
+  FILE *file = fopen(input, "r");
   if (!file) {
     fprintf(stderr, "Cannot open file %s\n", argv[1]);
     return 1;
@@ -39,23 +50,6 @@ int main(int argc, char *argv[]) {
   mkdir("build", 0755);
   mkdir("build/bin", 0755);
 #endif
-  Compiler compiler = {fopen("build/bin/dream.c", "w"), NULL, 0, NULL, 0, NULL, 0, NULL, 0,
-                        NULL, 0, NULL, 0, NULL, 0, NULL, 0};
-  if (!compiler.output) {
-    fprintf(stderr, "Failed to open output file\n");
-    return 1;
-  }
-  fprintf(compiler.output, "#include <stdio.h>\n");
-  fprintf(compiler.output, "#include <stdlib.h>\n");
-  fprintf(compiler.output, "#include <string.h>\n");
-  fprintf(compiler.output,
-          "static char* dream_concat(const char* a, const char* b) {\n"
-          "  size_t len = strlen(a) + strlen(b);\n"
-          "  char* s = malloc(len + 1);\n"
-          "  strcpy(s, a);\n"
-          "  strcat(s, b);\n"
-          "  return s;\n"
-          "}\n");
   Token token = next_token(&lexer);
   Node *program = NULL;
   Node **current = &program;
@@ -68,61 +62,25 @@ int main(int argc, char *argv[]) {
     token = next_token(&lexer);
   }
 
-  Node *cur = program;
-  while (cur) {
-    if (cur->left->type == NODE_CLASS_DEF)
-      generate_c_class(&compiler, cur->left);
-    cur = cur->right;
+  FILE *out = fopen("build/bin/dream.c", "w");
+  if (!out) {
+    fprintf(stderr, "Failed to open output file\n");
+    return 1;
   }
-  cur = program;
-  while (cur) {
-    if (cur->left->type == NODE_FUNC_DEF)
-      generate_c_function(&compiler, cur->left);
-    cur = cur->right;
-  }
-
-  fprintf(compiler.output, "int main() {\n");
-  cur = program;
-  while (cur) {
-    if (cur->left->type != NODE_FUNC_DEF)
-      generate_c(&compiler, cur->left);
-    cur = cur->right;
-  }
-  fprintf(compiler.output, "    return 0;\n");
-  fprintf(compiler.output, "}\n");
+  emit_c_program(program, out);
+  fclose(out);
   free_node(program);
-  for (int i = 0; i < compiler.string_var_count; i++)
-    free(compiler.string_vars[i]);
-  free(compiler.string_vars);
-  for (int i = 0; i < compiler.bool_var_count; i++)
-    free(compiler.bool_vars[i]);
-  free(compiler.bool_vars);
-  for (int i = 0; i < compiler.float_var_count; i++)
-    free(compiler.float_vars[i]);
-  free(compiler.float_vars);
-  for (int i = 0; i < compiler.char_var_count; i++)
-    free(compiler.char_vars[i]);
-  free(compiler.char_vars);
-  for (int i = 0; i < compiler.string_func_count; i++)
-    free(compiler.string_funcs[i]);
-  free(compiler.string_funcs);
-  for (int i = 0; i < compiler.bool_func_count; i++)
-    free(compiler.bool_funcs[i]);
-  free(compiler.bool_funcs);
-  for (int i = 0; i < compiler.float_func_count; i++)
-    free(compiler.float_funcs[i]);
-  free(compiler.float_funcs);
-  for (int i = 0; i < compiler.char_func_count; i++)
-    free(compiler.char_funcs[i]);
-  free(compiler.char_funcs);
-  fclose(compiler.output);
   free(source);
   free(token.value);
-  const char *cc = getenv("CC");
-  if (!cc)
-    cc = "gcc";
-  char cmd[256];
-  snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o build/bin/dream.exe", cc);
-  system(cmd);
+  if (emit_c) {
+    const char *cc = getenv("CC");
+    if (!cc)
+      cc = "gcc";
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o build/bin/dream.exe", cc);
+    system(cmd);
+  } else {
+    fprintf(stderr, "Object emission not implemented yet\n");
+  }
   return 0;
 }
