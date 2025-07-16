@@ -22,7 +22,8 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
             new AttributesDescriptor("Comma", DreamSyntaxHighlighter.COMMA),
             new AttributesDescriptor("Dot", DreamSyntaxHighlighter.DOT),
             new AttributesDescriptor("Parentheses", DreamSyntaxHighlighter.PAREN),
-            new AttributesDescriptor("Braces", DreamSyntaxHighlighter.BRACE)
+            new AttributesDescriptor("Braces", DreamSyntaxHighlighter.BRACE),
+            new AttributesDescriptor("Brackets", DreamSyntaxHighlighter.BRACKET)
     };
 
     @Override
@@ -48,8 +49,9 @@ func calculateSum(a, b) {
     // Using keywords, numbers, and operators
     let result = a + b;
     let pi = 3.14;
+    let arr = [1, 2, 3];
     let message = "The result is: ";
-    Console.WriteLine(message + result); // Function call with dot
+    Console.WriteLine(message + arr[0] + result);
     return result;
 }
 

@@ -15,7 +15,7 @@
         },
         {
           "name": "constant.numeric",
-          "match": "\\b\\d+(?:\\.\\d+)?\\b"
+          "match": "\\b\\d+(\\.\\d+)?\\b"
         },
         {
           "name": "string.quoted.double",
