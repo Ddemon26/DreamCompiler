@@ -348,3 +348,9 @@ Version 1.0.64 (2025-08-11)
 * Added fixed-size `int` arrays and indexing syntax.
 * Documented arrays and updated grammar specification.
 * Added a regression test.
+
+Version 1.0.65 (2025-08-12)
+
+* Added fixed-size `float` arrays.
+* Updated array documentation and syntax highlighting.
+* Added a regression test for float arrays.
