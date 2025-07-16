@@ -28,6 +28,9 @@ pub fn build(b: *std.Build) void {
         "ir/ir.c",
         "cfg/cfg.c",
         "ssa/ssa.c",
+        "opt/pipeline.c",
+        "opt/sccp.c",
+        "opt/dce.c",
     }, .flags = &.{
         "-std=c11",
         "-Wall",
