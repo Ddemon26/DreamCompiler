@@ -7,23 +7,26 @@ but aims to grow into a fully featured compiler. This repository contains the so
 
 The compiler currently supports:
 
-- Integer variables and assignments
-- Arithmetic with `+`, `-`, `*` and `/`
+- Primitive types `int`, `float`, `bool`, `char` and `string`
+- Variable declarations and assignments
+- Arrays of all primitive types
+- Arithmetic operators `+`, `-`, `*`, `/` and `%`
+- Bitwise operators `&`, `|`, `^`, `~`, `<<` and `>>`
 - Comparison operators `<`, `>`, `<=`, `>=`, `==` and `!=`
-- Console output via `Console.WriteLine` and `Console.Write` (numbers, strings and booleans)
-- Simple `if` statements with optional `else`
-- `while` loops
-- `do-while` loops
-- `for` loops
+- Logical operators `&&`, `||` and `!`
+- Increment and decrement operators `++` and `--`
+- Compound assignments such as `+=` and `-=`
+- Ternary conditional expressions
+- Parentheses for grouping
+- `if` statements with `else` and `else if`
 - `switch` statements
-- `break` and `continue` statements
-- `return` statements
-- `++` and `--` increment/decrement operators
-- Basic functions with the `func` keyword
-- `string` variables for text storage
-- `bool` variables and `true`/`false` literals
-- Bitwise operators `&`, `|`, `^`, `<<` and `>>`
-- Braced blocks supporting multiple statements
+- `while`, `do-while` and `for` loops
+- `break`, `continue` and `return` statements
+- Functions with parameters and return values
+- Classes and structs with field access
+- Object instantiation using `new` and member access with `.`
+- Console output via `Console.WriteLine` and `Console.Write`
+- String literals with escape sequences and concatenation using `+`
 - Line (`//`) and block (`/* */`) comments
 See the [changelog](docs/v1/changelog.md) for details on recent additions.
 
