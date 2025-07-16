@@ -25,6 +25,9 @@ pub fn build(b: *std.Build) void {
         "src/sem/symbol.c",
         "src/sem/type.c",
         "src/sem/infer.c",
+        "ir/ir.c",
+        "cfg/cfg.c",
+        "ssa/ssa.c",
     }, .flags = &.{
         "-std=c11",
         "-Wall",
