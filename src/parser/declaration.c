@@ -33,7 +33,8 @@ Node *parse_declaration(Lexer *lexer, Token *token) {
     *token = next_token(lexer);
     int is_array = 0;
     Node *array_size = NULL;
-    if (decl_type == TOKEN_INT && token->type == TOKEN_LBRACKET) {
+    if ((decl_type == TOKEN_INT || decl_type == TOKEN_FLOAT_TYPE) &&
+        token->type == TOKEN_LBRACKET) {
       is_array = 1;
       free(token->value);
       *token = next_token(lexer);
@@ -56,13 +57,17 @@ Node *parse_declaration(Lexer *lexer, Token *token) {
       init = parse_expression(lexer, token);
     }
 
-    NodeType ntype = is_string
-                         ? NODE_STR_DECL
-                         : is_bool  ? NODE_BOOL_DECL
-                         : is_float ? NODE_FLOAT_DECL
-                         : is_char  ? NODE_CHAR_DECL
-                         : is_array ? NODE_ARRAY_DECL
-                                     : NODE_VAR_DECL;
+    NodeType ntype;
+    if (is_array) {
+      ntype = is_float ? NODE_FLOAT_ARRAY_DECL : NODE_ARRAY_DECL;
+    } else {
+      ntype = is_string
+                 ? NODE_STR_DECL
+                 : is_bool  ? NODE_BOOL_DECL
+                 : is_float ? NODE_FLOAT_DECL
+                 : is_char  ? NODE_CHAR_DECL
+                              : NODE_VAR_DECL;
+    }
     Node *first_decl =
         create_node(ntype, var_name, is_array ? array_size : init, NULL, NULL);
 
