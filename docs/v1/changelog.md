@@ -360,3 +360,8 @@ Version 1.0.66 (2025-08-13)
 * Added fixed-size arrays for `bool`, `char` and `string` types.
 * Updated array documentation and grammar notes.
 * Added new regression tests for the additional array types.
+
+Version 1.0.67 (2025-08-14)
+
+* Updated grammar specification to reflect implemented array support.
+* Removed arrays from the future work list.

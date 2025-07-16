@@ -114,7 +114,7 @@ If the **Type** is omitted the function returns `void`. (Internally represented 
 ```ebnf
 GlobalVariableDeclaration ::= VariableDeclaration                                     // Implemented
 VariableDeclaration      ::= Type VariableDeclarator { "," VariableDeclarator } ";"   // Implemented
-VariableDeclarator       ::= Identifier [ "[" Number "]" ] [ "=" Expression ]         // Partial (arrays pending)
+VariableDeclarator       ::= Identifier [ "[" Number "]" ] [ "=" Expression ]         // Implemented – supports arrays of primitive types
 ```
 
 ### 2.4 Statements
@@ -216,7 +216,7 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write") Invocation        
 
 ## 4 Future work (non‑normative)
 
-* Arrays, structs and generics.
+* Generics.
 * Access modifiers (`public`, `private`, …).
 * Exception handling (`try`‑`catch`).
 * Attributes and annotations.
