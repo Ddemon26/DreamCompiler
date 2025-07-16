@@ -27,12 +27,6 @@ pub fn build(b: *std.Build) void {
         .files = &.{
             "src/driver/main.c",
             "src/lexer/lexer.c",
-            "src/parser/expression.c",
-            "src/parser/statement.c",
-            "src/parser/declaration.c",
-            "src/parser/control_flow.c",
-            "src/codegen/codegen.c",
-            "src/ast/node.c",
         },
         .flags = &.{
             "-std=c11",
