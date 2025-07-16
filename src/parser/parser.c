@@ -24,6 +24,7 @@ void parser_init(Parser *p, Arena *a, const char *src) {
 }
 
 static Node *parse_expr_prec(Parser *p, int min_prec);
+static Node *parse_expr(Parser *p);
 
 static Node *parse_primary(Parser *p) {
     Token t = p->tok;
@@ -61,6 +62,29 @@ static Node *parse_primary(Parser *p) {
     }
 }
 
+static Node *parse_var_decl(Parser *p) {
+    next(p); // consume 'var'
+    if (p->tok.kind != TK_IDENT) {
+        diag_push(p, p->tok.pos, "expected identifier");
+        return node_new(p->arena, ND_ERROR);
+    }
+    Node *n = node_new(p->arena, ND_VAR_DECL);
+    n->as.var_decl.name.start = p->tok.start;
+    n->as.var_decl.name.len = p->tok.len;
+    next(p);
+    if (p->tok.kind == TK_EQ) {
+        next(p);
+        n->as.var_decl.init = parse_expr(p);
+    } else {
+        diag_push(p, p->tok.pos, "expected '='");
+        n->as.var_decl.init = node_new(p->arena, ND_ERROR);
+    }
+    if (p->tok.kind == TK_SEMICOLON)
+        next(p);
+    else
+        diag_push(p, p->tok.pos, "expected ';'");
+    return n;
+}
 static int precedence(TokenKind k) {
     switch (k) {
     case TK_EQ:
@@ -118,6 +142,9 @@ static void nodevec_push(Node ***data, size_t *len, size_t *cap, Node *n) {
 }
 
 static Node *parse_stmt(Parser *p) {
+    if (p->tok.kind == TK_KW_VAR) {
+        return parse_var_decl(p);
+    }
     if (p->tok.kind == TK_LBRACE) {
         next(p);
         Node **items = NULL;

@@ -20,8 +20,11 @@ pub fn build(b: *std.Build) void {
         "src/parser/ast.c",
         "src/parser/parser.c",
         "src/parser/error.c",
+        "src/parser/diagnostic.c",
         "src/sem/scope.c",
         "src/sem/symbol.c",
+        "src/sem/type.c",
+        "src/sem/infer.c",
     }, .flags = &.{
         "-std=c11",
         "-Wall",
@@ -43,7 +46,10 @@ pub fn build(b: *std.Build) void {
         "src/parser/ast.c",
         "src/parser/parser.c",
         "src/parser/error.c",
-    }, .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" } });
+        "src/parser/diagnostic.c",
+        "src/sem/type.c",
+        "src/sem/infer.c",
+        }, .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" } });
     parseexe.linkLibC();
     parseexe.step.dependOn(&re2c_step.step);
     b.installArtifact(parseexe);
