@@ -1,12 +1,16 @@
 # Arrays in Dream
 
-Dream now supports fixed-size arrays of both integers and floats.
+Dream now supports fixed-size arrays of integers, floats, booleans,
+characters and strings.
 
 ## Syntax
 
 ```
 int <name>[<size>];
 float <name>[<size>];
+bool <name>[<size>];
+char <name>[<size>];
+string <name>[<size>];
 <name>[<index>] = <expression>;
 ```
 
@@ -27,4 +31,25 @@ float values[2];
 values[0] = 1.5;
 values[1] = values[0] + 2.5;
 Console.WriteLine(values[1]);
+```
+
+```dream
+bool flags[2];
+flags[0] = true;
+flags[1] = false;
+Console.WriteLine(flags[0]);
+```
+
+```dream
+char letters[2];
+letters[0] = 'A';
+letters[1] = 'B';
+Console.WriteLine(letters[1]);
+```
+
+```dream
+string words[2];
+words[0] = "hi";
+words[1] = words[0] + " there";
+Console.WriteLine(words[1]);
 ```

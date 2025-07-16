@@ -354,3 +354,9 @@ Version 1.0.65 (2025-08-12)
 * Added fixed-size `float` arrays.
 * Updated array documentation and syntax highlighting.
 * Added a regression test for float arrays.
+
+Version 1.0.66 (2025-08-13)
+
+* Added fixed-size arrays for `bool`, `char` and `string` types.
+* Updated array documentation and grammar notes.
+* Added new regression tests for the additional array types.

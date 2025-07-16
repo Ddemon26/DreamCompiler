@@ -1,0 +1,4 @@
+char letters[2];
+letters[0] = 'A';
+letters[1] = 'B';
+Console.WriteLine(letters[1]);
