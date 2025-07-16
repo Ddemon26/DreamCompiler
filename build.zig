@@ -23,6 +23,9 @@ pub fn build(b: *std.Build) void {
         .files = &.{
             "src/driver/main.c",
             "src/lexer/lexer.c",
+            "src/parser/ast.c",
+            "src/parser/parser.c",
+            "src/parser/error.c",
         },
         .flags = &.{
             "-std=c11",
@@ -42,6 +45,25 @@ pub fn build(b: *std.Build) void {
     });
     lexexe.linkLibC();
     lexexe.step.dependOn(&re2c_step.step);
+    b.installArtifact(lexexe);
+
+    const parseexe = b.addExecutable(.{
+        .name = "parse",
+        .root_module = module,
+    });
+    parseexe.addCSourceFiles(.{
+        .files = &.{
+            "src/driver/parse_main.c",
+            "src/lexer/lexer.c",
+            "src/parser/ast.c",
+            "src/parser/parser.c",
+            "src/parser/error.c",
+        },
+        .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" },
+    });
+    parseexe.linkLibC();
+    parseexe.step.dependOn(&re2c_step.step);
+    b.installArtifact(parseexe);
 
     exe.linkLibC();
     b.installArtifact(exe);
@@ -56,8 +78,13 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Build and run DreamCompiler");
     run_step.dependOn(&run_cmd.step);
 
-    const test_cmd = b.addSystemCommand(&.{"tests/lexer/run.sh"});
-    test_cmd.step.dependOn(&lexexe.step);
-    const test_step = b.step("test", "Run lexer tests");
-    test_step.dependOn(&test_cmd.step);
+    const lex_tests = b.addSystemCommand(&.{"tests/lexer/run.sh"});
+    lex_tests.step.dependOn(&lexexe.step);
+
+    const parse_tests = b.addSystemCommand(&.{"tests/parser/run.sh"});
+    parse_tests.step.dependOn(&parseexe.step);
+
+    const test_step = b.step("test", "Run lexer and parser tests");
+    test_step.dependOn(&lex_tests.step);
+    test_step.dependOn(&parse_tests.step);
 }

@@ -19,6 +19,9 @@ typedef struct {
 } Token;
 
 typedef enum { SC_NORMAL, SC_STRING, SC_COMMENT } StartCondition;
+#define yycSC_NORMAL SC_NORMAL
+#define yycSC_STRING SC_STRING
+#define yycSC_COMMENT SC_COMMENT
 
 typedef struct {
     const char *src;
@@ -31,6 +34,9 @@ typedef struct {
     Token lookahead;
     bool has_peek;
 } Lexer;
+
+static inline StartCondition lexer_get_state(Lexer *lx) { return lx->state; }
+static inline void lexer_set_state(Lexer *lx, StartCondition s) { lx->state = s; }
 
 void lexer_init(Lexer *lx, const char *src);
 Token lexer_next(Lexer *lx);

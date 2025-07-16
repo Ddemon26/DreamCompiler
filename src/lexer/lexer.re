@@ -12,6 +12,8 @@
 #define YYRESTORE() (YYCURSOR = YYMARKER)
 #define YYLESSTHAN(n) (YYLIMIT - YYCURSOR < (n))
 #define YYFILL(n) return make_token(lx, TK_EOF, YYCURSOR, 0)
+#define YYGETCONDITION() ((int)lx->state)
+#define YYSETCONDITION(s) (lx->state = (StartCondition)(s))
 
 static void advance_pos(Lexer *lx, const char *start, size_t len) {
     for (size_t i = 0; i < len; ++i) {
@@ -68,8 +70,7 @@ static Token lex_raw(Lexer *lx) {
         re2c:define:YYMARKER = "lx->marker";
         re2c:define:YYLIMIT  = "lx->limit";
         re2c:define:YYCTXMARKER = "lx->ctx";
-        re2c:define:YYGETCONDITION = "(int)lx->state";
-        re2c:define:YYSETCONDITION = "lx->state = (StartCondition)@@@";
+        /* use default YYGETCONDITION/YYSETCONDITION macros */
         re2c:yyfill:enable = 0;
     */
     for (;;) {
