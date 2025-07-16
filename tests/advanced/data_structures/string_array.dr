@@ -1,0 +1,4 @@
+string words[2];
+words[0] = "hi";
+words[1] = words[0] + " there";
+Console.WriteLine(words[1]);

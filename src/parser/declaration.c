@@ -33,7 +33,9 @@ Node *parse_declaration(Lexer *lexer, Token *token) {
     *token = next_token(lexer);
     int is_array = 0;
     Node *array_size = NULL;
-    if ((decl_type == TOKEN_INT || decl_type == TOKEN_FLOAT_TYPE) &&
+    if ((decl_type == TOKEN_INT || decl_type == TOKEN_FLOAT_TYPE ||
+         decl_type == TOKEN_BOOL_TYPE || decl_type == TOKEN_CHAR_TYPE ||
+         decl_type == TOKEN_STRING_TYPE) &&
         token->type == TOKEN_LBRACKET) {
       is_array = 1;
       free(token->value);
@@ -59,7 +61,16 @@ Node *parse_declaration(Lexer *lexer, Token *token) {
 
     NodeType ntype;
     if (is_array) {
-      ntype = is_float ? NODE_FLOAT_ARRAY_DECL : NODE_ARRAY_DECL;
+      if (is_float)
+        ntype = NODE_FLOAT_ARRAY_DECL;
+      else if (is_bool)
+        ntype = NODE_BOOL_ARRAY_DECL;
+      else if (is_char)
+        ntype = NODE_CHAR_ARRAY_DECL;
+      else if (is_string)
+        ntype = NODE_STR_ARRAY_DECL;
+      else
+        ntype = NODE_ARRAY_DECL;
     } else {
       ntype = is_string
                  ? NODE_STR_DECL
@@ -218,7 +229,11 @@ Node *parse_declaration(Lexer *lexer, Token *token) {
       Node *field = parse_statement(lexer, token);
       if (field->type != NODE_VAR_DECL && field->type != NODE_STR_DECL &&
           field->type != NODE_BOOL_DECL && field->type != NODE_FLOAT_DECL &&
-          field->type != NODE_CHAR_DECL) {
+          field->type != NODE_CHAR_DECL && field->type != NODE_ARRAY_DECL &&
+          field->type != NODE_FLOAT_ARRAY_DECL &&
+          field->type != NODE_BOOL_ARRAY_DECL &&
+          field->type != NODE_CHAR_ARRAY_DECL &&
+          field->type != NODE_STR_ARRAY_DECL) {
         fprintf(stderr, "Only variable declarations allowed in %s\n",
                 is_struct ? "struct" : "class");
         exit(1);

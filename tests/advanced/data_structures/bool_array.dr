@@ -1,0 +1,4 @@
+bool flags[2];
+flags[0] = true;
+flags[1] = false;
+Console.WriteLine(flags[0]);

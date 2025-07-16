@@ -258,34 +258,34 @@ void generate_c(Compiler *compiler, Node *node) {
   if (node->type == NODE_VAR_DECL || node->type == NODE_STR_DECL ||
       node->type == NODE_BOOL_DECL || node->type == NODE_FLOAT_DECL ||
       node->type == NODE_CHAR_DECL || node->type == NODE_OBJ_DECL ||
-      node->type == NODE_ARRAY_DECL ||
-      node->type == NODE_FLOAT_ARRAY_DECL) {
-    if (node->type == NODE_STR_DECL) {
+      node->type == NODE_ARRAY_DECL || node->type == NODE_FLOAT_ARRAY_DECL ||
+      node->type == NODE_BOOL_ARRAY_DECL || node->type == NODE_CHAR_ARRAY_DECL ||
+      node->type == NODE_STR_ARRAY_DECL) {
+    if (node->type == NODE_STR_DECL || node->type == NODE_STR_ARRAY_DECL) {
       compiler->string_vars = realloc(compiler->string_vars, sizeof(char *) * (compiler->string_var_count + 1));
       compiler->string_vars[compiler->string_var_count++] = strdup(node->value);
-    } else if (node->type == NODE_BOOL_DECL) {
+    } else if (node->type == NODE_BOOL_DECL || node->type == NODE_BOOL_ARRAY_DECL) {
       compiler->bool_vars = realloc(compiler->bool_vars, sizeof(char *) * (compiler->bool_var_count + 1));
       compiler->bool_vars[compiler->bool_var_count++] = strdup(node->value);
-    } else if (node->type == NODE_FLOAT_DECL ||
-               node->type == NODE_FLOAT_ARRAY_DECL) {
+    } else if (node->type == NODE_FLOAT_DECL || node->type == NODE_FLOAT_ARRAY_DECL) {
       compiler->float_vars = realloc(compiler->float_vars, sizeof(char *) * (compiler->float_var_count + 1));
       compiler->float_vars[compiler->float_var_count++] = strdup(node->value);
-    } else if (node->type == NODE_CHAR_DECL) {
+    } else if (node->type == NODE_CHAR_DECL || node->type == NODE_CHAR_ARRAY_DECL) {
       compiler->char_vars = realloc(compiler->char_vars, sizeof(char *) * (compiler->char_var_count + 1));
       compiler->char_vars[compiler->char_var_count++] = strdup(node->value);
     }
     const char *ctype = "long";
-    if (node->type == NODE_STR_DECL)
+    if (node->type == NODE_STR_DECL || node->type == NODE_STR_ARRAY_DECL)
       ctype = "const char*";
-    else if (node->type == NODE_FLOAT_DECL ||
-             node->type == NODE_FLOAT_ARRAY_DECL)
+    else if (node->type == NODE_FLOAT_DECL || node->type == NODE_FLOAT_ARRAY_DECL)
       ctype = "double";
-    else if (node->type == NODE_CHAR_DECL)
+    else if (node->type == NODE_CHAR_DECL || node->type == NODE_CHAR_ARRAY_DECL)
       ctype = "char";
     else if (node->type == NODE_OBJ_DECL)
       ctype = node->right->value;
-    if (node->type == NODE_ARRAY_DECL ||
-        node->type == NODE_FLOAT_ARRAY_DECL) {
+    if (node->type == NODE_ARRAY_DECL || node->type == NODE_FLOAT_ARRAY_DECL ||
+        node->type == NODE_BOOL_ARRAY_DECL || node->type == NODE_CHAR_ARRAY_DECL ||
+        node->type == NODE_STR_ARRAY_DECL) {
       fprintf(out, "    %s %s[", ctype, node->value);
       gen_c_expr_unwrapped(compiler, out, node->left);
       fprintf(out, "];\n");

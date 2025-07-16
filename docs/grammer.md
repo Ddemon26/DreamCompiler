@@ -223,7 +223,7 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write") Invocation
 
 1. **Top‑level functions and variables** are permitted; there is no concept of a namespace yet.
 2. The `func` keyword replaces C#’s return‑type‑first syntax.  A *type* may optionally follow `func` to specify the return type; omit it for `void`.
-3. Only the primitive types `int`, `bool`, `string` (and experimental `float`) are implemented today.
+3. The compiler currently implements the primitive types `int`, `bool`, `float`, `char` and `string`.
 4. All data is **passed by value**; there are no references or pointers.
 5. `Console.Write`/`WriteLine` are *built‑ins* rather than part of a standard library.
 6. The compiler currently emits C, so semantics align with **32‑bit signed integers** and **zero‑terminated UTF‑8 strings**.
