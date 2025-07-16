@@ -17,6 +17,7 @@ typedef enum {
     ND_STRING,
     ND_IDENT,
     ND_BINOP,
+    ND_VAR_DECL,
     ND_BLOCK,
     ND_EXPR_STMT,
     ND_ERROR
@@ -41,6 +42,10 @@ struct Node {
             Node *lhs;
             Node *rhs;
         } bin;
+        struct {                      // ND_VAR_DECL
+            Slice name;
+            Node *init;
+        } var_decl;
         struct {                      // ND_BLOCK
             Node **items;
             size_t len;

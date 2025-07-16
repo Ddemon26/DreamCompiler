@@ -1,5 +1,6 @@
 #include "../lexer/lexer.h"
 #include "../parser/parser.h"
+#include "../parser/diagnostic.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -36,7 +37,7 @@ int main(int argc, char **argv) {
     parser_init(&p, &arena, src);
     Node *root = parse_program(&p);
     (void)root;
-    printf("%zu\n", p.diags.len);
+    print_diagnostics(src, &p.diags);
     free(src);
     free(p.diags.data);
     free(arena.ptr);

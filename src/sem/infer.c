@@ -1,0 +1,38 @@
+#include "infer.h"
+
+static bool occurs(Type *v, Type *t) {
+    t = type_prune(t);
+    if (t == v) return true;
+    switch (t->kind) {
+    case TY_FUNC:
+        return occurs(v, t->as.func.param) || occurs(v, t->as.func.ret);
+    case TY_VAR:
+        if (t->as.var.instance)
+            return occurs(v, t->as.var.instance);
+        return false;
+    default:
+        return false;
+    }
+}
+
+bool unify(Type *a, Type *b) {
+    a = type_prune(a);
+    b = type_prune(b);
+    if (a->kind == TY_VAR) {
+        if (a != b) {
+            if (occurs(a, b))
+                return false;
+            a->as.var.instance = b;
+        }
+        return true;
+    }
+    if (b->kind == TY_VAR)
+        return unify(b, a);
+    if (a->kind != b->kind)
+        return false;
+    if (a->kind == TY_FUNC) {
+        return unify(a->as.func.param, b->as.func.param) &&
+               unify(a->as.func.ret, b->as.func.ret);
+    }
+    return true;
+}
