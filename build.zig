@@ -13,8 +13,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const dev_refactor = b.option(bool, "dev-refactor", "generate DFA tables") orelse false;
-    if (dev_refactor) {
+    const dev = b.option(bool, "dev", "generate DFA tables") orelse false;
+    if (dev) {
         _ = execFromStep(b, .{ .path = "tools/lexgen.zig" });
     }
 
@@ -23,10 +23,11 @@ pub fn build(b: *std.Build) void {
         .root_module = module,
     });
 
+    exe.addIncludePath(b.path("src/include"));
     exe.addCSourceFiles(.{
         .files = &.{
             "src/driver/main.c",
-            "src/lexer/lexer.c",
+            "src/lib/lexer.c",
         },
         .flags = &.{
             "-std=c11",
@@ -48,4 +49,19 @@ pub fn build(b: *std.Build) void {
 
     const run_step = b.step("run", "Build and run DreamCompiler");
     run_step.dependOn(&run_cmd.step);
+
+    const test_mod = b.createModule(.{ .target = target, .optimize = optimize });
+    const test_exe = b.addExecutable(.{
+        .name = "lexer_test",
+        .root_module = test_mod,
+    });
+    test_exe.addCSourceFile(.{ .file = b.path("tests/lexer.c"), .flags = &.{"-std=c11"} });
+    test_exe.addIncludePath(b.path("src/include"));
+    test_exe.addCSourceFile(.{ .file = b.path("src/lib/lexer.c"), .flags = &.{"-std=c11"} });
+    test_exe.linkLibC();
+
+    const test_step = b.step("test", "Run unit tests");
+    const run_tests = b.addRunArtifact(test_exe);
+    run_tests.step.dependOn(&test_exe.step);
+    test_step.dependOn(&run_tests.step);
 }
