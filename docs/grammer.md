@@ -55,9 +55,8 @@ Dream is *case‑sensitive*.
 BooleanLiteral      ::= "true" | "false"
 IntegerLiteral      ::= DecimalDigits
 StringLiteral       ::= "\"" StringCharacters* "\""
+CharacterLiteral    ::= '\'' Character '\''
 ```
-
-(A future release will add `float` and `char` literals.)
 
 ### 1.7 Keywords
 
@@ -65,7 +64,7 @@ StringLiteral       ::= "\"" StringCharacters* "\""
 keyword ::= 
     "break" | "bool" | "case" | "class" | "struct" | "continue" | "default" |
     "do" | "else" | "false" | "for" | "func" | "if" | "int" | "return" |
-    "string" | "switch" | "true" | "while"
+    "string" | "char" | "switch" | "true" | "while"
 ```
 
 ### 1.8 Operators & punctuators
@@ -105,7 +104,7 @@ TopLevelDeclaration ::= ClassDeclaration
 
 ```
 Type                ::= PredefinedType | Identifier
-PredefinedType      ::= "int" | "bool" | "string" | "float"
+PredefinedType      ::= "int" | "bool" | "string" | "float" | "char"
 ```
 
 ### 3.3 Declarations

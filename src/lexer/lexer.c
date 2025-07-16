@@ -60,6 +60,8 @@ Token next_token(Lexer *lexer) {
       token.type = TOKEN_BOOL_TYPE;
     else if (strcmp(token.value, "float") == 0)
       token.type = TOKEN_FLOAT_TYPE;
+    else if (strcmp(token.value, "char") == 0)
+      token.type = TOKEN_CHAR_TYPE;
     else if (strcmp(token.value, "true") == 0) {
       free(token.value);
       token.value = strdup("1");
@@ -139,6 +141,28 @@ Token next_token(Lexer *lexer) {
     }
     token.value = buf ? buf : strdup("");
     token.type = TOKEN_STRING;
+    return token;
+  }
+
+  if (lexer->source[lexer->pos] == '\'') {
+    lexer->pos++; // skip opening quote
+    char c = lexer->source[lexer->pos++];
+    if (c == '\\' && lexer->source[lexer->pos]) {
+      char next = lexer->source[lexer->pos++];
+      switch (next) {
+      case 'n': c = '\n'; break;
+      case 't': c = '\t'; break;
+      case '\\': c = '\\'; break;
+      case '\'': c = '\''; break;
+      default: c = next; break;
+      }
+    }
+    if (lexer->source[lexer->pos] == '\'')
+      lexer->pos++; // skip closing quote
+    token.value = malloc(2);
+    token.value[0] = c;
+    token.value[1] = '\0';
+    token.type = TOKEN_CHAR;
     return token;
   }
 
@@ -314,6 +338,11 @@ Token next_token(Lexer *lexer) {
   case '^':
     token.type = TOKEN_CARET;
     token.value = strdup("^");
+    lexer->pos++;
+    break;
+  case '~':
+    token.type = TOKEN_BITNOT;
+    token.value = strdup("~");
     lexer->pos++;
     break;
   case '.':

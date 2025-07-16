@@ -11,6 +11,14 @@ static int is_string_var(Compiler *compiler, const char *name) {
   return 0;
 }
 
+static int is_char_var(Compiler *compiler, const char *name) {
+  for (int i = 0; i < compiler->char_var_count; i++) {
+    if (strcmp(compiler->char_vars[i], name) == 0)
+      return 1;
+  }
+  return 0;
+}
+
 static int is_bool_var(Compiler *compiler, const char *name) {
   for (int i = 0; i < compiler->bool_var_count; i++) {
     if (strcmp(compiler->bool_vars[i], name) == 0)
@@ -57,6 +65,16 @@ static int is_string_expr(Compiler *compiler, Node *expr) {
   if (expr->type == NODE_BINARY_OP && strcmp(expr->value, "+") == 0)
     return is_string_expr(compiler, expr->left) ||
            is_string_expr(compiler, expr->right);
+  return 0;
+}
+
+static int is_char_expr(Compiler *compiler, Node *expr) {
+  if (!expr)
+    return 0;
+  if (expr->type == NODE_CHAR)
+    return 1;
+  if (expr->type == NODE_IDENTIFIER)
+    return is_char_var(compiler, expr->value);
   return 0;
 }
 
@@ -131,6 +149,8 @@ static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
       }
     }
     fputc('"', out);
+  } else if (expr->type == NODE_CHAR) {
+    fprintf(out, "'%c'", expr->value[0]);
   } else if (expr->type == NODE_FUNC_CALL) {
     fprintf(out, "%s(", expr->value);
     Node *arg = expr->left;
@@ -175,6 +195,10 @@ void generate_c_class(Compiler *compiler, Node *node) {
       ctype = "const char*";
     else if (decl->type == NODE_FLOAT_DECL)
       ctype = "double";
+    else if (decl->type == NODE_CHAR_DECL)
+      ctype = "char";
+    else if (decl->type == NODE_CHAR_DECL)
+      ctype = "char";
     fprintf(out, "    %s %s;\n", ctype, decl->value);
     field = field->right;
   }
@@ -208,6 +232,10 @@ void generate_c_function(Compiler *compiler, Node *node) {
       compiler->float_vars = realloc(compiler->float_vars,
                                      sizeof(char *) * (compiler->float_var_count + 1));
       compiler->float_vars[compiler->float_var_count++] = strdup(decl->value);
+    } else if (decl->type == NODE_CHAR_DECL) {
+      compiler->char_vars = realloc(compiler->char_vars,
+                                    sizeof(char *) * (compiler->char_var_count + 1));
+      compiler->char_vars[compiler->char_var_count++] = strdup(decl->value);
     }
     first = 0;
     param = param->right;
@@ -222,7 +250,7 @@ void generate_c(Compiler *compiler, Node *node) {
   FILE *out = compiler->output;
   if (node->type == NODE_VAR_DECL || node->type == NODE_STR_DECL ||
       node->type == NODE_BOOL_DECL || node->type == NODE_FLOAT_DECL ||
-      node->type == NODE_OBJ_DECL) {
+      node->type == NODE_CHAR_DECL || node->type == NODE_OBJ_DECL) {
     if (node->type == NODE_STR_DECL) {
       compiler->string_vars = realloc(compiler->string_vars, sizeof(char *) * (compiler->string_var_count + 1));
       compiler->string_vars[compiler->string_var_count++] = strdup(node->value);
@@ -232,12 +260,17 @@ void generate_c(Compiler *compiler, Node *node) {
     } else if (node->type == NODE_FLOAT_DECL) {
       compiler->float_vars = realloc(compiler->float_vars, sizeof(char *) * (compiler->float_var_count + 1));
       compiler->float_vars[compiler->float_var_count++] = strdup(node->value);
+    } else if (node->type == NODE_CHAR_DECL) {
+      compiler->char_vars = realloc(compiler->char_vars, sizeof(char *) * (compiler->char_var_count + 1));
+      compiler->char_vars[compiler->char_var_count++] = strdup(node->value);
     }
     const char *ctype = "long";
     if (node->type == NODE_STR_DECL)
       ctype = "const char*";
     else if (node->type == NODE_FLOAT_DECL)
       ctype = "double";
+    else if (node->type == NODE_CHAR_DECL)
+      ctype = "char";
     else if (node->type == NODE_OBJ_DECL)
       ctype = node->right->value;
     fprintf(out, "    %s %s", ctype, node->value);
@@ -268,6 +301,7 @@ void generate_c(Compiler *compiler, Node *node) {
     int is_str = is_string_expr(compiler, node->left);
     int is_bool = is_boolean_expr(compiler, node->left);
     int is_float = is_float_expr(compiler, node->left);
+    int is_char = is_char_expr(compiler, node->left);
     if (is_str) {
       fprintf(out, "    printf(\"%%s\\n\", ");
       gen_c_expr(compiler, out, node->left);
@@ -280,6 +314,10 @@ void generate_c(Compiler *compiler, Node *node) {
       fprintf(out, "    printf(\"%%f\\n\", (double)");
       gen_c_expr(compiler, out, node->left);
       fprintf(out, ");\n");
+    } else if (is_char) {
+      fprintf(out, "    printf(\"%%c\\n\", ");
+      gen_c_expr(compiler, out, node->left);
+      fprintf(out, ");\n");
     } else {
       fprintf(out, "    printf(\"%%ld\\n\", (long)");
       gen_c_expr(compiler, out, node->left);
@@ -289,6 +327,7 @@ void generate_c(Compiler *compiler, Node *node) {
     int is_str = is_string_expr(compiler, node->left);
     int is_bool = is_boolean_expr(compiler, node->left);
     int is_float = is_float_expr(compiler, node->left);
+    int is_char = is_char_expr(compiler, node->left);
     if (is_str) {
       fprintf(out, "    printf(\"%%s\", ");
       gen_c_expr(compiler, out, node->left);
@@ -299,6 +338,10 @@ void generate_c(Compiler *compiler, Node *node) {
       fprintf(out, " ? \"true\" : \"false\");\n");
     } else if (is_float) {
       fprintf(out, "    printf(\"%%f\", (double)");
+      gen_c_expr(compiler, out, node->left);
+      fprintf(out, ");\n");
+    } else if (is_char) {
+      fprintf(out, "    printf(\"%%c\", ");
       gen_c_expr(compiler, out, node->left);
       fprintf(out, ");\n");
     } else {

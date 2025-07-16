@@ -85,11 +85,13 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     return create_node(inc ? NODE_PRE_INC : NODE_PRE_DEC, name, NULL, NULL, NULL);
   }
   if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
-      token->type == TOKEN_BOOL_TYPE || token->type == TOKEN_FLOAT_TYPE) {
+      token->type == TOKEN_BOOL_TYPE || token->type == TOKEN_FLOAT_TYPE ||
+      token->type == TOKEN_CHAR_TYPE) {
     TokenType decl_type = token->type;
     int is_string = decl_type == TOKEN_STRING_TYPE;
     int is_bool = decl_type == TOKEN_BOOL_TYPE;
     int is_float = decl_type == TOKEN_FLOAT_TYPE;
+    int is_char = decl_type == TOKEN_CHAR_TYPE;
     free(token->value);
     *token = next_token(lexer);
 
@@ -100,6 +102,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
         fprintf(stderr, "Expected identifier after bool\n");
       else if (decl_type == TOKEN_FLOAT_TYPE)
         fprintf(stderr, "Expected identifier after float\n");
+      else if (decl_type == TOKEN_CHAR_TYPE)
+        fprintf(stderr, "Expected identifier after char\n");
       else
         fprintf(stderr, "Expected identifier after int\n");
       exit(1);
@@ -118,6 +122,7 @@ Node *parse_statement(Lexer *lexer, Token *token) {
                          ? NODE_STR_DECL
                          : is_bool  ? NODE_BOOL_DECL
                          : is_float ? NODE_FLOAT_DECL
+                         : is_char  ? NODE_CHAR_DECL
                                      : NODE_VAR_DECL;
     Node *first_decl = create_node(ntype, var_name, init, NULL, NULL);
 
@@ -179,11 +184,14 @@ Node *parse_statement(Lexer *lexer, Token *token) {
         int is_string = 0;
         int is_bool_param = 0;
         int is_float_param = 0;
+        int is_char_param = 0;
         if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
-            token->type == TOKEN_BOOL_TYPE || token->type == TOKEN_FLOAT_TYPE) {
+            token->type == TOKEN_BOOL_TYPE || token->type == TOKEN_FLOAT_TYPE ||
+            token->type == TOKEN_CHAR_TYPE) {
           is_string = token->type == TOKEN_STRING_TYPE;
           is_bool_param = token->type == TOKEN_BOOL_TYPE;
           is_float_param = token->type == TOKEN_FLOAT_TYPE;
+          is_char_param = token->type == TOKEN_CHAR_TYPE;
           free(token->value);
           *token = next_token(lexer);
         } else {
@@ -203,6 +211,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
           decl_type_node = NODE_BOOL_DECL;
         else if (is_float_param)
           decl_type_node = NODE_FLOAT_DECL;
+        else if (is_char_param)
+          decl_type_node = NODE_CHAR_DECL;
         Node *decl = create_node(decl_type_node,
                                  pname, NULL, NULL, NULL);
         free(pname);
@@ -258,7 +268,8 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     while (token->type != TOKEN_RBRACE) {
       Node *field = parse_statement(lexer, token);
       if (field->type != NODE_VAR_DECL && field->type != NODE_STR_DECL &&
-          field->type != NODE_BOOL_DECL && field->type != NODE_FLOAT_DECL) {
+          field->type != NODE_BOOL_DECL && field->type != NODE_FLOAT_DECL &&
+          field->type != NODE_CHAR_DECL) {
         fprintf(stderr, "Only variable declarations allowed in %s\n",
                 is_struct ? "struct" : "class");
         exit(1);
