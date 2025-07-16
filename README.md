@@ -107,10 +107,9 @@ npx vsce package
 
 ```bash
 cd idea
-./gradlew build
-./gradlew test
+./gradlew generateLexer build test
 ```
-The build automatically regenerates the lexer and token definitions from the root `tokens.json`.
+Ensure a JDK 17 is available. The build regenerates the lexer from `tokens.json` before compiling and running the tests.
 
 The resulting VSIX and plugin zip live in their respective directories.
 

@@ -28,6 +28,7 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey DOT = TextAttributesKey.createTextAttributesKey("DREAM_DOT", DefaultLanguageHighlighterColors.DOT);
     public static final TextAttributesKey PAREN = TextAttributesKey.createTextAttributesKey("DREAM_PAREN", DefaultLanguageHighlighterColors.PARENTHESES);
     public static final TextAttributesKey BRACE = TextAttributesKey.createTextAttributesKey("DREAM_BRACE", DefaultLanguageHighlighterColors.BRACES);
+    public static final TextAttributesKey BRACKET = TextAttributesKey.createTextAttributesKey("DREAM_BRACKET", DefaultLanguageHighlighterColors.BRACKETS);
 
     private static final TextAttributesKey[] KEYWORD_KEYS = new TextAttributesKey[]{KEYWORD};
     private static final TextAttributesKey[] NUMBER_KEYS = new TextAttributesKey[]{NUMBER};
@@ -39,6 +40,7 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TextAttributesKey[] DOT_KEYS = new TextAttributesKey[]{DOT};
     private static final TextAttributesKey[] PAREN_KEYS = new TextAttributesKey[]{PAREN};
     private static final TextAttributesKey[] BRACE_KEYS = new TextAttributesKey[]{BRACE};
+    private static final TextAttributesKey[] BRACKET_KEYS = new TextAttributesKey[]{BRACKET};
 
     @NotNull
     @Override
@@ -46,13 +48,16 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
         if (tokenType == DreamTokenTypes.KEYWORD) return KEYWORD_KEYS;
         if (tokenType == DreamTokenTypes.NUMBER) return NUMBER_KEYS;
         if (tokenType == DreamTokenTypes.STRING) return STRING_KEYS;
-        if (tokenType == DreamTokenTypes.COMMENT || tokenType == DreamTokenTypes.COMMENTBLOCK) return COMMENT_KEYS;
+        if (tokenType == DreamTokenTypes.COMMENT ||
+            tokenType == DreamTokenTypes.COMMENTBLOCK ||
+            tokenType == DreamTokenTypes.COMMENTDOC) return COMMENT_KEYS;
         if (tokenType == DreamTokenTypes.OPERATOR) return OPERATOR_KEYS;
         if (tokenType == DreamTokenTypes.SEMICOLON) return SEMICOLON_KEYS;
         if (tokenType == DreamTokenTypes.COMMA) return COMMA_KEYS;
         if (tokenType == DreamTokenTypes.DOT) return DOT_KEYS;
         if (tokenType == DreamTokenTypes.PAREN) return PAREN_KEYS;
         if (tokenType == DreamTokenTypes.BRACE) return BRACE_KEYS;
+        if (tokenType == DreamTokenTypes.BRACKET) return BRACKET_KEYS;
         return TextAttributesKey.EMPTY_ARRAY;
     }
 }
