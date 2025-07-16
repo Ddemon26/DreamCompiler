@@ -4,63 +4,46 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const module = b.createModule(.{
-        .target = target,
-        .optimize = optimize,
-    });
+    const exe_mod = b.createModule(.{ .target = target, .optimize = optimize });
+    const lex_mod = b.createModule(.{ .target = target, .optimize = optimize });
+    const parse_mod = b.createModule(.{ .target = target, .optimize = optimize });
 
     const re2c_step = b.addSystemCommand(&.{ "re2c", "-c", "-o", "src/lexer/lexer.c" });
     re2c_step.addFileArg(b.path("src/lexer/lexer.re"));
     re2c_step.addFileInput(b.path("src/lexer/tokens.def"));
 
-    const exe = b.addExecutable(.{
-        .name = "DreamCompiler",
-        .root_module = module,
-    });
+    const exe = b.addExecutable(.{ .name = "DreamCompiler", .root_module = exe_mod });
     exe.step.dependOn(&re2c_step.step);
+    exe.addCSourceFiles(.{ .files = &.{
+        "src/driver/main.c",
+        "src/lexer/lexer.c",
+        "src/parser/ast.c",
+        "src/parser/parser.c",
+        "src/parser/error.c",
+        "src/sem/scope.c",
+        "src/sem/symbol.c",
+    }, .flags = &.{
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-D_GNU_SOURCE",
+    } });
 
-    exe.addCSourceFiles(.{
-        .files = &.{
-            "src/driver/main.c",
-            "src/lexer/lexer.c",
-            "src/parser/ast.c",
-            "src/parser/parser.c",
-            "src/parser/error.c",
-        },
-        .flags = &.{
-            "-std=c11",
-            "-Wall",
-            "-Wextra",
-            "-D_GNU_SOURCE",
-        },
-    });
-
-    const lexexe = b.addExecutable(.{
-        .name = "lexdump",
-        .root_module = module,
-    });
-    lexexe.addCSourceFiles(.{
-        .files = &.{ "src/driver/lex_main.c", "src/lexer/lexer.c" },
-        .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" },
-    });
+    const lexexe = b.addExecutable(.{ .name = "lexdump", .root_module = lex_mod });
+    lexexe.addCSourceFiles(.{ .files = &.{ "src/driver/lex_main.c", "src/lexer/lexer.c" },
+        .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" } });
     lexexe.linkLibC();
     lexexe.step.dependOn(&re2c_step.step);
     b.installArtifact(lexexe);
 
-    const parseexe = b.addExecutable(.{
-        .name = "parse",
-        .root_module = module,
-    });
-    parseexe.addCSourceFiles(.{
-        .files = &.{
-            "src/driver/parse_main.c",
-            "src/lexer/lexer.c",
-            "src/parser/ast.c",
-            "src/parser/parser.c",
-            "src/parser/error.c",
-        },
-        .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" },
-    });
+    const parseexe = b.addExecutable(.{ .name = "parse", .root_module = parse_mod });
+    parseexe.addCSourceFiles(.{ .files = &.{
+        "src/driver/parse_main.c",
+        "src/lexer/lexer.c",
+        "src/parser/ast.c",
+        "src/parser/parser.c",
+        "src/parser/error.c",
+    }, .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" } });
     parseexe.linkLibC();
     parseexe.step.dependOn(&re2c_step.step);
     b.installArtifact(parseexe);
@@ -78,10 +61,12 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Build and run DreamCompiler");
     run_step.dependOn(&run_cmd.step);
 
-    const lex_tests = b.addSystemCommand(&.{"tests/lexer/run.sh"});
+    const lex_tests = b.addSystemCommand(&.{ "./run.sh" });
+    lex_tests.setCwd(b.path("tests/lexer"));
     lex_tests.step.dependOn(&lexexe.step);
 
-    const parse_tests = b.addSystemCommand(&.{"tests/parser/run.sh"});
+    const parse_tests = b.addSystemCommand(&.{ "./run.sh" });
+    parse_tests.setCwd(b.path("tests/parser"));
     parse_tests.step.dependOn(&parseexe.step);
 
     const test_step = b.step("test", "Run lexer and parser tests");
