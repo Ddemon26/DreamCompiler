@@ -20,6 +20,8 @@ pub fn build(b: *std.Build) void {
             "src/lexer/lexer.c",
             "src/parser/expression.c",
             "src/parser/statement.c",
+            "src/parser/declaration.c",
+            "src/parser/control_flow.c",
             "src/codegen/codegen.c",
             "src/ast/node.c",
         },
