@@ -1,0 +1,4 @@
+func string Hello() {
+    return "hi";
+}
+Console.WriteLine(Hello());

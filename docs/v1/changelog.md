@@ -365,3 +365,9 @@ Version 1.0.67 (2025-08-14)
 
 * Updated grammar specification to reflect implemented array support.
 * Removed arrays from the future work list.
+
+Version 1.0.68 (2025-08-16)
+
+* Functions can now declare an explicit return type after `func`.
+* Updated code generation to handle typed returns.
+* Added documentation and a regression test for typed return values.
