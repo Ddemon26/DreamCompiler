@@ -342,3 +342,9 @@ Version 1.0.63 (2025-08-10)
 * Added `char` variables and character literals.
 * Added unary bitwise NOT `~` operator.
 * Updated documentation, syntax highlighting and added new tests.
+
+Version 1.0.64 (2025-08-11)
+
+* Added fixed-size `int` arrays and indexing syntax.
+* Documented arrays and updated grammar specification.
+* Added a regression test.

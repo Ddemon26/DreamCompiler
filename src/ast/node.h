@@ -37,7 +37,9 @@ typedef enum {
   NODE_CLASS_DEF,
   NODE_OBJ_DECL,
   NODE_MEMBER,
-  NODE_MEMBER_ASSIGN
+  NODE_MEMBER_ASSIGN,
+  NODE_ARRAY_DECL,
+  NODE_INDEX
 } NodeType;
 
 typedef struct Node {
