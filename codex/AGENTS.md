@@ -70,7 +70,7 @@ codex/     – Contains this AGENTS.md and the _startup.sh script
 ## Features
 
 The full list of implemented and planned features lives in
-[`FEATURES.md`](../FEATURES.md). Update that file whenever a feature is
+[`FEATURES.md`](FEATURES.md). Update that file whenever a feature is
 added or changed.
 
 ---
