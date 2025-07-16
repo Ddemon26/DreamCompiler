@@ -35,11 +35,45 @@ static int is_float_var(Compiler *compiler, const char *name) {
   return 0;
 }
 
+static int is_string_func(Compiler *compiler, const char *name) {
+  for (int i = 0; i < compiler->string_func_count; i++) {
+    if (strcmp(compiler->string_funcs[i], name) == 0)
+      return 1;
+  }
+  return 0;
+}
+
+static int is_bool_func(Compiler *compiler, const char *name) {
+  for (int i = 0; i < compiler->bool_func_count; i++) {
+    if (strcmp(compiler->bool_funcs[i], name) == 0)
+      return 1;
+  }
+  return 0;
+}
+
+static int is_float_func(Compiler *compiler, const char *name) {
+  for (int i = 0; i < compiler->float_func_count; i++) {
+    if (strcmp(compiler->float_funcs[i], name) == 0)
+      return 1;
+  }
+  return 0;
+}
+
+static int is_char_func(Compiler *compiler, const char *name) {
+  for (int i = 0; i < compiler->char_func_count; i++) {
+    if (strcmp(compiler->char_funcs[i], name) == 0)
+      return 1;
+  }
+  return 0;
+}
+
 static int is_boolean_expr(Compiler *compiler, Node *expr) {
   if (!expr)
     return 0;
   if (expr->type == NODE_IDENTIFIER)
     return is_bool_var(compiler, expr->value);
+  if (expr->type == NODE_FUNC_CALL)
+    return is_bool_func(compiler, expr->value);
   if (expr->type == NODE_UNARY_OP && strcmp(expr->value, "!") == 0)
     return 1;
   if (expr->type == NODE_BINARY_OP) {
@@ -62,6 +96,8 @@ static int is_string_expr(Compiler *compiler, Node *expr) {
     return 1;
   if (expr->type == NODE_IDENTIFIER)
     return is_string_var(compiler, expr->value);
+  if (expr->type == NODE_FUNC_CALL)
+    return is_string_func(compiler, expr->value);
   if (expr->type == NODE_BINARY_OP && strcmp(expr->value, "+") == 0)
     return is_string_expr(compiler, expr->left) ||
            is_string_expr(compiler, expr->right);
@@ -75,6 +111,8 @@ static int is_char_expr(Compiler *compiler, Node *expr) {
     return 1;
   if (expr->type == NODE_IDENTIFIER)
     return is_char_var(compiler, expr->value);
+  if (expr->type == NODE_FUNC_CALL)
+    return is_char_func(compiler, expr->value);
   return 0;
 }
 
@@ -83,6 +121,8 @@ static int is_float_expr(Compiler *compiler, Node *expr) {
     return 0;
   if (expr->type == NODE_IDENTIFIER)
     return is_float_var(compiler, expr->value);
+  if (expr->type == NODE_FUNC_CALL)
+    return is_float_func(compiler, expr->value);
   if (expr->type == NODE_NUMBER && strchr(expr->value, '.'))
     return 1;
   if (expr->type == NODE_INDEX)
@@ -214,7 +254,38 @@ void generate_c_class(Compiler *compiler, Node *node) {
 
 void generate_c_function(Compiler *compiler, Node *node) {
   FILE *out = compiler->output;
-  fprintf(out, "long %s(", node->value);
+  const char *ctype = "void";
+  if (node->else_branch) {
+    const char *ret = node->else_branch->value;
+    if (strcmp(ret, "string") == 0) {
+      ctype = "const char*";
+      compiler->string_funcs = realloc(compiler->string_funcs,
+                                        sizeof(char *) *
+                                            (compiler->string_func_count + 1));
+      compiler->string_funcs[compiler->string_func_count++] = strdup(node->value);
+    } else if (strcmp(ret, "bool") == 0) {
+      ctype = "long";
+      compiler->bool_funcs = realloc(compiler->bool_funcs,
+                                      sizeof(char *) *
+                                          (compiler->bool_func_count + 1));
+      compiler->bool_funcs[compiler->bool_func_count++] = strdup(node->value);
+    } else if (strcmp(ret, "float") == 0) {
+      ctype = "double";
+      compiler->float_funcs = realloc(compiler->float_funcs,
+                                       sizeof(char *) *
+                                           (compiler->float_func_count + 1));
+      compiler->float_funcs[compiler->float_func_count++] = strdup(node->value);
+    } else if (strcmp(ret, "char") == 0) {
+      ctype = "char";
+      compiler->char_funcs = realloc(compiler->char_funcs,
+                                      sizeof(char *) *
+                                          (compiler->char_func_count + 1));
+      compiler->char_funcs[compiler->char_func_count++] = strdup(node->value);
+    } else {
+      ctype = "long";
+    }
+  }
+  fprintf(out, "%s %s(", ctype, node->value);
   Node *param = node->right;
   int first = 1;
   while (param) {
@@ -249,7 +320,8 @@ void generate_c_function(Compiler *compiler, Node *node) {
   }
   fprintf(out, ") {\n");
   generate_c(compiler, node->left);
-  fprintf(out, "    return 0;\n");
+  if (strcmp(ctype, "void") != 0)
+    fprintf(out, "    return 0;\n");
   fprintf(out, "}\n");
 }
 

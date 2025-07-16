@@ -125,6 +125,13 @@ Node *parse_declaration(Lexer *lexer, Token *token) {
   } else if (token->type == TOKEN_FUNC) {
     free(token->value);
     *token = next_token(lexer);
+    Node *ret_type = NULL;
+    if (token->type == TOKEN_INT || token->type == TOKEN_STRING_TYPE ||
+        token->type == TOKEN_BOOL_TYPE || token->type == TOKEN_FLOAT_TYPE ||
+        token->type == TOKEN_CHAR_TYPE) {
+      ret_type = create_node(NODE_IDENTIFIER, token->value, NULL, NULL, NULL);
+      *token = next_token(lexer);
+    }
     if (token->type != TOKEN_IDENTIFIER) {
       fprintf(stderr, "Expected identifier after func\n");
       exit(1);
@@ -204,7 +211,7 @@ Node *parse_declaration(Lexer *lexer, Token *token) {
       fprintf(stderr, "Expected } after function body\n");
       exit(1);
     }
-      return create_node(NODE_FUNC_DEF, func_name, body, params, NULL);
+    return create_node(NODE_FUNC_DEF, func_name, body, params, ret_type);
   } else if (token->type == TOKEN_CLASS || token->type == TOKEN_STRUCT) {
     int is_struct = token->type == TOKEN_STRUCT;
     free(token->value);

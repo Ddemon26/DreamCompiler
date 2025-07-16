@@ -4,7 +4,7 @@ func PrintOne() {
 
 PrintOne();
 
-func GetTwo() {
+func int GetTwo() {
     return 2;
 }
 

@@ -18,7 +18,7 @@
 - `while`, `do-while`, and `for` loops
 - `break` and `continue` statements
 - `return` statements
-- Functions with parameters and return values
+ - Functions with parameters and typed return values
 - Classes and structs with field access and object instantiation
 - Console output via `Console.Write` and `Console.WriteLine`
 - String literals with escape sequences and concatenation using `+`
