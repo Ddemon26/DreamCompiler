@@ -23,7 +23,6 @@ pub fn build(b: *std.Build) void {
             "src/parser/declaration.c",
             "src/parser/control_flow.c",
             "src/codegen/codegen.c",
-            "codegen/c_emit.c",
             "src/ast/node.c",
         },
         .flags = &.{
