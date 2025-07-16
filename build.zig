@@ -31,6 +31,8 @@ pub fn build(b: *std.Build) void {
         "opt/pipeline.c",
         "opt/sccp.c",
         "opt/dce.c",
+        "opt/value_numbering.c",
+        "opt/licm.c",
     }, .flags = &.{
         "-std=c11",
         "-Wall",
