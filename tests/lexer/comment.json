@@ -1,0 +1,5 @@
+[
+  {"kind":"KW_INT","lexeme":"int","line":1,"col":1},
+  {"kind":"IDENT","lexeme":"x","line":1,"col":5},
+  {"kind":"SEMICOLON","lexeme":";","line":1,"col":6}
+]
