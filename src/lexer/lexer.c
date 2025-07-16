@@ -375,6 +375,16 @@ Token next_token(Lexer *lexer) {
     token.value = strdup("}");
     lexer->pos++;
     break;
+  case '[':
+    token.type = TOKEN_LBRACKET;
+    token.value = strdup("[");
+    lexer->pos++;
+    break;
+  case ']':
+    token.type = TOKEN_RBRACKET;
+    token.value = strdup("]");
+    lexer->pos++;
+    break;
   default:
     token.type = TOKEN_UNKNOWN;
     token.value = strndup(lexer->source + lexer->pos, 1);

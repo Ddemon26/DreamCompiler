@@ -111,8 +111,26 @@ Node *parse_statement(Lexer *lexer, Token *token) {
 
     char *var_name = token->value;
     *token = next_token(lexer);
+    int is_array = 0;
+    Node *array_size = NULL;
+    if (decl_type == TOKEN_INT && token->type == TOKEN_LBRACKET) {
+      is_array = 1;
+      free(token->value);
+      *token = next_token(lexer);
+      array_size = parse_expression(lexer, token);
+      if (token->type != TOKEN_RBRACKET) {
+        fprintf(stderr, "Expected ] after array size\n");
+        exit(1);
+      }
+      free(token->value);
+      *token = next_token(lexer);
+    }
     Node *init = NULL;
-    if (token->type == TOKEN_EQUALS) {
+    if (is_array && token->type == TOKEN_EQUALS) {
+      fprintf(stderr, "Array initialization not supported\n");
+      exit(1);
+    }
+    if (!is_array && token->type == TOKEN_EQUALS) {
       free(token->value);
       *token = next_token(lexer);
       init = parse_expression(lexer, token);
@@ -123,13 +141,19 @@ Node *parse_statement(Lexer *lexer, Token *token) {
                          : is_bool  ? NODE_BOOL_DECL
                          : is_float ? NODE_FLOAT_DECL
                          : is_char  ? NODE_CHAR_DECL
+                         : is_array ? NODE_ARRAY_DECL
                                      : NODE_VAR_DECL;
-    Node *first_decl = create_node(ntype, var_name, init, NULL, NULL);
+    Node *first_decl =
+        create_node(ntype, var_name, is_array ? array_size : init, NULL, NULL);
 
     Node *head = NULL;
     Node **cur = NULL;
 
     if (token->type == TOKEN_COMMA) {
+      if (is_array) {
+        fprintf(stderr, "Array declarations cannot be grouped\n");
+        exit(1);
+      }
       head = create_node(NODE_BLOCK, NULL, first_decl, NULL, NULL);
       cur = &head->right;
       while (token->type == TOKEN_COMMA) {
@@ -309,16 +333,29 @@ Node *parse_statement(Lexer *lexer, Token *token) {
     char *var_name = token->value;
     *token = next_token(lexer);
     Node *target = create_node(NODE_IDENTIFIER, var_name, NULL, NULL, NULL);
-    while (token->type == TOKEN_DOT) {
-      free(token->value);
-      *token = next_token(lexer);
-      if (token->type != TOKEN_IDENTIFIER) {
-        fprintf(stderr, "Expected field name after .\n");
-        exit(1);
+    while (token->type == TOKEN_DOT || token->type == TOKEN_LBRACKET) {
+      if (token->type == TOKEN_DOT) {
+        free(token->value);
+        *token = next_token(lexer);
+        if (token->type != TOKEN_IDENTIFIER) {
+          fprintf(stderr, "Expected field name after .\n");
+          exit(1);
+        }
+        char *fname = token->value;
+        *token = next_token(lexer);
+        target = create_node(NODE_MEMBER, fname, target, NULL, NULL);
+      } else {
+        free(token->value);
+        *token = next_token(lexer);
+        Node *index = parse_expression(lexer, token);
+        if (token->type != TOKEN_RBRACKET) {
+          fprintf(stderr, "Expected ] after index\n");
+          exit(1);
+        }
+        free(token->value);
+        *token = next_token(lexer);
+        target = create_node(NODE_INDEX, NULL, target, index, NULL);
       }
-      char *fname = token->value;
-      *token = next_token(lexer);
-      target = create_node(NODE_MEMBER, fname, target, NULL, NULL);
     }
     if ((token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS) &&
         target->type == NODE_IDENTIFIER) {

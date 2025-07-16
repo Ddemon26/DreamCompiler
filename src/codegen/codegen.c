@@ -131,6 +131,11 @@ static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
   } else if (expr->type == NODE_MEMBER) {
     gen_c_expr_impl(compiler, out, expr->left, 0);
     fprintf(out, ".%s", expr->value);
+  } else if (expr->type == NODE_INDEX) {
+    gen_c_expr_impl(compiler, out, expr->left, 0);
+    fputc('[', out);
+    gen_c_expr_impl(compiler, out, expr->right, 0);
+    fputc(']', out);
   } else if (expr->type == NODE_IDENTIFIER ||
              (expr->type == NODE_VAR_DECL && expr->left == NULL &&
               expr->right == NULL)) {
@@ -250,7 +255,8 @@ void generate_c(Compiler *compiler, Node *node) {
   FILE *out = compiler->output;
   if (node->type == NODE_VAR_DECL || node->type == NODE_STR_DECL ||
       node->type == NODE_BOOL_DECL || node->type == NODE_FLOAT_DECL ||
-      node->type == NODE_CHAR_DECL || node->type == NODE_OBJ_DECL) {
+      node->type == NODE_CHAR_DECL || node->type == NODE_OBJ_DECL ||
+      node->type == NODE_ARRAY_DECL) {
     if (node->type == NODE_STR_DECL) {
       compiler->string_vars = realloc(compiler->string_vars, sizeof(char *) * (compiler->string_var_count + 1));
       compiler->string_vars[compiler->string_var_count++] = strdup(node->value);
@@ -273,12 +279,18 @@ void generate_c(Compiler *compiler, Node *node) {
       ctype = "char";
     else if (node->type == NODE_OBJ_DECL)
       ctype = node->right->value;
-    fprintf(out, "    %s %s", ctype, node->value);
-    if (node->left) {
-      fprintf(out, " = ");
-      gen_c_expr(compiler, out, node->left);
+    if (node->type == NODE_ARRAY_DECL) {
+      fprintf(out, "    %s %s[", ctype, node->value);
+      gen_c_expr_unwrapped(compiler, out, node->left);
+      fprintf(out, "];\n");
+    } else {
+      fprintf(out, "    %s %s", ctype, node->value);
+      if (node->left) {
+        fprintf(out, " = ");
+        gen_c_expr(compiler, out, node->left);
+      }
+      fprintf(out, ";\n");
     }
-    fprintf(out, ";\n");
   } else if (node->type == NODE_ASSIGN) {
     fprintf(out, "    %s = ", node->value);
     gen_c_expr(compiler, out, node->left);

@@ -133,7 +133,7 @@ If the **Type** is omitted the function returns `void`.
 ```
 GlobalVariableDeclaration ::= VariableDeclaration
 VariableDeclaration      ::= Type VariableDeclarator { "," VariableDeclarator } ";"
-VariableDeclarator       ::= Identifier [ "=" Expression ]
+VariableDeclarator       ::= Identifier [ "[" Number "]" ] [ "=" Expression ]
 ```
 
 ### 3.4 Statements

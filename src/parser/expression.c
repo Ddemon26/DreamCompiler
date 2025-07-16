@@ -169,16 +169,29 @@ static Node *compute_atom(Lexer *lexer, Token *token) {
     }
   }
 
-  while (token->type == TOKEN_DOT) {
-    free(token->value);
-    *token = next_token(lexer);
-    if (token->type != TOKEN_IDENTIFIER) {
-      fprintf(stderr, "Expected field name after .\n");
-      exit(1);
+  while (token->type == TOKEN_DOT || token->type == TOKEN_LBRACKET) {
+    if (token->type == TOKEN_DOT) {
+      free(token->value);
+      *token = next_token(lexer);
+      if (token->type != TOKEN_IDENTIFIER) {
+        fprintf(stderr, "Expected field name after .\n");
+        exit(1);
+      }
+      char *fname = token->value;
+      *token = next_token(lexer);
+      left = create_node(NODE_MEMBER, fname, left, NULL, NULL);
+    } else {
+      free(token->value);
+      *token = next_token(lexer);
+      Node *index = parse_expression(lexer, token);
+      if (token->type != TOKEN_RBRACKET) {
+        fprintf(stderr, "Expected ] after index\n");
+        exit(1);
+      }
+      free(token->value);
+      *token = next_token(lexer);
+      left = create_node(NODE_INDEX, NULL, left, index, NULL);
     }
-    char *fname = token->value;
-    *token = next_token(lexer);
-    left = create_node(NODE_MEMBER, fname, left, NULL, NULL);
   }
 
   if (left->type == NODE_IDENTIFIER &&
