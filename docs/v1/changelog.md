@@ -336,3 +336,9 @@ Version 1.0.62 (2025-08-09)
 * Added `struct` keyword as an alias for `class`.
 * Updated grammar, documentation and syntax files.
 * Added a regression test for struct declarations.
+
+Version 1.0.63 (2025-08-10)
+
+* Added `char` variables and character literals.
+* Added unary bitwise NOT `~` operator.
+* Updated documentation, syntax highlighting and added new tests.

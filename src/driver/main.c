@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
   mkdir("build", 0755);
   mkdir("build/bin", 0755);
 #endif
-  Compiler compiler = {fopen("build/bin/dream.c", "w"), NULL, 0, NULL, 0, NULL, 0};
+  Compiler compiler = {fopen("build/bin/dream.c", "w"), NULL, 0, NULL, 0, NULL, 0, NULL, 0};
   if (!compiler.output) {
     fprintf(stderr, "Failed to open output file\n");
     return 1;
@@ -99,6 +99,9 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < compiler.float_var_count; i++)
     free(compiler.float_vars[i]);
   free(compiler.float_vars);
+  for (int i = 0; i < compiler.char_var_count; i++)
+    free(compiler.char_vars[i]);
+  free(compiler.char_vars);
   fclose(compiler.output);
   free(source);
   free(token.value);

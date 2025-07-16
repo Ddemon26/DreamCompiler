@@ -79,14 +79,18 @@ static Node *compute_atom(Lexer *lexer, Token *token);
 static Node *compute_atom(Lexer *lexer, Token *token) {
   int unary_minus = 0;
   int unary_not = 0;
+  int unary_bitnot = 0;
   int prefix_inc = 0;
   int prefix_dec = 0;
   if (token->type == TOKEN_MINUS || token->type == TOKEN_NOT ||
+      token->type == TOKEN_BITNOT ||
       token->type == TOKEN_PLUSPLUS || token->type == TOKEN_MINUSMINUS) {
     if (token->type == TOKEN_MINUS)
       unary_minus = 1;
     else if (token->type == TOKEN_NOT)
       unary_not = 1;
+    else if (token->type == TOKEN_BITNOT)
+      unary_bitnot = 1;
     else if (token->type == TOKEN_PLUSPLUS)
       prefix_inc = 1;
     else
@@ -119,8 +123,8 @@ static Node *compute_atom(Lexer *lexer, Token *token) {
     *token = next_token(lexer);
   } else {
     if (token->type != TOKEN_IDENTIFIER && token->type != TOKEN_NUMBER &&
-        token->type != TOKEN_STRING) {
-      fprintf(stderr, "Expected identifier, number or string\n");
+        token->type != TOKEN_STRING && token->type != TOKEN_CHAR) {
+      fprintf(stderr, "Expected identifier, number, string or char\n");
       exit(1);
     }
     NodeType left_type = NODE_IDENTIFIER;
@@ -128,6 +132,8 @@ static Node *compute_atom(Lexer *lexer, Token *token) {
       left_type = NODE_NUMBER;
     else if (token->type == TOKEN_STRING)
       left_type = NODE_STRING;
+    else if (token->type == TOKEN_CHAR)
+      left_type = NODE_CHAR;
     char *name = token->value;
     *token = next_token(lexer);
     if (left_type == NODE_IDENTIFIER && token->type == TOKEN_LPAREN) {
@@ -189,6 +195,8 @@ static Node *compute_atom(Lexer *lexer, Token *token) {
     left = create_node(NODE_UNARY_OP, "-", left, NULL, NULL);
   if (unary_not)
     left = create_node(NODE_UNARY_OP, "!", left, NULL, NULL);
+  if (unary_bitnot)
+    left = create_node(NODE_UNARY_OP, "~", left, NULL, NULL);
   return left;
 }
 

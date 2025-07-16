@@ -12,6 +12,8 @@ typedef struct {
   int bool_var_count;
   char **float_vars;
   int float_var_count;
+  char **char_vars;
+  int char_var_count;
 } Compiler;
 
 void gen_c_expr(Compiler *compiler, FILE *out, Node *expr);

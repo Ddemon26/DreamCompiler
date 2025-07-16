@@ -8,7 +8,8 @@ using the `*` operator has been introduced as well. Division with the `/`
 operator is now supported. Modulo with the `%` operator is now available too.
 Bitwise XOR with the `^` operator is now supported. Bitwise AND (`&`) and
 bitwise OR (`|`) operators are now available as well. Bitwise left shift (`<<`)
-and right shift (`>>`) operators are now available too.
+and right shift (`>>`) operators are now available too. A unary bitwise NOT
+operator (`~`) complements all bits of its operand.
 
 ## Syntax
 
@@ -41,6 +42,8 @@ and right shift (`>>`) operators are now available too.
 
 **Right Shift**: `<identifier> = <expression> >> <expression>;`
 : Shifts the left operand right by the given number of bits.
+**Bitwise NOT**: `<identifier> = ~<expression>;`
+: Flips all bits of the expression.
 
 **Compound assignment**: `<identifier> <op>= <expression>;`
 : Shorthand for `<identifier> = <identifier> <op> <expression>` using
