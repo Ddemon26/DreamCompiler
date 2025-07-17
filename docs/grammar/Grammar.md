@@ -124,31 +124,31 @@ Statement           ::= Block                                                   
                      | VariableDeclaration                                            // Implemented
                      | IfStatement                                                    // Implemented
                      | WhileStatement                                                 // Implemented
-                     | DoStatement                                                    // Implemented
-                     | ForStatement                                                   // Implemented
+      // Planned
+                     | ForStatement                                                   // Planned
                      | SwitchStatement                                                // Partial (basic cases only)
                      | BreakStatement                                                 // Implemented
-                     | ContinueStatement                                              // Implemented
-                     | ReturnStatement                                                // Implemented
-                     | ExpressionStatement                                            // Implemented
+                     | ContinueStatement                                              // Planned
+                     | ReturnStatement                                                // Planned
+                     | ExpressionStatement                                            // Planned
 
 Block               ::= "{" { Statement } "}"                                         // Implemented
 ExpressionStatement ::= Expression ";"                                                // Implemented
 
 IfStatement         ::= "if" "(" Expression ")" Statement [ "else" Statement ]        // Implemented
 WhileStatement      ::= "while" "(" Expression ")" Statement                          // Implemented
-DoStatement         ::= "do" Statement "while" "(" Expression ")" ";"                 // Implemented
-ForStatement        ::= "for" "(" [ ForInit ] ";" [ Expression ] ";" [ ForUpdate ] ")" Statement // Implemented
-ForInit             ::= VariableDeclaration | ExpressionList                          // Implemented
-ForUpdate           ::= ExpressionList                                                // Implemented
-ExpressionList      ::= Expression { "," Expression }                                 // Implemented
+      // Planned
+ForStatement        ::= "for" "(" [ ForInit ] ";" [ Expression ] ";" [ ForUpdate ] ")" Statement // Planned
+ForInit             ::= VariableDeclaration | ExpressionList                          // Planned
+ForUpdate           ::= ExpressionList                                                // Planned
+ExpressionList      ::= Expression { "," Expression }                                 // Planned
 
 SwitchStatement     ::= "switch" "(" Expression ")" "{" { SwitchSection } "}"         // Partial
-SwitchSection       ::= [ "case" ConstantExpression ":" | "default" ":" ] { Statement }// Partial
+SwitchSection       ::= [ "case" ConstantExpression ":" | "default" ":" ] { Statement }// Planned
 
 BreakStatement      ::= "break" ";"                                                   // Implemented
-ContinueStatement   ::= "continue" ";"                                                // Implemented
-ReturnStatement     ::= "return" [ Expression ] ";"                                   // Implemented
+ContinueStatement   ::= "continue" ";"                                                // Planned
+ReturnStatement     ::= "return" [ Expression ] ";"                                   // Planned
 ```
 
 ### 2.5 Expressions (operator‑precedence form)

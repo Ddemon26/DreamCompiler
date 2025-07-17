@@ -3,32 +3,17 @@
 ## Implemented Features
 
 - Primitive types: `int`, `float`, `bool`, `char`, and `string`
-- Variable declarations and assignments
-- Arrays of all primitive types
-- Arithmetic operators `+`, `-`, `*`, `/`, `%` and unary minus
-- Bitwise operators `&`, `|`, `^`, `~`, `<<`, and `>>`
+- Variable declarations with initialisers
+- Basic arithmetic operators `+`, `-`, `*`, `/`, `%` and unary minus
 - Comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=`
-- Logical operators `&&`, `||`, and `!`
-- Increment and decrement operators `++` and `--`
-- Compound assignments `+=`, `-=`, `*=`, `/=`, `%=`, and reserved tokens
-  `&=`, `|=`, `^=`, `<<=`, `>>=`
-- Ternary conditional operator `? :`
-- Additional reserved tokens `??`, `??=`, `=>`, `::`, `->`
-- Reserved keyword `void` (no return value)
+- Simple assignment using `=`
 - Parentheses for expression grouping
-- If/else statements including `else if` chains
-- `switch` statements with `case` and `default`
-- `while`, `do-while`, and `for` loops
-- `break` and `continue` statements
-- `return` statements
- - Functions with parameters and typed return values
-- Classes and structs with field access and object instantiation
+- `if`/`else` statements
+- Nested block statements
 - Console output via `Console.Write` and `Console.WriteLine`
-- Developer macros `Console.Write`/`WriteLine` for compiler debugging (disabled in release)
-- String literals with escape sequences and concatenation using `+`
+- String and character literals with escape sequences
 - Line (`//`) and block (`/* */`) comments
 - Basic C code generation for programs
-- Object file output via `--emit-obj`
 
 ## Planned Features
 
