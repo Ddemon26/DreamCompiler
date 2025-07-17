@@ -211,6 +211,13 @@ static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
     emit_expr(ctx, b, n->as.cond.else_expr);
     c_out_write(b, ")");
     break;
+  case ND_INDEX:
+    c_out_write(b, "(");
+    emit_expr(ctx, b, n->as.index.array);
+    c_out_write(b, "[");
+    emit_expr(ctx, b, n->as.index.index);
+    c_out_write(b, "])");
+    break;
   default:
     c_out_write(b, "0");
     break;
@@ -237,9 +244,22 @@ static const char *type_to_c(TokenKind k) {
 static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
   switch (n->kind) {
   case ND_VAR_DECL:
-    c_out_write(b, "%s %.*s = ", type_to_c(n->as.var_decl.type),
-                (int)n->as.var_decl.name.len, n->as.var_decl.name.start);
-    emit_expr(ctx, b, n->as.var_decl.init);
+    if (n->as.var_decl.array_len > 0) {
+      c_out_write(b, "%s %.*s[%zu]", type_to_c(n->as.var_decl.type),
+                  (int)n->as.var_decl.name.len, n->as.var_decl.name.start,
+                  n->as.var_decl.array_len);
+      if (n->as.var_decl.init) {
+        c_out_write(b, " = ");
+        emit_expr(ctx, b, n->as.var_decl.init);
+      }
+    } else {
+      c_out_write(b, "%s %.*s", type_to_c(n->as.var_decl.type),
+                  (int)n->as.var_decl.name.len, n->as.var_decl.name.start);
+      if (n->as.var_decl.init) {
+        c_out_write(b, " = ");
+        emit_expr(ctx, b, n->as.var_decl.init);
+      }
+    }
     cgctx_push(ctx, n->as.var_decl.name.start, n->as.var_decl.name.len,
                n->as.var_decl.type);
     c_out_write(b, ";");
@@ -273,14 +293,25 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     c_out_write(b, "for (");
     if (n->as.for_stmt.init) {
       if (n->as.for_stmt.init->kind == ND_VAR_DECL) {
-        c_out_write(
-            b, "%s %.*s = ", type_to_c(n->as.for_stmt.init->as.var_decl.type),
-            (int)n->as.for_stmt.init->as.var_decl.name.len,
-            n->as.for_stmt.init->as.var_decl.name.start);
-        emit_expr(ctx, b, n->as.for_stmt.init->as.var_decl.init);
-        cgctx_push(ctx, n->as.for_stmt.init->as.var_decl.name.start,
-                   n->as.for_stmt.init->as.var_decl.name.len,
-                   n->as.for_stmt.init->as.var_decl.type);
+        Node *vd = n->as.for_stmt.init;
+        if (vd->as.var_decl.array_len > 0) {
+          c_out_write(b, "%s %.*s[%zu]", type_to_c(vd->as.var_decl.type),
+                      (int)vd->as.var_decl.name.len, vd->as.var_decl.name.start,
+                      vd->as.var_decl.array_len);
+          if (vd->as.var_decl.init) {
+            c_out_write(b, " = ");
+            emit_expr(ctx, b, vd->as.var_decl.init);
+          }
+        } else {
+          c_out_write(b, "%s %.*s", type_to_c(vd->as.var_decl.type),
+                      (int)vd->as.var_decl.name.len, vd->as.var_decl.name.start);
+          if (vd->as.var_decl.init) {
+            c_out_write(b, " = ");
+            emit_expr(ctx, b, vd->as.var_decl.init);
+          }
+        }
+        cgctx_push(ctx, vd->as.var_decl.name.start, vd->as.var_decl.name.len,
+                   vd->as.var_decl.type);
       } else {
         emit_expr(ctx, b, n->as.for_stmt.init);
       }

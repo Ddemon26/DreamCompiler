@@ -28,3 +28,5 @@ All notable changes to the Dream compiler will be documented in this file.
 - Implemented ternary conditional operator `?:`.
 - Added unary plus operator and enabled comparison operators.
 - Implemented basic `switch` statements in parser and code generator.
+- Variable declarations no longer require an initialiser.
+- Added array declarations and indexing for primitive types.

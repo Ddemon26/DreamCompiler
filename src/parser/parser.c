@@ -374,13 +374,28 @@ static Node *parse_primary(Parser *p) {
 
 static Node *parse_postfix(Parser *p) {
   Node *n = parse_primary(p);
-  while (p->tok.kind == TK_PLUSPLUS || p->tok.kind == TK_MINUSMINUS) {
-    TokenKind op = p->tok.kind;
-    next(p);
-    Node *post = node_new(p->arena, ND_POST_UNARY);
-    post->as.unary.op = op;
-    post->as.unary.expr = n;
-    n = post;
+  for (;;) {
+    if (p->tok.kind == TK_PLUSPLUS || p->tok.kind == TK_MINUSMINUS) {
+      TokenKind op = p->tok.kind;
+      next(p);
+      Node *post = node_new(p->arena, ND_POST_UNARY);
+      post->as.unary.op = op;
+      post->as.unary.expr = n;
+      n = post;
+    } else if (p->tok.kind == TK_LBRACKET) {
+      next(p);
+      Node *idx = parse_expr_prec(p, 0);
+      if (p->tok.kind == TK_RBRACKET)
+        next(p);
+      else
+        diag_push(p, p->tok.pos, "expected ']'");
+      Node *idxn = node_new(p->arena, ND_INDEX);
+      idxn->as.index.array = n;
+      idxn->as.index.index = idx;
+      n = idxn;
+    } else {
+      break;
+    }
   }
   return n;
 }
@@ -411,13 +426,27 @@ static Node *parse_var_decl(Parser *p) {
   n->as.var_decl.type = type_tok;
   n->as.var_decl.name.start = p->tok.start;
   n->as.var_decl.name.len = p->tok.len;
+  n->as.var_decl.array_len = 0;
   next(p);
+  if (p->tok.kind == TK_LBRACKET) {
+    next(p);
+    if (p->tok.kind != TK_INT_LITERAL) {
+      diag_push(p, p->tok.pos, "expected array size");
+      n->as.var_decl.array_len = 0;
+    } else {
+      n->as.var_decl.array_len = strtoul(p->tok.start, NULL, 10);
+      next(p);
+    }
+    if (p->tok.kind == TK_RBRACKET)
+      next(p);
+    else
+      diag_push(p, p->tok.pos, "expected ']'");
+  }
   if (p->tok.kind == TK_EQ) {
     next(p);
     n->as.var_decl.init = parse_expr(p);
   } else {
-    diag_push(p, p->tok.pos, "expected '='");
-    n->as.var_decl.init = node_new(p->arena, ND_ERROR);
+    n->as.var_decl.init = NULL;
   }
   if (p->tok.kind == TK_SEMICOLON)
     next(p);

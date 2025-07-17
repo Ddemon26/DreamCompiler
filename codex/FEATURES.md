@@ -3,7 +3,7 @@
 ## Implemented Features
 
 - Primitive types: `int`, `float`, `bool`, `char`, and `string`
-- Variable declarations with initialisers
+- Variable declarations with optional initialisers
 - Basic arithmetic operators `+`, `-`, `*`, `/`, `%`, unary minus and unary plus
 - Logical operators `&&`, `||`, and `!`
 - Comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=`
@@ -27,12 +27,12 @@
 - String concatenation with `+`
 - Ternary conditional operator `?:`
 - `switch` statements
+- Arrays of primitive types
 
 ## Missing Features
 
 - The following language constructs appear in the documentation or tests but are not yet implemented:
 
-- Arrays of any type
 - Function declarations with parameters and typed return values
 - Classes, structs and object construction
 

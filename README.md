@@ -6,7 +6,11 @@ but aims to grow into a fully featured compiler. This repository contains the so
 ## Features
 
 The compiler currently supports:
-
+- Primitive types and variable declarations (with optional initialisers)
+- Arrays of primitive types
+- Arithmetic, bitwise and comparison operators
+- Control flow statements: `if`/`else`, loops and `switch`
+- Console output via `Console.Write` and `Console.WriteLine`
 See the [changelog](docs/changelog.md) for details on recent additions.
 
 ## Getting Started
