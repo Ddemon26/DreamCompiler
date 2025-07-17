@@ -7,6 +7,5 @@ The test suite shows many language constructs are still missing. The following f
 - Functions with parameters and typed return values
 - Classes, structs and object creation
 - The ternary `?:` operator
-- String concatenation
 
 Keep the grammar and documentation up to date once these features land.

@@ -24,6 +24,7 @@
 - Bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`)
 - Compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=` and bitwise variants)
 - Increment/decrement operators `++` and `--`
+- String concatenation with `+`
 
 ## Missing Features
 
@@ -34,6 +35,5 @@
 - `switch` statements
 - Function declarations with parameters and typed return values
 - Classes, structs and object construction
-- String concatenation
 
 These features need implementing before they will compile without diagnostics.
