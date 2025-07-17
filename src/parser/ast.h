@@ -14,7 +14,10 @@ void *arena_alloc(Arena *a, size_t size);
 
 typedef enum {
     ND_INT,
+    ND_FLOAT,
+    ND_CHAR,
     ND_STRING,
+    ND_BOOL,
     ND_IDENT,
     ND_BINOP,
     ND_VAR_DECL,
@@ -36,7 +39,7 @@ Node *node_new(Arena *a, NodeKind kind);
 struct Node {
     NodeKind kind;
     union {
-        Slice lit;                    // ND_INT, ND_STRING
+        Slice lit;                    // ND_* literal nodes
         Slice ident;                  // ND_IDENT
         struct {                      // ND_BINOP
             TokenKind op;
@@ -44,6 +47,7 @@ struct Node {
             Node *rhs;
         } bin;
         struct {                      // ND_VAR_DECL
+            TokenKind type;
             Slice name;
             Node *init;
         } var_decl;

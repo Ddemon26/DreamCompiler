@@ -27,6 +27,19 @@ static Node *parse_expr_prec(Parser *p, int min_prec);
 static Node *parse_expr(Parser *p);
 static Node *parse_stmt(Parser *p);
 
+static bool is_type_token(TokenKind k) {
+    switch (k) {
+    case TK_KW_INT:
+    case TK_KW_FLOAT:
+    case TK_KW_BOOL:
+    case TK_KW_CHAR:
+    case TK_KW_STRING:
+        return true;
+    default:
+        return false;
+    }
+}
+
 static Node *parse_if(Parser *p) {
     next(p); // consume 'if'
     if (p->tok.kind != TK_LPAREN) {
@@ -58,14 +71,53 @@ static Node *parse_primary(Parser *p) {
     Node *n;
     switch (t.kind) {
     case TK_INT_LITERAL:
-    case TK_FLOAT_LITERAL:
-    case TK_CHAR_LITERAL:
-    case TK_STRING_LITERAL:
         n = node_new(p->arena, ND_INT);
         n->as.lit.start = t.start;
         n->as.lit.len = t.len;
         next(p);
         return n;
+    case TK_FLOAT_LITERAL:
+        n = node_new(p->arena, ND_FLOAT);
+        n->as.lit.start = t.start;
+        n->as.lit.len = t.len;
+        next(p);
+        return n;
+    case TK_CHAR_LITERAL:
+        n = node_new(p->arena, ND_CHAR);
+        n->as.lit.start = t.start;
+        n->as.lit.len = t.len;
+        next(p);
+        return n;
+    case TK_STRING_LITERAL:
+        n = node_new(p->arena, ND_STRING);
+        n->as.lit.start = t.start;
+        n->as.lit.len = t.len;
+        next(p);
+        return n;
+    case TK_KW_TRUE:
+    case TK_KW_FALSE:
+        n = node_new(p->arena, ND_BOOL);
+        n->as.lit.start = t.start;
+        n->as.lit.len = t.len;
+        next(p);
+        return n;
+    case TK_ERROR:
+        if (t.len == 1 && t.start[0] == '\'') {
+            next(p);
+            Token mid = p->tok;
+            next(p);
+            Token end = p->tok;
+            if (mid.kind == TK_IDENT && mid.len == 1 && end.kind == TK_ERROR && end.len == 1 && end.start[0] == '\'') {
+                n = node_new(p->arena, ND_CHAR);
+                n->as.lit.start = mid.start;
+                n->as.lit.len = 1;
+                next(p);
+                return n;
+            }
+            diag_push(p, t.pos, "malformed char literal");
+            return node_new(p->arena, ND_ERROR);
+        }
+        // fallthrough
     case TK_IDENT:
         n = node_new(p->arena, ND_IDENT);
         n->as.ident.start = t.start;
@@ -90,12 +142,14 @@ static Node *parse_primary(Parser *p) {
 }
 
 static Node *parse_var_decl(Parser *p) {
-    next(p); // consume 'var'
+    TokenKind type_tok = p->tok.kind;
+    next(p); // consume type
     if (p->tok.kind != TK_IDENT) {
         diag_push(p, p->tok.pos, "expected identifier");
         return node_new(p->arena, ND_ERROR);
     }
     Node *n = node_new(p->arena, ND_VAR_DECL);
+    n->as.var_decl.type = type_tok;
     n->as.var_decl.name.start = p->tok.start;
     n->as.var_decl.name.len = p->tok.len;
     next(p);
@@ -172,7 +226,7 @@ static Node *parse_stmt(Parser *p) {
     if (p->tok.kind == TK_KW_IF) {
         return parse_if(p);
     }
-    if (p->tok.kind == TK_KW_VAR) {
+    if (is_type_token(p->tok.kind)) {
         return parse_var_decl(p);
     }
     if (p->tok.kind == TK_LBRACE) {
@@ -208,7 +262,6 @@ Node *parse_program(Parser *p) {
     while (p->tok.kind != TK_EOF) {
         Node *st = parse_stmt(p);
         nodevec_push(&items, &len, &cap, st);
-        parser_sync(p);
     }
     Node *blk = node_new(p->arena, ND_BLOCK);
     blk->as.block.items = items;
