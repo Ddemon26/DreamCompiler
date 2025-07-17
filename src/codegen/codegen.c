@@ -154,6 +154,7 @@ static int is_string_expr(CGCtx *ctx, Node *n) {
 
 static void emit_expr(CGCtx *ctx, COut *b, Node *n);
 static void emit_stmt(CGCtx *ctx, COut *b, Node *n);
+static void emit_func(COut *b, Node *n);
 
 static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
   switch (n->kind) {
@@ -222,6 +223,16 @@ static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
     emit_expr(ctx, b, n->as.index.index);
     c_out_write(b, "])");
     break;
+  case ND_CALL:
+    emit_expr(ctx, b, n->as.call.callee);
+    c_out_write(b, "(");
+    for (size_t i = 0; i < n->as.call.len; i++) {
+      if (i)
+        c_out_write(b, ", ");
+      emit_expr(ctx, b, n->as.call.args[i]);
+    }
+    c_out_write(b, ")");
+    break;
   default:
     c_out_write(b, "0");
     break;
@@ -240,9 +251,35 @@ static const char *type_to_c(TokenKind k) {
     return "const char *";
   case TK_KW_BOOL:
     return "int";
+  case TK_KW_VOID:
+    return "void";
   default:
     return "int";
   }
+}
+
+static void emit_func(COut *b, Node *n) {
+  c_out_write(b, "%s %.*s(", type_to_c(n->as.func.ret_type),
+              (int)n->as.func.name.len, n->as.func.name.start);
+  for (size_t i = 0; i < n->as.func.param_len; i++) {
+    Node *p = n->as.func.params[i];
+    if (i)
+      c_out_write(b, ", ");
+    c_out_write(b, "%s %.*s", type_to_c(p->as.var_decl.type),
+                (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
+  }
+  c_out_write(b, ") ");
+  CGCtx ctx = {0};
+  cgctx_scope_enter(&ctx);
+  for (size_t i = 0; i < n->as.func.param_len; i++) {
+    Node *p = n->as.func.params[i];
+    cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
+               p->as.var_decl.type);
+  }
+  emit_stmt(&ctx, b, n->as.func.body);
+  cgctx_scope_leave(&ctx);
+  free(ctx.vars);
+  c_out_newline(b);
 }
 
 static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
@@ -268,6 +305,9 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
                n->as.var_decl.type);
     c_out_write(b, ";");
     c_out_newline(b);
+    break;
+  case ND_FUNC:
+    emit_func(b, n);
     break;
   case ND_IF:
     c_out_write(b, "if (");
@@ -450,10 +490,19 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_write(&builder, "    return buf;\n}");
   c_out_newline(&builder);
   c_out_newline(&builder);
+  for (size_t i = 0; i < root->as.block.len; i++) {
+    Node *it = root->as.block.items[i];
+    if (it->kind == ND_FUNC)
+      emit_func(&builder, it);
+  }
   c_out_write(&builder, "int main(void) ");
   CGCtx ctx = {0};
   cgctx_scope_enter(&ctx);
-  emit_stmt(&ctx, &builder, root);
+  for (size_t i = 0; i < root->as.block.len; i++) {
+    Node *it = root->as.block.items[i];
+    if (it->kind != ND_FUNC)
+      emit_stmt(&ctx, &builder, it);
+  }
   cgctx_scope_leave(&ctx);
   free(ctx.vars);
   c_out_newline(&builder);

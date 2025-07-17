@@ -30,3 +30,4 @@ All notable changes to the Dream compiler will be documented in this file.
 - Implemented basic `switch` statements in parser and code generator.
 - Variable declarations no longer require an initialiser.
 - Added array declarations and indexing for primitive types.
+- Implemented function declarations with parameters and typed return values.
