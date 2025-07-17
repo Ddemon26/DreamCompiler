@@ -6,13 +6,13 @@
 
 ## Overview
 
-The **Dream Compiler CLI agent** bootstraps, grows, and maintains the DreamCompiler code‑base.  The compiler is pure **C11**, built and tested via **Zig**.  Source files end in `.dr`; the build pipeline is:
+The **Dream Compiler CLI agent** bootstraps, grows, and maintains the DreamCompiler code‑base.  The compiler is pure **C11**, built via **Zig** and tested using the **GNU toolchain**.  Source files end in `.dr`; the build pipeline is:
 
 ```
 .dream  →  DreamCompiler (C frontend)  →  portable C  →  zig cc  →  native exe
 ```
 
-Everything lives in a Linux terminal environment where you invoke `zig build`, `zig build run -- <file.dr>`, and `zig build test`.
+Everything lives in a Linux terminal environment where you invoke `zig build` for building, and use GNU tools (e.g., `make test`, `gcc`, `gdb`) for testing and debugging.
 
 ---
 
@@ -20,8 +20,8 @@ Everything lives in a Linux terminal environment where you invoke `zig build`, `
 
 * **Jump quickly between modules** – use `grep -R "module "` or `find . -name '*.c'` instead of scanning with `ls`.
 * **Prime the incremental cache** – run `zig build` once; subsequent builds re‑compile only what changed.
-* **Run the full test suite** – `zig build test` executes every unit and regression test and prints a concise summary.
-* **Focus on one test** – `zig build test -Dfilter="<pattern>"` (pattern matches file or function) is equivalent to the Vitest `-t "<name>"` flag in Codex.
+* **Run the full test suite** – `make test` (or `./test_runner`) executes every unit and regression test and prints a concise summary.
+* **Focus on one test** – use the test runner with a `--filter="<pattern>"` option (pattern matches file or function).
 * **Spin up a scratch playground** – `zig run tools/scratch.zig -- <snippet.dr>` to experiment without touching the main code‑base.
 * **Add new external tools responsibly** – when you introduce something like **re2c** or **clang‑format**, record it in `codex/_startup.sh` so CI can install it.
 * **Keep target names consistent** – double‑check any new `build.zig` target’s `name` field to avoid CI mis‑routing.
@@ -31,8 +31,8 @@ Everything lives in a Linux terminal environment where you invoke `zig build`, `
 ## Testing Instructions
 
 * The CI plan lives at `.github/workflows/ci.yml`.
-* **Run everything** – `zig build test` from the repo root.
-* **Narrow scope** – `zig build test -Dfilter="sem_type_inference_*"` runs only matching tests.
+* **Run everything** – from the repo root, use `make test` (or `./test_runner`).
+* **Narrow scope** – use `make test FILTER="<pattern>"` (or `./test_runner --filter "<pattern>"`) to run only matching tests.
 * Fix *all* test or type errors until the whole suite is green.
 * After moving files or changing `#include` paths, run `zig fmt --check` and `zig build` to ensure formatting and compilation still pass.
 * *Always* add or update tests for the code you change, even if nobody asked.
@@ -54,7 +54,7 @@ Every pull request **must** fill out `codex/BOT_PR_TEMPLATE.md`, covering:
 
 ## Responsibilities
 
-* **Track `docs/Grammar.md`** – the authoritative Dream grammar.  Whenever the spec changes, update:
+* **Track `docs/grammer/Grammar.md`** – the authoritative Dream grammar.  Whenever the spec changes, update:
 
     * **`lexer/tokens.def`** and regenerate `lexer/lexer.c` via **re2c**.
     * **`parser/`**, **`sem/`** modules so the implementation matches the spec (new precedence levels, keywords, etc.).
@@ -62,7 +62,7 @@ Every pull request **must** fill out `codex/BOT_PR_TEMPLATE.md`, covering:
     * **Regression tests** under `tests/`.
 * Grow functionality of the compiler incrementally, starting from a minimal working set.
 * Keep documentation (`docs/`) fully in‑sync with behaviour.
-* Maintain green test suite (`zig build test`).  Add tests for every new feature and bug‑fix.
+* Maintain green test suite (`make test`).  Add tests for every new feature and bug‑fix.
 * Record notable changes in `docs/changelog.md`.
 * Add required system dependencies to `codex/_startup.sh` (e.g., `re2c`).
 * Split large modules into focused files when practical.
@@ -75,7 +75,7 @@ When the command `go` is issued the agent should:
 
 1. **Synchronise with the grammar**
 
-    * Parse `docs/Grammar.md` and compare with `lexer/tokens.def` and precedence tables in `parser/parser.c`.
+    * Parse `docs/grammer/Grammar.md` and compare with `lexer/tokens.def` and precedence tables in `parser/parser.c`.
     * Report mismatches; update code or open a task to correct the spec.
 2. **Review project state**
 
@@ -91,14 +91,14 @@ When the command `go` is issued the agent should:
     * Regenerate lexer (`re2c`), rebuild compiler, and run all tests.
 5. **Build & run**
 
-    * `zig build` → `zig build test` → optionally `zig build run -- <file.dr>`.
+    * `zig build` → `make test` → optionally `zig build run -- <file.dr>`.
 6. **Commit** once tests succeed.
 
 ---
 
 ## Environment
 
-* Ubuntu‑based shell with Git, Zig (`>=0.13.0`), and **re2c** available.
+* Ubuntu‑based shell with Git, Zig (`>=0.13.0`), **GCC**, **Make**, **GDB**, and **re2c** available.
 * Additional packages installed via `codex/_startup.sh`.
 
 ---
@@ -113,7 +113,7 @@ ir/         – Three‑address SSA IR & CFG
 opt/        – Optimisation passes (SCCP, DCE, LICM, …)
 codegen/    – C emitter (topological, generics)
 docs/       – Language spec, change‑log, design docs
-    Grammar.md          – BNF grammar (source of truth)
+    grammer/Grammar.md          – BNF grammar (source of truth)
     changelog.md        – Chronological changes
 tests/      – Regression test suite (.dr → expected)
 codex/      – Agent docs & startup scripts
@@ -132,14 +132,13 @@ A living list of implemented and planned features is kept in [`FEATURES.md`](FEA
 
 ```
 > go
-[Agent] Syncing lexer/tokens.def with docs/Grammar.md…
+[Agent] Syncing lexer/tokens.def with docs/grammer/Grammar.md…
 [Agent] Re‑generating lexer.c via re2c…
 [Agent] Building compiler…
-[Agent] Running tests…
-[Agent] All tests passed!
+[Agent] Running tests via make test…
 [Agent] Committing changes…
 ```
 
 ---
 
-> **Tip:** For quick access to the agent's functionality, use the `go` command in your terminal. This will automatically sync the grammar, build the compiler, run tests, and commit changes if everything passes.
+> **Tip:** For quick access to the agent's functionality, use the `go` command in your terminal. This will automatically sync the grammar, build the compiler, run tests via `make test`, and commit changes if everything passes.
