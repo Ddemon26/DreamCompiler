@@ -59,9 +59,9 @@ An example program is provided in [example.dr](example.dr).
 
 ## Documentation
 
-Documentation for language features lives under [`docs`](docs). Start with [index.md](docs/index.md) to browse the available guides.
+Documentation lives under [`docs`](docs). Open [docs/index.html](docs/index.html) in a browser or read [docs/index.md](docs/index.md) directly.
 
-See [Source Architecture](docs/v1/architecture.md) for an overview of the compiler layout.
+See [Compiler Docs](docs/compiler/index.md) for compiler information and [Dream.dr Language](docs/language/index.md) for language guides.
 ## Contributing
 
 Contributions are welcome. Document any new language feature under `docs/` with a matching test case in `tests/`. Add additional dependencies to [`codex/_startup.sh`](codex/_startup.sh) if required.
