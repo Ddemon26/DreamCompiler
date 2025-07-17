@@ -510,41 +510,59 @@ static Node *parse_unary(Parser *p) {
 static Node *parse_var_decl(Parser *p) {
   TokenKind type_tok = p->tok.kind;
   next(p); // consume type
-  if (p->tok.kind != TK_IDENT) {
-    diag_push(p, p->tok.pos, "expected identifier");
-    return node_new(p->arena, ND_ERROR);
-  }
-  Node *n = node_new(p->arena, ND_VAR_DECL);
-  n->as.var_decl.type = type_tok;
-  n->as.var_decl.name.start = p->tok.start;
-  n->as.var_decl.name.len = p->tok.len;
-  n->as.var_decl.array_len = 0;
-  next(p);
-  if (p->tok.kind == TK_LBRACKET) {
-    next(p);
-    if (p->tok.kind != TK_INT_LITERAL) {
-      diag_push(p, p->tok.pos, "expected array size");
-      n->as.var_decl.array_len = 0;
-    } else {
-      n->as.var_decl.array_len = strtoul(p->tok.start, NULL, 10);
-      next(p);
+  Node **items = NULL;
+  size_t len = 0, cap = 0;
+  for (;;) {
+    if (p->tok.kind != TK_IDENT) {
+      diag_push(p, p->tok.pos, "expected identifier");
+      return node_new(p->arena, ND_ERROR);
     }
-    if (p->tok.kind == TK_RBRACKET)
-      next(p);
-    else
-      diag_push(p, p->tok.pos, "expected ']'");
-  }
-  if (p->tok.kind == TK_EQ) {
+    Node *n = node_new(p->arena, ND_VAR_DECL);
+    n->as.var_decl.type = type_tok;
+    n->as.var_decl.name.start = p->tok.start;
+    n->as.var_decl.name.len = p->tok.len;
+    n->as.var_decl.array_len = 0;
     next(p);
-    n->as.var_decl.init = parse_expr(p);
-  } else {
-    n->as.var_decl.init = NULL;
+    if (p->tok.kind == TK_LBRACKET) {
+      next(p);
+      if (p->tok.kind != TK_INT_LITERAL) {
+        diag_push(p, p->tok.pos, "expected array size");
+        n->as.var_decl.array_len = 0;
+      } else {
+        n->as.var_decl.array_len = strtoul(p->tok.start, NULL, 10);
+        next(p);
+      }
+      if (p->tok.kind == TK_RBRACKET)
+        next(p);
+      else
+        diag_push(p, p->tok.pos, "expected ']'");
+    }
+    if (p->tok.kind == TK_EQ) {
+      next(p);
+      n->as.var_decl.init = parse_expr(p);
+    } else {
+      n->as.var_decl.init = NULL;
+    }
+    nodevec_push(&items, &len, &cap, n);
+    if (p->tok.kind == TK_COMMA) {
+      next(p);
+      continue;
+    }
+    break;
   }
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
     diag_push(p, p->tok.pos, "expected ';'");
-  return n;
+  if (len == 1) {
+    Node *single = items[0];
+    free(items);
+    return single;
+  }
+  Node *blk = node_new(p->arena, ND_BLOCK);
+  blk->as.block.items = items;
+  blk->as.block.len = len;
+  return blk;
 }
 static int precedence(TokenKind k) {
   switch (k) {

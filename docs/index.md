@@ -13,7 +13,7 @@ Use the version dropdown in the sidebar to view documentation for other releases
 
 ### Language Basics (planned)
 
-- Variables *(pending)*
+ - Variables
 - Arrays *(pending)*
 - Arithmetic *(pending)*
 - Parentheses *(pending)*
