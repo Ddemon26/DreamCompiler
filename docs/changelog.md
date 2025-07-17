@@ -3,6 +3,8 @@
 All notable changes to the Dream compiler will be documented in this file.
 
 ## [Unreleased]
+- Documentation site rebuilt. `index.html` now loads `index.md` and navigation focuses on compiler and language guides.
+- Restored language documentation pages and detailed table of contents.
 - Added automated test runner to `zig build test`.
 - Implemented bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`).
 - Bitwise NOT `~` operator is now documented as implemented.

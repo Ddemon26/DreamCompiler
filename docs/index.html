@@ -13,42 +13,55 @@
     <aside class="sidebar">
         <nav class="nav">
             <h2>Documentation</h2>
-            <label for="version-select" class="version-label">Version:</label>
-            <select id="version-select">
-                <option value="v1" selected>v1</option>
-            </select>
             <ul>
-                <li class="category"><span>Getting Started</span>
+                <li><a href="#" data-md="index.md">Home</a></li>
+                <li class="category"><span>Compiler</span>
                     <ul>
-                        <li><a href="#" data-md="intro.md">Introduction</a></li>
-                        <li><a href="#" data-md="usage.md">Usage Guide</a></li>
+                        <li><a href="#" data-md="compiler/index.md">Overview</a></li>
                     </ul>
                 </li>
-                <li class="category"><span>Language Basics</span>
+                <li class="category"><span>Dream.dr Language</span>
                     <ul>
-                        <li><a href="#" data-md="variables.md">Variables</a></li>
-                        <li><a href="#" data-md="arithmetic.md">Arithmetic</a></li>
-                        <li><a href="#" data-md="parentheses.md">Parentheses</a></li>
-                        <li><a href="#" data-md="comparison.md">Comparison</a></li>
-                        <li><a href="#" data-md="logical.md">Logical Operators</a></li>
-                        <li><a href="#" data-md="conditional.md">Conditional Operator</a></li>
-                        <li><a href="#" data-md="console.md">Console Output</a></li>
-                        <li><a href="#" data-md="strings.md">String Literals</a></li>
-                        <li><a href="#" data-md="comments.md">Comments</a></li>
-                        <li><a href="#" data-md="functions.md">Functions</a></li>
-                        <li><a href="#" data-md="classes.md">Classes</a></li>
+                        <li><a href="#" data-md="language/index.md">Overview</a></li>
+                        <li class="category"><span>Getting Started</span>
+                            <ul>
+                                <li><a href="#" data-md="v1/intro.md">Introduction</a></li>
+                                <li><a href="#" data-md="v1/usage.md">Usage Guide</a></li>
+                            </ul>
+                        </li>
+                        <li class="category"><span>Language Basics</span>
+                            <ul>
+                                <li><a href="#" data-md="variables.md">Variables</a></li>
+                                <li><a href="#" data-md="arrays.md">Arrays</a></li>
+                                <li><a href="#" data-md="arithmetic.md">Arithmetic</a></li>
+                                <li><a href="#" data-md="parentheses.md">Parentheses</a></li>
+                                <li><a href="#" data-md="comparison.md">Comparison</a></li>
+                                <li><a href="#" data-md="logical.md">Logical Operators</a></li>
+                                <li><a href="#" data-md="conditional.md">Conditional Operator</a></li>
+                                <li><a href="#" data-md="console.md">Console Output</a></li>
+                                <li><a href="#" data-md="strings.md">String Literals</a></li>
+                                <li><a href="#" data-md="comments.md">Comments</a></li>
+                                <li><a href="#" data-md="functions.md">Functions</a></li>
+                                <li><a href="#" data-md="classes.md">Classes</a></li>
+                            </ul>
+                        </li>
+                        <li class="category"><span>Control Flow</span>
+                            <ul>
+                                <li><a href="#" data-md="if.md">If Statements</a></li>
+                                <li><a href="#" data-md="loops.md">Loops</a></li>
+                                <li><a href="#" data-md="switch.md">Switch Statements</a></li>
+                                <li><a href="#" data-md="return.md">Return</a></li>
+                            </ul>
+                        </li>
+                        <li class="category"><span>Other</span>
+                            <ul>
+                                <li><a href="#" data-md="changelog.md">Changelog</a></li>
+                                <li><a href="#" data-md="architecture.md">Source Architecture</a></li>
+                                <li><a href="#" data-md="grammar/Grammar.md">Grammar Spec</a></li>
+                            </ul>
+                        </li>
                     </ul>
                 </li>
-                <li class="category"><span>Control Flow</span>
-                    <ul>
-                        <li><a href="#" data-md="if.md">If Statements</a></li>
-                        <li><a href="#" data-md="loops.md">Loops</a></li>
-                        <li><a href="#" data-md="switch.md">Switch Statements</a></li>
-                        <li><a href="#" data-md="return.md">Return</a></li>
-                    </ul>
-                </li>
-                <li><a href="#" data-md="changelog.md">Changelog</a></li>
-                <li><a href="#" data-md="architecture.md">Source Architecture</a></li>
             </ul>
         </nav>
     </aside>
@@ -67,9 +80,7 @@
         const navLinks = document.querySelectorAll('.nav a');
         const themeToggle = document.getElementById('theme-toggle');
         const themeLink = document.querySelector('link[rel="stylesheet"]');
-        const versionSelect = document.getElementById('version-select');
         const categories = document.querySelectorAll('.category');
-        let currentVersion = versionSelect.value;
 
         // Apply saved theme
         if (localStorage.getItem('theme') === 'dark') {
@@ -90,8 +101,7 @@
         }
 
         function resolvePath(mdFile) {
-            if (mdFile.includes('/')) return mdFile;
-            return `${currentVersion}/${mdFile}`;
+            return mdFile;
         }
 
         // Handle nav link clicks
@@ -114,13 +124,7 @@
             });
         });
 
-        versionSelect.addEventListener('change', () => {
-            currentVersion = versionSelect.value;
-            const active = document.querySelector('.nav a.active');
-            if (active && active.dataset.md !== 'changelog.md') {
-                loadMarkdown(resolvePath(active.dataset.md));
-            }
-        });
+
 
         // Toggle light/dark mode
         themeToggle.addEventListener('click', () => {
@@ -136,16 +140,11 @@
             }
         });
 
-        // Load default page (intro.md by default)
-        const defaultLink = document.querySelector('.nav a[data-md="intro.md"]');
+        // Load default page
+        const defaultLink = document.querySelector('.nav a[data-md="index.md"]');
         if (defaultLink) {
             defaultLink.classList.add('active');
-            loadMarkdown(resolvePath('intro.md'));
-            // Open the "Getting Started" category by default
-            const gettingStarted = document.querySelector('.category:first-child');
-            if (gettingStarted) {
-                gettingStarted.classList.add('open');
-            }
+            loadMarkdown(resolvePath('index.md'));
         }
     });
 </script>
