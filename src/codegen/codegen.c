@@ -21,6 +21,12 @@ static const char *op_text(TokenKind k) {
     return "/";
   case TK_PERCENT:
     return "%";
+  case TK_ANDAND:
+    return "&&";
+  case TK_OROR:
+    return "||";
+  case TK_BANG:
+    return "!";
   case TK_EQEQ:
     return "==";
   case TK_NEQ:
@@ -78,6 +84,12 @@ static void emit_expr(COut *b, Node *n) {
     break;
   case ND_IDENT:
     c_out_write(b, "%.*s", (int)n->as.ident.len, n->as.ident.start);
+    break;
+  case ND_UNARY:
+    c_out_write(b, "(");
+    c_out_write(b, "%s", op_text(n->as.unary.op));
+    emit_expr(b, n->as.unary.expr);
+    c_out_write(b, ")");
     break;
   case ND_BINOP:
     c_out_write(b, "(");
