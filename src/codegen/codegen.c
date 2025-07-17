@@ -138,6 +138,19 @@ static void emit_stmt(COut *b, Node *n) {
     c_out_write(b, "break;");
     c_out_newline(b);
     break;
+  case ND_CONTINUE:
+    c_out_write(b, "continue;");
+    c_out_newline(b);
+    break;
+  case ND_RETURN:
+    c_out_write(b, "return");
+    if (n->as.ret.expr) {
+      c_out_write(b, " ");
+      emit_expr(b, n->as.ret.expr);
+    }
+    c_out_write(b, ";");
+    c_out_newline(b);
+    break;
   case ND_BLOCK:
     c_out_write(b, "{");
     c_out_newline(b);

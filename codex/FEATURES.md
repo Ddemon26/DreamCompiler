@@ -12,6 +12,8 @@
 - Nested block statements
 - `while` loops
 - `break` statements
+- `continue` statements
+- `return` statements
 - Console output via `Console.Write` and `Console.WriteLine`
 - String and character literals with escape sequences
 - Line (`//`) and block (`/* */`) comments
@@ -26,10 +28,9 @@ The following language constructs appear in the documentation or tests but are n
 - Increment/decrement operators `++` and `--`
 - Logical operators `&&`, `||`, and `!`
 - Ternary conditional operator `?:`
-- `do`/`for` loops and the `continue` statement
+- `do`/`for` loops
 - `switch` statements
 - Function declarations with parameters and typed return values
-- `return` statements
 - Classes, structs and object construction
 - String concatenation
 

@@ -128,9 +128,9 @@ Statement           ::= Block                                                   
                      | ForStatement                                                   // Planned
                      | SwitchStatement                                                // Partial (basic cases only)
                      | BreakStatement                                                 // Implemented
-                     | ContinueStatement                                              // Planned
-                     | ReturnStatement                                                // Planned
-                     | ExpressionStatement                                            // Planned
+                     | ContinueStatement                                              // Implemented
+                     | ReturnStatement                                                // Implemented
+                     | ExpressionStatement                                            // Implemented
 
 Block               ::= "{" { Statement } "}"                                         // Implemented
 ExpressionStatement ::= Expression ";"                                                // Implemented
@@ -147,8 +147,8 @@ SwitchStatement     ::= "switch" "(" Expression ")" "{" { SwitchSection } "}"   
 SwitchSection       ::= [ "case" ConstantExpression ":" | "default" ":" ] { Statement }// Planned
 
 BreakStatement      ::= "break" ";"                                                   // Implemented
-ContinueStatement   ::= "continue" ";"                                                // Planned
-ReturnStatement     ::= "return" [ Expression ] ";"                                   // Planned
+ContinueStatement   ::= "continue" ";"                                                // Implemented
+ReturnStatement     ::= "return" [ Expression ] ";"                                   // Implemented
 ```
 
 ### 2.5 Expressions (operator‑precedence form)
