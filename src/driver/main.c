@@ -1,6 +1,6 @@
+#include "../codegen/codegen.h"
 #include "../lexer/lexer.h"
 #include "../parser/parser.h"
-#include "../codegen/codegen.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,8 +39,26 @@ int main(int argc, char *argv[]) {
   mkdir("build", 0755);
   mkdir("build/bin", 0755);
 #endif
-  Compiler compiler = {fopen("build/bin/dream.c", "w"), NULL, 0, NULL, 0, NULL, 0, NULL, 0,
-                        NULL, 0, NULL, 0, NULL, 0, NULL, 0};
+  const char *out_path = getenv("DREAM_OUT");
+  if (!out_path)
+    out_path = "build/bin/dream.c";
+  Compiler compiler = {fopen(out_path, "w"),
+                       NULL,
+                       0,
+                       NULL,
+                       0,
+                       NULL,
+                       0,
+                       NULL,
+                       0,
+                       NULL,
+                       0,
+                       NULL,
+                       0,
+                       NULL,
+                       0,
+                       NULL,
+                       0};
   if (!compiler.output) {
     fprintf(stderr, "Failed to open output file\n");
     return 1;
@@ -118,11 +136,14 @@ int main(int argc, char *argv[]) {
   fclose(compiler.output);
   free(source);
   free(token.value);
-  const char *cc = getenv("CC");
-  if (!cc)
-    cc = "gcc";
-  char cmd[256];
-  snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o build/bin/dream.exe", cc);
-  system(cmd);
+  const char *skip = getenv("SKIP_COMPILE");
+  if (!skip) {
+    const char *cc = getenv("CC");
+    if (!cc)
+      cc = "gcc";
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "%s %s -o build/bin/dream.exe", cc, out_path);
+    system(cmd);
+  }
   return 0;
 }
