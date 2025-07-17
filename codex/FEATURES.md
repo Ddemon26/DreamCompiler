@@ -26,6 +26,7 @@
 - String literals with escape sequences and concatenation using `+`
 - Line (`//`) and block (`/* */`) comments
 - Basic C code generation for programs
+- Object file output via `--emit-obj`
 
 ## Planned Features
 
