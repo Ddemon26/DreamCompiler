@@ -2,7 +2,11 @@
 #include "c_emit.h"
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _WIN32
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 static const char *op_text(TokenKind k) {
   switch (k) {
@@ -113,6 +117,19 @@ void codegen_emit_c(Node *root, FILE *out) {
 }
 
 void codegen_emit_obj(Node *root, const char *path) {
+#ifdef _WIN32
+  char tmp[L_tmpnam] = {0};
+  if (tmpnam_s(tmp, L_tmpnam) != 0) {
+    perror("tmpnam_s");
+    return;
+  }
+  strcat(tmp, ".c");
+  FILE *f = fopen(tmp, "w");
+  if (!f) {
+    perror("fopen");
+    return;
+  }
+#else
   char tmp[] = "/tmp/dreamXXXXXX.c";
   int fd = mkstemps(tmp, 2);
   if (fd == -1) {
@@ -126,6 +143,7 @@ void codegen_emit_obj(Node *root, const char *path) {
     unlink(tmp);
     return;
   }
+#endif
   codegen_emit_c(root, f);
   fclose(f);
   char cmd[512];
@@ -133,5 +151,9 @@ void codegen_emit_obj(Node *root, const char *path) {
   int res = system(cmd);
   if (res != 0)
     fprintf(stderr, "failed to run: %s\n", cmd);
+#ifdef _WIN32
+  remove(tmp);
+#else
   unlink(tmp);
+#endif
 }
