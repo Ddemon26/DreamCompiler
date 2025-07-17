@@ -88,6 +88,10 @@ static const char *fmt_for_arg(Node *arg) {
     return "%s";
   case ND_CHAR:
     return "%c";
+  case ND_CONSOLE_CALL:
+    if (arg->as.console.read)
+      return "%s";
+    return "%d";
   case ND_FLOAT:
     return "%f";
   default:
@@ -379,14 +383,19 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
   case ND_EXPR_STMT:
     if (n->as.expr_stmt.expr->kind == ND_CONSOLE_CALL) {
       Node *call = n->as.expr_stmt.expr;
-      c_out_write(b, "printf(\"");
-      c_out_write(b, "%s", fmt_for_arg(call->as.console.arg));
-      if (call->as.console.newline)
-        c_out_write(b, "\\n");
-      c_out_write(b, "\", ");
-      emit_expr(ctx, b, call->as.console.arg);
-      c_out_write(b, ");");
-      c_out_newline(b);
+      if (call->as.console.read) {
+        c_out_write(b, "dream_readline();");
+        c_out_newline(b);
+      } else {
+        c_out_write(b, "printf(\"");
+        c_out_write(b, "%s", fmt_for_arg(call->as.console.arg));
+        if (call->as.console.newline)
+          c_out_write(b, "\\n");
+        c_out_write(b, "\", ");
+        emit_expr(ctx, b, call->as.console.arg);
+        c_out_write(b, ");");
+        c_out_newline(b);
+      }
     } else {
       emit_expr(ctx, b, n->as.expr_stmt.expr);
       c_out_write(b, ";");
@@ -394,13 +403,17 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     }
     break;
   case ND_CONSOLE_CALL:
-    c_out_write(b, "printf(\"");
-    c_out_write(b, "%s", fmt_for_arg(n->as.console.arg));
-    if (n->as.console.newline)
-      c_out_write(b, "\\n");
-    c_out_write(b, "\", ");
-    emit_expr(ctx, b, n->as.console.arg);
-    c_out_write(b, ");");
+    if (n->as.console.read) {
+      c_out_write(b, "dream_readline()");
+    } else {
+      c_out_write(b, "printf(\"");
+      c_out_write(b, "%s", fmt_for_arg(n->as.console.arg));
+      if (n->as.console.newline)
+        c_out_write(b, "\\n");
+      c_out_write(b, "\", ");
+      emit_expr(ctx, b, n->as.console.arg);
+      c_out_write(b, ");");
+    }
     c_out_newline(b);
     break;
   default:
@@ -427,6 +440,14 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_write(&builder, "    memcpy(r + la, b, lb);\n");
   c_out_write(&builder, "    r[la + lb] = 0;\n");
   c_out_write(&builder, "    return r;\n}");
+  c_out_newline(&builder);
+  c_out_newline(&builder);
+  c_out_write(&builder, "static char *dream_readline(void) {\n");
+  c_out_write(&builder, "    static char buf[256];\n");
+  c_out_write(&builder, "    if (!fgets(buf, sizeof buf, stdin)) buf[0] = 0;\n");
+  c_out_write(&builder, "    size_t len = strlen(buf);\n");
+  c_out_write(&builder, "    if (len && buf[len-1] == '\\n') buf[len-1] = 0;\n");
+  c_out_write(&builder, "    return buf;\n}");
   c_out_newline(&builder);
   c_out_newline(&builder);
   c_out_write(&builder, "int main(void) ");

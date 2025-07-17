@@ -179,7 +179,7 @@ MemberAccess        ::= "." Identifier                                          
 Invocation          ::= "(" [ ArgumentList ] ")"                                       // Implemented
 ArgumentList        ::= Expression { "," Expression }                                  // Implemented
 Primary             ::= Literal | Identifier | "(" Expression ")" | ConsoleCall        // Implemented
-ConsoleCall         ::= "Console" "." ("WriteLine" | "Write") Invocation               // Implemented
+ConsoleCall         ::= "Console" "." ("WriteLine" | "Write" | "ReadLine") Invocation               // Implemented
 ```
 
 ### 2.6 Operator precedence and associativity
@@ -212,7 +212,7 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write") Invocation        
 2. The `func` keyword replaces C#’s return‑type‑first syntax; optional type yields typed return; omitted implies `void` (no value).
 3. Core primitive types implemented: `int`, `bool`, `float`, `char`, `string`.
 4. All data is passed **by value**; no references/pointers yet (unsafe grammar reserved).
-5. `Console.Write`/`WriteLine` are built‑ins; they do not require namespace qualification.
+5. `Console.Write`/`WriteLine`/`ReadLine` are built‑ins; they do not require namespace qualification.
 6. Target C code‑gen uses 32‑bit signed integers and zero‑terminated UTF‑8 strings.
 7. Control‑flow semantics follow C# where implemented; `switch` currently supports only constant integral cases without pattern guards.
 

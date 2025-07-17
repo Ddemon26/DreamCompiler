@@ -112,8 +112,9 @@ struct Node {
       Node *expr;
     } expr_stmt;
     struct { // ND_CONSOLE_CALL
-      Node *arg;
-      int newline;
+      Node *arg;   // argument for Write/WriteLine, NULL for ReadLine
+      int newline; // 1 if WriteLine
+      int read;    // 1 if ReadLine
     } console;
     struct { // ND_SWITCH
       Node *expr;
