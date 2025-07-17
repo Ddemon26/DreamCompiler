@@ -86,6 +86,16 @@ static Node *parse_while(Parser *p) {
     return n;
 }
 
+static Node *parse_break(Parser *p) {
+    next(p); // consume 'break'
+    if (p->tok.kind == TK_SEMICOLON) {
+        next(p);
+    } else {
+        diag_push(p, p->tok.pos, "expected ';'");
+    }
+    return node_new(p->arena, ND_BREAK);
+}
+
 static Node *parse_primary(Parser *p) {
     Token t = p->tok;
     Node *n;
@@ -280,6 +290,9 @@ static Node *parse_stmt(Parser *p) {
     }
     if (p->tok.kind == TK_KW_WHILE) {
         return parse_while(p);
+    }
+    if (p->tok.kind == TK_KW_BREAK) {
+        return parse_break(p);
     }
     if (is_type_token(p->tok.kind)) {
         return parse_var_decl(p);
