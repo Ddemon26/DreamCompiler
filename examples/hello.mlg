@@ -1,5 +1,0 @@
-int a = 1;
-if (a) {
-    // comment
-    a = a + 1;
-}
