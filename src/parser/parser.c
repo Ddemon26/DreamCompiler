@@ -25,6 +25,33 @@ void parser_init(Parser *p, Arena *a, const char *src) {
 
 static Node *parse_expr_prec(Parser *p, int min_prec);
 static Node *parse_expr(Parser *p);
+static Node *parse_stmt(Parser *p);
+
+static Node *parse_if(Parser *p) {
+    next(p); // consume 'if'
+    if (p->tok.kind != TK_LPAREN) {
+        diag_push(p, p->tok.pos, "expected '('");
+        return node_new(p->arena, ND_ERROR);
+    }
+    next(p);
+    Node *cond = parse_expr_prec(p, 0);
+    if (p->tok.kind != TK_RPAREN) {
+        diag_push(p, p->tok.pos, "expected ')'");
+    } else {
+        next(p);
+    }
+    Node *then_br = parse_stmt(p);
+    Node *else_br = NULL;
+    if (p->tok.kind == TK_KW_ELSE) {
+        next(p);
+        else_br = parse_stmt(p);
+    }
+    Node *n = node_new(p->arena, ND_IF);
+    n->as.if_stmt.cond = cond;
+    n->as.if_stmt.then_br = then_br;
+    n->as.if_stmt.else_br = else_br;
+    return n;
+}
 
 static Node *parse_primary(Parser *p) {
     Token t = p->tok;
@@ -142,6 +169,9 @@ static void nodevec_push(Node ***data, size_t *len, size_t *cap, Node *n) {
 }
 
 static Node *parse_stmt(Parser *p) {
+    if (p->tok.kind == TK_KW_IF) {
+        return parse_if(p);
+    }
     if (p->tok.kind == TK_KW_VAR) {
         return parse_var_decl(p);
     }
