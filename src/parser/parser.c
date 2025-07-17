@@ -256,9 +256,23 @@ static Node *parse_primary(Parser *p) {
   }
 }
 
+static Node *parse_postfix(Parser *p) {
+  Node *n = parse_primary(p);
+  while (p->tok.kind == TK_PLUSPLUS || p->tok.kind == TK_MINUSMINUS) {
+    TokenKind op = p->tok.kind;
+    next(p);
+    Node *post = node_new(p->arena, ND_POST_UNARY);
+    post->as.unary.op = op;
+    post->as.unary.expr = n;
+    n = post;
+  }
+  return n;
+}
+
 static Node *parse_unary(Parser *p) {
   if (p->tok.kind == TK_MINUS || p->tok.kind == TK_BANG ||
-      p->tok.kind == TK_TILDE) {
+      p->tok.kind == TK_TILDE || p->tok.kind == TK_PLUSPLUS ||
+      p->tok.kind == TK_MINUSMINUS) {
     TokenKind op = p->tok.kind;
     next(p);
     Node *expr = parse_unary(p);
@@ -267,7 +281,7 @@ static Node *parse_unary(Parser *p) {
     n->as.unary.expr = expr;
     return n;
   }
-  return parse_primary(p);
+  return parse_postfix(p);
 }
 
 static Node *parse_var_decl(Parser *p) {
@@ -298,6 +312,17 @@ static Node *parse_var_decl(Parser *p) {
 static int precedence(TokenKind k) {
   switch (k) {
   case TK_EQ:
+  case TK_PLUSEQ:
+  case TK_MINUSEQ:
+  case TK_STAREQ:
+  case TK_SLASHEQ:
+  case TK_PERCENTEQ:
+  case TK_ANDEQ:
+  case TK_OREQ:
+  case TK_XOREQ:
+  case TK_LSHIFTEQ:
+  case TK_RSHIFTEQ:
+  case TK_QMARKQMARKEQ:
     return 1;
   case TK_OROR:
     return 2;
@@ -331,7 +356,25 @@ static int precedence(TokenKind k) {
   }
 }
 
-static int right_assoc(TokenKind k) { return k == TK_EQ; }
+static int right_assoc(TokenKind k) {
+  switch (k) {
+  case TK_EQ:
+  case TK_PLUSEQ:
+  case TK_MINUSEQ:
+  case TK_STAREQ:
+  case TK_SLASHEQ:
+  case TK_PERCENTEQ:
+  case TK_ANDEQ:
+  case TK_OREQ:
+  case TK_XOREQ:
+  case TK_LSHIFTEQ:
+  case TK_RSHIFTEQ:
+  case TK_QMARKQMARKEQ:
+    return 1;
+  default:
+    return 0;
+  }
+}
 
 static Node *parse_expr_prec(Parser *p, int min_prec) {
   Node *lhs = parse_unary(p);

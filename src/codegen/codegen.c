@@ -31,6 +31,32 @@ static const char *op_text(TokenKind k) {
     return "<<";
   case TK_RSHIFT:
     return ">>";
+  case TK_PLUSEQ:
+    return "+=";
+  case TK_MINUSEQ:
+    return "-=";
+  case TK_STAREQ:
+    return "*=";
+  case TK_SLASHEQ:
+    return "/=";
+  case TK_PERCENTEQ:
+    return "%=";
+  case TK_ANDEQ:
+    return "&=";
+  case TK_OREQ:
+    return "|=";
+  case TK_XOREQ:
+    return "^=";
+  case TK_LSHIFTEQ:
+    return "<<=";
+  case TK_RSHIFTEQ:
+    return ">>=";
+  case TK_QMARKQMARKEQ:
+    return "??=";
+  case TK_PLUSPLUS:
+    return "++";
+  case TK_MINUSMINUS:
+    return "--";
   case TK_ANDAND:
     return "&&";
   case TK_OROR:
@@ -99,6 +125,12 @@ static void emit_expr(COut *b, Node *n) {
     c_out_write(b, "(");
     c_out_write(b, "%s", op_text(n->as.unary.op));
     emit_expr(b, n->as.unary.expr);
+    c_out_write(b, ")");
+    break;
+  case ND_POST_UNARY:
+    c_out_write(b, "(");
+    emit_expr(b, n->as.unary.expr);
+    c_out_write(b, "%s", op_text(n->as.unary.op));
     c_out_write(b, ")");
     break;
   case ND_BINOP:
