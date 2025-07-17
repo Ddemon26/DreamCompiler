@@ -93,11 +93,9 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Build and run DreamCompiler");
     run_step.dependOn(&run_cmd.step);
 
-    // Temporary placeholder test step to keep `zig build test` green.
-    // TODO: restore lexer and parser tests once they are stable.
-    const placeholder = b.addSystemCommand(&.{"true"});
-    const test_step = b.step("test", "Run placeholder tests");
-    test_step.dependOn(&placeholder.step);
+    const test_step = b.step("test", "Run compiler tests");
+    test_step.dependOn(&lexexe.step);
+    test_step.dependOn(&parseexe.step);
 
     const fmt_zig = b.addFmt(.{ .paths = &.{"build.zig"} });
     const fmt_c = b.addSystemCommand(&.{ "clang-format", "-i" });
