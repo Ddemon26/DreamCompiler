@@ -33,6 +33,8 @@ pub fn build(b: *std.Build) void {
         "opt/dce.c",
         "opt/value_numbering.c",
         "opt/licm.c",
+        "codegen/c_emit.c",
+        "src/codegen/codegen.c",
     }, .flags = &.{
         "-std=c11",
         "-Wall",
