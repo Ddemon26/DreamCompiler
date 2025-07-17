@@ -1,503 +1,504 @@
 #include "codegen.h"
+#include "c_emit.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
-static int is_string_var(Compiler *compiler, const char *name) {
-  for (int i = 0; i < compiler->string_var_count; i++) {
-    if (strcmp(compiler->string_vars[i], name) == 0)
-      return 1;
+static const char *op_text(TokenKind k) {
+  switch (k) {
+  case TK_PLUS:
+    return "+";
+  case TK_MINUS:
+    return "-";
+  case TK_STAR:
+    return "*";
+  case TK_SLASH:
+    return "/";
+  case TK_PERCENT:
+    return "%";
+  case TK_OR:
+    return "|";
+  case TK_CARET:
+    return "^";
+  case TK_AND:
+    return "&";
+  case TK_LSHIFT:
+    return "<<";
+  case TK_RSHIFT:
+    return ">>";
+  case TK_PLUSEQ:
+    return "+=";
+  case TK_MINUSEQ:
+    return "-=";
+  case TK_STAREQ:
+    return "*=";
+  case TK_SLASHEQ:
+    return "/=";
+  case TK_PERCENTEQ:
+    return "%=";
+  case TK_ANDEQ:
+    return "&=";
+  case TK_OREQ:
+    return "|=";
+  case TK_XOREQ:
+    return "^=";
+  case TK_LSHIFTEQ:
+    return "<<=";
+  case TK_RSHIFTEQ:
+    return ">>=";
+  case TK_QMARKQMARKEQ:
+    return "??=";
+  case TK_PLUSPLUS:
+    return "++";
+  case TK_MINUSMINUS:
+    return "--";
+  case TK_ANDAND:
+    return "&&";
+  case TK_OROR:
+    return "||";
+  case TK_BANG:
+    return "!";
+  case TK_EQEQ:
+    return "==";
+  case TK_NEQ:
+    return "!=";
+  case TK_LT:
+    return "<";
+  case TK_GT:
+    return ">";
+  case TK_LTEQ:
+    return "<=";
+  case TK_GTEQ:
+    return ">=";
+  case TK_EQ:
+    return "=";
+  default:
+    return "?";
   }
-  return 0;
 }
 
-static int is_char_var(Compiler *compiler, const char *name) {
-  for (int i = 0; i < compiler->char_var_count; i++) {
-    if (strcmp(compiler->char_vars[i], name) == 0)
-      return 1;
+static const char *fmt_for_arg(Node *arg) {
+  switch (arg->kind) {
+  case ND_STRING:
+    return "%s";
+  case ND_CHAR:
+    return "%c";
+  case ND_CONSOLE_CALL:
+    if (arg->as.console.read)
+      return "%s";
+    return "%d";
+  case ND_FLOAT:
+    return "%f";
+  default:
+    return "%d";
   }
-  return 0;
 }
 
-static int is_bool_var(Compiler *compiler, const char *name) {
-  for (int i = 0; i < compiler->bool_var_count; i++) {
-    if (strcmp(compiler->bool_vars[i], name) == 0)
-      return 1;
+typedef struct {
+  const char *start;
+  size_t len;
+  TokenKind type;
+  int depth;
+} VarBinding;
+
+typedef struct {
+  VarBinding *vars;
+  size_t len;
+  size_t cap;
+  int depth;
+} CGCtx;
+
+static void cgctx_push(CGCtx *ctx, const char *start, size_t len,
+                       TokenKind ty) {
+  if (ctx->len + 1 > ctx->cap) {
+    ctx->cap = ctx->cap ? ctx->cap * 2 : 8;
+    ctx->vars = realloc(ctx->vars, ctx->cap * sizeof(VarBinding));
   }
-  return 0;
+  ctx->vars[ctx->len++] = (VarBinding){start, len, ty, ctx->depth};
 }
 
-static int is_float_var(Compiler *compiler, const char *name) {
-  for (int i = 0; i < compiler->float_var_count; i++) {
-    if (strcmp(compiler->float_vars[i], name) == 0)
-      return 1;
-  }
-  return 0;
+static void cgctx_scope_enter(CGCtx *ctx) { ctx->depth++; }
+
+static void cgctx_scope_leave(CGCtx *ctx) {
+  while (ctx->len && ctx->vars[ctx->len - 1].depth >= ctx->depth)
+    ctx->len--;
+  if (ctx->depth > 0)
+    ctx->depth--;
 }
 
-static int is_string_func(Compiler *compiler, const char *name) {
-  for (int i = 0; i < compiler->string_func_count; i++) {
-    if (strcmp(compiler->string_funcs[i], name) == 0)
-      return 1;
+static TokenKind cgctx_lookup(CGCtx *ctx, const char *start, size_t len) {
+  for (size_t i = ctx->len; i-- > 0;) {
+    VarBinding *v = &ctx->vars[i];
+    if (v->len == len && strncmp(v->start, start, len) == 0)
+      return v->type;
   }
-  return 0;
+  return (TokenKind)0;
 }
 
-static int is_bool_func(Compiler *compiler, const char *name) {
-  for (int i = 0; i < compiler->bool_func_count; i++) {
-    if (strcmp(compiler->bool_funcs[i], name) == 0)
-      return 1;
-  }
-  return 0;
-}
-
-static int is_float_func(Compiler *compiler, const char *name) {
-  for (int i = 0; i < compiler->float_func_count; i++) {
-    if (strcmp(compiler->float_funcs[i], name) == 0)
-      return 1;
-  }
-  return 0;
-}
-
-static int is_char_func(Compiler *compiler, const char *name) {
-  for (int i = 0; i < compiler->char_func_count; i++) {
-    if (strcmp(compiler->char_funcs[i], name) == 0)
-      return 1;
-  }
-  return 0;
-}
-
-static int is_boolean_expr(Compiler *compiler, Node *expr) {
-  if (!expr)
+static int is_string_expr(CGCtx *ctx, Node *n) {
+  switch (n->kind) {
+  case ND_STRING:
+    return 1;
+  case ND_IDENT:
+    return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) ==
+           TK_KW_STRING;
+  default:
     return 0;
-  if (expr->type == NODE_IDENTIFIER)
-    return is_bool_var(compiler, expr->value);
-  if (expr->type == NODE_FUNC_CALL)
-    return is_bool_func(compiler, expr->value);
-  if (expr->type == NODE_UNARY_OP && strcmp(expr->value, "!") == 0)
-    return 1;
-  if (expr->type == NODE_BINARY_OP) {
-    const char *op = expr->value;
-    if (strcmp(op, "==") == 0 || strcmp(op, "!=") == 0 || strcmp(op, "<") == 0 ||
-        strcmp(op, ">") == 0 || strcmp(op, "<=") == 0 || strcmp(op, ">=") == 0 ||
-        strcmp(op, "&&") == 0 || strcmp(op, "||") == 0)
-      return 1;
   }
-  if (expr->type == NODE_NUMBER &&
-      (strcmp(expr->value, "0") == 0 || strcmp(expr->value, "1") == 0))
-    return 1;
-  return 0;
 }
 
-static int is_string_expr(Compiler *compiler, Node *expr) {
-  if (!expr)
-    return 0;
-  if (expr->type == NODE_STRING)
-    return 1;
-  if (expr->type == NODE_IDENTIFIER)
-    return is_string_var(compiler, expr->value);
-  if (expr->type == NODE_FUNC_CALL)
-    return is_string_func(compiler, expr->value);
-  if (expr->type == NODE_BINARY_OP && strcmp(expr->value, "+") == 0)
-    return is_string_expr(compiler, expr->left) ||
-           is_string_expr(compiler, expr->right);
-  return 0;
+static void emit_expr(CGCtx *ctx, COut *b, Node *n);
+static void emit_stmt(CGCtx *ctx, COut *b, Node *n);
+
+static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
+  switch (n->kind) {
+  case ND_INT:
+  case ND_FLOAT:
+  case ND_CHAR:
+  case ND_STRING:
+  case ND_BOOL:
+    if (n->kind == ND_BOOL) {
+      if (n->as.lit.len == 4 && strncmp(n->as.lit.start, "true", 4) == 0)
+        c_out_write(b, "1");
+      else
+        c_out_write(b, "0");
+    } else if (n->kind == ND_CHAR) {
+      c_out_write(b, "'%.*s'", (int)n->as.lit.len, n->as.lit.start);
+    } else if (n->kind == ND_STRING) {
+      c_out_write(b, "\"%.*s\"", (int)n->as.lit.len, n->as.lit.start);
+    } else {
+      c_out_write(b, "%.*s", (int)n->as.lit.len, n->as.lit.start);
+    }
+    break;
+  case ND_IDENT:
+    c_out_write(b, "%.*s", (int)n->as.ident.len, n->as.ident.start);
+    break;
+  case ND_UNARY:
+    c_out_write(b, "(");
+    c_out_write(b, "%s", op_text(n->as.unary.op));
+    emit_expr(ctx, b, n->as.unary.expr);
+    c_out_write(b, ")");
+    break;
+  case ND_POST_UNARY:
+    c_out_write(b, "(");
+    emit_expr(ctx, b, n->as.unary.expr);
+    c_out_write(b, "%s", op_text(n->as.unary.op));
+    c_out_write(b, ")");
+    break;
+  case ND_BINOP:
+    c_out_write(b, "(");
+    if (n->as.bin.op == TK_PLUS && (is_string_expr(ctx, n->as.bin.lhs) ||
+                                    is_string_expr(ctx, n->as.bin.rhs))) {
+      c_out_write(b, "dream_concat(");
+      emit_expr(ctx, b, n->as.bin.lhs);
+      c_out_write(b, ", ");
+      emit_expr(ctx, b, n->as.bin.rhs);
+      c_out_write(b, ")");
+    } else {
+      emit_expr(ctx, b, n->as.bin.lhs);
+      c_out_write(b, " %s ", op_text(n->as.bin.op));
+      emit_expr(ctx, b, n->as.bin.rhs);
+    }
+    c_out_write(b, ")");
+    break;
+  case ND_COND:
+    c_out_write(b, "(");
+    emit_expr(ctx, b, n->as.cond.cond);
+    c_out_write(b, " ? ");
+    emit_expr(ctx, b, n->as.cond.then_expr);
+    c_out_write(b, " : ");
+    emit_expr(ctx, b, n->as.cond.else_expr);
+    c_out_write(b, ")");
+    break;
+  case ND_INDEX:
+    c_out_write(b, "(");
+    emit_expr(ctx, b, n->as.index.array);
+    c_out_write(b, "[");
+    emit_expr(ctx, b, n->as.index.index);
+    c_out_write(b, "])");
+    break;
+  default:
+    c_out_write(b, "0");
+    break;
+  }
 }
 
-static int is_char_expr(Compiler *compiler, Node *expr) {
-  if (!expr)
-    return 0;
-  if (expr->type == NODE_CHAR)
-    return 1;
-  if (expr->type == NODE_IDENTIFIER)
-    return is_char_var(compiler, expr->value);
-  if (expr->type == NODE_FUNC_CALL)
-    return is_char_func(compiler, expr->value);
-  return 0;
+static const char *type_to_c(TokenKind k) {
+  switch (k) {
+  case TK_KW_INT:
+    return "int";
+  case TK_KW_FLOAT:
+    return "float";
+  case TK_KW_CHAR:
+    return "char";
+  case TK_KW_STRING:
+    return "const char *";
+  case TK_KW_BOOL:
+    return "int";
+  default:
+    return "int";
+  }
 }
 
-static int is_float_expr(Compiler *compiler, Node *expr) {
-  if (!expr)
-    return 0;
-  if (expr->type == NODE_IDENTIFIER)
-    return is_float_var(compiler, expr->value);
-  if (expr->type == NODE_FUNC_CALL)
-    return is_float_func(compiler, expr->value);
-  if (expr->type == NODE_NUMBER && strchr(expr->value, '.'))
-    return 1;
-  if (expr->type == NODE_INDEX)
-    return is_float_expr(compiler, expr->left);
-  if (expr->type == NODE_BINARY_OP)
-    return is_float_expr(compiler, expr->left) ||
-           is_float_expr(compiler, expr->right);
-  return 0;
+static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
+  switch (n->kind) {
+  case ND_VAR_DECL:
+    if (n->as.var_decl.array_len > 0) {
+      c_out_write(b, "%s %.*s[%zu]", type_to_c(n->as.var_decl.type),
+                  (int)n->as.var_decl.name.len, n->as.var_decl.name.start,
+                  n->as.var_decl.array_len);
+      if (n->as.var_decl.init) {
+        c_out_write(b, " = ");
+        emit_expr(ctx, b, n->as.var_decl.init);
+      }
+    } else {
+      c_out_write(b, "%s %.*s", type_to_c(n->as.var_decl.type),
+                  (int)n->as.var_decl.name.len, n->as.var_decl.name.start);
+      if (n->as.var_decl.init) {
+        c_out_write(b, " = ");
+        emit_expr(ctx, b, n->as.var_decl.init);
+      }
+    }
+    cgctx_push(ctx, n->as.var_decl.name.start, n->as.var_decl.name.len,
+               n->as.var_decl.type);
+    c_out_write(b, ";");
+    c_out_newline(b);
+    break;
+  case ND_IF:
+    c_out_write(b, "if (");
+    emit_expr(ctx, b, n->as.if_stmt.cond);
+    c_out_write(b, ") ");
+    emit_stmt(ctx, b, n->as.if_stmt.then_br);
+    if (n->as.if_stmt.else_br) {
+      c_out_write(b, " else ");
+      emit_stmt(ctx, b, n->as.if_stmt.else_br);
+    }
+    break;
+  case ND_WHILE:
+    c_out_write(b, "while (");
+    emit_expr(ctx, b, n->as.while_stmt.cond);
+    c_out_write(b, ") ");
+    emit_stmt(ctx, b, n->as.while_stmt.body);
+    break;
+  case ND_DO_WHILE:
+    c_out_write(b, "do ");
+    emit_stmt(ctx, b, n->as.do_while_stmt.body);
+    c_out_write(b, " while (");
+    emit_expr(ctx, b, n->as.do_while_stmt.cond);
+    c_out_write(b, ");");
+    c_out_newline(b);
+    break;
+  case ND_FOR:
+    c_out_write(b, "for (");
+    if (n->as.for_stmt.init) {
+      if (n->as.for_stmt.init->kind == ND_VAR_DECL) {
+        Node *vd = n->as.for_stmt.init;
+        if (vd->as.var_decl.array_len > 0) {
+          c_out_write(b, "%s %.*s[%zu]", type_to_c(vd->as.var_decl.type),
+                      (int)vd->as.var_decl.name.len, vd->as.var_decl.name.start,
+                      vd->as.var_decl.array_len);
+          if (vd->as.var_decl.init) {
+            c_out_write(b, " = ");
+            emit_expr(ctx, b, vd->as.var_decl.init);
+          }
+        } else {
+          c_out_write(b, "%s %.*s", type_to_c(vd->as.var_decl.type),
+                      (int)vd->as.var_decl.name.len, vd->as.var_decl.name.start);
+          if (vd->as.var_decl.init) {
+            c_out_write(b, " = ");
+            emit_expr(ctx, b, vd->as.var_decl.init);
+          }
+        }
+        cgctx_push(ctx, vd->as.var_decl.name.start, vd->as.var_decl.name.len,
+                   vd->as.var_decl.type);
+      } else {
+        emit_expr(ctx, b, n->as.for_stmt.init);
+      }
+    }
+    c_out_write(b, "; ");
+    if (n->as.for_stmt.cond)
+      emit_expr(ctx, b, n->as.for_stmt.cond);
+    c_out_write(b, "; ");
+    if (n->as.for_stmt.update)
+      emit_expr(ctx, b, n->as.for_stmt.update);
+    c_out_write(b, ") ");
+    emit_stmt(ctx, b, n->as.for_stmt.body);
+    break;
+  case ND_SWITCH:
+    c_out_write(b, "switch (");
+    emit_expr(ctx, b, n->as.switch_stmt.expr);
+    c_out_write(b, ") {");
+    c_out_newline(b);
+    c_out_indent(b);
+    for (size_t i = 0; i < n->as.switch_stmt.len; i++) {
+      SwitchCase *sc = &n->as.switch_stmt.cases[i];
+      if (sc->is_default) {
+        c_out_write(b, "default:");
+      } else {
+        c_out_write(b, "case ");
+        emit_expr(ctx, b, sc->value);
+        c_out_write(b, ":");
+      }
+      c_out_newline(b);
+      emit_stmt(ctx, b, sc->body);
+    }
+    c_out_dedent(b);
+    c_out_write(b, "}");
+    c_out_newline(b);
+    break;
+  case ND_BREAK:
+    c_out_write(b, "break;");
+    c_out_newline(b);
+    break;
+  case ND_CONTINUE:
+    c_out_write(b, "continue;");
+    c_out_newline(b);
+    break;
+  case ND_RETURN:
+    c_out_write(b, "return");
+    if (n->as.ret.expr) {
+      c_out_write(b, " ");
+      emit_expr(ctx, b, n->as.ret.expr);
+    }
+    c_out_write(b, ";");
+    c_out_newline(b);
+    break;
+  case ND_BLOCK:
+    c_out_write(b, "{");
+    c_out_newline(b);
+    c_out_indent(b);
+    cgctx_scope_enter(ctx);
+    for (size_t i = 0; i < n->as.block.len; i++)
+      emit_stmt(ctx, b, n->as.block.items[i]);
+    cgctx_scope_leave(ctx);
+    c_out_dedent(b);
+    c_out_write(b, "}");
+    c_out_newline(b);
+    break;
+  case ND_EXPR_STMT:
+    if (n->as.expr_stmt.expr->kind == ND_CONSOLE_CALL) {
+      Node *call = n->as.expr_stmt.expr;
+      if (call->as.console.read) {
+        c_out_write(b, "dream_readline();");
+        c_out_newline(b);
+      } else {
+        c_out_write(b, "printf(\"");
+        c_out_write(b, "%s", fmt_for_arg(call->as.console.arg));
+        if (call->as.console.newline)
+          c_out_write(b, "\\n");
+        c_out_write(b, "\", ");
+        emit_expr(ctx, b, call->as.console.arg);
+        c_out_write(b, ");");
+        c_out_newline(b);
+      }
+    } else {
+      emit_expr(ctx, b, n->as.expr_stmt.expr);
+      c_out_write(b, ";");
+      c_out_newline(b);
+    }
+    break;
+  case ND_CONSOLE_CALL:
+    if (n->as.console.read) {
+      c_out_write(b, "dream_readline()");
+    } else {
+      c_out_write(b, "printf(\"");
+      c_out_write(b, "%s", fmt_for_arg(n->as.console.arg));
+      if (n->as.console.newline)
+        c_out_write(b, "\\n");
+      c_out_write(b, "\", ");
+      emit_expr(ctx, b, n->as.console.arg);
+      c_out_write(b, ");");
+    }
+    c_out_newline(b);
+    break;
+  default:
+    break;
+  }
 }
 
-static void gen_c_expr_impl(Compiler *compiler, FILE *out, Node *expr,
-                            int wrap) {
-  if (!expr)
+void codegen_emit_c(Node *root, FILE *out) {
+  COut builder;
+  c_out_init(&builder);
+  c_out_write(&builder, "#include <stdio.h>");
+  c_out_newline(&builder);
+  c_out_write(&builder, "#include <string.h>");
+  c_out_newline(&builder);
+  c_out_write(&builder, "#include <stdlib.h>");
+  c_out_newline(&builder);
+  c_out_newline(&builder);
+  c_out_write(&builder,
+              "static char *dream_concat(const char *a, const char *b) {\n");
+  c_out_write(&builder, "    size_t la = strlen(a);\n");
+  c_out_write(&builder, "    size_t lb = strlen(b);\n");
+  c_out_write(&builder, "    char *r = malloc(la + lb + 1);\n");
+  c_out_write(&builder, "    memcpy(r, a, la);\n");
+  c_out_write(&builder, "    memcpy(r + la, b, lb);\n");
+  c_out_write(&builder, "    r[la + lb] = 0;\n");
+  c_out_write(&builder, "    return r;\n}");
+  c_out_newline(&builder);
+  c_out_newline(&builder);
+  c_out_write(&builder, "static char *dream_readline(void) {\n");
+  c_out_write(&builder, "    static char buf[256];\n");
+  c_out_write(&builder, "    if (!fgets(buf, sizeof buf, stdin)) buf[0] = 0;\n");
+  c_out_write(&builder, "    size_t len = strlen(buf);\n");
+  c_out_write(&builder, "    if (len && buf[len-1] == '\\n') buf[len-1] = 0;\n");
+  c_out_write(&builder, "    return buf;\n}");
+  c_out_newline(&builder);
+  c_out_newline(&builder);
+  c_out_write(&builder, "int main(void) ");
+  CGCtx ctx = {0};
+  cgctx_scope_enter(&ctx);
+  emit_stmt(&ctx, &builder, root);
+  cgctx_scope_leave(&ctx);
+  free(ctx.vars);
+  c_out_newline(&builder);
+  c_out_dump(out, &builder);
+  c_out_free(&builder);
+}
+
+void codegen_emit_obj(Node *root, const char *path) {
+#ifdef _WIN32
+  char tmp[L_tmpnam] = {0};
+  if (tmpnam_s(tmp, L_tmpnam) != 0) {
+    perror("tmpnam_s");
     return;
-  if (expr->type == NODE_BINARY_OP) {
-    if (strcmp(expr->value, "+") == 0 &&
-        (is_string_expr(compiler, expr->left) ||
-         is_string_expr(compiler, expr->right))) {
-      fprintf(out, "dream_concat(");
-      gen_c_expr_impl(compiler, out, expr->left, 0);
-      fprintf(out, ", ");
-      gen_c_expr_impl(compiler, out, expr->right, 0);
-      fprintf(out, ")");
-      return;
-    }
-    if (wrap)
-      fputc('(', out);
-    gen_c_expr_impl(compiler, out, expr->left, 1);
-    fprintf(out, " %s ", expr->value);
-    gen_c_expr_impl(compiler, out, expr->right, 1);
-    if (wrap)
-      fputc(')', out);
-  } else if (expr->type == NODE_UNARY_OP) {
-    if (wrap)
-      fputc('(', out);
-    fprintf(out, "%s", expr->value);
-    gen_c_expr_impl(compiler, out, expr->left, 1);
-    if (wrap)
-      fputc(')', out);
-  } else if (expr->type == NODE_PRE_INC) {
-    fprintf(out, "(++%s)", expr->value);
-  } else if (expr->type == NODE_PRE_DEC) {
-    fprintf(out, "(--%s)", expr->value);
-  } else if (expr->type == NODE_POST_INC) {
-    fprintf(out, "(%s++)", expr->value);
-  } else if (expr->type == NODE_POST_DEC) {
-    fprintf(out, "(%s--)", expr->value);
-  } else if (expr->type == NODE_MEMBER) {
-    gen_c_expr_impl(compiler, out, expr->left, 0);
-    fprintf(out, ".%s", expr->value);
-  } else if (expr->type == NODE_INDEX) {
-    gen_c_expr_impl(compiler, out, expr->left, 0);
-    fputc('[', out);
-    gen_c_expr_impl(compiler, out, expr->right, 0);
-    fputc(']', out);
-  } else if (expr->type == NODE_IDENTIFIER ||
-             (expr->type == NODE_VAR_DECL && expr->left == NULL &&
-              expr->right == NULL)) {
-    fprintf(out, "%s", expr->value);
-  } else if (expr->type == NODE_NUMBER) {
-    fprintf(out, "%s", expr->value);
-  } else if (expr->type == NODE_STRING) {
-    fputc('"', out);
-    for (const char *p = expr->value; *p; p++) {
-      switch (*p) {
-      case '\\': fputs("\\\\", out); break;
-      case '"': fputs("\\\"", out); break;
-      case '\n': fputs("\\n", out); break;
-      case '\t': fputs("\\t", out); break;
-      default: fputc(*p, out); break;
-      }
-    }
-    fputc('"', out);
-  } else if (expr->type == NODE_CHAR) {
-    fprintf(out, "'%c'", expr->value[0]);
-  } else if (expr->type == NODE_FUNC_CALL) {
-    fprintf(out, "%s(", expr->value);
-    Node *arg = expr->left;
-    int first = 1;
-    while (arg) {
-      if (!first)
-        fprintf(out, ", ");
-      gen_c_expr_impl(compiler, out, arg->left, 1);
-      first = 0;
-      arg = arg->right;
-    }
-    fprintf(out, ")");
-  } else if (expr->type == NODE_TERNARY) {
-    if (wrap)
-      fputc('(', out);
-    gen_c_expr_impl(compiler, out, expr->left, 1);
-    fprintf(out, " ? ");
-    gen_c_expr_impl(compiler, out, expr->right, 1);
-    fprintf(out, " : ");
-    gen_c_expr_impl(compiler, out, expr->else_branch, 1);
-    if (wrap)
-      fputc(')', out);
   }
-}
-
-void gen_c_expr(Compiler *compiler, FILE *out, Node *expr) {
-  gen_c_expr_impl(compiler, out, expr, 1);
-}
-
-void gen_c_expr_unwrapped(Compiler *compiler, FILE *out, Node *expr) {
-  gen_c_expr_impl(compiler, out, expr, 0);
-}
-
-void generate_c_class(Compiler *compiler, Node *node) {
-  FILE *out = compiler->output;
-  fprintf(out, "typedef struct %s {\n", node->value);
-  Node *field = node->left;
-  while (field) {
-    Node *decl = field->left;
-    const char *ctype = "long";
-    if (decl->type == NODE_STR_DECL)
-      ctype = "const char*";
-    else if (decl->type == NODE_FLOAT_DECL)
-      ctype = "double";
-    else if (decl->type == NODE_CHAR_DECL)
-      ctype = "char";
-    else if (decl->type == NODE_CHAR_DECL)
-      ctype = "char";
-    fprintf(out, "    %s %s;\n", ctype, decl->value);
-    field = field->right;
+  strcat(tmp, ".c");
+  FILE *f = fopen(tmp, "w");
+  if (!f) {
+    perror("fopen");
+    return;
   }
-  fprintf(out, "} %s;\n", node->value);
-}
-
-void generate_c_function(Compiler *compiler, Node *node) {
-  FILE *out = compiler->output;
-  const char *ctype = "void";
-  if (node->else_branch) {
-    const char *ret = node->else_branch->value;
-    if (strcmp(ret, "string") == 0) {
-      ctype = "const char*";
-      compiler->string_funcs = realloc(compiler->string_funcs,
-                                        sizeof(char *) *
-                                            (compiler->string_func_count + 1));
-      compiler->string_funcs[compiler->string_func_count++] = strdup(node->value);
-    } else if (strcmp(ret, "bool") == 0) {
-      ctype = "long";
-      compiler->bool_funcs = realloc(compiler->bool_funcs,
-                                      sizeof(char *) *
-                                          (compiler->bool_func_count + 1));
-      compiler->bool_funcs[compiler->bool_func_count++] = strdup(node->value);
-    } else if (strcmp(ret, "float") == 0) {
-      ctype = "double";
-      compiler->float_funcs = realloc(compiler->float_funcs,
-                                       sizeof(char *) *
-                                           (compiler->float_func_count + 1));
-      compiler->float_funcs[compiler->float_func_count++] = strdup(node->value);
-    } else if (strcmp(ret, "char") == 0) {
-      ctype = "char";
-      compiler->char_funcs = realloc(compiler->char_funcs,
-                                      sizeof(char *) *
-                                          (compiler->char_func_count + 1));
-      compiler->char_funcs[compiler->char_func_count++] = strdup(node->value);
-    } else {
-      ctype = "long";
-    }
+#else
+  char tmp[] = "/tmp/dreamXXXXXX.c";
+  int fd = mkstemps(tmp, 2);
+  if (fd == -1) {
+    perror("mkstemps");
+    return;
   }
-  fprintf(out, "%s %s(", ctype, node->value);
-  Node *param = node->right;
-  int first = 1;
-  while (param) {
-    Node *decl = param->left;
-    if (!first)
-      fprintf(out, ", ");
-    const char *ctype = "long";
-    if (decl->type == NODE_STR_DECL)
-      ctype = "const char*";
-    else if (decl->type == NODE_FLOAT_DECL)
-      ctype = "double";
-    fprintf(out, "%s %s", ctype, decl->value);
-    if (decl->type == NODE_STR_DECL) {
-      compiler->string_vars = realloc(compiler->string_vars,
-                                      sizeof(char *) * (compiler->string_var_count + 1));
-      compiler->string_vars[compiler->string_var_count++] = strdup(decl->value);
-    } else if (decl->type == NODE_BOOL_DECL) {
-      compiler->bool_vars = realloc(compiler->bool_vars,
-                                    sizeof(char *) * (compiler->bool_var_count + 1));
-      compiler->bool_vars[compiler->bool_var_count++] = strdup(decl->value);
-    } else if (decl->type == NODE_FLOAT_DECL) {
-      compiler->float_vars = realloc(compiler->float_vars,
-                                     sizeof(char *) * (compiler->float_var_count + 1));
-      compiler->float_vars[compiler->float_var_count++] = strdup(decl->value);
-    } else if (decl->type == NODE_CHAR_DECL) {
-      compiler->char_vars = realloc(compiler->char_vars,
-                                    sizeof(char *) * (compiler->char_var_count + 1));
-      compiler->char_vars[compiler->char_var_count++] = strdup(decl->value);
-    }
-    first = 0;
-    param = param->right;
+  FILE *f = fdopen(fd, "w");
+  if (!f) {
+    perror("fdopen");
+    close(fd);
+    unlink(tmp);
+    return;
   }
-  fprintf(out, ") {\n");
-  generate_c(compiler, node->left);
-  if (strcmp(ctype, "void") != 0)
-    fprintf(out, "    return 0;\n");
-  fprintf(out, "}\n");
-}
-
-void generate_c(Compiler *compiler, Node *node) {
-  FILE *out = compiler->output;
-  if (node->type == NODE_VAR_DECL || node->type == NODE_STR_DECL ||
-      node->type == NODE_BOOL_DECL || node->type == NODE_FLOAT_DECL ||
-      node->type == NODE_CHAR_DECL || node->type == NODE_OBJ_DECL ||
-      node->type == NODE_ARRAY_DECL || node->type == NODE_FLOAT_ARRAY_DECL ||
-      node->type == NODE_BOOL_ARRAY_DECL || node->type == NODE_CHAR_ARRAY_DECL ||
-      node->type == NODE_STR_ARRAY_DECL) {
-    if (node->type == NODE_STR_DECL || node->type == NODE_STR_ARRAY_DECL) {
-      compiler->string_vars = realloc(compiler->string_vars, sizeof(char *) * (compiler->string_var_count + 1));
-      compiler->string_vars[compiler->string_var_count++] = strdup(node->value);
-    } else if (node->type == NODE_BOOL_DECL || node->type == NODE_BOOL_ARRAY_DECL) {
-      compiler->bool_vars = realloc(compiler->bool_vars, sizeof(char *) * (compiler->bool_var_count + 1));
-      compiler->bool_vars[compiler->bool_var_count++] = strdup(node->value);
-    } else if (node->type == NODE_FLOAT_DECL || node->type == NODE_FLOAT_ARRAY_DECL) {
-      compiler->float_vars = realloc(compiler->float_vars, sizeof(char *) * (compiler->float_var_count + 1));
-      compiler->float_vars[compiler->float_var_count++] = strdup(node->value);
-    } else if (node->type == NODE_CHAR_DECL || node->type == NODE_CHAR_ARRAY_DECL) {
-      compiler->char_vars = realloc(compiler->char_vars, sizeof(char *) * (compiler->char_var_count + 1));
-      compiler->char_vars[compiler->char_var_count++] = strdup(node->value);
-    }
-    const char *ctype = "long";
-    if (node->type == NODE_STR_DECL || node->type == NODE_STR_ARRAY_DECL)
-      ctype = "const char*";
-    else if (node->type == NODE_FLOAT_DECL || node->type == NODE_FLOAT_ARRAY_DECL)
-      ctype = "double";
-    else if (node->type == NODE_CHAR_DECL || node->type == NODE_CHAR_ARRAY_DECL)
-      ctype = "char";
-    else if (node->type == NODE_OBJ_DECL)
-      ctype = node->right->value;
-    if (node->type == NODE_ARRAY_DECL || node->type == NODE_FLOAT_ARRAY_DECL ||
-        node->type == NODE_BOOL_ARRAY_DECL || node->type == NODE_CHAR_ARRAY_DECL ||
-        node->type == NODE_STR_ARRAY_DECL) {
-      fprintf(out, "    %s %s[", ctype, node->value);
-      gen_c_expr_unwrapped(compiler, out, node->left);
-      fprintf(out, "];\n");
-    } else {
-      fprintf(out, "    %s %s", ctype, node->value);
-      if (node->left) {
-        fprintf(out, " = ");
-        gen_c_expr(compiler, out, node->left);
-      }
-      fprintf(out, ";\n");
-    }
-  } else if (node->type == NODE_ASSIGN) {
-    fprintf(out, "    %s = ", node->value);
-    gen_c_expr(compiler, out, node->left);
-    fprintf(out, ";\n");
-  } else if (node->type == NODE_MEMBER_ASSIGN) {
-    fprintf(out, "    ");
-    gen_c_expr(compiler, out, node->left);
-    fprintf(out, " = ");
-    gen_c_expr(compiler, out, node->right);
-    fprintf(out, ";\n");
-  } else if (node->type == NODE_PRE_INC) {
-    fprintf(out, "    ++%s;\n", node->value);
-  } else if (node->type == NODE_PRE_DEC) {
-    fprintf(out, "    --%s;\n", node->value);
-  } else if (node->type == NODE_POST_INC) {
-    fprintf(out, "    %s++;\n", node->value);
-  } else if (node->type == NODE_POST_DEC) {
-    fprintf(out, "    %s--;\n", node->value);
-  } else if (node->type == NODE_WRITELINE) {
-    int is_str = is_string_expr(compiler, node->left);
-    int is_bool = is_boolean_expr(compiler, node->left);
-    int is_float = is_float_expr(compiler, node->left);
-    int is_char = is_char_expr(compiler, node->left);
-    if (is_str) {
-      fprintf(out, "    printf(\"%%s\\n\", ");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ");\n");
-    } else if (is_bool) {
-      fprintf(out, "    printf(\"%%s\\n\", ");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, " ? \"true\" : \"false\");\n");
-    } else if (is_float) {
-      fprintf(out, "    printf(\"%%f\\n\", (double)");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ");\n");
-    } else if (is_char) {
-      fprintf(out, "    printf(\"%%c\\n\", ");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ");\n");
-    } else {
-      fprintf(out, "    printf(\"%%ld\\n\", (long)");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ");\n");
-    }
-  } else if (node->type == NODE_WRITE) {
-    int is_str = is_string_expr(compiler, node->left);
-    int is_bool = is_boolean_expr(compiler, node->left);
-    int is_float = is_float_expr(compiler, node->left);
-    int is_char = is_char_expr(compiler, node->left);
-    if (is_str) {
-      fprintf(out, "    printf(\"%%s\", ");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ");\n");
-    } else if (is_bool) {
-      fprintf(out, "    printf(\"%%s\", ");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, " ? \"true\" : \"false\");\n");
-    } else if (is_float) {
-      fprintf(out, "    printf(\"%%f\", (double)");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ");\n");
-    } else if (is_char) {
-      fprintf(out, "    printf(\"%%c\", ");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ");\n");
-    } else {
-      fprintf(out, "    printf(\"%%ld\", (long)");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ");\n");
-    }
-  } else if (node->type == NODE_IF) {
-    fprintf(out, "    if (");
-    gen_c_expr_unwrapped(compiler, out, node->left);
-    fprintf(out, ") {\n");
-    generate_c(compiler, node->right);
-    fprintf(out, "    }");
-    if (node->else_branch) {
-      fprintf(out, " else {\n");
-      generate_c(compiler, node->else_branch);
-      fprintf(out, "    }");
-    }
-    fprintf(out, "\n");
-  } else if (node->type == NODE_WHILE) {
-    fprintf(out, "    while (");
-    gen_c_expr_unwrapped(compiler, out, node->left);
-    fprintf(out, ") {\n");
-    generate_c(compiler, node->right);
-    fprintf(out, "    }\n");
-  } else if (node->type == NODE_DO_WHILE) {
-    fprintf(out, "    do {\n");
-    generate_c(compiler, node->right);
-    fprintf(out, "    } while (");
-    gen_c_expr_unwrapped(compiler, out, node->left);
-    fprintf(out, ");\n");
-  } else if (node->type == NODE_BREAK) {
-    fprintf(out, "    break;\n");
-  } else if (node->type == NODE_CONTINUE) {
-    fprintf(out, "    continue;\n");
-  } else if (node->type == NODE_RETURN) {
-    if (node->left) {
-      fprintf(out, "    return ");
-      gen_c_expr(compiler, out, node->left);
-      fprintf(out, ";\n");
-    } else {
-      fprintf(out, "    return 0;\n");
-    }
-  } else if (node->type == NODE_SWITCH) {
-    fprintf(out, "    switch (");
-    gen_c_expr_unwrapped(compiler, out, node->left);
-    fprintf(out, ") {\n");
-    Node *c = node->right;
-    while (c) {
-      fprintf(out, "    case %s:\n", c->value);
-      generate_c(compiler, c->left);
-      fprintf(out, "        break;\n");
-      c = c->right;
-    }
-    if (node->else_branch) {
-      fprintf(out, "    default:\n");
-      generate_c(compiler, node->else_branch);
-    }
-    fprintf(out, "    }\n");
-  } else if (node->type == NODE_BLOCK) {
-    Node *cur = node;
-    while (cur) {
-      generate_c(compiler, cur->left);
-      cur = cur->right;
-    }
-  } else if (node->type == NODE_CLASS_DEF) {
-    /* class definitions are handled before code generation */
-  }
+#endif
+  codegen_emit_c(root, f);
+  fclose(f);
+  char cmd[512];
+  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -c %s -o %s", tmp, path);
+  int res = system(cmd);
+  if (res != 0)
+    fprintf(stderr, "failed to run: %s\n", cmd);
+#ifdef _WIN32
+  remove(tmp);
+#else
+  unlink(tmp);
+#endif
 }

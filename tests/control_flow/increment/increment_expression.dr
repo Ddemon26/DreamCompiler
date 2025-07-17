@@ -1,7 +1,7 @@
 int a = 1;
 int b = a++;
-Console.WriteLine(a);
-Console.WriteLine(b);
+Console.WriteLine(a); // Expected: 2
+Console.WriteLine(b); // Expected: 1
 int c = --a;
-Console.WriteLine(a);
-Console.WriteLine(c);
+Console.WriteLine(a); // Expected: 1
+Console.WriteLine(c); // Expected: 1

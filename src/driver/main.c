@@ -1,6 +1,9 @@
-#include "../lexer/lexer.h"
-#include "../parser/parser.h"
 #include "../codegen/codegen.h"
+#include "../lexer/lexer.h"
+#include "../opt/pipeline.h"
+#include "../parser/diagnostic.h"
+#include "../parser/parser.h"
+#include "../util/console_debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,119 +13,100 @@
 #include <sys/stat.h>
 #endif
 
+static char *read_file(const char *path) {
+  FILE *f = fopen(path, "rb");
+  if (!f)
+    return NULL;
+  fseek(f, 0, SEEK_END);
+  long len = ftell(f);
+  fseek(f, 0, SEEK_SET);
+  char *buf = malloc(len + 2);
+  if (!buf) {
+    fclose(f);
+    return NULL;
+  }
+  fread(buf, 1, len, f);
+  if (len == 0 || buf[len - 1] != '\n') {
+    buf[len++] = '\n';
+  }
+  buf[len] = 0;
+  fclose(f);
+  return buf;
+}
+
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <input.dr>\n", argv[0]);
+  bool opt1 = false;
+  bool emit_c = true;
+  bool emit_obj = false;
+  const char *input = NULL;
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-O1") == 0 || strcmp(argv[i], "--O1") == 0) {
+      opt1 = true;
+      continue;
+    }
+    if (strcmp(argv[i], "--emit-c") == 0) {
+      emit_c = true;
+      emit_obj = false;
+      continue;
+    }
+    if (strcmp(argv[i], "--emit-obj") == 0) {
+      emit_obj = true;
+      emit_c = false;
+      continue;
+    }
+    input = argv[i];
+  }
+
+  if (!input) {
+    fprintf(stderr, "usage: %s [options] file\n", argv[0]);
     return 1;
   }
-  FILE *file = fopen(argv[1], "r");
-  if (!file) {
-    fprintf(stderr, "Cannot open file %s\n", argv[1]);
+  char *src = read_file(input);
+  if (!src) {
+    perror("read_file");
     return 1;
   }
-  fseek(file, 0, SEEK_END);
-  long size = ftell(file);
-  fseek(file, 0, SEEK_SET);
-  char *source = malloc(size + 1);
-  fread(source, 1, size, file);
-  source[size] = '\0';
-  fclose(file);
-  Lexer lexer = {source, 0, 1};
-  if ((unsigned char)source[0] == 0xEF && (unsigned char)source[1] == 0xBB &&
-      (unsigned char)source[2] == 0xBF) {
-    lexer.pos = 3;
-  }
+
+  Console.WriteLine("compiling %s", input);
+
+  Arena arena;
+  arena_init(&arena);
+  Parser p;
+  parser_init(&p, &arena, src);
+  Node *root = parse_program(&p);
+  print_diagnostics(src, &p.diags);
+
+  run_pipeline(NULL, opt1);
+
+  if (emit_c) {
 #ifdef _WIN32
-  _mkdir("build");
-  _mkdir("build/bin");
+    _mkdir("build");
+    _mkdir("build/bin");
 #else
-  mkdir("build", 0755);
-  mkdir("build/bin", 0755);
+    mkdir("build", 0755);
+    mkdir("build/bin", 0755);
 #endif
-  Compiler compiler = {fopen("build/bin/dream.c", "w"), NULL, 0, NULL, 0, NULL, 0, NULL, 0,
-                        NULL, 0, NULL, 0, NULL, 0, NULL, 0};
-  if (!compiler.output) {
-    fprintf(stderr, "Failed to open output file\n");
-    return 1;
-  }
-  fprintf(compiler.output, "#include <stdio.h>\n");
-  fprintf(compiler.output, "#include <stdlib.h>\n");
-  fprintf(compiler.output, "#include <string.h>\n");
-  fprintf(compiler.output,
-          "static char* dream_concat(const char* a, const char* b) {\n"
-          "  size_t len = strlen(a) + strlen(b);\n"
-          "  char* s = malloc(len + 1);\n"
-          "  strcpy(s, a);\n"
-          "  strcat(s, b);\n"
-          "  return s;\n"
-          "}\n");
-  Token token = next_token(&lexer);
-  Node *program = NULL;
-  Node **current = &program;
-  while (token.type != TOKEN_EOF) {
-    Node *stmt = parse_statement(&lexer, &token);
-    Node *block = create_node(NODE_BLOCK, NULL, stmt, NULL, NULL);
-    *current = block;
-    current = &block->right;
-    free(token.value);
-    token = next_token(&lexer);
+    FILE *out = fopen("build/bin/dream.c", "w");
+    if (!out) {
+      perror("fopen");
+      return 1;
+    }
+    codegen_emit_c(root, out);
+    fclose(out);
+    const char *cc = getenv("CC");
+    if (!cc)
+      cc = "zig cc";
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o dream", cc);
+    int res = system(cmd);
+    if (res != 0)
+      fprintf(stderr, "failed to run: %s\n", cmd);
+  } else if (emit_obj) {
+    codegen_emit_obj(root, "a.o");
   }
 
-  Node *cur = program;
-  while (cur) {
-    if (cur->left->type == NODE_CLASS_DEF)
-      generate_c_class(&compiler, cur->left);
-    cur = cur->right;
-  }
-  cur = program;
-  while (cur) {
-    if (cur->left->type == NODE_FUNC_DEF)
-      generate_c_function(&compiler, cur->left);
-    cur = cur->right;
-  }
-
-  fprintf(compiler.output, "int main() {\n");
-  cur = program;
-  while (cur) {
-    if (cur->left->type != NODE_FUNC_DEF)
-      generate_c(&compiler, cur->left);
-    cur = cur->right;
-  }
-  fprintf(compiler.output, "    return 0;\n");
-  fprintf(compiler.output, "}\n");
-  free_node(program);
-  for (int i = 0; i < compiler.string_var_count; i++)
-    free(compiler.string_vars[i]);
-  free(compiler.string_vars);
-  for (int i = 0; i < compiler.bool_var_count; i++)
-    free(compiler.bool_vars[i]);
-  free(compiler.bool_vars);
-  for (int i = 0; i < compiler.float_var_count; i++)
-    free(compiler.float_vars[i]);
-  free(compiler.float_vars);
-  for (int i = 0; i < compiler.char_var_count; i++)
-    free(compiler.char_vars[i]);
-  free(compiler.char_vars);
-  for (int i = 0; i < compiler.string_func_count; i++)
-    free(compiler.string_funcs[i]);
-  free(compiler.string_funcs);
-  for (int i = 0; i < compiler.bool_func_count; i++)
-    free(compiler.bool_funcs[i]);
-  free(compiler.bool_funcs);
-  for (int i = 0; i < compiler.float_func_count; i++)
-    free(compiler.float_funcs[i]);
-  free(compiler.float_funcs);
-  for (int i = 0; i < compiler.char_func_count; i++)
-    free(compiler.char_funcs[i]);
-  free(compiler.char_funcs);
-  fclose(compiler.output);
-  free(source);
-  free(token.value);
-  const char *cc = getenv("CC");
-  if (!cc)
-    cc = "gcc";
-  char cmd[256];
-  snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o build/bin/dream.exe", cc);
-  system(cmd);
+  free(src);
+  free(p.diags.data);
+  free(arena.ptr);
   return 0;
 }

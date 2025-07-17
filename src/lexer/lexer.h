@@ -1,89 +1,46 @@
 #ifndef LEXER_H
 #define LEXER_H
+#include <stddef.h>
+#include <stdbool.h>
 
-#include <stdio.h>
+typedef struct { size_t line; size_t column; } Pos;
 
+#define TOKEN(k, r) TK_##k,
 typedef enum {
-  TOKEN_INT,
-  TOKEN_STRING_TYPE,
-  TOKEN_BOOL_TYPE,
-  TOKEN_FLOAT_TYPE,
-  TOKEN_CHAR_TYPE,
-  TOKEN_IDENTIFIER,
-  TOKEN_NUMBER,
-  TOKEN_STRING,
-  TOKEN_CHAR,
-  TOKEN_PLUS,
-  TOKEN_MINUS,
-  TOKEN_PLUSPLUS,
-  TOKEN_MINUSMINUS,
-  TOKEN_PLUSEQ,
-  TOKEN_MINUSEQ,
-  TOKEN_STAR,
-  TOKEN_SLASH,
-  TOKEN_PERCENT,
-  TOKEN_STAREQ,
-  TOKEN_SLASHEQ,
-  TOKEN_MODEQ,
-  TOKEN_LT,
-  TOKEN_GT,
-  TOKEN_LE,
-  TOKEN_GE,
-  TOKEN_EQEQ,
-  TOKEN_NEQ,
-  TOKEN_NOT,
-  TOKEN_BITNOT,
-  TOKEN_AND,
-  TOKEN_OR,
-  TOKEN_BITAND,
-  TOKEN_BITOR,
-  TOKEN_CARET,
-  TOKEN_SHL,
-  TOKEN_SHR,
-  TOKEN_QUESTION,
-  TOKEN_SEMICOLON,
-  TOKEN_COLON,
-  TOKEN_EQUALS,
-  TOKEN_CONSOLE,
-  TOKEN_DOT,
-  TOKEN_WRITELINE,
-  TOKEN_WRITE,
-  TOKEN_LPAREN,
-  TOKEN_RPAREN,
-  TOKEN_COMMA,
-  TOKEN_IF,
-  TOKEN_ELSE,
-  TOKEN_WHILE,
-  TOKEN_FOR,
-  TOKEN_SWITCH,
-  TOKEN_CASE,
-  TOKEN_DEFAULT,
-  TOKEN_DO,
-  TOKEN_BREAK,
-  TOKEN_CONTINUE,
-  TOKEN_RETURN,
-  TOKEN_FUNC,
-  TOKEN_CLASS,
-  TOKEN_STRUCT,
-  TOKEN_LBRACE,
-  TOKEN_RBRACE,
-  TOKEN_LBRACKET,
-  TOKEN_RBRACKET,
-  TOKEN_EOF,
-  TOKEN_UNKNOWN
-} TokenType;
+#include "tokens.def"
+} TokenKind;
+#undef TOKEN
 
 typedef struct {
-  TokenType type;
-  char *value;
+    TokenKind kind;
+    const char *start;
+    size_t len;
+    Pos pos;
 } Token;
 
+typedef enum { SC_NORMAL, SC_STRING, SC_COMMENT } StartCondition;
+#define yycSC_NORMAL SC_NORMAL
+#define yycSC_STRING SC_STRING
+#define yycSC_COMMENT SC_COMMENT
+
 typedef struct {
-  char *source;
-  int pos;
-  int line;
+    const char *src;
+    const char *cursor;
+    const char *marker;
+    const char *limit;
+    const char *ctx;
+    StartCondition state;
+    Pos pos;
+    Token lookahead;
+    bool has_peek;
 } Lexer;
 
-Token next_token(Lexer *lexer);
+static inline StartCondition lexer_get_state(Lexer *lx) { return lx->state; }
+static inline void lexer_set_state(Lexer *lx, StartCondition s) { lx->state = s; }
+
+void lexer_init(Lexer *lx, const char *src);
+Token lexer_next(Lexer *lx);
+Token lexer_peek(Lexer *lx);
+const char *token_kind_name(TokenKind k);
 
 #endif

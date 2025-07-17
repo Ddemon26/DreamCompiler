@@ -3,31 +3,38 @@
 ## Implemented Features
 
 - Primitive types: `int`, `float`, `bool`, `char`, and `string`
-- Variable declarations and assignments
-- Arrays of all primitive types
-- Arithmetic operators `+`, `-`, `*`, `/`, `%` and unary minus
-- Bitwise operators `&`, `|`, `^`, `~`, `<<`, and `>>`
-- Comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=`
+- Variable declarations with optional initialisers
+- Basic arithmetic operators `+`, `-`, `*`, `/`, `%`, unary minus and unary plus
 - Logical operators `&&`, `||`, and `!`
-- Increment and decrement operators `++` and `--`
-- Compound assignments `+=`, `-=`, `*=`, `/=`, and `%=`
-- Ternary conditional operator `? :`
+- Comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=`
+- Simple assignment using `=`
 - Parentheses for expression grouping
-- If/else statements including `else if` chains
-- `switch` statements with `case` and `default`
-- `while`, `do-while`, and `for` loops
-- `break` and `continue` statements
+- `if`/`else` statements
+- Nested block statements
+- `while` loops
+- `do` loops
+- `for` loops
+- `break` statements
+- `continue` statements
 - `return` statements
- - Functions with parameters and typed return values
-- Classes and structs with field access and object instantiation
 - Console output via `Console.Write` and `Console.WriteLine`
-- String literals with escape sequences and concatenation using `+`
+- Console input via `Console.ReadLine`
+- String and character literals with escape sequences
 - Line (`//`) and block (`/* */`) comments
+- Basic C code generation for programs
+- Bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`)
+- Compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=` and bitwise variants)
+- Increment/decrement operators `++` and `--`
+- String concatenation with `+`
+- Ternary conditional operator `?:`
+- `switch` statements
+- Arrays of primitive types
 
-## Planned Features
+## Missing Features
 
-- Generics for types and functions
-- Access modifiers such as `public` and `private`
-- Exception handling with `try`/`catch`
-- Attributes and annotations
-- Modular compilation and namespaces
+- The following language constructs appear in the documentation or tests but are not yet implemented:
+
+- Function declarations with parameters and typed return values
+- Classes, structs and object construction
+
+These features need implementing before they will compile without diagnostics.

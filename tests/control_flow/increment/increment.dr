@@ -1,10 +1,10 @@
 int a = 0;
 a++;
-Console.WriteLine(a);
+Console.WriteLine(a); // Expected: 1
 ++a;
-Console.WriteLine(a);
+Console.WriteLine(a); // Expected: 2
 int b = 2;
 b--;
-Console.WriteLine(b);
+Console.WriteLine(b); // Expected: 1
 --b;
-Console.WriteLine(b);
+Console.WriteLine(b); // Expected: 0

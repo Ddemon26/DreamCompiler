@@ -1,6 +1,6 @@
 # Dream Compiler Documentation
 
-Welcome to the documentation for the Dream language and compiler. The pages below describe the currently supported features and how to use them.
+Welcome to the documentation for the Dream language and compiler. Many of the sections below describe planned features that are **not yet implemented**. The referenced guides are placeholders until the compiler gains support for them.
 
 ## Guides
 
@@ -11,31 +11,29 @@ Use the version dropdown in the sidebar to view documentation for other releases
 - [Introduction](v1/intro.md)
 - [Usage Guide](v1/usage.md)
 
-### Language Basics
+### Language Basics (planned)
 
-- [Variables](v1/variables.md)
-- [Arrays](v1/arrays.md)
-- [Arithmetic](v1/arithmetic.md)
-- [Parentheses](v1/parentheses.md)
-- [Comparison](v1/comparison.md)
-- [Logical Operators](v1/logical.md)
-- [Conditional Operator](v1/conditional.md)
-- [Console Output](v1/console.md)
-- [String Literals](v1/strings.md)
-- [Comments](v1/comments.md)
-- [Functions](v1/functions.md)
-- [Classes](v1/classes.md)
+- Variables *(pending)*
+- Arrays *(pending)*
+- Arithmetic *(pending)*
+- Parentheses *(pending)*
+- Comparison *(pending)*
+- Logical Operators *(pending)*
+- Conditional Operator *(pending)*
+- Console Output *(pending)*
+- String Literals *(pending)*
+- Comments *(pending)*
+- Functions *(pending)*
+- Classes *(pending)*
 
-### Control Flow
+### Control Flow (planned)
 
-- [If Statements](v1/if.md)
-- [Loops](v1/loops.md)
-- [Switch Statements](v1/switch.md)
-- [Return](v1/return.md)
+- If Statements *(pending)*
+- Loops *(pending)*
+- Switch Statements *(pending)*
+- Return *(pending)*
 
 ### Other
 
-- [Changelog](v1/changelog.md)
-- [Source Architecture](v1/architecture.md)
-
-
+- Changelog
+- Source Architecture
