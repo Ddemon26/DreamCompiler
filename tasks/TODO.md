@@ -1,9 +1,16 @@
 # Outstanding Tasks
 
-The grammar specification in `docs/grammar/Grammar.md` lists several language features such as loops, switch statements, and return/break/continue statements as *implemented*. The current parser now supports `while` loops in addition to variable declarations, `if`/`else` statements, and expression statements.
+The test suite shows many language constructs are still missing. The following features currently produce errors or warnings and need full implementation:
 
-Future work:
-- Implement parsing and code generation for remaining loops (`do`, `for`).
-- Add support for `switch` statements, `break`, `continue`, and `return`.
-- Extend the AST and code generator accordingly.
-- Update the grammar once features land to keep it authoritative.
+- Arrays and array initialisation for all primitive types
+- Bitwise operators and compound assignment
+- Increment/decrement operators and logical operators
+- `do` and `for` loops plus the `continue` statement
+- `switch` statements
+- Functions with parameters and typed return values
+- `return` statements
+- Classes, structs and object creation
+- The ternary `?:` operator
+- String concatenation
+
+Keep the grammar and documentation up to date once these features land.
