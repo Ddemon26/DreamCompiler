@@ -10,8 +10,10 @@
 - Comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=`
 - Logical operators `&&`, `||`, and `!`
 - Increment and decrement operators `++` and `--`
-- Compound assignments `+=`, `-=`, `*=`, `/=`, and `%=`
+- Compound assignments `+=`, `-=`, `*=`, `/=`, `%=`, and reserved tokens
+  `&=`, `|=`, `^=`, `<<=`, `>>=`
 - Ternary conditional operator `? :`
+- Additional reserved tokens `??`, `??=`, `=>`, `::`, `->`
 - Parentheses for expression grouping
 - If/else statements including `else if` chains
 - `switch` statements with `case` and `default`
