@@ -13,6 +13,7 @@
 - Nested block statements
 - `while` loops
 - `do` loops
+- `for` loops
 - `break` statements
 - `continue` statements
 - `return` statements
@@ -30,7 +31,6 @@
 
 - Arrays of any type
 - Ternary conditional operator `?:`
-- `for` loops
 - `switch` statements
 - Function declarations with parameters and typed return values
 - Classes, structs and object construction
