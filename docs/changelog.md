@@ -13,3 +13,4 @@ All notable changes to the Dream compiler will be documented in this file.
 - Fixed Windows build by replacing `mkstemps` with portable `tmpnam_s` fallback.
 - Restored generation of `build/bin/dream.c` when compiling `.dr` files.
 - Added support for primitive types (`int`, `float`, `char`, `bool`, `string`) in the parser and C code generation.
+- Introduced developer-only `Console.Write`/`WriteLine` macros for compiler debugging.
