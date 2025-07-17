@@ -11,3 +11,4 @@ All notable changes to the Dream compiler will be documented in this file.
 - Implemented `--emit-obj` to compile generated C to an object file.
 - Recognised `void` as reserved keyword per Grammar v0.3.
 - Fixed Windows build by replacing `mkstemps` with portable `tmpnam_s` fallback.
+- Restored generation of `build/bin/dream.c` when compiling `.dr` files.

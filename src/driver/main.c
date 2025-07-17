@@ -70,7 +70,28 @@ int main(int argc, char *argv[]) {
     run_pipeline(NULL, opt1);
 
     if (emit_c) {
-        codegen_emit_c(root, stdout);
+#ifdef _WIN32
+        _mkdir("build");
+        _mkdir("build/bin");
+#else
+        mkdir("build", 0755);
+        mkdir("build/bin", 0755);
+#endif
+        FILE *out = fopen("build/bin/dream.c", "w");
+        if (!out) {
+            perror("fopen");
+            return 1;
+        }
+        codegen_emit_c(root, out);
+        fclose(out);
+        const char *cc = getenv("CC");
+        if (!cc)
+            cc = "zig cc";
+        char cmd[256];
+        snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o dream", cc);
+        int res = system(cmd);
+        if (res != 0)
+            fprintf(stderr, "failed to run: %s\n", cmd);
     } else if (emit_obj) {
         codegen_emit_obj(root, "a.o");
     }
