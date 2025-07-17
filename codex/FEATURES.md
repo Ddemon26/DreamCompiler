@@ -14,6 +14,7 @@
   `&=`, `|=`, `^=`, `<<=`, `>>=`
 - Ternary conditional operator `? :`
 - Additional reserved tokens `??`, `??=`, `=>`, `::`, `->`
+- Reserved keyword `void` (no return value)
 - Parentheses for expression grouping
 - If/else statements including `else if` chains
 - `switch` statements with `case` and `default`

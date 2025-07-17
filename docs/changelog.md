@@ -9,3 +9,4 @@ All notable changes to the Dream compiler will be documented in this file.
   `&=`, `|=`, `^=`, `<<=`, `>>=`) per Grammar v0.3.
 - Added basic C code generation for programs.
 - Implemented `--emit-obj` to compile generated C to an object file.
+- Recognised `void` as reserved keyword per Grammar v0.3.
