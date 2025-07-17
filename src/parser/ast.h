@@ -25,6 +25,7 @@ typedef enum {
     ND_WHILE,
     ND_BLOCK,
     ND_EXPR_STMT,
+    ND_CONSOLE_CALL,
     ND_ERROR
 } NodeKind;
 
@@ -68,6 +69,10 @@ struct Node {
         struct {                      // ND_EXPR_STMT
             Node *expr;
         } expr_stmt;
+        struct {                      // ND_CONSOLE_CALL
+            Node *arg;
+            int newline;
+        } console;
     } as;
 };
 
