@@ -25,6 +25,7 @@
 - Console output via `Console.Write` and `Console.WriteLine`
 - String literals with escape sequences and concatenation using `+`
 - Line (`//`) and block (`/* */`) comments
+- Basic C code generation for programs
 
 ## Planned Features
 
