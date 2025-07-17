@@ -75,6 +75,8 @@ static Token lex_raw(Lexer *lx) {
     */
     for (;;) {
         tok_start = lx->cursor;
+        if (lx->cursor >= lx->limit)
+            return make_token(lx, TK_EOF, lx->cursor, 0);
         /*!re2c
         <SC_NORMAL> "/*" { YYSETCONDITION(SC_COMMENT); continue; }
         <SC_COMMENT> "*/" { YYSETCONDITION(SC_NORMAL); tok_start = lx->cursor; continue; }
@@ -88,10 +90,10 @@ static Token lex_raw(Lexer *lx) {
         <SC_STRING> "\\" . { continue; }
         <SC_STRING> "\n" { advance_pos(lx, tok_start, 1); tok_start = lx->cursor; continue; }
         <SC_STRING> [^] { continue; }
-        <SC_NORMAL> "[0-9]+" { return make_token(lx, TK_INT_LITERAL, tok_start, lx->cursor - tok_start); }
-        <SC_NORMAL> "[0-9]+\.[0-9]+" { return make_token(lx, TK_FLOAT_LITERAL, tok_start, lx->cursor - tok_start); }
+        <SC_NORMAL> [0-9]+ { return make_token(lx, TK_INT_LITERAL, tok_start, lx->cursor - tok_start); }
+        <SC_NORMAL> [0-9]+ "." [0-9]+ { return make_token(lx, TK_FLOAT_LITERAL, tok_start, lx->cursor - tok_start); }
         <SC_NORMAL> "'([^'\\n]|\\\\.)'" { return make_token(lx, TK_CHAR_LITERAL, tok_start, lx->cursor - tok_start); }
-        <SC_NORMAL> "[a-zA-Z_][a-zA-Z0-9_]*" {
+        <SC_NORMAL> [a-zA-Z_][a-zA-Z0-9_]* {
             size_t len = lx->cursor - tok_start;
 #define TOKEN(k,r) if (len == sizeof(r)-1 && memcmp(tok_start, r, len) == 0) return make_token(lx, TK_##k, tok_start, len);
 #include "tokens.def"
