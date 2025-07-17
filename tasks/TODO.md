@@ -3,7 +3,6 @@
 The test suite shows many language constructs are still missing. The following features currently produce errors or warnings and need full implementation:
 
 - Arrays and array initialisation for all primitive types
-- `for` loops
 - `switch` statements
 - Functions with parameters and typed return values
 - Classes, structs and object creation

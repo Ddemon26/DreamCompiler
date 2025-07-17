@@ -196,6 +196,28 @@ static void emit_stmt(COut *b, Node *n) {
     c_out_write(b, ");");
     c_out_newline(b);
     break;
+  case ND_FOR:
+    c_out_write(b, "for (");
+    if (n->as.for_stmt.init) {
+      if (n->as.for_stmt.init->kind == ND_VAR_DECL) {
+        c_out_write(b, "%s %.*s = ",
+                    type_to_c(n->as.for_stmt.init->as.var_decl.type),
+                    (int)n->as.for_stmt.init->as.var_decl.name.len,
+                    n->as.for_stmt.init->as.var_decl.name.start);
+        emit_expr(b, n->as.for_stmt.init->as.var_decl.init);
+      } else {
+        emit_expr(b, n->as.for_stmt.init);
+      }
+    }
+    c_out_write(b, "; ");
+    if (n->as.for_stmt.cond)
+      emit_expr(b, n->as.for_stmt.cond);
+    c_out_write(b, "; ");
+    if (n->as.for_stmt.update)
+      emit_expr(b, n->as.for_stmt.update);
+    c_out_write(b, ") ");
+    emit_stmt(b, n->as.for_stmt.body);
+    break;
   case ND_BREAK:
     c_out_write(b, "break;");
     c_out_newline(b);

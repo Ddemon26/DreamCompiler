@@ -26,6 +26,7 @@ static Node *parse_expr(Parser *p);
 static Node *parse_stmt(Parser *p);
 static Node *parse_unary(Parser *p);
 static Node *parse_do_while(Parser *p);
+static Node *parse_for(Parser *p);
 
 static bool is_type_token(TokenKind k) {
   switch (k) {
@@ -111,6 +112,65 @@ static Node *parse_do_while(Parser *p) {
   Node *n = node_new(p->arena, ND_DO_WHILE);
   n->as.do_while_stmt.body = body;
   n->as.do_while_stmt.cond = cond;
+  return n;
+}
+
+static Node *parse_for(Parser *p) {
+  next(p); // consume 'for'
+  if (p->tok.kind != TK_LPAREN) {
+    diag_push(p, p->tok.pos, "expected '('");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p);
+  Node *init = NULL;
+  if (p->tok.kind != TK_SEMICOLON) {
+    if (is_type_token(p->tok.kind)) {
+      TokenKind type_tok = p->tok.kind;
+      next(p);
+      if (p->tok.kind != TK_IDENT) {
+        diag_push(p, p->tok.pos, "expected identifier");
+        return node_new(p->arena, ND_ERROR);
+      }
+      init = node_new(p->arena, ND_VAR_DECL);
+      init->as.var_decl.type = type_tok;
+      init->as.var_decl.name.start = p->tok.start;
+      init->as.var_decl.name.len = p->tok.len;
+      next(p);
+      if (p->tok.kind == TK_EQ) {
+        next(p);
+        init->as.var_decl.init = parse_expr(p);
+      } else {
+        diag_push(p, p->tok.pos, "expected '='");
+        init->as.var_decl.init = node_new(p->arena, ND_ERROR);
+      }
+    } else {
+      init = parse_expr(p);
+    }
+  }
+  if (p->tok.kind == TK_SEMICOLON)
+    next(p);
+  else
+    diag_push(p, p->tok.pos, "expected ';'");
+  Node *cond = NULL;
+  if (p->tok.kind != TK_SEMICOLON)
+    cond = parse_expr(p);
+  if (p->tok.kind == TK_SEMICOLON)
+    next(p);
+  else
+    diag_push(p, p->tok.pos, "expected ';'");
+  Node *update = NULL;
+  if (p->tok.kind != TK_RPAREN)
+    update = parse_expr(p);
+  if (p->tok.kind == TK_RPAREN)
+    next(p);
+  else
+    diag_push(p, p->tok.pos, "expected ')'");
+  Node *body = parse_stmt(p);
+  Node *n = node_new(p->arena, ND_FOR);
+  n->as.for_stmt.init = init;
+  n->as.for_stmt.cond = cond;
+  n->as.for_stmt.update = update;
+  n->as.for_stmt.body = body;
   return n;
 }
 
@@ -411,6 +471,9 @@ static Node *parse_stmt(Parser *p) {
   }
   if (p->tok.kind == TK_KW_DO) {
     return parse_do_while(p);
+  }
+  if (p->tok.kind == TK_KW_FOR) {
+    return parse_for(p);
   }
   if (p->tok.kind == TK_KW_WHILE) {
     return parse_while(p);

@@ -26,6 +26,7 @@ typedef enum {
   ND_IF,
   ND_WHILE,
   ND_DO_WHILE,
+  ND_FOR,
   ND_BREAK,
   ND_CONTINUE,
   ND_RETURN,
@@ -76,6 +77,12 @@ struct Node {
       Node *body;
       Node *cond;
     } do_while_stmt;
+    struct { // ND_FOR
+      Node *init;  // may be NULL
+      Node *cond;  // may be NULL
+      Node *update; // may be NULL
+      Node *body;
+    } for_stmt;
     struct { // ND_BLOCK
       Node **items;
       size_t len;
