@@ -73,8 +73,8 @@ static Token lex_raw(Lexer *lx) {
         /* use default YYGETCONDITION/YYSETCONDITION macros */
         re2c:yyfill:enable = 0;
     */
+    tok_start = lx->cursor;
     for (;;) {
-        tok_start = lx->cursor;
         if (lx->cursor >= lx->limit)
             return make_token(lx, TK_EOF, lx->cursor, 0);
         /*!re2c

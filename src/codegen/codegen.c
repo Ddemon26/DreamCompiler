@@ -70,6 +70,8 @@ static void emit_expr(COut *b, Node *n) {
         c_out_write(b, "0");
     } else if (n->kind == ND_CHAR) {
       c_out_write(b, "'%.*s'", (int)n->as.lit.len, n->as.lit.start);
+    } else if (n->kind == ND_STRING) {
+      c_out_write(b, "\"%.*s\"", (int)n->as.lit.len, n->as.lit.start);
     } else {
       c_out_write(b, "%.*s", (int)n->as.lit.len, n->as.lit.start);
     }
@@ -143,9 +145,21 @@ static void emit_stmt(COut *b, Node *n) {
     c_out_newline(b);
     break;
   case ND_EXPR_STMT:
-    emit_expr(b, n->as.expr_stmt.expr);
-    c_out_write(b, ";");
-    c_out_newline(b);
+    if (n->as.expr_stmt.expr->kind == ND_CONSOLE_CALL) {
+      Node *call = n->as.expr_stmt.expr;
+      c_out_write(b, "printf(\"");
+      c_out_write(b, "%s", fmt_for_arg(call->as.console.arg));
+      if (call->as.console.newline)
+        c_out_write(b, "\\n");
+      c_out_write(b, "\", ");
+      emit_expr(b, call->as.console.arg);
+      c_out_write(b, ");");
+      c_out_newline(b);
+    } else {
+      emit_expr(b, n->as.expr_stmt.expr);
+      c_out_write(b, ";");
+      c_out_newline(b);
+    }
     break;
   case ND_CONSOLE_CALL:
     c_out_write(b, "printf(\"");
