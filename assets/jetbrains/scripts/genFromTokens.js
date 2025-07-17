@@ -1,7 +1,55 @@
 const fs = require('fs');
-// Canonical token definitions live at the repository root
-const TOKEN_FILE = 'tokens.json';
-const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE, 'utf8'));
+const path = require('path');
+
+// Plugin root lives one directory up from this script
+const pluginDir = path.resolve(__dirname, '..');
+// Repository root is two directories up from this script
+const repoRoot = path.resolve(pluginDir, '..', '..');
+
+// Source of truth for tokens used by the compiler
+const TOKENS_DEF = path.join(repoRoot, 'src', 'lexer', 'tokens.def');
+
+function parseTokensDef(content) {
+  const map = {};
+  const re = /TOKEN\(([^,]+),\s*"((?:\\.|[^"])*)"\)/g;
+  for (const m of content.matchAll(re)) {
+    map[m[1]] = m[2];
+  }
+  return map;
+}
+
+const defs = parseTokensDef(fs.readFileSync(TOKENS_DEF, 'utf8'));
+
+const kwRegex = Object.entries(defs)
+  .filter(([name]) => name.startsWith('KW_'))
+  .map(([, re]) => re)
+  .join('|');
+
+const operatorNames = [
+  'PLUSPLUS','MINUSMINUS','PLUSEQ','MINUSEQ','STAREQ','SLASHEQ','PERCENTEQ',
+  'ANDEQ','OREQ','XOREQ','LSHIFTEQ','RSHIFTEQ','PLUS','MINUS','STAR','SLASH',
+  'PERCENT','CARET','LSHIFT','RSHIFT','LTEQ','GTEQ','EQEQ','NEQ','LT','GT',
+  'ANDAND','OROR','AND','OR','TILDE','BANG','EQ','QUESTION','QMARKQMARK',
+  'QMARKQMARKEQ'
+];
+const opRegex = operatorNames.map(n => defs[n]).filter(Boolean).join('|');
+
+const tokens = [
+  { name: 'keyword', regex: `\\b(${kwRegex})\\b`, scope: 'keyword.control' },
+  { name: 'number', regex: `\\b(?:${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})\\b`, scope: 'constant.numeric' },
+  { name: 'string', regex: defs.STRING_LITERAL, scope: 'string.quoted.double' },
+  { name: 'commentDoc', regex: '/\\*\\*[^]*?\\*/|///.*', scope: 'comment.block.documentation' },
+  { name: 'comment', regex: '//.*', scope: 'comment.line.double-slash' },
+  { name: 'commentBlock', regex: '/\\*[\\s\\S]*?\\*/', scope: 'comment.block' },
+  { name: 'identifier', regex: `\\b${defs.IDENT}\\b`, scope: 'variable.other' },
+  { name: 'operator', regex: opRegex, scope: 'keyword.operator' },
+  { name: 'semicolon', regex: defs.SEMICOLON, scope: 'punctuation.terminator.statement' },
+  { name: 'comma', regex: defs.COMMA, scope: 'punctuation.separator.comma' },
+  { name: 'dot', regex: defs.DOT, scope: 'punctuation.accessor' },
+  { name: 'paren', regex: '[()]', scope: 'punctuation.section.parens' },
+  { name: 'brace', regex: '[{}]', scope: 'punctuation.section.braces' },
+  { name: 'bracket', regex: '[\\\\[\\\\]]', scope: 'punctuation.section.brackets' },
+];
 
 // TextMate grammar
 const tmGrammar = {
@@ -10,8 +58,9 @@ const tmGrammar = {
   patterns: [{include:'#tokens'}],
   repository: { tokens: { patterns: tokens.map(t=>({name:t.scope, match:t.regex})) } }
 };
-fs.mkdirSync('vscode/syntaxes', { recursive: true });
-fs.writeFileSync('vscode/syntaxes/dream.tmLanguage.json', JSON.stringify(tmGrammar, null, 2));
+const vscodeDir = path.join(repoRoot, 'assets', 'vscode', 'syntaxes');
+fs.mkdirSync(vscodeDir, { recursive: true });
+fs.writeFileSync(path.join(vscodeDir, 'dream.tmLanguage.json'), JSON.stringify(tmGrammar, null, 2));
 
 // JFlex lexer
 let flex = `package com.dream;\n\n%%\n%public\n%class DreamLexer\n%implements com.intellij.lexer.FlexLexer\n%unicode\n%function advance\n%type com.intellij.psi.tree.IElementType\n\n%%\n<YYINITIAL> {\n`;
@@ -32,14 +81,14 @@ for(const t of tokens){
   flex += `  ${pattern} { return DreamTokenTypes.${t.name.toUpperCase()}; }\n`;
 }
 flex += '  [\\t\\r\\n ]+ { return com.intellij.psi.TokenType.WHITE_SPACE; }\n  . { return com.intellij.psi.TokenType.BAD_CHARACTER; }\n}\n';
-fs.mkdirSync('idea/src/main/java/com/dream', { recursive: true });
-fs.writeFileSync('idea/src/main/java/com/dream/DreamLexer.flex', flex);
+fs.mkdirSync(path.join(pluginDir, 'src', 'main', 'java', 'com', 'dream'), { recursive: true });
+fs.writeFileSync(path.join(pluginDir, 'src', 'main', 'java', 'com', 'dream', 'DreamLexer.flex'), flex);
 
 // Keep JetBrains tokens.json in sync
-fs.mkdirSync('idea/src/main/resources', { recursive: true });
-fs.writeFileSync('idea/src/main/resources/tokens.json', JSON.stringify(tokens, null, 2));
+fs.mkdirSync(path.join(pluginDir, 'src', 'main', 'resources'), { recursive: true });
+fs.writeFileSync(path.join(pluginDir, 'src', 'main', 'resources', 'tokens.json'), JSON.stringify(tokens, null, 2));
 // Mirror token file into the plugin root if not a symlink
-if (!fs.existsSync('idea/tokens.json') ||
-    !fs.lstatSync('idea/tokens.json').isSymbolicLink()) {
-  fs.writeFileSync('idea/tokens.json', JSON.stringify(tokens, null, 2));
+const mirror = path.join(pluginDir, 'tokens.json');
+if (!fs.existsSync(mirror) || !fs.lstatSync(mirror).isSymbolicLink()) {
+  fs.writeFileSync(mirror, JSON.stringify(tokens, null, 2));
 }

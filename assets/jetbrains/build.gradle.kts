@@ -39,7 +39,7 @@ tasks {
 
     val generateTokens by registering(Exec::class) {
         workingDir = projectDir.parentFile
-        commandLine("node", "scripts/genFromTokens.js")
+        commandLine("node", "jetbrains/scripts/genFromTokens.js")
     }
 
     patchPluginXml {
