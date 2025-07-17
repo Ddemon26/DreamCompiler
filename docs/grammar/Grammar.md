@@ -124,6 +124,8 @@ Statement           ::= Block                                                   
                      | VariableDeclaration                                            // Implemented
                      | IfStatement                                                    // Implemented
                      | WhileStatement                                                 // Implemented
+                     | DoStatement
+      // Implemented
       // Planned
                      | ForStatement                                                   // Planned
                      | SwitchStatement                                                // Partial (basic cases only)
@@ -137,6 +139,8 @@ ExpressionStatement ::= Expression ";"                                          
 
 IfStatement         ::= "if" "(" Expression ")" Statement [ "else" Statement ]        // Implemented
 WhileStatement      ::= "while" "(" Expression ")" Statement                          // Implemented
+DoStatement        ::= "do" Statement "while" "(" Expression ")" ";"
+      // Implemented
       // Planned
 ForStatement        ::= "for" "(" [ ForInit ] ";" [ Expression ] ";" [ ForUpdate ] ")" Statement // Planned
 ForInit             ::= VariableDeclaration | ExpressionList                          // Planned

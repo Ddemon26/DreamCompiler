@@ -146,6 +146,14 @@ static void emit_stmt(COut *b, Node *n) {
     c_out_write(b, ") ");
     emit_stmt(b, n->as.while_stmt.body);
     break;
+  case ND_DO_WHILE:
+    c_out_write(b, "do ");
+    emit_stmt(b, n->as.do_while_stmt.body);
+    c_out_write(b, " while (");
+    emit_expr(b, n->as.do_while_stmt.cond);
+    c_out_write(b, ");");
+    c_out_newline(b);
+    break;
   case ND_BREAK:
     c_out_write(b, "break;");
     c_out_newline(b);

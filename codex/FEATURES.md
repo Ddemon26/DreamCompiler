@@ -12,6 +12,7 @@
 - `if`/`else` statements
 - Nested block statements
 - `while` loops
+- `do` loops
 - `break` statements
 - `continue` statements
 - `return` statements
@@ -28,7 +29,7 @@ The following language constructs appear in the documentation or tests but are n
 - Bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`) and compound assignments
 - Increment/decrement operators `++` and `--`
 - Ternary conditional operator `?:`
-- `do`/`for` loops
+- `for` loops
 - `switch` statements
 - Function declarations with parameters and typed return values
 - Classes, structs and object construction

@@ -5,7 +5,7 @@ The test suite shows many language constructs are still missing. The following f
 - Arrays and array initialisation for all primitive types
 - Bitwise operators and compound assignment
 - Increment/decrement operators and logical operators
-- `do` and `for` loops
+- `for` loops
 - `switch` statements
 - Functions with parameters and typed return values
 - Classes, structs and object creation
