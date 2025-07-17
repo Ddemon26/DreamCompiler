@@ -11,6 +11,7 @@
 - `if`/`else` statements
 - Nested block statements
 - `while` loops
+- `break` statements
 - Console output via `Console.Write` and `Console.WriteLine`
 - String and character literals with escape sequences
 - Line (`//`) and block (`/* */`) comments

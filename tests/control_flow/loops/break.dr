@@ -1,0 +1,6 @@
+int i = 0;
+while (true) {
+    break;
+    i = 1;
+}
+Console.WriteLine(i); // Expected: 0

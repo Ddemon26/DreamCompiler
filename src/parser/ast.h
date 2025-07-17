@@ -23,6 +23,7 @@ typedef enum {
     ND_VAR_DECL,
     ND_IF,
     ND_WHILE,
+    ND_BREAK,
     ND_BLOCK,
     ND_EXPR_STMT,
     ND_CONSOLE_CALL,
