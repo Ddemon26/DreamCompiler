@@ -1,5 +1,5 @@
 #include "codegen.h"
-#include "../../codegen/c_emit.h"
+#include "c_emit.h"
 #include <stdio.h>
 
 void codegen_emit_c(Node *root, FILE *out) {

@@ -1,4 +1,4 @@
-#include "../../codegen/c_emit.h"
+#include "c_emit.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
