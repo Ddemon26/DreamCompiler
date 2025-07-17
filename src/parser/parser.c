@@ -257,7 +257,8 @@ static Node *parse_primary(Parser *p) {
 }
 
 static Node *parse_unary(Parser *p) {
-  if (p->tok.kind == TK_MINUS || p->tok.kind == TK_BANG) {
+  if (p->tok.kind == TK_MINUS || p->tok.kind == TK_BANG ||
+      p->tok.kind == TK_TILDE) {
     TokenKind op = p->tok.kind;
     next(p);
     Node *expr = parse_unary(p);
@@ -308,13 +309,22 @@ static int precedence(TokenKind k) {
   case TK_GT:
   case TK_LTEQ:
   case TK_GTEQ:
-    return 4;
+    return 7;
+  case TK_LSHIFT:
+  case TK_RSHIFT:
+    return 8;
   case TK_PLUS:
   case TK_MINUS:
-    return 5;
+    return 9;
   case TK_STAR:
   case TK_SLASH:
   case TK_PERCENT:
+    return 10;
+  case TK_OR:
+    return 4;
+  case TK_CARET:
+    return 5;
+  case TK_AND:
     return 6;
   default:
     return -1;

@@ -20,13 +20,14 @@
 - String and character literals with escape sequences
 - Line (`//`) and block (`/* */`) comments
 - Basic C code generation for programs
+- Bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`)
 
 ## Missing Features
 
 The following language constructs appear in the documentation or tests but are not yet implemented:
 
 - Arrays of any type
-- Bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`) and compound assignments
+- Compound assignment operators for arithmetic and bitwise operations
 - Increment/decrement operators `++` and `--`
 - Ternary conditional operator `?:`
 - `for` loops
