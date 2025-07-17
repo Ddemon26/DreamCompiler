@@ -3,6 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Entry point for the lexer driver program.
+ *
+ * Reads a file specified as a command-line argument, tokenizes its content
+ * using the lexer, and outputs the tokens in JSON format.
+ *
+ * @param argc Number of command-line arguments.
+ * @param argv Array of command-line arguments.
+ * @return Exit status of the program.
+ */
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "usage: %s file\n", argv[0]);

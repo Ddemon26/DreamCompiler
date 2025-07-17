@@ -1,5 +1,12 @@
 #include "infer.h"
 
+/**
+ * @brief Checks if a type variable occurs within a given type.
+ *
+ * @param v Pointer to the type variable to check for.
+ * @param t Pointer to the type to search within.
+ * @return True if the type variable occurs within the type, false otherwise.
+ */
 static bool occurs(Type *v, Type *t) {
     t = type_prune(t);
     if (t == v) return true;
@@ -15,6 +22,13 @@ static bool occurs(Type *v, Type *t) {
     }
 }
 
+/**
+ * @brief Unifies two types, ensuring they are compatible.
+ *
+ * @param a Pointer to the first type.
+ * @param b Pointer to the second type.
+ * @return True if the types can be unified, false otherwise.
+ */
 bool unify(Type *a, Type *b) {
     a = type_prune(a);
     b = type_prune(b);

@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Adds a diagnostic message to the parser's diagnostic list.
+ *
+ * @param p Pointer to the parser structure.
+ * @param pos Position in the source code where the diagnostic occurred.
+ * @param msg Diagnostic message to be added.
+ */
 static void diag_push(Parser *p, Pos pos, const char *msg) {
   if (p->diags.len + 1 > p->diags.cap) {
     p->diags.cap = p->diags.cap ? p->diags.cap * 2 : 4;
@@ -10,8 +17,20 @@ static void diag_push(Parser *p, Pos pos, const char *msg) {
   p->diags.data[p->diags.len++] = (Diagnostic){pos, msg};
 }
 
+/**
+ * @brief Advances the parser to the next token.
+ *
+ * @param p Pointer to the parser structure.
+ */
 static void next(Parser *p) { p->tok = lexer_next(&p->lx); }
 
+/**
+ * @brief Initializes the parser with the given source code and memory arena.
+ *
+ * @param p Pointer to the parser structure.
+ * @param a Pointer to the memory arena used for allocations.
+ * @param src Pointer to the source code to be parsed.
+ */
 void parser_init(Parser *p, Arena *a, const char *src) {
   lexer_init(&p->lx, src);
   p->arena = a;
@@ -21,15 +40,79 @@ void parser_init(Parser *p, Arena *a, const char *src) {
   next(p);
 }
 
+/**
+ * @brief Parses an expression with a given minimum precedence.
+ *
+ * @param p Pointer to the parser structure.
+ * @param min_prec Minimum precedence for parsing the expression.
+ * @return Pointer to the parsed expression node.
+ */
 static Node *parse_expr_prec(Parser *p, int min_prec);
+
+/**
+ * @brief Parses an expression.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed expression node.
+ */
 static Node *parse_expr(Parser *p);
+
+/**
+ * @brief Parses a statement.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed statement node.
+ */
 static Node *parse_stmt(Parser *p);
+
+/**
+ * @brief Parses a unary expression.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed unary expression node.
+ */
 static Node *parse_unary(Parser *p);
+
+/**
+ * @brief Parses a do-while loop.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed do-while loop node.
+ */
 static Node *parse_do_while(Parser *p);
+
+/**
+ * @brief Parses a for loop.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed for loop node.
+ */
 static Node *parse_for(Parser *p);
+
+/**
+ * @brief Parses a switch statement.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed switch statement node.
+ */
 static Node *parse_switch(Parser *p);
+
+/**
+ * @brief Adds a node to a dynamic array of nodes.
+ *
+ * @param data Pointer to the array of node pointers.
+ * @param len Pointer to the current length of the array.
+ * @param cap Pointer to the current capacity of the array.
+ * @param n Pointer to the node to be added.
+ */
 static void nodevec_push(Node ***data, size_t *len, size_t *cap, Node *n);
 
+/**
+ * @brief Checks if the given token kind represents a type keyword.
+ *
+ * @param k Token kind to check.
+ * @return true if the token kind is a type keyword, false otherwise.
+ */
 static bool is_type_token(TokenKind k) {
   switch (k) {
   case TK_KW_INT:
@@ -43,6 +126,12 @@ static bool is_type_token(TokenKind k) {
   }
 }
 
+/**
+ * @brief Parses an if statement.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed if statement node.
+ */
 static Node *parse_if(Parser *p) {
   next(p); // consume 'if'
   if (p->tok.kind != TK_LPAREN) {
@@ -69,6 +158,12 @@ static Node *parse_if(Parser *p) {
   return n;
 }
 
+/**
+ * @brief Parses a while loop.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed while loop node.
+ */
 static Node *parse_while(Parser *p) {
   next(p); // consume 'while'
   if (p->tok.kind != TK_LPAREN) {
@@ -89,6 +184,12 @@ static Node *parse_while(Parser *p) {
   return n;
 }
 
+/**
+ * @brief Parses a do-while loop.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed do-while loop node.
+ */
 static Node *parse_do_while(Parser *p) {
   next(p); // consume 'do'
   Node *body = parse_stmt(p);
@@ -117,6 +218,12 @@ static Node *parse_do_while(Parser *p) {
   return n;
 }
 
+/**
+ * @brief Parses a for loop.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed for loop node.
+ */
 static Node *parse_for(Parser *p) {
   next(p); // consume 'for'
   if (p->tok.kind != TK_LPAREN) {
@@ -176,6 +283,12 @@ static Node *parse_for(Parser *p) {
   return n;
 }
 
+/**
+ * @brief Parses a switch statement.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed switch statement node.
+ */
 static Node *parse_switch(Parser *p) {
   next(p); // consume 'switch'
   if (p->tok.kind != TK_LPAREN) {
@@ -231,6 +344,12 @@ static Node *parse_switch(Parser *p) {
   return n;
 }
 
+/**
+ * @brief Parses a break statement.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed break statement node.
+ */
 static Node *parse_break(Parser *p) {
   next(p); // consume 'break'
   if (p->tok.kind == TK_SEMICOLON) {
@@ -241,6 +360,12 @@ static Node *parse_break(Parser *p) {
   return node_new(p->arena, ND_BREAK);
 }
 
+/**
+ * @brief Parses a continue statement.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed continue statement node.
+ */
 static Node *parse_continue(Parser *p) {
   next(p); // consume 'continue'
   if (p->tok.kind == TK_SEMICOLON)
@@ -250,6 +375,12 @@ static Node *parse_continue(Parser *p) {
   return node_new(p->arena, ND_CONTINUE);
 }
 
+/**
+ * @brief Parses a return statement.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed return statement node.
+ */
 static Node *parse_return(Parser *p) {
   next(p); // consume 'return'
   Node *expr = NULL;
@@ -265,6 +396,12 @@ static Node *parse_return(Parser *p) {
   return n;
 }
 
+/**
+ * @brief Parses a function definition.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed function node.
+ */
 static Node *parse_func(Parser *p) {
   next(p); // consume 'func'
   TokenKind ret_type = TK_KW_VOID;
@@ -326,6 +463,12 @@ static Node *parse_func(Parser *p) {
   return fn;
 }
 
+/**
+ * @brief Parses a primary expression.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed primary expression node.
+ */
 static Node *parse_primary(Parser *p) {
   Token t = p->tok;
   Node *n;
@@ -440,6 +583,12 @@ static Node *parse_primary(Parser *p) {
   }
 }
 
+/**
+ * @brief Parses a postfix expression.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed postfix expression node.
+ */
 static Node *parse_postfix(Parser *p) {
   Node *n = parse_primary(p);
   for (;;) {
@@ -492,6 +641,12 @@ static Node *parse_postfix(Parser *p) {
   return n;
 }
 
+/**
+ * @brief Parses a unary expression.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed unary expression node.
+ */
 static Node *parse_unary(Parser *p) {
   if (p->tok.kind == TK_MINUS || p->tok.kind == TK_PLUS ||
       p->tok.kind == TK_BANG || p->tok.kind == TK_TILDE ||
@@ -564,6 +719,13 @@ static Node *parse_var_decl(Parser *p) {
   blk->as.block.len = len;
   return blk;
 }
+
+/**
+ * @brief Determines the precedence of a given token kind.
+ *
+ * @param k Token kind to evaluate.
+ * @return Precedence level of the token kind, or -1 if not applicable.
+ */
 static int precedence(TokenKind k) {
   switch (k) {
   case TK_EQ:
@@ -612,6 +774,12 @@ static int precedence(TokenKind k) {
   }
 }
 
+/**
+ * @brief Determines if a token kind is right-associative.
+ *
+ * @param k Token kind to evaluate.
+ * @return 1 if the token kind is right-associative, 0 otherwise.
+ */
 static int right_assoc(TokenKind k) {
   switch (k) {
   case TK_EQ:
@@ -633,6 +801,13 @@ static int right_assoc(TokenKind k) {
   }
 }
 
+/**
+ * @brief Parses an expression with a given minimum precedence.
+ *
+ * @param p Pointer to the parser structure.
+ * @param min_prec Minimum precedence for parsing the expression.
+ * @return Pointer to the parsed expression node.
+ */
 static Node *parse_expr_prec(Parser *p, int min_prec) {
   Node *lhs = parse_unary(p);
   for (;;) {
@@ -668,8 +843,22 @@ static Node *parse_expr_prec(Parser *p, int min_prec) {
   return lhs;
 }
 
+/**
+ * @brief Parses an expression.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed expression node.
+ */
 static Node *parse_expr(Parser *p) { return parse_expr_prec(p, 0); }
 
+/**
+ * @brief Adds a node to a dynamic array of nodes, resizing the array if necessary.
+ *
+ * @param data Pointer to the array of node pointers.
+ * @param len Pointer to the current length of the array.
+ * @param cap Pointer to the current capacity of the array.
+ * @param n Pointer to the node to be added.
+ */
 static void nodevec_push(Node ***data, size_t *len, size_t *cap, Node *n) {
   if (*len + 1 > *cap) {
     *cap = *cap ? *cap * 2 : 4;
@@ -678,6 +867,12 @@ static void nodevec_push(Node ***data, size_t *len, size_t *cap, Node *n) {
   (*data)[(*len)++] = n;
 }
 
+/**
+ * @brief Parses a statement based on the current token kind.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed statement node.
+ */
 static Node *parse_stmt(Parser *p) {
   if (p->tok.kind == TK_KW_IF) {
     return parse_if(p);
@@ -736,6 +931,12 @@ static Node *parse_stmt(Parser *p) {
   return st;
 }
 
+/**
+ * @brief Parses the entire program into a block node.
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed program block node.
+ */
 Node *parse_program(Parser *p) {
   Node **items = NULL;
   size_t len = 0, cap = 0;

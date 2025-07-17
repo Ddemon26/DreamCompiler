@@ -1,11 +1,28 @@
 #include "cfg.h"
 #include <stdlib.h>
 
+/**
+ * @brief Creates a new control flow graph (CFG).
+ *
+ * Allocates and initializes a new CFG structure.
+ *
+ * @return A pointer to the newly created CFG.
+ */
 CFG *cfg_new(void) {
     CFG *cfg = calloc(1, sizeof(CFG));
     return cfg;
 }
 
+/**
+ * @brief Adds a new basic block to the control flow graph (CFG).
+ *
+ * Allocates and initializes a new basic block, assigns it a unique ID,
+ * and appends it to the list of blocks in the CFG. If the CFG has no
+ * entry block, the new block is set as the entry.
+ *
+ * @param cfg The control flow graph to add the block to.
+ * @return A pointer to the newly created basic block.
+ */
 BasicBlock *cfg_add_block(CFG *cfg) {
     BasicBlock *bb = calloc(1, sizeof(BasicBlock));
     bb->id = cfg->nblocks;
@@ -15,6 +32,15 @@ BasicBlock *cfg_add_block(CFG *cfg) {
     return bb;
 }
 
+/**
+ * @brief Adds a directed edge between two basic blocks in the control flow graph (CFG).
+ *
+ * Updates the successor list of the source block and the predecessor list
+ * of the destination block to reflect the new edge.
+ *
+ * @param from The source basic block.
+ * @param to The destination basic block.
+ */
 void cfg_add_edge(BasicBlock *from, BasicBlock *to) {
     from->succ = realloc(from->succ, sizeof(BasicBlock*) * (from->nsucc + 1));
     from->succ[from->nsucc++] = to;
@@ -22,13 +48,37 @@ void cfg_add_edge(BasicBlock *from, BasicBlock *to) {
     to->pred[to->npred++] = from;
 }
 
+/**
+ * @brief Represents a dynamic array of integers.
+ *
+ * A structure that holds a pointer to an array of integers
+ * and its current length.
+ */
 typedef struct { int *data; size_t len; } IntVec;
 
+/**
+ * @brief Appends an integer to a dynamic array.
+ *
+ * Resizes the array if necessary and adds the given integer
+ * to the end of the array.
+ *
+ * @param v The dynamic array to append to.
+ * @param x The integer to append.
+ */
 static void ivec_push(IntVec *v, int x) {
     v->data = realloc(v->data, sizeof(int)*(v->len+1));
     v->data[v->len++] = x;
 }
 
+/**
+ * @brief Computes the dominance frontier for each basic block in the control flow graph (CFG).
+ *
+ * Iterates through all basic blocks in the CFG, excluding the entry block,
+ * and calculates their dominance frontier by traversing their predecessors
+ * and updating the dominance frontier of intermediate blocks.
+ *
+ * @param cfg The control flow graph for which to compute the dominance frontier.
+ */
 static void compute_df(CFG *cfg) {
     for (size_t i = 0; i < cfg->nblocks; i++) {
         BasicBlock *b = cfg->blocks[i];
@@ -44,7 +94,18 @@ static void compute_df(CFG *cfg) {
     }
 }
 
-// Lengauer-Tarjan dominator algorithm
+/**
+ * @brief Performs a depth-first search (DFS) on the control flow graph (CFG).
+ *
+ * Traverses the CFG starting from the given basic block, assigning
+ * depth-first numbers and updating parent and semi-dominator arrays.
+ *
+ * @param b The starting basic block for the DFS.
+ * @param vertex An array to store the order of visited basic blocks.
+ * @param parent An array to store the parent of each basic block in the DFS tree.
+ * @param semi An array to store the semi-dominator of each basic block.
+ * @param idx A pointer to the current DFS index.
+ */
 static void dfs(BasicBlock *b, BasicBlock **vertex, int *parent, int *semi, int *idx) {
     if (b->dfnum) return;
     b->dfnum = ++*idx;
@@ -59,8 +120,23 @@ static void dfs(BasicBlock *b, BasicBlock **vertex, int *parent, int *semi, int 
     }
 }
 
+/**
+ * @brief Represents a union-find data structure for dominance computation.
+ *
+ * Stores the ancestor and label of a node in the union-find structure.
+ */
 struct UF { int ancestor; int label; };
 
+/**
+ * @brief Evaluates the label of a node in the union-find structure.
+ *
+ * Traverses the ancestor chain of the given node, performing path compression
+ * and updating the label to the smallest value encountered.
+ *
+ * @param uf The union-find data structure.
+ * @param v The index of the node to evaluate.
+ * @return The label of the node after evaluation.
+ */
 static int eval(struct UF *uf, int v) {
     if (uf[v].ancestor == 0) return uf[v].label;
     int compress = eval(uf, uf[v].ancestor);
@@ -70,10 +146,27 @@ static int eval(struct UF *uf, int v) {
     return uf[v].label;
 }
 
+/**
+ * @brief Links a child node to a parent node in the union-find structure.
+ *
+ * Updates the ancestor of the child node to point to the parent node.
+ *
+ * @param uf The union-find data structure.
+ * @param parent The parent node.
+ * @param child The child node.
+ */
 static void link(struct UF *uf, int parent, int child) {
     uf[child].ancestor = parent;
 }
 
+/**
+ * @brief Computes the dominator tree for the control flow graph (CFG).
+ *
+ * Uses a semi-dominators based algorithm to calculate the immediate dominators
+ * for each basic block in the CFG and updates the dominance frontier.
+ *
+ * @param cfg The control flow graph for which to compute the dominator tree.
+ */
 void cfg_compute_dominators(CFG *cfg) {
     size_t n = cfg->nblocks;
     if (n == 0) return;

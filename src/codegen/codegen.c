@@ -9,6 +9,14 @@
 #include <unistd.h>
 #endif
 
+/**
+ * @brief Converts a token kind to its corresponding operator text.
+ *
+ * Maps a given token kind to its string representation of the operator.
+ *
+ * @param k The token kind to convert.
+ * @return The string representation of the operator.
+ */
 static const char *op_text(TokenKind k) {
   switch (k) {
   case TK_PLUS:
@@ -82,6 +90,15 @@ static const char *op_text(TokenKind k) {
   }
 }
 
+/**
+ * @brief Determines the appropriate format specifier for a given argument.
+ *
+ * Maps the kind of the provided node to its corresponding format specifier
+ * used in formatted output functions.
+ *
+ * @param arg Pointer to the node representing the argument.
+ * @return The format specifier as a string.
+ */
 static const char *fmt_for_arg(Node *arg) {
   switch (arg->kind) {
   case ND_STRING:
@@ -99,6 +116,17 @@ static const char *fmt_for_arg(Node *arg) {
   }
 }
 
+/**
+ * @brief Represents a variable binding in the code generation context.
+ *
+ * Stores information about a variable, including its name, length,
+ * type, and the scope depth at which it is defined.
+ *
+ * @param start Pointer to the start of the variable name.
+ * @param len Length of the variable name.
+ * @param type Token kind representing the variable's type.
+ * @param depth Scope depth where the variable is defined.
+ */
 typedef struct {
   const char *start;
   size_t len;
@@ -106,6 +134,16 @@ typedef struct {
   int depth;
 } VarBinding;
 
+/**
+ * @brief Represents the code generation context.
+ *
+ * Manages variable bindings, scope depth, and capacity for code generation.
+ *
+ * @param vars Pointer to the array of variable bindings.
+ * @param len Current number of variable bindings.
+ * @param cap Maximum capacity of the variable bindings array.
+ * @param depth Current scope depth.
+ */
 typedef struct {
   VarBinding *vars;
   size_t len;
@@ -113,6 +151,17 @@ typedef struct {
   int depth;
 } CGCtx;
 
+/**
+ * @brief Adds a variable binding to the code generation context.
+ *
+ * Expands the variable bindings array if necessary and appends a new binding
+ * with the specified name, length, type, and current scope depth.
+ *
+ * @param ctx Pointer to the code generation context.
+ * @param start Pointer to the start of the variable name.
+ * @param len Length of the variable name.
+ * @param ty Token kind representing the variable's type.
+ */
 static void cgctx_push(CGCtx *ctx, const char *start, size_t len,
                        TokenKind ty) {
   if (ctx->len + 1 > ctx->cap) {
@@ -122,8 +171,23 @@ static void cgctx_push(CGCtx *ctx, const char *start, size_t len,
   ctx->vars[ctx->len++] = (VarBinding){start, len, ty, ctx->depth};
 }
 
+/**
+ * @brief Enters a new scope in the code generation context.
+ *
+ * Increments the current scope depth to reflect the entry into a new scope.
+ *
+ * @param ctx Pointer to the code generation context.
+ */
 static void cgctx_scope_enter(CGCtx *ctx) { ctx->depth++; }
 
+/**
+ * @brief Exits the current scope in the code generation context.
+ *
+ * Removes variable bindings defined in the current scope and
+ * decrements the scope depth.
+ *
+ * @param ctx Pointer to the code generation context.
+ */
 static void cgctx_scope_leave(CGCtx *ctx) {
   while (ctx->len && ctx->vars[ctx->len - 1].depth >= ctx->depth)
     ctx->len--;
@@ -131,6 +195,17 @@ static void cgctx_scope_leave(CGCtx *ctx) {
     ctx->depth--;
 }
 
+/**
+ * @brief Looks up a variable binding in the code generation context.
+ *
+ * Searches for a variable by name and length in the context's variable bindings
+ * and returns its token kind if found.
+ *
+ * @param ctx Pointer to the code generation context.
+ * @param start Pointer to the start of the variable name.
+ * @param len Length of the variable name.
+ * @return The token kind of the variable if found, or 0 if not found.
+ */
 static TokenKind cgctx_lookup(CGCtx *ctx, const char *start, size_t len) {
   for (size_t i = ctx->len; i-- > 0;) {
     VarBinding *v = &ctx->vars[i];
@@ -140,6 +215,16 @@ static TokenKind cgctx_lookup(CGCtx *ctx, const char *start, size_t len) {
   return (TokenKind)0;
 }
 
+/**
+ * @brief Checks if a node represents a string expression.
+ *
+ * Determines whether the given node is a string literal or an identifier
+ * with a string type in the current code generation context.
+ *
+ * @param ctx Pointer to the code generation context.
+ * @param n Pointer to the node to check.
+ * @return 1 if the node is a string expression, 0 otherwise.
+ */
 static int is_string_expr(CGCtx *ctx, Node *n) {
   switch (n->kind) {
   case ND_STRING:
@@ -152,10 +237,49 @@ static int is_string_expr(CGCtx *ctx, Node *n) {
   }
 }
 
+/**
+ * @brief Emits an expression node to the output buffer.
+ *
+ * Generates C code for the given expression node and writes it to the output buffer.
+ *
+ * @param ctx Pointer to the code generation context.
+ * @param b Pointer to the output buffer.
+ * @param n Pointer to the expression node.
+ */
 static void emit_expr(CGCtx *ctx, COut *b, Node *n);
+
+/**
+ * @brief Emits a statement node to the output buffer.
+ *
+ * Generates C code for the given statement node and writes it to the output buffer.
+ *
+ * @param ctx Pointer to the code generation context.
+ * @param b Pointer to the output buffer.
+ * @param n Pointer to the statement node.
+ */
 static void emit_stmt(CGCtx *ctx, COut *b, Node *n);
+
+/**
+ * @brief Emits a function node to the output buffer.
+ *
+ * Generates C code for the given function node and writes it to the output buffer.
+ *
+ * @param b Pointer to the output buffer.
+ * @param n Pointer to the function node.
+ */
 static void emit_func(COut *b, Node *n);
 
+/**
+ * @brief Emits an expression node to the output buffer.
+ *
+ * Generates C code for the given expression node and writes it to the output buffer.
+ * Handles various node kinds, including literals, identifiers, unary and binary operations,
+ * conditional expressions, array indexing, and function calls.
+ *
+ * @param ctx Pointer to the code generation context.
+ * @param b Pointer to the output buffer.
+ * @param n Pointer to the expression node.
+ */
 static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
   switch (n->kind) {
   case ND_INT:
@@ -239,6 +363,14 @@ static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
   }
 }
 
+/**
+ * @brief Converts a token kind to its corresponding C type as a string.
+ *
+ * Maps a given token kind to its string representation of the C type.
+ *
+ * @param k The token kind to convert.
+ * @return The string representation of the C type.
+ */
 static const char *type_to_c(TokenKind k) {
   switch (k) {
   case TK_KW_INT:
@@ -258,6 +390,15 @@ static const char *type_to_c(TokenKind k) {
   }
 }
 
+/**
+ * @brief Emits a function node to the output buffer.
+ *
+ * Generates C code for the given function node, including its return type,
+ * name, parameters, and body, and writes it to the output buffer.
+ *
+ * @param b Pointer to the output buffer.
+ * @param n Pointer to the function node.
+ */
 static void emit_func(COut *b, Node *n) {
   c_out_write(b, "%s %.*s(", type_to_c(n->as.func.ret_type),
               (int)n->as.func.name.len, n->as.func.name.start);
@@ -282,6 +423,17 @@ static void emit_func(COut *b, Node *n) {
   c_out_newline(b);
 }
 
+/**
+ * @brief Emits a statement node to the output buffer.
+ *
+ * Generates C code for the given statement node and writes it to the output buffer.
+ * Handles various statement types, including variable declarations, function definitions,
+ * control flow statements (if, while, do-while, for, switch), and console calls.
+ *
+ * @param ctx Pointer to the code generation context.
+ * @param b Pointer to the output buffer.
+ * @param n Pointer to the statement node.
+ */
 static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
   switch (n->kind) {
   case ND_VAR_DECL:
@@ -461,6 +613,16 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
   }
 }
 
+/**
+ * @brief Emits C code for the given AST root node to the specified output file.
+ *
+ * Generates C code by traversing the abstract syntax tree (AST) and writing
+ * the corresponding C code to the output file. Includes necessary headers,
+ * helper functions, and the main function.
+ *
+ * @param root Pointer to the root node of the AST.
+ * @param out Pointer to the output file.
+ */
 void codegen_emit_c(Node *root, FILE *out) {
   COut builder;
   c_out_init(&builder);
@@ -510,6 +672,16 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_free(&builder);
 }
 
+/**
+ * @brief Emits an object file for the given AST root node.
+ *
+ * Generates an intermediate C file from the AST, compiles it into an object file,
+ * and writes the result to the specified path. Handles platform-specific
+ * temporary file creation and cleanup.
+ *
+ * @param root Pointer to the root node of the AST.
+ * @param path Path to the output object file.
+ */
 void codegen_emit_obj(Node *root, const char *path) {
 #ifdef _WIN32
   char tmp[L_tmpnam] = {0};
