@@ -25,3 +25,4 @@ All notable changes to the Dream compiler will be documented in this file.
 - Added prefix/postfix increment and decrement operators.
 - Added compound assignment operators for arithmetic and bitwise ops.
 - Added string concatenation for `string` values.
+- Implemented ternary conditional operator `?:`.

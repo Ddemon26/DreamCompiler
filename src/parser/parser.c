@@ -383,6 +383,7 @@ static int precedence(TokenKind k) {
   case TK_LSHIFTEQ:
   case TK_RSHIFTEQ:
   case TK_QMARKQMARKEQ:
+  case TK_QUESTION:
     return 1;
   case TK_OROR:
     return 2;
@@ -430,6 +431,7 @@ static int right_assoc(TokenKind k) {
   case TK_LSHIFTEQ:
   case TK_RSHIFTEQ:
   case TK_QMARKQMARKEQ:
+  case TK_QUESTION:
     return 1;
   default:
     return 0;
@@ -439,6 +441,22 @@ static int right_assoc(TokenKind k) {
 static Node *parse_expr_prec(Parser *p, int min_prec) {
   Node *lhs = parse_unary(p);
   for (;;) {
+    if (p->tok.kind == TK_QUESTION && min_prec <= 1) {
+      next(p);
+      Node *then_expr = parse_expr_prec(p, 0);
+      if (p->tok.kind != TK_COLON) {
+        diag_push(p, p->tok.pos, "expected ':'");
+      } else {
+        next(p);
+      }
+      Node *else_expr = parse_expr_prec(p, 1);
+      Node *tern = node_new(p->arena, ND_COND);
+      tern->as.cond.cond = lhs;
+      tern->as.cond.then_expr = then_expr;
+      tern->as.cond.else_expr = else_expr;
+      lhs = tern;
+      continue;
+    }
     int prec = precedence(p->tok.kind);
     if (prec < min_prec)
       break;
