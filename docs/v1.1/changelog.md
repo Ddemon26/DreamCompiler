@@ -1,8 +1,6 @@
-# Changelog
+# Dream Compiler Changelog
 
-All notable changes to the Dream compiler will be documented in this file.
-
-## [Unreleased]
+Version 1.1.0 (2025-07-16)
 - Documentation site rebuilt. `index.html` now loads `index.md` and navigation focuses on compiler and language guides.
 - Restored language documentation pages and detailed table of contents.
 - Added automated test runner to `zig build test`.
@@ -20,6 +18,7 @@ All notable changes to the Dream compiler will be documented in this file.
 - Added support for primitive types (`int`, `float`, `char`, `bool`, `string`) in the parser and C code generation.
 - Introduced developer-only `Console.Write`/`WriteLine` macros for compiler debugging.
 
+Version 1.1.01 (2025-07-17)
 - Documented current feature gaps in codex/FEATURES.md and added tasks/TODO.md.
 - Added parsing and code generation for `while` loops.
 - Implemented `do` loops.

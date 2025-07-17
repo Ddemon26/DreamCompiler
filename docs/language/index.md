@@ -4,34 +4,34 @@ Here you will find the syntax guide, examples and references for the Dream.dr pr
 
 ### Getting Started
 
-- [Introduction](../v1/intro.md)
-- [Usage Guide](../v1/usage.md)
+- [Introduction](../intro.md)
+- [Usage Guide](../usage.md)
 
 ### Language Basics *(planned)*
 
-- [Variables](../variables.md)
-- [Arrays](../arrays.md)
-- [Arithmetic](../arithmetic.md)
-- [Parentheses](../parentheses.md)
-- [Comparison](../comparison.md)
-- [Logical Operators](../logical.md)
-- [Conditional Operator](../conditional.md)
-- [Console Output](../console.md)
-- [String Literals](../strings.md)
-- [Comments](../comments.md)
-- [Functions](../functions.md)
-- [Classes](../classes.md)
+- [Variables](../v1.1/variables.md)
+- [Arrays](../v1.1/arrays.md)
+- [Arithmetic](../v1.1/arithmetic.md)
+- [Parentheses](../v1.1/parentheses.md)
+- [Comparison](../v1.1/comparison.md)
+- [Logical Operators](../v1.1/logical.md)
+- [Conditional Operator](../v1.1/conditional.md)
+- [Console Output](../v1.1/console.md)
+- [String Literals](../v1.1/strings.md)
+- [Comments](../v1.1/comments.md)
+- [Functions](../v1.1/functions.md)
+- [Classes](../v1.1/classes.md)
 
 ### Control Flow *(planned)*
 
-- [If Statements](../if.md)
-- [Loops](../loops.md)
-- [Switch Statements](../switch.md)
-- [Return](../return.md)
+- [If Statements](../v1.1/if.md)
+- [Loops](../v1.1/loops.md)
+- [Switch Statements](../v1.1/switch.md)
+- [Return](../v1.1/return.md)
 
 ### Other
 
-- [Changelog](../changelog.md)
-- [Source Architecture](../architecture.md)
+- [Changelog](../v1.1/changelog.md)
+- [Source Architecture](../v1.1/architecture.md)
 - [Grammar Specification](../grammar/Grammar.md)
 

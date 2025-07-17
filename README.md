@@ -11,7 +11,7 @@ The compiler currently supports:
 - Arithmetic, bitwise and comparison operators
 - Control flow statements: `if`/`else`, loops and `switch`
 - Console output via `Console.Write` and `Console.WriteLine`
-See the [changelog](docs/changelog.md) for details on recent additions.
+See the [changelog](docs/v1.1/changelog.md) for details on recent additions.
 
 ## Getting Started
 
