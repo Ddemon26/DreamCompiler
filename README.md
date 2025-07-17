@@ -72,17 +72,17 @@ Dream Compiler is released under the [MIT License](LICENSE).
 
 ## Syntax Highlighting
 
-Generate the VS Code grammar from `tokens.json` at the repository root. The generator
-also syncs copies under `idea/` used by the JetBrains plugin:
+Generate the VS Code grammar from `src/lexer/tokens.def`. The generator
+also syncs copies under `assets/jetbrains` used by the JetBrains plugin:
 
 ```bash
-node scripts/genFromTokens.js
+node assets/jetbrains/scripts/genFromTokens.js
 ```
 
 ### VS Code
 
 ```bash
-cd vscode
+cd assets/vscode
 npm install
 npx vsce package
 ```
@@ -90,10 +90,10 @@ npx vsce package
 ### JetBrains Plugin
 
 ```bash
-cd idea
+cd assets/jetbrains
 ./gradlew generateLexer build test
 ```
-Ensure a JDK 17 is available. The build regenerates the lexer from `tokens.json` before compiling and running the tests.
+Ensure a JDK 17 is available. The build regenerates the lexer from `tokens.def` before compiling and running the tests.
 
 The resulting VSIX and plugin zip live in their respective directories.
 
