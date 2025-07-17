@@ -25,6 +25,7 @@
 - Bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`)
 - Compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=` and bitwise variants)
 - Increment/decrement operators `++` and `--`
+- Multiple variable declarations separated by commas
 - String concatenation with `+`
 - Ternary conditional operator `?:`
 - `switch` statements
