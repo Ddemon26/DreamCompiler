@@ -16,6 +16,42 @@ Everything lives in a Linux terminal environment where you invoke `zig build`, `
 
 ---
 
+## Dev Environment Tips  *(adapted from the Codex contributor guide)*
+
+* **Jump quickly between modules** – use `grep -R "module "` or `find . -name '*.c'` instead of scanning with `ls`.
+* **Prime the incremental cache** – run `zig build` once; subsequent builds re‑compile only what changed.
+* **Run the full test suite** – `zig build test` executes every unit and regression test and prints a concise summary.
+* **Focus on one test** – `zig build test -Dfilter="<pattern>"` (pattern matches file or function) is equivalent to the Vitest `-t "<name>"` flag in Codex.
+* **Spin up a scratch playground** – `zig run tools/scratch.zig -- <snippet.dr>` to experiment without touching the main code‑base.
+* **Add new external tools responsibly** – when you introduce something like **re2c** or **clang‑format**, record it in `codex/_startup.sh` so CI can install it.
+* **Keep target names consistent** – double‑check any new `build.zig` target’s `name` field to avoid CI mis‑routing.
+
+---
+
+## Testing Instructions
+
+* The CI plan lives at `.github/workflows/ci.yml`.
+* **Run everything** – `zig build test` from the repo root.
+* **Narrow scope** – `zig build test -Dfilter="sem_type_inference_*"` runs only matching tests.
+* Fix *all* test or type errors until the whole suite is green.
+* After moving files or changing `#include` paths, run `zig fmt --check` and `zig build` to ensure formatting and compilation still pass.
+* *Always* add or update tests for the code you change, even if nobody asked.
+
+---
+
+## PR Instructions
+
+Title format: `[dreamc] <Short, imperative summary>`
+
+Every pull request **must** fill out `codex/BOT_PR_TEMPLATE.md`, covering:
+
+1. **What changed** – features, refactors, or bug fixes.
+2. **How it was tested** – commands, new test files, CI results.
+3. **Docs updated** – grammar, examples, changelog entries.
+4. **Dependencies** – any additions in `codex/_startup.sh`.
+
+---
+
 ## Responsibilities
 
 * **Track `docs/Grammar.md`** – the authoritative Dream grammar.  Whenever the spec changes, update:
@@ -106,11 +142,4 @@ A living list of implemented and planned features is kept in [`FEATURES.md`](FEA
 
 ---
 
-## Pull Request Template
-
-All pull requests must follow `codex/BOT_PR_TEMPLATE.md`.  Fill out each section describing code changes, tests, documentation updates, and dependency modifications.
-
----
-
 > **Tip:** For quick access to the agent's functionality, use the `go` command in your terminal. This will automatically sync the grammar, build the compiler, run tests, and commit changes if everything passes.
-```
