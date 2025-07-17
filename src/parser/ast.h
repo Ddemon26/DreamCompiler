@@ -22,6 +22,7 @@ typedef enum {
     ND_BINOP,
     ND_VAR_DECL,
     ND_IF,
+    ND_WHILE,
     ND_BLOCK,
     ND_EXPR_STMT,
     ND_ERROR
@@ -56,6 +57,10 @@ struct Node {
             Node *then_br;
             Node *else_br; // may be NULL
         } if_stmt;
+        struct {                      // ND_WHILE
+            Node *cond;
+            Node *body;
+        } while_stmt;
         struct {                      // ND_BLOCK
             Node **items;
             size_t len;

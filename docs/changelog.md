@@ -16,3 +16,4 @@ All notable changes to the Dream compiler will be documented in this file.
 - Introduced developer-only `Console.Write`/`WriteLine` macros for compiler debugging.
 
 - Documented current feature gaps in codex/FEATURES.md and added tasks/TODO.md.
+- Added parsing and code generation for `while` loops.
