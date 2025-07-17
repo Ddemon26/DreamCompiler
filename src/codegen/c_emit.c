@@ -3,6 +3,16 @@
 #include <stdarg.h>
 #include <string.h>
 
+// `stpcpy` is a GNU extension and not universally available (e.g. on Windows).
+// Provide a small local implementation so the code compiles everywhere.
+static inline char *dream_stpcpy(char *dest, const char *src) {
+    while ((*dest = *src) != '\0') {
+        ++dest;
+        ++src;
+    }
+    return dest;
+}
+
 static void grow(COut *out, size_t needed) {
     if (out->len + needed <= out->cap) return;
     size_t new_cap = out->cap ? out->cap * 2 : 1024;
@@ -91,7 +101,7 @@ char *c_mangle(const char *base, const char **types, size_t ntypes) {
     size_t len = strlen(base);
     for (size_t i = 0; i < ntypes; i++) len += 2 + strlen(types[i]);
     char *res = malloc(len + 1);
-    char *p = stpcpy(res, base);
+    char *p = dream_stpcpy(res, base);
     for (size_t i = 0; i < ntypes; i++) {
         *p++ = '_'; *p++ = '_';
         const char *t = types[i];
