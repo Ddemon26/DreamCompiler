@@ -24,6 +24,7 @@
  - Functions with parameters and typed return values
 - Classes and structs with field access and object instantiation
 - Console output via `Console.Write` and `Console.WriteLine`
+- Developer macros `Console.Write`/`WriteLine` for compiler debugging (disabled in release)
 - String literals with escape sequences and concatenation using `+`
 - Line (`//`) and block (`/* */`) comments
 - Basic C code generation for programs
