@@ -14,7 +14,7 @@ Sources: core grammar from the v0.2 draft; extended lexical grammar (§6) and sy
 * Integrated **Syntactic grammar** additions (namespaces, generics, attributes, patterns, lambdas, queries, etc.) as forward‑looking references.
 * Integrated **Unsafe grammar** additions (pointer types & ops, `fixed`, address‑of, fixed‑size buffers) as reserved constructs.
 * Added missing core tokens (`float`, `char`, `void` return via omission) and clarified built‑in `Console.Write`/`WriteLine`.
-* Cleaned up operator table formatting; added bitwise NOT `~` (reserved).
+* Cleaned up operator table formatting; bitwise NOT `~` is now implemented.
 
 ---
 
@@ -58,7 +58,7 @@ The combined token set recognised by the lexer includes all C# operators and pun
 | `=`                                 |   Implemented  | Simple assign.                                   |                                  |                        |
 | `? :`                               |   Implemented  | Conditional operator.                            |                                  |                        |
 | `<<` `>>`                           |   Implemented  | Shift.                                           |                                  |                        |
-| `~`                                 |     Partial    | Bitwise complement (reserved).                   |                                  |                        |
+| `~`                                 |   Implemented  | Bitwise complement.                             |                                  |
 | `??` `??=`                          |     Partial    | Null‑coalescing (future).                        |                                  |                        |
 | `=>`                                |     Partial    | Lambda / switch expr / property bodies (future). |                                  |                        |
 | `::`                                |     Partial    | Alias qualifier (future).                        |                                  |                        |
