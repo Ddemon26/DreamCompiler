@@ -4,6 +4,7 @@
 
 - Primitive types: `int`, `float`, `bool`, `char`, and `string`
 - Variable declarations with optional initialisers
+- Implicitly typed local variables using `var`
 - Basic arithmetic operators `+`, `-`, `*`, `/`, `%`, unary minus and unary plus
 - Logical operators `&&`, `||`, and `!`
 - Comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=`

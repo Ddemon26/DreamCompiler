@@ -120,9 +120,38 @@ static bool is_type_token(TokenKind k) {
   case TK_KW_BOOL:
   case TK_KW_CHAR:
   case TK_KW_STRING:
+  case TK_KW_VAR:
     return true;
   default:
     return false;
+  }
+}
+
+/**
+ * @brief Infers a variable type from an initializer expression.
+ */
+static TokenKind infer_var_type(Node *expr) {
+  if (!expr)
+    return TK_KW_INT;
+  switch (expr->kind) {
+  case ND_INT:
+    return TK_KW_INT;
+  case ND_FLOAT:
+    return TK_KW_FLOAT;
+  case ND_CHAR:
+    return TK_KW_CHAR;
+  case ND_STRING:
+    return TK_KW_STRING;
+  case ND_BOOL:
+    return TK_KW_BOOL;
+  case ND_UNARY:
+    return infer_var_type(expr->as.unary.expr);
+  case ND_BINOP:
+    return infer_var_type(expr->as.bin.lhs);
+  case ND_COND:
+    return infer_var_type(expr->as.cond.then_expr);
+  default:
+    return TK_KW_INT;
   }
 }
 
@@ -252,6 +281,8 @@ static Node *parse_for(Parser *p) {
         diag_push(p, p->tok.pos, "expected '='");
         init->as.var_decl.init = node_new(p->arena, ND_ERROR);
       }
+      if (type_tok == TK_KW_VAR)
+        init->as.var_decl.type = infer_var_type(init->as.var_decl.init);
     } else {
       init = parse_expr(p);
     }
@@ -697,6 +728,14 @@ static Node *parse_var_decl(Parser *p) {
       n->as.var_decl.init = parse_expr(p);
     } else {
       n->as.var_decl.init = NULL;
+    }
+    if (type_tok == TK_KW_VAR) {
+      if (!n->as.var_decl.init) {
+        diag_push(p, p->tok.pos, "var declaration requires initializer");
+        n->as.var_decl.type = TK_KW_INT;
+      } else {
+        n->as.var_decl.type = infer_var_type(n->as.var_decl.init);
+      }
     }
     nodevec_push(&items, &len, &cap, n);
     if (p->tok.kind == TK_COMMA) {
