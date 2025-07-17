@@ -105,6 +105,11 @@ static Token lex_raw(Lexer *lx) {
         <SC_NORMAL> "*=" { return make_token(lx, TK_STAREQ, tok_start, 2); }
         <SC_NORMAL> "/=" { return make_token(lx, TK_SLASHEQ, tok_start, 2); }
         <SC_NORMAL> "%=" { return make_token(lx, TK_PERCENTEQ, tok_start, 2); }
+        <SC_NORMAL> "&=" { return make_token(lx, TK_ANDEQ, tok_start, 2); }
+        <SC_NORMAL> "|=" { return make_token(lx, TK_OREQ, tok_start, 2); }
+        <SC_NORMAL> "^=" { return make_token(lx, TK_XOREQ, tok_start, 2); }
+        <SC_NORMAL> "<<=" { return make_token(lx, TK_LSHIFTEQ, tok_start, 3); }
+        <SC_NORMAL> ">>=" { return make_token(lx, TK_RSHIFTEQ, tok_start, 3); }
         <SC_NORMAL> "+" { return make_token(lx, TK_PLUS, tok_start, 1); }
         <SC_NORMAL> "-" { return make_token(lx, TK_MINUS, tok_start, 1); }
         <SC_NORMAL> "*" { return make_token(lx, TK_STAR, tok_start, 1); }
@@ -123,11 +128,16 @@ static Token lex_raw(Lexer *lx) {
         <SC_NORMAL> "||" { return make_token(lx, TK_OROR, tok_start, 2); }
         <SC_NORMAL> "&" { return make_token(lx, TK_AND, tok_start, 1); }
         <SC_NORMAL> "|" { return make_token(lx, TK_OR, tok_start, 1); }
+        <SC_NORMAL> "->" { return make_token(lx, TK_ARROW, tok_start, 2); }
+        <SC_NORMAL> "=>" { return make_token(lx, TK_FATARROW, tok_start, 2); }
         <SC_NORMAL> "~" { return make_token(lx, TK_TILDE, tok_start, 1); }
         <SC_NORMAL> "!" { return make_token(lx, TK_BANG, tok_start, 1); }
         <SC_NORMAL> "=" { return make_token(lx, TK_EQ, tok_start, 1); }
         <SC_NORMAL> "?" { return make_token(lx, TK_QUESTION, tok_start, 1); }
+        <SC_NORMAL> "??" { return make_token(lx, TK_QMARKQMARK, tok_start, 2); }
+        <SC_NORMAL> "??=" { return make_token(lx, TK_QMARKQMARKEQ, tok_start, 3); }
         <SC_NORMAL> ":" { return make_token(lx, TK_COLON, tok_start, 1); }
+        <SC_NORMAL> "::" { return make_token(lx, TK_DCOLON, tok_start, 2); }
         <SC_NORMAL> ";" { return make_token(lx, TK_SEMICOLON, tok_start, 1); }
         <SC_NORMAL> "," { return make_token(lx, TK_COMMA, tok_start, 1); }
         <SC_NORMAL> "." { return make_token(lx, TK_DOT, tok_start, 1); }
