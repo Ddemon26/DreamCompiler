@@ -2,6 +2,7 @@
 #include "c_emit.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #ifdef _WIN32
 #include <io.h>
 #else
@@ -45,8 +46,20 @@ static void emit_stmt(COut *b, Node *n);
 static void emit_expr(COut *b, Node *n) {
   switch (n->kind) {
   case ND_INT:
+  case ND_FLOAT:
+  case ND_CHAR:
   case ND_STRING:
-    c_out_write(b, "%.*s", (int)n->as.lit.len, n->as.lit.start);
+  case ND_BOOL:
+    if (n->kind == ND_BOOL) {
+      if (n->as.lit.len == 4 && strncmp(n->as.lit.start, "true", 4) == 0)
+        c_out_write(b, "1");
+      else
+        c_out_write(b, "0");
+    } else if (n->kind == ND_CHAR) {
+      c_out_write(b, "'%.*s'", (int)n->as.lit.len, n->as.lit.start);
+    } else {
+      c_out_write(b, "%.*s", (int)n->as.lit.len, n->as.lit.start);
+    }
     break;
   case ND_IDENT:
     c_out_write(b, "%.*s", (int)n->as.ident.len, n->as.ident.start);
@@ -64,11 +77,28 @@ static void emit_expr(COut *b, Node *n) {
   }
 }
 
+static const char *type_to_c(TokenKind k) {
+  switch (k) {
+  case TK_KW_INT:
+    return "int";
+  case TK_KW_FLOAT:
+    return "float";
+  case TK_KW_CHAR:
+    return "char";
+  case TK_KW_STRING:
+    return "const char *";
+  case TK_KW_BOOL:
+    return "int";
+  default:
+    return "int";
+  }
+}
+
 static void emit_stmt(COut *b, Node *n) {
   switch (n->kind) {
   case ND_VAR_DECL:
-    c_out_write(b, "int %.*s = ", (int)n->as.var_decl.name.len,
-                n->as.var_decl.name.start);
+    c_out_write(b, "%s %.*s = ", type_to_c(n->as.var_decl.type),
+                (int)n->as.var_decl.name.len, n->as.var_decl.name.start);
     emit_expr(b, n->as.var_decl.init);
     c_out_write(b, ";");
     c_out_newline(b);
