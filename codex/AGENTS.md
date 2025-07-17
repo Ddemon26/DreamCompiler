@@ -23,12 +23,7 @@ Everything lives in a Linux terminal environment where you invoke `zig build` fo
 * **Run the full test suite** – `make test` (or `./test_runner`) executes every unit and regression test and prints a concise summary.
 * **Focus on one test** – use the test runner with a `--filter="<pattern>"` option (pattern matches file or function).
 * **Spin up a scratch playground** – `zig run tools/scratch.zig -- <snippet.dr>` to experiment without touching the main code‑base.
-* **Add new external tools responsibly** – when you introduce something like **re2c**, **clang‑format**, or **hexdump**, record it in `codex/_startup.sh` so CI can install it.
-* **Use Hexdump** – view binary data in hex + ASCII with `hexdump -C <file>`. For example:
-
-  ```bash
-  hexdump -C program.bin
-  ```
+* **Add new external tools responsibly** – when you introduce something like **re2c** or **clang‑format**, record it in `codex/_startup.sh` so CI can install it.
 * **Keep target names consistent** – double‑check any new `build.zig` target’s `name` field to avoid CI mis‑routing.
 
 ---
@@ -69,7 +64,7 @@ Every pull request **must** fill out `codex/BOT_PR_TEMPLATE.md`, covering:
 * Keep documentation (`docs/`) fully in‑sync with behaviour.
 * Maintain green test suite (`make test`).  Add tests for every new feature and bug‑fix.
 * Record notable changes in `docs/changelog.md`.
-* Add required system dependencies to `codex/_startup.sh` (e.g., `re2c`, `bsdmainutils` for **hexdump**).
+* Add required system dependencies to `codex/_startup.sh` (e.g., `re2c`).
 * Split large modules into focused files when practical.
 
 ---
@@ -106,7 +101,7 @@ When the command `go` is issued the agent should:
 
 ## Environment
 
-* Ubuntu‑based shell with Git, Zig (`>=0.13.0`), **GCC**, **Make**, **GDB**, **re2c**, and **hexdump** available.
+* Ubuntu‑based shell with Git, Zig (`>=0.13.0`), **GCC**, **Make**, **GDB**, and **re2c** available.
 * Additional packages installed via `codex/_startup.sh`.
 
 ---
