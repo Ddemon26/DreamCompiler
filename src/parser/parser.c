@@ -24,6 +24,7 @@ void parser_init(Parser *p, Arena *a, const char *src) {
 static Node *parse_expr_prec(Parser *p, int min_prec);
 static Node *parse_expr(Parser *p);
 static Node *parse_stmt(Parser *p);
+static Node *parse_unary(Parser *p);
 
 static bool is_type_token(TokenKind k) {
   switch (k) {
@@ -226,6 +227,19 @@ static Node *parse_primary(Parser *p) {
   }
 }
 
+static Node *parse_unary(Parser *p) {
+  if (p->tok.kind == TK_MINUS || p->tok.kind == TK_BANG) {
+    TokenKind op = p->tok.kind;
+    next(p);
+    Node *expr = parse_unary(p);
+    Node *n = node_new(p->arena, ND_UNARY);
+    n->as.unary.op = op;
+    n->as.unary.expr = expr;
+    return n;
+  }
+  return parse_primary(p);
+}
+
 static Node *parse_var_decl(Parser *p) {
   TokenKind type_tok = p->tok.kind;
   next(p); // consume type
@@ -255,20 +269,24 @@ static int precedence(TokenKind k) {
   switch (k) {
   case TK_EQ:
     return 1;
+  case TK_OROR:
+    return 2;
+  case TK_ANDAND:
+    return 3;
   case TK_EQEQ:
   case TK_NEQ:
   case TK_LT:
   case TK_GT:
   case TK_LTEQ:
   case TK_GTEQ:
-    return 2;
+    return 4;
   case TK_PLUS:
   case TK_MINUS:
-    return 3;
+    return 5;
   case TK_STAR:
   case TK_SLASH:
   case TK_PERCENT:
-    return 4;
+    return 6;
   default:
     return -1;
   }
@@ -277,7 +295,7 @@ static int precedence(TokenKind k) {
 static int right_assoc(TokenKind k) { return k == TK_EQ; }
 
 static Node *parse_expr_prec(Parser *p, int min_prec) {
-  Node *lhs = parse_primary(p);
+  Node *lhs = parse_unary(p);
   for (;;) {
     int prec = precedence(p->tok.kind);
     if (prec < min_prec)

@@ -4,7 +4,8 @@
 
 - Primitive types: `int`, `float`, `bool`, `char`, and `string`
 - Variable declarations with initialisers
-- **Not working:** basic arithmetic operators `+`, `-`, `*`, `/`, `%` and unary minus (tests fail)
+- Basic arithmetic operators `+`, `-`, `*`, `/`, `%` and unary minus
+- Logical operators `&&`, `||`, and `!`
 - **Not working:** comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=` (produce warnings)
 - Simple assignment using `=`
 - Parentheses for expression grouping
@@ -26,7 +27,6 @@ The following language constructs appear in the documentation or tests but are n
 - Arrays of any type
 - Bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`) and compound assignments
 - Increment/decrement operators `++` and `--`
-- Logical operators `&&`, `||`, and `!`
 - Ternary conditional operator `?:`
 - `do`/`for` loops
 - `switch` statements
