@@ -28,7 +28,7 @@ The compiler currently supports:
 - Console output via `Console.WriteLine` and `Console.Write`
 - String literals with escape sequences and concatenation using `+`
 - Line (`//`) and block (`/* */`) comments
-See the [changelog](docs/v1/changelog.md) for details on recent additions.
+See the [changelog](docs/changelog.md) for details on recent additions.
 
 ## Getting Started
 
@@ -51,11 +51,9 @@ The steps below show how to build and use Dream on both Linux and Windows.
    ```bash
    zig build run -- example.dr
    ```
-5. **Run the tests (optional)**
+5. **Run the tests**
    ```bash
-   for f in tests/*/*.dr; do
-       zig build run -- "$f"
-   done
+   zig build test
    ```
 
 The resulting compiler binary is placed under `zig-out/bin`.
