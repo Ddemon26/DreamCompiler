@@ -4,4 +4,4 @@ x -= 1;
 x *= 3;
 x /= 2;
 x %= 3;
-Console.WriteLine(x);
+Console.WriteLine(x); // Expected: 0

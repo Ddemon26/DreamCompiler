@@ -20,6 +20,7 @@ typedef enum {
   ND_BOOL,
   ND_IDENT,
   ND_UNARY,
+  ND_POST_UNARY,
   ND_BINOP,
   ND_VAR_DECL,
   ND_IF,
@@ -48,7 +49,7 @@ struct Node {
   union {
     Slice lit;   // ND_* literal nodes
     Slice ident; // ND_IDENT
-    struct { // ND_UNARY
+    struct { // ND_UNARY and ND_POST_UNARY
       TokenKind op;
       Node *expr;
     } unary;

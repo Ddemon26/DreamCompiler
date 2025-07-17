@@ -21,3 +21,5 @@ All notable changes to the Dream compiler will be documented in this file.
 - Implemented `do` loops.
 - Implemented `break` statements.
 - Implemented `continue` and `return` statements.
+- Added prefix/postfix increment and decrement operators.
+- Added compound assignment operators for arithmetic and bitwise ops.
