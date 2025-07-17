@@ -17,5 +17,6 @@ All notable changes to the Dream compiler will be documented in this file.
 
 - Documented current feature gaps in codex/FEATURES.md and added tasks/TODO.md.
 - Added parsing and code generation for `while` loops.
+- Implemented `do` loops.
 - Implemented `break` statements.
 - Implemented `continue` and `return` statements.
