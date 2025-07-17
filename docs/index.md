@@ -23,7 +23,7 @@ Use the version dropdown in the sidebar to view documentation for other releases
 - Console Output *(pending)*
 - String Literals *(pending)*
 - Comments *(pending)*
-- Functions *(pending)*
+ - Functions
 - Classes *(pending)*
 
 ### Control Flow (planned)

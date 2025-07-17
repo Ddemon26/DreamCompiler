@@ -28,6 +28,7 @@ static Node *parse_unary(Parser *p);
 static Node *parse_do_while(Parser *p);
 static Node *parse_for(Parser *p);
 static Node *parse_switch(Parser *p);
+static void nodevec_push(Node ***data, size_t *len, size_t *cap, Node *n);
 
 static bool is_type_token(TokenKind k) {
   switch (k) {
@@ -264,6 +265,67 @@ static Node *parse_return(Parser *p) {
   return n;
 }
 
+static Node *parse_func(Parser *p) {
+  next(p); // consume 'func'
+  TokenKind ret_type = TK_KW_VOID;
+  if (is_type_token(p->tok.kind) || p->tok.kind == TK_KW_VOID) {
+    ret_type = p->tok.kind;
+    next(p);
+  }
+  if (p->tok.kind != TK_IDENT) {
+    diag_push(p, p->tok.pos, "expected identifier");
+    return node_new(p->arena, ND_ERROR);
+  }
+  Slice name = {p->tok.start, p->tok.len};
+  next(p);
+  if (p->tok.kind != TK_LPAREN) {
+    diag_push(p, p->tok.pos, "expected '('");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p);
+  Node **params = NULL;
+  size_t len = 0, cap = 0;
+  if (p->tok.kind != TK_RPAREN) {
+    for (;;) {
+      if (!is_type_token(p->tok.kind) && p->tok.kind != TK_KW_VOID) {
+        diag_push(p, p->tok.pos, "expected parameter type");
+        return node_new(p->arena, ND_ERROR);
+      }
+      TokenKind pt = p->tok.kind;
+      next(p);
+      if (p->tok.kind != TK_IDENT) {
+        diag_push(p, p->tok.pos, "expected parameter name");
+        return node_new(p->arena, ND_ERROR);
+      }
+      Node *vd = node_new(p->arena, ND_VAR_DECL);
+      vd->as.var_decl.type = pt;
+      vd->as.var_decl.name.start = p->tok.start;
+      vd->as.var_decl.name.len = p->tok.len;
+      vd->as.var_decl.init = NULL;
+      vd->as.var_decl.array_len = 0;
+      next(p);
+      nodevec_push(&params, &len, &cap, vd);
+      if (p->tok.kind == TK_COMMA) {
+        next(p);
+        continue;
+      }
+      break;
+    }
+  }
+  if (p->tok.kind == TK_RPAREN)
+    next(p);
+  else
+    diag_push(p, p->tok.pos, "expected ')'");
+  Node *body = parse_stmt(p);
+  Node *fn = node_new(p->arena, ND_FUNC);
+  fn->as.func.ret_type = ret_type;
+  fn->as.func.name = name;
+  fn->as.func.params = params;
+  fn->as.func.param_len = len;
+  fn->as.func.body = body;
+  return fn;
+}
+
 static Node *parse_primary(Parser *p) {
   Token t = p->tok;
   Node *n;
@@ -381,7 +443,31 @@ static Node *parse_primary(Parser *p) {
 static Node *parse_postfix(Parser *p) {
   Node *n = parse_primary(p);
   for (;;) {
-    if (p->tok.kind == TK_PLUSPLUS || p->tok.kind == TK_MINUSMINUS) {
+    if (p->tok.kind == TK_LPAREN) {
+      next(p); // consume '('
+      Node **args = NULL;
+      size_t len = 0, cap = 0;
+      if (p->tok.kind != TK_RPAREN) {
+        for (;;) {
+          Node *arg = parse_expr_prec(p, 0);
+          nodevec_push(&args, &len, &cap, arg);
+          if (p->tok.kind == TK_COMMA) {
+            next(p);
+            continue;
+          }
+          break;
+        }
+      }
+      if (p->tok.kind == TK_RPAREN)
+        next(p);
+      else
+        diag_push(p, p->tok.pos, "expected ')'");
+      Node *call = node_new(p->arena, ND_CALL);
+      call->as.call.callee = n;
+      call->as.call.args = args;
+      call->as.call.len = len;
+      n = call;
+    } else if (p->tok.kind == TK_PLUSPLUS || p->tok.kind == TK_MINUSMINUS) {
       TokenKind op = p->tok.kind;
       next(p);
       Node *post = node_new(p->arena, ND_POST_UNARY);
@@ -598,6 +684,9 @@ static Node *parse_stmt(Parser *p) {
   }
   if (p->tok.kind == TK_KW_RETURN) {
     return parse_return(p);
+  }
+  if (p->tok.kind == TK_KW_FUNC) {
+    return parse_func(p);
   }
   if (is_type_token(p->tok.kind)) {
     return parse_var_decl(p);

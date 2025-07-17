@@ -29,12 +29,12 @@
 - Ternary conditional operator `?:`
 - `switch` statements
 - Arrays of primitive types
+- Function declarations with parameters and typed return values
 
 ## Missing Features
 
 - The following language constructs appear in the documentation or tests but are not yet implemented:
 
-- Function declarations with parameters and typed return values
 - Classes, structs and object construction
 
 These features need implementing before they will compile without diagnostics.

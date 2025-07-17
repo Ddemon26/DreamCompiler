@@ -36,6 +36,8 @@ typedef enum {
   ND_EXPR_STMT,
   ND_SWITCH,
   ND_CONSOLE_CALL,
+  ND_CALL,
+  ND_FUNC,
   ND_ERROR
 } NodeKind;
 
@@ -121,6 +123,18 @@ struct Node {
       SwitchCase *cases;
       size_t len;
     } switch_stmt;
+    struct { // ND_CALL
+      Node *callee;
+      Node **args;
+      size_t len;
+    } call;
+    struct { // ND_FUNC
+      TokenKind ret_type;
+      Slice name;
+      Node **params;
+      size_t param_len;
+      Node *body;
+    } func;
     /* ND_CONTINUE has no fields */
   } as;
 };
