@@ -27,3 +27,4 @@ All notable changes to the Dream compiler will be documented in this file.
 - Added string concatenation for `string` values.
 - Implemented ternary conditional operator `?:`.
 - Added unary plus operator and enabled comparison operators.
+- Implemented basic `switch` statements in parser and code generator.

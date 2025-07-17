@@ -109,7 +109,8 @@ typedef struct {
   int depth;
 } CGCtx;
 
-static void cgctx_push(CGCtx *ctx, const char *start, size_t len, TokenKind ty) {
+static void cgctx_push(CGCtx *ctx, const char *start, size_t len,
+                       TokenKind ty) {
   if (ctx->len + 1 > ctx->cap) {
     ctx->cap = ctx->cap ? ctx->cap * 2 : 8;
     ctx->vars = realloc(ctx->vars, ctx->cap * sizeof(VarBinding));
@@ -120,14 +121,17 @@ static void cgctx_push(CGCtx *ctx, const char *start, size_t len, TokenKind ty) 
 static void cgctx_scope_enter(CGCtx *ctx) { ctx->depth++; }
 
 static void cgctx_scope_leave(CGCtx *ctx) {
-  while (ctx->len && ctx->vars[ctx->len - 1].depth >= ctx->depth) ctx->len--;
-  if (ctx->depth > 0) ctx->depth--;
+  while (ctx->len && ctx->vars[ctx->len - 1].depth >= ctx->depth)
+    ctx->len--;
+  if (ctx->depth > 0)
+    ctx->depth--;
 }
 
 static TokenKind cgctx_lookup(CGCtx *ctx, const char *start, size_t len) {
   for (size_t i = ctx->len; i-- > 0;) {
     VarBinding *v = &ctx->vars[i];
-    if (v->len == len && strncmp(v->start, start, len) == 0) return v->type;
+    if (v->len == len && strncmp(v->start, start, len) == 0)
+      return v->type;
   }
   return (TokenKind)0;
 }
@@ -137,7 +141,8 @@ static int is_string_expr(CGCtx *ctx, Node *n) {
   case ND_STRING:
     return 1;
   case ND_IDENT:
-    return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) == TK_KW_STRING;
+    return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) ==
+           TK_KW_STRING;
   default:
     return 0;
   }
@@ -183,9 +188,8 @@ static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
     break;
   case ND_BINOP:
     c_out_write(b, "(");
-    if (n->as.bin.op == TK_PLUS &&
-        (is_string_expr(ctx, n->as.bin.lhs) ||
-         is_string_expr(ctx, n->as.bin.rhs))) {
+    if (n->as.bin.op == TK_PLUS && (is_string_expr(ctx, n->as.bin.lhs) ||
+                                    is_string_expr(ctx, n->as.bin.rhs))) {
       c_out_write(b, "dream_concat(");
       emit_expr(ctx, b, n->as.bin.lhs);
       c_out_write(b, ", ");
@@ -269,10 +273,10 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     c_out_write(b, "for (");
     if (n->as.for_stmt.init) {
       if (n->as.for_stmt.init->kind == ND_VAR_DECL) {
-        c_out_write(b, "%s %.*s = ",
-                    type_to_c(n->as.for_stmt.init->as.var_decl.type),
-                    (int)n->as.for_stmt.init->as.var_decl.name.len,
-                    n->as.for_stmt.init->as.var_decl.name.start);
+        c_out_write(
+            b, "%s %.*s = ", type_to_c(n->as.for_stmt.init->as.var_decl.type),
+            (int)n->as.for_stmt.init->as.var_decl.name.len,
+            n->as.for_stmt.init->as.var_decl.name.start);
         emit_expr(ctx, b, n->as.for_stmt.init->as.var_decl.init);
         cgctx_push(ctx, n->as.for_stmt.init->as.var_decl.name.start,
                    n->as.for_stmt.init->as.var_decl.name.len,
@@ -289,6 +293,28 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
       emit_expr(ctx, b, n->as.for_stmt.update);
     c_out_write(b, ") ");
     emit_stmt(ctx, b, n->as.for_stmt.body);
+    break;
+  case ND_SWITCH:
+    c_out_write(b, "switch (");
+    emit_expr(ctx, b, n->as.switch_stmt.expr);
+    c_out_write(b, ") {");
+    c_out_newline(b);
+    c_out_indent(b);
+    for (size_t i = 0; i < n->as.switch_stmt.len; i++) {
+      SwitchCase *sc = &n->as.switch_stmt.cases[i];
+      if (sc->is_default) {
+        c_out_write(b, "default:");
+      } else {
+        c_out_write(b, "case ");
+        emit_expr(ctx, b, sc->value);
+        c_out_write(b, ":");
+      }
+      c_out_newline(b);
+      emit_stmt(ctx, b, sc->body);
+    }
+    c_out_dedent(b);
+    c_out_write(b, "}");
+    c_out_newline(b);
     break;
   case ND_BREAK:
     c_out_write(b, "break;");

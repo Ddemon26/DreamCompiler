@@ -33,12 +33,12 @@ typedef enum {
   ND_RETURN,
   ND_BLOCK,
   ND_EXPR_STMT,
+  ND_SWITCH,
   ND_CONSOLE_CALL,
   ND_ERROR
 } NodeKind;
 
 typedef struct Node Node;
-
 typedef struct {
   const char *start;
   size_t len;
@@ -46,16 +46,22 @@ typedef struct {
 
 Node *node_new(Arena *a, NodeKind kind);
 
+typedef struct {
+  int is_default;
+  Node *value; // NULL if default
+  Node *body;
+} SwitchCase;
+
 struct Node {
   NodeKind kind;
   union {
     Slice lit;   // ND_* literal nodes
     Slice ident; // ND_IDENT
-    struct { // ND_UNARY and ND_POST_UNARY
+    struct {     // ND_UNARY and ND_POST_UNARY
       TokenKind op;
       Node *expr;
     } unary;
-    struct {     // ND_BINOP
+    struct { // ND_BINOP
       TokenKind op;
       Node *lhs;
       Node *rhs;
@@ -83,9 +89,9 @@ struct Node {
       Node *body;
       Node *cond;
     } do_while_stmt;
-    struct { // ND_FOR
-      Node *init;  // may be NULL
-      Node *cond;  // may be NULL
+    struct {        // ND_FOR
+      Node *init;   // may be NULL
+      Node *cond;   // may be NULL
       Node *update; // may be NULL
       Node *body;
     } for_stmt;
@@ -103,6 +109,11 @@ struct Node {
       Node *arg;
       int newline;
     } console;
+    struct { // ND_SWITCH
+      Node *expr;
+      SwitchCase *cases;
+      size_t len;
+    } switch_stmt;
     /* ND_CONTINUE has no fields */
   } as;
 };

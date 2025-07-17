@@ -26,13 +26,13 @@
 - Increment/decrement operators `++` and `--`
 - String concatenation with `+`
 - Ternary conditional operator `?:`
+- `switch` statements
 
 ## Missing Features
 
 - The following language constructs appear in the documentation or tests but are not yet implemented:
 
 - Arrays of any type
-- `switch` statements
 - Function declarations with parameters and typed return values
 - Classes, structs and object construction
 
