@@ -25,13 +25,13 @@
 - Compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=` and bitwise variants)
 - Increment/decrement operators `++` and `--`
 - String concatenation with `+`
+- Ternary conditional operator `?:`
 
 ## Missing Features
 
 - The following language constructs appear in the documentation or tests but are not yet implemented:
 
 - Arrays of any type
-- Ternary conditional operator `?:`
 - `switch` statements
 - Function declarations with parameters and typed return values
 - Classes, structs and object construction

@@ -22,6 +22,7 @@ typedef enum {
   ND_UNARY,
   ND_POST_UNARY,
   ND_BINOP,
+  ND_COND,
   ND_VAR_DECL,
   ND_IF,
   ND_WHILE,
@@ -59,6 +60,11 @@ struct Node {
       Node *lhs;
       Node *rhs;
     } bin;
+    struct { // ND_COND
+      Node *cond;
+      Node *then_expr;
+      Node *else_expr;
+    } cond;
     struct { // ND_VAR_DECL
       TokenKind type;
       Slice name;

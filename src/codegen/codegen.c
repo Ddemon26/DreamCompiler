@@ -198,6 +198,15 @@ static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
     }
     c_out_write(b, ")");
     break;
+  case ND_COND:
+    c_out_write(b, "(");
+    emit_expr(ctx, b, n->as.cond.cond);
+    c_out_write(b, " ? ");
+    emit_expr(ctx, b, n->as.cond.then_expr);
+    c_out_write(b, " : ");
+    emit_expr(ctx, b, n->as.cond.else_expr);
+    c_out_write(b, ")");
+    break;
   default:
     c_out_write(b, "0");
     break;
