@@ -114,6 +114,38 @@ static Node *parse_primary(Parser *p) {
         n->as.lit.len = t.len;
         next(p);
         return n;
+    case TK_KW_CONSOLE: {
+        next(p); /* consume 'Console' */
+        if (p->tok.kind != TK_DOT) {
+            diag_push(p, p->tok.pos, "expected '.'");
+            return node_new(p->arena, ND_ERROR);
+        }
+        next(p); /* consume '.' */
+        int newline = 0;
+        if (p->tok.kind == TK_KW_WRITELINE) {
+            newline = 1;
+        } else if (p->tok.kind == TK_KW_WRITE) {
+            newline = 0;
+        } else {
+            diag_push(p, p->tok.pos, "expected Write or WriteLine");
+            return node_new(p->arena, ND_ERROR);
+        }
+        next(p);
+        if (p->tok.kind != TK_LPAREN) {
+            diag_push(p, p->tok.pos, "expected '('");
+            return node_new(p->arena, ND_ERROR);
+        }
+        next(p);
+        Node *arg = parse_expr_prec(p, 0);
+        if (p->tok.kind == TK_RPAREN)
+            next(p);
+        else
+            diag_push(p, p->tok.pos, "expected ')'");
+        n = node_new(p->arena, ND_CONSOLE_CALL);
+        n->as.console.arg = arg;
+        n->as.console.newline = newline;
+        return n;
+    }
     case TK_KW_TRUE:
     case TK_KW_FALSE:
         n = node_new(p->arena, ND_BOOL);

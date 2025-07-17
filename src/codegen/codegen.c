@@ -40,6 +40,19 @@ static const char *op_text(TokenKind k) {
   }
 }
 
+static const char *fmt_for_arg(Node *arg) {
+  switch (arg->kind) {
+  case ND_STRING:
+    return "%s";
+  case ND_CHAR:
+    return "%c";
+  case ND_FLOAT:
+    return "%f";
+  default:
+    return "%d";
+  }
+}
+
 static void emit_expr(COut *b, Node *n);
 static void emit_stmt(COut *b, Node *n);
 
@@ -132,6 +145,16 @@ static void emit_stmt(COut *b, Node *n) {
   case ND_EXPR_STMT:
     emit_expr(b, n->as.expr_stmt.expr);
     c_out_write(b, ";");
+    c_out_newline(b);
+    break;
+  case ND_CONSOLE_CALL:
+    c_out_write(b, "printf(\"");
+    c_out_write(b, "%s", fmt_for_arg(n->as.console.arg));
+    if (n->as.console.newline)
+      c_out_write(b, "\\n");
+    c_out_write(b, "\", ");
+    emit_expr(b, n->as.console.arg);
+    c_out_write(b, ");");
     c_out_newline(b);
     break;
   default:
