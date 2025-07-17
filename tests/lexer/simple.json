@@ -1,9 +1,0 @@
-[
-  {"kind":"KW_INT","lexeme":"int","line":1,"col":1},
-  {"kind":"IDENT","lexeme":"x","line":1,"col":5},
-  {"kind":"EQ","lexeme":"=","line":1,"col":7},
-  {"kind":"INT_LITERAL","lexeme":"1","line":1,"col":9},
-  {"kind":"PLUS","lexeme":"+","line":1,"col":11},
-  {"kind":"INT_LITERAL","lexeme":"2","line":1,"col":13},
-  {"kind":"SEMICOLON","lexeme":";","line":1,"col":14}
-]
