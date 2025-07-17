@@ -473,8 +473,8 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_newline(&builder);
   c_out_write(&builder,
               "static char *dream_concat(const char *a, const char *b) {\n");
-  c_out_write(&builder, "    size_t la = strlen(a);\n");
-  c_out_write(&builder, "    size_t lb = strlen(b);\n");
+  c_out_write(&builder, "    const size_t la = strlen(a);\n");
+  c_out_write(&builder, "    const size_t lb = strlen(b)\n");
   c_out_write(&builder, "    char *r = malloc(la + lb + 1);\n");
   c_out_write(&builder, "    memcpy(r, a, la);\n");
   c_out_write(&builder, "    memcpy(r + la, b, lb);\n");
