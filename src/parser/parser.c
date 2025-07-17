@@ -27,6 +27,7 @@ static Node *parse_stmt(Parser *p);
 static Node *parse_unary(Parser *p);
 static Node *parse_do_while(Parser *p);
 static Node *parse_for(Parser *p);
+static Node *parse_switch(Parser *p);
 
 static bool is_type_token(TokenKind k) {
   switch (k) {
@@ -171,6 +172,61 @@ static Node *parse_for(Parser *p) {
   n->as.for_stmt.cond = cond;
   n->as.for_stmt.update = update;
   n->as.for_stmt.body = body;
+  return n;
+}
+
+static Node *parse_switch(Parser *p) {
+  next(p); // consume 'switch'
+  if (p->tok.kind != TK_LPAREN) {
+    diag_push(p, p->tok.pos, "expected '('");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p);
+  Node *expr = parse_expr_prec(p, 0);
+  if (p->tok.kind == TK_RPAREN)
+    next(p);
+  else
+    diag_push(p, p->tok.pos, "expected ')'");
+  if (p->tok.kind != TK_LBRACE) {
+    diag_push(p, p->tok.pos, "expected '{'");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p);
+  SwitchCase *cases = NULL;
+  size_t len = 0, cap = 0;
+  while (p->tok.kind != TK_RBRACE && p->tok.kind != TK_EOF) {
+    int is_default = 0;
+    Node *val = NULL;
+    if (p->tok.kind == TK_KW_CASE) {
+      next(p);
+      val = parse_expr(p);
+    } else if (p->tok.kind == TK_KW_DEFAULT) {
+      next(p);
+      is_default = 1;
+    } else {
+      diag_push(p, p->tok.pos, "expected 'case' or 'default'");
+      break;
+    }
+    if (p->tok.kind == TK_COLON)
+      next(p);
+    else
+      diag_push(p, p->tok.pos, "expected ':'");
+    Node *body = parse_stmt(p);
+    if (len + 1 > cap) {
+      cap = cap ? cap * 2 : 4;
+      cases = realloc(cases, cap * sizeof(SwitchCase));
+    }
+    cases[len++] =
+        (SwitchCase){.is_default = is_default, .value = val, .body = body};
+  }
+  if (p->tok.kind == TK_RBRACE)
+    next(p);
+  else
+    diag_push(p, p->tok.pos, "expected '}'");
+  Node *n = node_new(p->arena, ND_SWITCH);
+  n->as.switch_stmt.expr = expr;
+  n->as.switch_stmt.cases = cases;
+  n->as.switch_stmt.len = len;
   return n;
 }
 
@@ -492,6 +548,9 @@ static Node *parse_stmt(Parser *p) {
   }
   if (p->tok.kind == TK_KW_FOR) {
     return parse_for(p);
+  }
+  if (p->tok.kind == TK_KW_SWITCH) {
+    return parse_switch(p);
   }
   if (p->tok.kind == TK_KW_WHILE) {
     return parse_while(p);
