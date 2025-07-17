@@ -54,7 +54,7 @@ Every pull request **must** fill out `codex/BOT_PR_TEMPLATE.md`, covering:
 
 ## Responsibilities
 
-* **Track `docs/grammer/Grammar.md`** – the authoritative Dream grammar.  Whenever the spec changes, update:
+* **Track `docs/grammar/Grammar.md`** – the authoritative Dream grammar.  Whenever the spec changes, update:
 
     * **`lexer/tokens.def`** and regenerate `lexer/lexer.c` via **re2c**.
     * **`parser/`**, **`sem/`** modules so the implementation matches the spec (new precedence levels, keywords, etc.).
@@ -75,7 +75,7 @@ When the command `go` is issued the agent should:
 
 1. **Synchronise with the grammar**
 
-    * Parse `docs/grammer/Grammar.md` and compare with `lexer/tokens.def` and precedence tables in `parser/parser.c`.
+    * Parse `docs/grammar/Grammar.md` and compare with `lexer/tokens.def` and precedence tables in `parser/parser.c`.
     * Report mismatches; update code or open a task to correct the spec.
 2. **Review project state**
 
@@ -91,7 +91,10 @@ When the command `go` is issued the agent should:
     * Regenerate lexer (`re2c`), rebuild compiler, and run all tests.
 5. **Build & run**
 
-    * `zig build` → `make test` → optionally `zig build run -- <file.dr>`.
+    * Run `zig build`.
+    * If any Zig test files (`*.zig`) are present in the `tests/` directory, run `zig build test`; otherwise, skip it.
+    * Run `make test` (or `./test_runner`).
+    * Optionally, run `zig build run -- <file.dr>`.
 6. **Commit** once tests succeed.
 
 ---
@@ -113,7 +116,7 @@ ir/         – Three‑address SSA IR & CFG
 opt/        – Optimisation passes (SCCP, DCE, LICM, …)
 codegen/    – C emitter (topological, generics)
 docs/       – Language spec, change‑log, design docs
-    grammer/Grammar.md          – BNF grammar (source of truth)
+    grammar/Grammar.md          – BNF grammar (source of truth)
     changelog.md        – Chronological changes
 tests/      – Regression test suite (.dr → expected)
 codex/      – Agent docs & startup scripts
@@ -132,13 +135,8 @@ A living list of implemented and planned features is kept in [`FEATURES.md`](FEA
 
 ```
 > go
-[Agent] Syncing lexer/tokens.def with docs/grammer/Grammar.md…
-[Agent] Re‑generating lexer.c via re2c…
 [Agent] Building compiler…
+[Agent] No Zig test files found; skipping `zig build test`.
 [Agent] Running tests via make test…
 [Agent] Committing changes…
 ```
-
----
-
-> **Tip:** For quick access to the agent's functionality, use the `go` command in your terminal. This will automatically sync the grammar, build the compiler, run tests via `make test`, and commit changes if everything passes.
