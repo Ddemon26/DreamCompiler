@@ -4,6 +4,7 @@ All notable changes to the Dream compiler will be documented in this file.
 
 ## [Unreleased]
 - Added automated test runner to `zig build test`.
+- Implemented bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`).
 - Implemented parsing of `if`/`else` statements.
 - Lexer updated to recognise additional tokens (`??`, `??=`, `=>`, `::`, `->`,
   `&=`, `|=`, `^=`, `<<=`, `>>=`) per Grammar v0.3.

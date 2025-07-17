@@ -21,6 +21,16 @@ static const char *op_text(TokenKind k) {
     return "/";
   case TK_PERCENT:
     return "%";
+  case TK_OR:
+    return "|";
+  case TK_CARET:
+    return "^";
+  case TK_AND:
+    return "&";
+  case TK_LSHIFT:
+    return "<<";
+  case TK_RSHIFT:
+    return ">>";
   case TK_ANDAND:
     return "&&";
   case TK_OROR:
