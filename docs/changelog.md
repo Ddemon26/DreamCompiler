@@ -35,3 +35,4 @@ All notable changes to the Dream compiler will be documented in this file.
 - Added array declarations and indexing for primitive types.
 - Implemented function declarations with parameters and typed return values.
 - Added support for declaring multiple variables in a single statement.
+- Added `var` keyword for local type inference.
