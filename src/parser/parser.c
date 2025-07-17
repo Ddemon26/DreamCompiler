@@ -300,12 +300,15 @@ static Node *parse_primary(Parser *p) {
     }
     next(p); /* consume '.' */
     int newline = 0;
+    int read = 0;
     if (p->tok.kind == TK_KW_WRITELINE) {
       newline = 1;
     } else if (p->tok.kind == TK_KW_WRITE) {
       newline = 0;
+    } else if (p->tok.kind == TK_KW_READLINE) {
+      read = 1;
     } else {
-      diag_push(p, p->tok.pos, "expected Write or WriteLine");
+      diag_push(p, p->tok.pos, "expected Write, WriteLine or ReadLine");
       return node_new(p->arena, ND_ERROR);
     }
     next(p);
@@ -314,7 +317,9 @@ static Node *parse_primary(Parser *p) {
       return node_new(p->arena, ND_ERROR);
     }
     next(p);
-    Node *arg = parse_expr_prec(p, 0);
+    Node *arg = NULL;
+    if (!read)
+      arg = parse_expr_prec(p, 0);
     if (p->tok.kind == TK_RPAREN)
       next(p);
     else
@@ -322,6 +327,7 @@ static Node *parse_primary(Parser *p) {
     n = node_new(p->arena, ND_CONSOLE_CALL);
     n->as.console.arg = arg;
     n->as.console.newline = newline;
+    n->as.console.read = read;
     return n;
   }
   case TK_KW_TRUE:

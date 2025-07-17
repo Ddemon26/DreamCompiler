@@ -18,6 +18,7 @@
 - `continue` statements
 - `return` statements
 - Console output via `Console.Write` and `Console.WriteLine`
+- Console input via `Console.ReadLine`
 - String and character literals with escape sequences
 - Line (`//`) and block (`/* */`) comments
 - Basic C code generation for programs
