@@ -20,12 +20,15 @@ static char *read_file(const char *path) {
   fseek(f, 0, SEEK_END);
   long len = ftell(f);
   fseek(f, 0, SEEK_SET);
-  char *buf = malloc(len + 1);
+  char *buf = malloc(len + 2);
   if (!buf) {
     fclose(f);
     return NULL;
   }
   fread(buf, 1, len, f);
+  if (len == 0 || buf[len - 1] != '\n') {
+    buf[len++] = '\n';
+  }
   buf[len] = 0;
   fclose(f);
   return buf;
