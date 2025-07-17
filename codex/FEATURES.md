@@ -4,8 +4,8 @@
 
 - Primitive types: `int`, `float`, `bool`, `char`, and `string`
 - Variable declarations with initialisers
-- Basic arithmetic operators `+`, `-`, `*`, `/`, `%` and unary minus
-- Comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=`
+- **Not working:** basic arithmetic operators `+`, `-`, `*`, `/`, `%` and unary minus (tests fail)
+- **Not working:** comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=` (produce warnings)
 - Simple assignment using `=`
 - Parentheses for expression grouping
 - `if`/`else` statements
@@ -17,10 +17,20 @@
 - Line (`//`) and block (`/* */`) comments
 - Basic C code generation for programs
 
-## Planned Features
+## Missing Features
 
-- Generics for types and functions
-- Access modifiers such as `public` and `private`
-- Exception handling with `try`/`catch`
-- Attributes and annotations
-- Modular compilation and namespaces
+The following language constructs appear in the documentation or tests but are not yet implemented:
+
+- Arrays of any type
+- Bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`) and compound assignments
+- Increment/decrement operators `++` and `--`
+- Logical operators `&&`, `||`, and `!`
+- Ternary conditional operator `?:`
+- `do`/`for` loops and the `continue` statement
+- `switch` statements
+- Function declarations with parameters and typed return values
+- `return` statements
+- Classes, structs and object construction
+- String concatenation
+
+These features need implementing before they will compile without diagnostics.
