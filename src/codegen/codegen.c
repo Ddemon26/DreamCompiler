@@ -1,6 +1,8 @@
 #include "codegen.h"
 #include "c_emit.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 static const char *op_text(TokenKind k) {
   switch (k) {
@@ -111,7 +113,25 @@ void codegen_emit_c(Node *root, FILE *out) {
 }
 
 void codegen_emit_obj(Node *root, const char *path) {
-  (void)root;
-  (void)path;
-  fprintf(stderr, "--emit-obj not implemented\n");
+  char tmp[] = "/tmp/dreamXXXXXX.c";
+  int fd = mkstemps(tmp, 2);
+  if (fd == -1) {
+    perror("mkstemps");
+    return;
+  }
+  FILE *f = fdopen(fd, "w");
+  if (!f) {
+    perror("fdopen");
+    close(fd);
+    unlink(tmp);
+    return;
+  }
+  codegen_emit_c(root, f);
+  fclose(f);
+  char cmd[512];
+  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -c %s -o %s", tmp, path);
+  int res = system(cmd);
+  if (res != 0)
+    fprintf(stderr, "failed to run: %s\n", cmd);
+  unlink(tmp);
 }
