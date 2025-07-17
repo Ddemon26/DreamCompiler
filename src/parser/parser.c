@@ -330,9 +330,9 @@ static Node *parse_postfix(Parser *p) {
 }
 
 static Node *parse_unary(Parser *p) {
-  if (p->tok.kind == TK_MINUS || p->tok.kind == TK_BANG ||
-      p->tok.kind == TK_TILDE || p->tok.kind == TK_PLUSPLUS ||
-      p->tok.kind == TK_MINUSMINUS) {
+  if (p->tok.kind == TK_MINUS || p->tok.kind == TK_PLUS ||
+      p->tok.kind == TK_BANG || p->tok.kind == TK_TILDE ||
+      p->tok.kind == TK_PLUSPLUS || p->tok.kind == TK_MINUSMINUS) {
     TokenKind op = p->tok.kind;
     next(p);
     Node *expr = parse_unary(p);

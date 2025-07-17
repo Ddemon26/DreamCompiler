@@ -4,9 +4,9 @@
 
 - Primitive types: `int`, `float`, `bool`, `char`, and `string`
 - Variable declarations with initialisers
-- Basic arithmetic operators `+`, `-`, `*`, `/`, `%` and unary minus
+- Basic arithmetic operators `+`, `-`, `*`, `/`, `%`, unary minus and unary plus
 - Logical operators `&&`, `||`, and `!`
-- **Not working:** comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=` (produce warnings)
+- Comparison operators `<`, `<=`, `>`, `>=`, `==`, and `!=`
 - Simple assignment using `=`
 - Parentheses for expression grouping
 - `if`/`else` statements
