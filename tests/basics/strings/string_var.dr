@@ -1,2 +1,3 @@
+// Expected: hello
 string s = "hello";
 Console.WriteLine(s);
