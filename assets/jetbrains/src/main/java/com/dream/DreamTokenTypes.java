@@ -2,19 +2,21 @@ package com.dream;
 
 import com.intellij.psi.tree.IElementType;
 
-public interface DreamTokenTypes {
-    IElementType KEYWORD = new DreamElementType("KEYWORD");
-    IElementType NUMBER = new DreamElementType("NUMBER");
-    IElementType STRING = new DreamElementType("STRING");
-    IElementType COMMENT = new DreamElementType("COMMENT");
-    IElementType COMMENTBLOCK = new DreamElementType("COMMENTBLOCK");
-    IElementType OPERATOR = new DreamElementType("OPERATOR");
-    IElementType SEMICOLON = new DreamElementType("SEMICOLON");
-    IElementType COMMA = new DreamElementType("COMMA");
-    IElementType DOT = new DreamElementType("DOT");
-    IElementType PAREN = new DreamElementType("PAREN");
-    IElementType BRACE = new DreamElementType("BRACE");
-    IElementType IDENTIFIER = new DreamElementType("IDENTIFIER");
-    IElementType BRACKET = new DreamElementType("BRACKET");
-    IElementType COMMENTDOC = new DreamElementType("COMMENTDOC");
+public final class DreamTokenTypes {
+    private DreamTokenTypes() {}
+
+    public static final IElementType KEYWORD = new DreamElementType("KEYWORD");
+    public static final IElementType NUMBER = new DreamElementType("NUMBER");
+    public static final IElementType STRING = new DreamElementType("STRING");
+    public static final IElementType COMMENT = new DreamElementType("COMMENT");
+    public static final IElementType COMMENTBLOCK = new DreamElementType("COMMENTBLOCK");
+    public static final IElementType OPERATOR = new DreamElementType("OPERATOR");
+    public static final IElementType SEMICOLON = new DreamElementType("SEMICOLON");
+    public static final IElementType COMMA = new DreamElementType("COMMA");
+    public static final IElementType DOT = new DreamElementType("DOT");
+    public static final IElementType PAREN = new DreamElementType("PAREN");
+    public static final IElementType BRACE = new DreamElementType("BRACE");
+    public static final IElementType IDENTIFIER = new DreamElementType("IDENTIFIER");
+    public static final IElementType BRACKET = new DreamElementType("BRACKET");
+    public static final IElementType COMMENTDOC = new DreamElementType("COMMENTDOC");
 }
