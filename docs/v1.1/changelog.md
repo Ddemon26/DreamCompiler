@@ -65,3 +65,8 @@ Version 1.1.06 (2025-07-21)
 
 Version 1.1.07 (2025-07-22)
 - Generated C now includes `#line` directives to improve debugging back to Dream source.
+
+Version 1.1.08 (2025-07-23)
+- Implemented a cross-platform Language Server Protocol (LSP) backend.
+- VS Code and JetBrains extensions now use `dream-language-server` for
+  completions, hover docs, go-to-definition and live diagnostics.

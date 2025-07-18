@@ -17,9 +17,6 @@
     <colorSettingsPage implementation="com.dream.DreamColorSettingsPage"/>
     <codeStyleSettingsProvider implementation="com.dream.DreamCodeStyleSettingsProvider"/>
     <langCodeStyleSettingsProvider implementation="com.dream.DreamLanguageCodeStyleSettingsProvider"/>
-    <completion.contributor language="dream"
-                            implementationClass="com.dream.DreamCompletionContributor"/>
-    <documentationProvider language="dream"
-                          implementationClass="com.dream.DreamDocumentationProvider"/>
+  <lspServerDefinition implementation="com.dream.DreamLspServerDefinition"/>
   </extensions>
 </idea-plugin>
