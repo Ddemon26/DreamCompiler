@@ -636,7 +636,7 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_write(&builder,
               "static char *dream_concat(const char *a, const char *b) {\n");
   c_out_write(&builder, "    const size_t la = strlen(a);\n");
-  c_out_write(&builder, "    const size_t lb = strlen(b)\n");
+  c_out_write(&builder, "    const size_t lb = strlen(b);\n");
   c_out_write(&builder, "    char *r = malloc(la + lb + 1);\n");
   c_out_write(&builder, "    memcpy(r, a, la);\n");
   c_out_write(&builder, "    memcpy(r + la, b, lb);\n");
@@ -657,7 +657,9 @@ void codegen_emit_c(Node *root, FILE *out) {
     if (it->kind == ND_FUNC)
       emit_func(&builder, it);
   }
-  c_out_write(&builder, "int main(void) ");
+  c_out_write(&builder, "int main(void) {");
+  c_out_newline(&builder);
+  c_out_indent(&builder);
   CGCtx ctx = {0};
   cgctx_scope_enter(&ctx);
   for (size_t i = 0; i < root->as.block.len; i++) {
@@ -667,6 +669,10 @@ void codegen_emit_c(Node *root, FILE *out) {
   }
   cgctx_scope_leave(&ctx);
   free(ctx.vars);
+  c_out_write(&builder, "return 0;");
+  c_out_newline(&builder);
+  c_out_dedent(&builder);
+  c_out_write(&builder, "}");
   c_out_newline(&builder);
   c_out_dump(out, &builder);
   c_out_free(&builder);
