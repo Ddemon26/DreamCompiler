@@ -11,6 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#define DR_EXE_NAME "dream.exe"
+#else
+#define DR_EXE_NAME "dream"
+#endif
+
 /**
  * @brief Reads the contents of a file into a dynamically allocated buffer.
  *
@@ -22,6 +28,19 @@
  * @return char* Pointer to the dynamically allocated buffer containing the
  * file contents, or NULL if the file could not be read.
  */
+static void normalize_newlines(char *buf) {
+  char *r = buf, *w = buf;
+  while (*r) {
+    if (r[0] == '\r' && r[1] == '\n') {
+      *w++ = '\n';
+      r += 2;
+    } else {
+      *w++ = *r++;
+    }
+  }
+  *w = 0;
+}
+
 static char *read_file(const char *path) {
   FILE *f = fopen(path, "rb");
   if (!f)
@@ -88,6 +107,7 @@ int main(int argc, char *argv[]) {
     perror("read_file");
     return 1;
   }
+  normalize_newlines(src);
 
   Console.WriteLine("compiling %s", input);
 
@@ -121,24 +141,27 @@ int main(int argc, char *argv[]) {
     if (!cc)
       cc = "zig cc";
     char cmd[256];
-    snprintf(cmd, sizeof(cmd), "%s -c runtime/console.c -o build/console.o",
-             cc);
+    snprintf(cmd, sizeof(cmd), "%s -c runtime%cconsole.c -o build%cconsole.o",
+             cc, DR_PATH_SEP, DR_PATH_SEP);
     int res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
 #ifdef _WIN32
     snprintf(cmd, sizeof(cmd),
-             "%s -Iruntime build/bin/dream.c build/console.o -o dream", cc);
+             "%s -Iruntime build%cbin%cdream.c build%cconsole.o -o %s",
+             cc, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
 #else
-    snprintf(cmd, sizeof(cmd), "ar rcs build/libdruntime.a build/console.o");
+    snprintf(cmd, sizeof(cmd), "ar rcs build%clibdruntime.a build%cconsole.o",
+             DR_PATH_SEP, DR_PATH_SEP);
     res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
     snprintf(cmd, sizeof(cmd),
-             "%s -Iruntime build/bin/dream.c -Lbuild -ldruntime -o dream", cc);
+             "%s -Iruntime build%cbin%cdream.c -Lbuild -ldruntime -o %s",
+             cc, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);

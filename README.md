@@ -40,7 +40,7 @@ The steps below show how to build and use Dream on Linux **or Windows**.
    ```bash
    zig build             # detects your platform automatically
    # cross-compile for Windows from Linux:
-   zig build -Dtarget=x86_64-windows
+   zig build -Dtarget=x86_64-windows-gnu
    ```
 4. **Compile a file**
    ```bash
