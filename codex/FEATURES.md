@@ -35,8 +35,8 @@
 
 ## Missing Features
 
-- The following language constructs appear in the documentation or tests but are not yet implemented:
+- The following language constructs appear in the documentation or tests but are not yet fully implemented:
 
-- Classes, structs and object construction
+- Object construction for classes and structs
 
 These features need implementing before they will compile without diagnostics.

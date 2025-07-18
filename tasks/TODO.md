@@ -1,8 +1,8 @@
 # Outstanding Tasks
 
-The following feature still requires implementation:
+The following features still require implementation:
 
-- Classes, structs and object creation
+- Object creation for classes and structs
 
 Keep the grammar and documentation up to date once these features land.
 

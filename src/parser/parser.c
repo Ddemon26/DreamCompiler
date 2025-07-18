@@ -96,6 +96,7 @@ static Node *parse_for(Parser *p);
  * @return Pointer to the parsed switch statement node.
  */
 static Node *parse_switch(Parser *p);
+static Node *parse_var_decl(Parser *p);
 
 /**
  * @brief Adds a node to a dynamic array of nodes.
@@ -121,6 +122,9 @@ static bool is_type_token(TokenKind k) {
   case TK_KW_CHAR:
   case TK_KW_STRING:
   case TK_KW_VAR:
+  case TK_IDENT:
+  case TK_KW_STRUCT:
+  case TK_KW_CLASS:
     return true;
   default:
     return false;
@@ -494,6 +498,48 @@ static Node *parse_func(Parser *p) {
   return fn;
 }
 
+static Node *parse_type_decl(Parser *p, NodeKind kind) {
+  next(p); // consume 'class' or 'struct'
+  if (p->tok.kind != TK_IDENT) {
+    diag_push(p, p->tok.pos, "expected identifier");
+    return node_new(p->arena, ND_ERROR);
+  }
+  Slice name = {p->tok.start, p->tok.len};
+  next(p);
+  if (p->tok.kind != TK_LBRACE) {
+    diag_push(p, p->tok.pos, "expected '{'");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p);
+  Node **members = NULL;
+  size_t len = 0, cap = 0;
+  while (p->tok.kind != TK_RBRACE && p->tok.kind != TK_EOF) {
+    if (p->tok.kind == TK_SEMICOLON) {
+      next(p);
+      continue;
+    }
+    Node *m = NULL;
+    if (p->tok.kind == TK_KW_FUNC) {
+      m = parse_func(p);
+    } else if (is_type_token(p->tok.kind)) {
+      m = parse_var_decl(p);
+    } else {
+      diag_push(p, p->tok.pos, "expected member declaration");
+      m = parse_stmt(p);
+    }
+    nodevec_push(&members, &len, &cap, m);
+  }
+  if (p->tok.kind == TK_RBRACE)
+    next(p);
+  else
+    diag_push(p, p->tok.pos, "expected '}'");
+  Node *n = node_new(p->arena, kind);
+  n->as.type_decl.name = name;
+  n->as.type_decl.members = members;
+  n->as.type_decl.len = len;
+  return n;
+}
+
 /**
  * @brief Parses a primary expression.
  *
@@ -694,7 +740,7 @@ static Node *parse_unary(Parser *p) {
 }
 
 static Node *parse_var_decl(Parser *p) {
-  TokenKind type_tok = p->tok.kind;
+  Token type_tok = p->tok;
   next(p); // consume type
   Node **items = NULL;
   size_t len = 0, cap = 0;
@@ -704,7 +750,9 @@ static Node *parse_var_decl(Parser *p) {
       return node_new(p->arena, ND_ERROR);
     }
     Node *n = node_new(p->arena, ND_VAR_DECL);
-    n->as.var_decl.type = type_tok;
+    n->as.var_decl.type = type_tok.kind;
+    n->as.var_decl.type_name.start = type_tok.start;
+    n->as.var_decl.type_name.len = type_tok.len;
     n->as.var_decl.name.start = p->tok.start;
     n->as.var_decl.name.len = p->tok.len;
     n->as.var_decl.array_len = 0;
@@ -729,7 +777,7 @@ static Node *parse_var_decl(Parser *p) {
     } else {
       n->as.var_decl.init = NULL;
     }
-    if (type_tok == TK_KW_VAR) {
+    if (type_tok.kind == TK_KW_VAR) {
       if (!n->as.var_decl.init) {
         diag_push(p, p->tok.pos, "var declaration requires initializer");
         n->as.var_decl.type = TK_KW_INT;
@@ -891,7 +939,8 @@ static Node *parse_expr_prec(Parser *p, int min_prec) {
 static Node *parse_expr(Parser *p) { return parse_expr_prec(p, 0); }
 
 /**
- * @brief Adds a node to a dynamic array of nodes, resizing the array if necessary.
+ * @brief Adds a node to a dynamic array of nodes, resizing the array if
+ * necessary.
  *
  * @param data Pointer to the array of node pointers.
  * @param len Pointer to the current length of the array.
@@ -936,6 +985,12 @@ static Node *parse_stmt(Parser *p) {
   }
   if (p->tok.kind == TK_KW_RETURN) {
     return parse_return(p);
+  }
+  if (p->tok.kind == TK_KW_CLASS) {
+    return parse_type_decl(p, ND_CLASS_DECL);
+  }
+  if (p->tok.kind == TK_KW_STRUCT) {
+    return parse_type_decl(p, ND_STRUCT_DECL);
   }
   if (p->tok.kind == TK_KW_FUNC) {
     return parse_func(p);
