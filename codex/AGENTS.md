@@ -4,6 +4,40 @@
 
 ---
 
+## Cross-Platform Compatibility
+
+* All code, scripts, and build configurations **must** support both Linux and Windows environments.
+* Use preprocessor defines in C/Zig and build scripts to select OS-specific code paths:
+
+  ```c
+  #ifdef _WIN32
+    // Windows-specific implementation
+  #elif defined(__linux__)
+    // Linux-specific implementation
+  #endif
+  ```
+* In build and CI scripts, detect the OS and set appropriate commands and flags. Example in Bash:
+
+  ```bash
+  if [[ "$(uname -s)" == "Linux" ]]; then
+    zig build
+  elif [[ "$OS" == "Windows_NT" ]]; then
+    zig build
+  fi
+  ```
+* Ensure Python helper scripts adapt at runtime:
+
+  ```python
+  import platform
+  if platform.system() == "Windows":
+      # Windows paths or commands
+  elif platform.system() == "Linux":
+      # Linux paths or commands
+  ```
+* Validate cross-platform compatibility by running CI jobs on both Linux and Windows matrices.
+
+---
+
 ## Overview
 
 The **Dream Compiler CLI agent** bootstraps, grows, and maintains the DreamCompiler code‑base.  The compiler is pure **C11**, built via **Zig** and tested using the **GNU toolchain**.  Source files end in `.dr`; the build pipeline is:
@@ -12,7 +46,7 @@ The **Dream Compiler CLI agent** bootstraps, grows, and maintains the DreamCompi
 .dream  →  DreamCompiler (C frontend)  →  portable C  →  zig cc  →  native exe
 ```
 
-Everything lives in a Linux terminal environment where you invoke `zig build` for building, and use GNU tools (e.g., `make test`, `gcc`, `gdb`) for testing and debugging.
+Everything lives in a terminal environment where you invoke `zig build` for building, and use GNU tools (e.g., `make test`, `gcc`, `gdb`) for testing and debugging.  All steps must work on both Linux and Windows, using OS defines where necessary.
 
 * **Python Helper Scripts** – if the agent needs to perform any heavy tasks (e.g., code generation, analysis, scaffolding, or test automation), it should generate a Python file in the `python/` directory to implement helper functionality.
 
@@ -98,13 +132,13 @@ When the command `go` is issued the agent should:
     * Ensure the implementation matches the spec and is documented.
     * Write tests for the new feature under `tests/`.
     * If a bug is fixed, document it in `docs/changelog.md` and add a regression test.
-    * For any substantial or repetitive operations, scaffold or automate using Python helper scripts placed under `python/`.
+    * For any substantial or repetitive operations, scaffold or automate using Python helper scripts placed under `python/`, ensuring they detect and adapt to the host OS via preprocessor or runtime checks.
 4. **Update docs & tests**
 
     * Regenerate lexer (`re2c`), rebuild compiler, and run all tests.
 5. **Build & run**
 
-    * Run `zig build`.
+    * Run `zig build` (using OS defines if needed to adjust flags).
     * If any Zig test files (`*.zig`) are present in the `tests/` directory, run `zig build test`; otherwise, skip it.
     * Run `make test` (or `./test_runner`).
     * Optionally, run `zig build run -- <file.dr>`.
@@ -114,8 +148,8 @@ When the command `go` is issued the agent should:
 
 ## Environment
 
-* Ubuntu‑based shell with Git, Zig (`>=0.13.0`), **GCC**, **Make**, **GDB**, and **re2c** available.
-* Additional packages installed via `codex/_startup.sh`.
+* Ubuntu-based or Windows shell with Git, Zig (`>=0.13.0`), **GCC**/**MSVC**, **Make**/**nmake**, **GDB**/**WinDbg**, and **re2c** available.
+* Additional packages installed via `codex/_startup.sh` (Linux) or `codex/_startup.ps1` (Windows).
 
 ---
 
