@@ -32,11 +32,11 @@
 - `switch` statements
 - Arrays of primitive types
 - Function declarations with parameters and typed return values
+- Object construction for classes and structs
 
 ## Missing Features
 
 - The following language constructs appear in the documentation or tests but are not yet fully implemented:
 
-- Object construction for classes and structs
 
 These features need implementing before they will compile without diagnostics.

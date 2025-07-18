@@ -382,6 +382,10 @@ static void emit_expr(CGCtx *ctx, COut *b, Node *n) {
     }
     c_out_write(b, ")");
     break;
+  case ND_NEW:
+    c_out_write(b, "(struct %.*s){0}", (int)n->as.new_expr.type_name.len,
+                n->as.new_expr.type_name.start);
+    break;
   default:
     c_out_write(b, "0");
     break;

@@ -62,6 +62,7 @@ typedef enum {
   ND_CONSOLE_CALL,
   ND_CALL,
   ND_FUNC,
+  ND_NEW,
   ND_STRUCT_DECL,
   ND_CLASS_DECL,
   ND_ERROR
@@ -194,6 +195,9 @@ struct Node {
       Node **args;  /**< Array of arguments. */
       size_t len;   /**< Number of arguments. */
     } call;
+    struct {
+      Slice type_name; /**< Name of the type for ND_NEW nodes. */
+    } new_expr;
     struct {
       TokenKind ret_type; /**< Return type for ND_FUNC nodes. */
       Slice name;         /**< Function name. */
