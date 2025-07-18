@@ -1,6 +1,8 @@
 #include "parser.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 /**
  * @brief Adds a diagnostic message to the parser's diagnostic list.
@@ -9,12 +11,24 @@
  * @param pos Position in the source code where the diagnostic occurred.
  * @param msg Diagnostic message to be added.
  */
-static void diag_push(Parser *p, Pos pos, const char *msg) {
+static void diag_push(Parser *p, Pos pos, DiagSeverity sev, const char *msg) {
   if (p->diags.len + 1 > p->diags.cap) {
     p->diags.cap = p->diags.cap ? p->diags.cap * 2 : 4;
     p->diags.data = realloc(p->diags.data, p->diags.cap * sizeof(Diagnostic));
   }
-  p->diags.data[p->diags.len++] = (Diagnostic){pos, msg};
+  p->diags.data[p->diags.len++] = (Diagnostic){pos, msg, sev};
+}
+
+static void diag_pushf(Parser *p, Pos pos, DiagSeverity sev, const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  int n = vsnprintf(NULL, 0, fmt, ap);
+  va_end(ap);
+  char *buf = arena_alloc(p->arena, n + 1);
+  va_start(ap, fmt);
+  vsnprintf(buf, n + 1, fmt, ap);
+  va_end(ap);
+  diag_push(p, pos, sev, buf);
 }
 
 /**
@@ -172,13 +186,13 @@ static TokenKind infer_var_type(Node *expr) {
 static Node *parse_if(Parser *p) {
   next(p); // consume 'if'
   if (p->tok.kind != TK_LPAREN) {
-    diag_push(p, p->tok.pos, "expected '('");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
   Node *cond = parse_expr_prec(p, 0);
   if (p->tok.kind != TK_RPAREN) {
-    diag_push(p, p->tok.pos, "expected ')'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
   } else {
     next(p);
   }
@@ -204,13 +218,13 @@ static Node *parse_if(Parser *p) {
 static Node *parse_while(Parser *p) {
   next(p); // consume 'while'
   if (p->tok.kind != TK_LPAREN) {
-    diag_push(p, p->tok.pos, "expected '('");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
   Node *cond = parse_expr_prec(p, 0);
   if (p->tok.kind != TK_RPAREN) {
-    diag_push(p, p->tok.pos, "expected ')'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
   } else {
     next(p);
   }
@@ -231,24 +245,24 @@ static Node *parse_do_while(Parser *p) {
   next(p); // consume 'do'
   Node *body = parse_stmt(p);
   if (p->tok.kind != TK_KW_WHILE) {
-    diag_push(p, p->tok.pos, "expected 'while'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected 'while'");
     return node_new(p->arena, ND_ERROR);
   }
   next(p); // consume 'while'
   if (p->tok.kind != TK_LPAREN) {
-    diag_push(p, p->tok.pos, "expected '('");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
   Node *cond = parse_expr_prec(p, 0);
   if (p->tok.kind != TK_RPAREN)
-    diag_push(p, p->tok.pos, "expected ')'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
   else
     next(p);
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   Node *n = node_new(p->arena, ND_DO_WHILE);
   n->as.do_while_stmt.body = body;
   n->as.do_while_stmt.cond = cond;
@@ -264,7 +278,7 @@ static Node *parse_do_while(Parser *p) {
 static Node *parse_for(Parser *p) {
   next(p); // consume 'for'
   if (p->tok.kind != TK_LPAREN) {
-    diag_push(p, p->tok.pos, "expected '('");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
@@ -274,7 +288,7 @@ static Node *parse_for(Parser *p) {
       TokenKind type_tok = p->tok.kind;
       next(p);
       if (p->tok.kind != TK_IDENT) {
-        diag_push(p, p->tok.pos, "expected identifier");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected identifier");
         return node_new(p->arena, ND_ERROR);
       }
       init = node_new(p->arena, ND_VAR_DECL);
@@ -286,7 +300,7 @@ static Node *parse_for(Parser *p) {
         next(p);
         init->as.var_decl.init = parse_expr(p);
       } else {
-        diag_push(p, p->tok.pos, "expected '='");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected '='");
         init->as.var_decl.init = node_new(p->arena, ND_ERROR);
       }
       if (type_tok == TK_KW_VAR)
@@ -298,21 +312,21 @@ static Node *parse_for(Parser *p) {
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   Node *cond = NULL;
   if (p->tok.kind != TK_SEMICOLON)
     cond = parse_expr(p);
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   Node *update = NULL;
   if (p->tok.kind != TK_RPAREN)
     update = parse_expr(p);
   if (p->tok.kind == TK_RPAREN)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ')'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
   Node *body = parse_stmt(p);
   Node *n = node_new(p->arena, ND_FOR);
   n->as.for_stmt.init = init;
@@ -331,7 +345,7 @@ static Node *parse_for(Parser *p) {
 static Node *parse_switch(Parser *p) {
   next(p); // consume 'switch'
   if (p->tok.kind != TK_LPAREN) {
-    diag_push(p, p->tok.pos, "expected '('");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
@@ -339,9 +353,9 @@ static Node *parse_switch(Parser *p) {
   if (p->tok.kind == TK_RPAREN)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ')'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
   if (p->tok.kind != TK_LBRACE) {
-    diag_push(p, p->tok.pos, "expected '{'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '{'");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
@@ -357,13 +371,13 @@ static Node *parse_switch(Parser *p) {
       next(p);
       is_default = 1;
     } else {
-      diag_push(p, p->tok.pos, "expected 'case' or 'default'");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected 'case' or 'default'");
       break;
     }
     if (p->tok.kind == TK_COLON)
       next(p);
     else
-      diag_push(p, p->tok.pos, "expected ':'");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected ':'");
     Node *body = parse_stmt(p);
     if (len + 1 > cap) {
       cap = cap ? cap * 2 : 4;
@@ -375,7 +389,7 @@ static Node *parse_switch(Parser *p) {
   if (p->tok.kind == TK_RBRACE)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected '}'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '}'");
   Node *n = node_new(p->arena, ND_SWITCH);
   n->as.switch_stmt.expr = expr;
   n->as.switch_stmt.cases = cases;
@@ -394,7 +408,7 @@ static Node *parse_break(Parser *p) {
   if (p->tok.kind == TK_SEMICOLON) {
     next(p);
   } else {
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   }
   return node_new(p->arena, ND_BREAK);
 }
@@ -410,7 +424,7 @@ static Node *parse_continue(Parser *p) {
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   return node_new(p->arena, ND_CONTINUE);
 }
 
@@ -429,7 +443,7 @@ static Node *parse_return(Parser *p) {
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   Node *n = node_new(p->arena, ND_RETURN);
   n->as.ret.expr = expr;
   return n;
@@ -443,7 +457,7 @@ static Node *parse_throw(Parser *p) {
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   Node *n = node_new(p->arena, ND_THROW);
   n->as.throw_stmt.expr = expr;
   return n;
@@ -483,13 +497,13 @@ static Node *parse_func(Parser *p) {
     next(p);
   }
   if (p->tok.kind != TK_IDENT) {
-    diag_push(p, p->tok.pos, "expected identifier");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected identifier");
     return node_new(p->arena, ND_ERROR);
   }
   Slice name = {p->tok.start, p->tok.len};
   next(p);
   if (p->tok.kind != TK_LPAREN) {
-    diag_push(p, p->tok.pos, "expected '('");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
@@ -498,13 +512,13 @@ static Node *parse_func(Parser *p) {
   if (p->tok.kind != TK_RPAREN) {
     for (;;) {
       if (!is_type_token(p->tok.kind) && p->tok.kind != TK_KW_VOID) {
-        diag_push(p, p->tok.pos, "expected parameter type");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected parameter type");
         return node_new(p->arena, ND_ERROR);
       }
       TokenKind pt = p->tok.kind;
       next(p);
       if (p->tok.kind != TK_IDENT) {
-        diag_push(p, p->tok.pos, "expected parameter name");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected parameter name");
         return node_new(p->arena, ND_ERROR);
       }
       Node *vd = node_new(p->arena, ND_VAR_DECL);
@@ -525,7 +539,7 @@ static Node *parse_func(Parser *p) {
   if (p->tok.kind == TK_RPAREN)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ')'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
   Node *body = parse_stmt(p);
   Node *fn = node_new(p->arena, ND_FUNC);
   fn->as.func.ret_type = ret_type;
@@ -539,13 +553,13 @@ static Node *parse_func(Parser *p) {
 static Node *parse_type_decl(Parser *p, NodeKind kind) {
   next(p); // consume 'class' or 'struct'
   if (p->tok.kind != TK_IDENT) {
-    diag_push(p, p->tok.pos, "expected identifier");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected identifier");
     return node_new(p->arena, ND_ERROR);
   }
   Slice name = {p->tok.start, p->tok.len};
   next(p);
   if (p->tok.kind != TK_LBRACE) {
-    diag_push(p, p->tok.pos, "expected '{'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '{'");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
@@ -562,7 +576,7 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
     } else if (is_type_token(p->tok.kind)) {
       m = parse_var_decl(p);
     } else {
-      diag_push(p, p->tok.pos, "expected member declaration");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected member declaration");
       m = parse_stmt(p);
     }
     nodevec_push(&members, &len, &cap, m);
@@ -570,7 +584,7 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
   if (p->tok.kind == TK_RBRACE)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected '}'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '}'");
   Node *n = node_new(p->arena, kind);
   n->as.type_decl.name = name;
   n->as.type_decl.members = members;
@@ -616,7 +630,7 @@ static Node *parse_primary(Parser *p) {
   case TK_KW_CONSOLE: {
     next(p); /* consume 'Console' */
     if (p->tok.kind != TK_DOT) {
-      diag_push(p, p->tok.pos, "expected '.'");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected '.'");
       return node_new(p->arena, ND_ERROR);
     }
     next(p); /* consume '.' */
@@ -629,12 +643,12 @@ static Node *parse_primary(Parser *p) {
     } else if (p->tok.kind == TK_KW_READLINE) {
       read = 1;
     } else {
-      diag_push(p, p->tok.pos, "expected Write, WriteLine or ReadLine");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected Write, WriteLine or ReadLine");
       return node_new(p->arena, ND_ERROR);
     }
     next(p);
     if (p->tok.kind != TK_LPAREN) {
-      diag_push(p, p->tok.pos, "expected '('");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
       return node_new(p->arena, ND_ERROR);
     }
     next(p);
@@ -644,7 +658,7 @@ static Node *parse_primary(Parser *p) {
     if (p->tok.kind == TK_RPAREN)
       next(p);
     else
-      diag_push(p, p->tok.pos, "expected ')'");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
     n = node_new(p->arena, ND_CONSOLE_CALL);
     n->as.console.arg = arg;
     n->as.console.newline = newline;
@@ -654,20 +668,20 @@ static Node *parse_primary(Parser *p) {
   case TK_KW_NEW: {
     next(p); /* consume 'new' */
     if (p->tok.kind != TK_IDENT || !typevec_contains(p, p->tok)) {
-      diag_push(p, p->tok.pos, "expected type identifier");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected type identifier");
       return node_new(p->arena, ND_ERROR);
     }
     Slice type_name = {p->tok.start, p->tok.len};
     next(p);
     if (p->tok.kind != TK_LPAREN) {
-      diag_push(p, p->tok.pos, "expected '('");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
       return node_new(p->arena, ND_ERROR);
     }
     next(p);
     if (p->tok.kind == TK_RPAREN)
       next(p);
     else
-      diag_push(p, p->tok.pos, "expected ')'");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
     n = node_new(p->arena, ND_NEW);
     n->as.new_expr.type_name = type_name;
     return n;
@@ -693,7 +707,7 @@ static Node *parse_primary(Parser *p) {
         next(p);
         return n;
       }
-      diag_push(p, t.pos, "malformed char literal");
+      diag_push(p, t.pos, DIAG_ERROR, "malformed char literal");
       return node_new(p->arena, ND_ERROR);
     }
     // fallthrough
@@ -709,11 +723,11 @@ static Node *parse_primary(Parser *p) {
     if (p->tok.kind == TK_RPAREN)
       next(p);
     else
-      diag_push(p, p->tok.pos, "expected ')'");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
     return n;
   }
   default:
-    diag_push(p, t.pos, "unexpected token in expression");
+    diag_push(p, t.pos, DIAG_ERROR, "unexpected token in expression");
     next(p);
     n = node_new(p->arena, ND_ERROR);
     return n;
@@ -747,7 +761,7 @@ static Node *parse_postfix(Parser *p) {
       if (p->tok.kind == TK_RPAREN)
         next(p);
       else
-        diag_push(p, p->tok.pos, "expected ')'");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
       Node *call = node_new(p->arena, ND_CALL);
       call->as.call.callee = n;
       call->as.call.args = args;
@@ -766,7 +780,7 @@ static Node *parse_postfix(Parser *p) {
       if (p->tok.kind == TK_RBRACKET)
         next(p);
       else
-        diag_push(p, p->tok.pos, "expected ']'");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected ']'");
       Node *idxn = node_new(p->arena, ND_INDEX);
       idxn->as.index.array = n;
       idxn->as.index.index = idx;
@@ -774,7 +788,7 @@ static Node *parse_postfix(Parser *p) {
     } else if (p->tok.kind == TK_DOT) {
       next(p);
       if (p->tok.kind != TK_IDENT) {
-        diag_push(p, p->tok.pos, "expected identifier");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected identifier");
         return node_new(p->arena, ND_ERROR);
       }
       Node *fld = node_new(p->arena, ND_FIELD);
@@ -818,7 +832,7 @@ static Node *parse_var_decl(Parser *p) {
   size_t len = 0, cap = 0;
   for (;;) {
     if (p->tok.kind != TK_IDENT) {
-      diag_push(p, p->tok.pos, "expected identifier");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected identifier");
       return node_new(p->arena, ND_ERROR);
     }
     Node *n = node_new(p->arena, ND_VAR_DECL);
@@ -832,7 +846,7 @@ static Node *parse_var_decl(Parser *p) {
     if (p->tok.kind == TK_LBRACKET) {
       next(p);
       if (p->tok.kind != TK_INT_LITERAL) {
-        diag_push(p, p->tok.pos, "expected array size");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected array size");
         n->as.var_decl.array_len = 0;
       } else {
         n->as.var_decl.array_len = strtoul(p->tok.start, NULL, 10);
@@ -841,7 +855,7 @@ static Node *parse_var_decl(Parser *p) {
       if (p->tok.kind == TK_RBRACKET)
         next(p);
       else
-        diag_push(p, p->tok.pos, "expected ']'");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected ']'");
     }
     if (p->tok.kind == TK_EQ) {
       next(p);
@@ -851,7 +865,7 @@ static Node *parse_var_decl(Parser *p) {
     }
     if (type_tok.kind == TK_KW_VAR) {
       if (!n->as.var_decl.init) {
-        diag_push(p, p->tok.pos, "var declaration requires initializer");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "var declaration requires initializer");
         n->as.var_decl.type = TK_KW_INT;
       } else {
         n->as.var_decl.type = infer_var_type(n->as.var_decl.init);
@@ -867,7 +881,7 @@ static Node *parse_var_decl(Parser *p) {
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   if (len == 1) {
     Node *single = items[0];
     free(items);
@@ -974,7 +988,7 @@ static Node *parse_expr_prec(Parser *p, int min_prec) {
       next(p);
       Node *then_expr = parse_expr_prec(p, 0);
       if (p->tok.kind != TK_COLON) {
-        diag_push(p, p->tok.pos, "expected ':'");
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected ':'");
       } else {
         next(p);
       }
@@ -1109,7 +1123,7 @@ static Node *parse_stmt(Parser *p) {
     if (p->tok.kind == TK_RBRACE)
       next(p);
     else
-      diag_push(p, p->tok.pos, "expected '}'");
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected '}'");
     Node *blk = node_new(p->arena, ND_BLOCK);
     blk->as.block.items = items;
     blk->as.block.len = len;
@@ -1119,7 +1133,7 @@ static Node *parse_stmt(Parser *p) {
   if (p->tok.kind == TK_SEMICOLON)
     next(p);
   else
-    diag_push(p, p->tok.pos, "expected ';'");
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   Node *st = node_new(p->arena, ND_EXPR_STMT);
   st->as.expr_stmt.expr = expr;
   return st;

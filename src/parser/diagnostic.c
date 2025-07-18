@@ -1,11 +1,15 @@
 #include "diagnostic.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+
+bool diag_verbose = false;
 
 /**
  * @brief ANSI escape code for red text color.
  */
 static const char *RED = "\x1b[31m";
+static const char *YELLOW = "\x1b[33m";
 /**
  * @brief ANSI escape code to reset text formatting.
  */
@@ -48,12 +52,16 @@ static const char *find_line_end(const char *p) {
 void print_diagnostics(const char *src, DiagnosticVec *vec) {
     for (size_t i = 0; i < vec->len; ++i) {
         Diagnostic d = vec->data[i];
-        const char *line_start = find_line_start(src, d.pos);
-        const char *line_end = find_line_end(line_start);
-        fprintf(stderr, "%serror:%s %s\n", RED, RESET, d.msg);
-        fwrite(line_start, 1, line_end - line_start, stderr);
-        fputc('\n', stderr);
-        for (size_t c = 1; c < d.pos.column; ++c) fputc(' ', stderr);
-        fprintf(stderr, "%s^%s\n", RED, RESET);
+        const char *color = d.sev == DIAG_ERROR ? RED : YELLOW;
+        const char *label = d.sev == DIAG_ERROR ? "error" : "warning";
+        fprintf(stderr, "%s%zu:%zu: %s:%s %s\n", color, d.pos.line, d.pos.column, label, RESET, d.msg);
+        if (diag_verbose) {
+            const char *line_start = find_line_start(src, d.pos);
+            const char *line_end = find_line_end(line_start);
+            fwrite(line_start, 1, line_end - line_start, stderr);
+            fputc('\n', stderr);
+            for (size_t c = 1; c < d.pos.column; ++c) fputc(' ', stderr);
+            fprintf(stderr, "%s^%s\n", color, RESET);
+        }
     }
 }

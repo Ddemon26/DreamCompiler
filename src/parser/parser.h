@@ -4,11 +4,20 @@
 #include "ast.h"
 
 /**
- * @brief Represents a diagnostic message with its position and content.
+ * @brief Severity levels for diagnostics.
+ */
+typedef enum {
+    DIAG_ERROR,   /**< An error that prevents successful compilation. */
+    DIAG_WARNING  /**< A warning that does not stop compilation. */
+} DiagSeverity;
+
+/**
+ * @brief Represents a diagnostic message with its position, content and severity.
  */
 typedef struct {
     Pos pos;
     const char *msg;
+    DiagSeverity sev;
 } Diagnostic;
 
 /**

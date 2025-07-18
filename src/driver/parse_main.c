@@ -3,6 +3,7 @@
 #include "../parser/diagnostic.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * @brief Reads the content of a file into a dynamically allocated buffer.
@@ -37,11 +38,19 @@ static char *read_file(const char *path) {
  * @return Exit status of the program.
  */
 int main(int argc, char **argv) {
-    if (argc < 2) {
-        fprintf(stderr, "usage: %s file\n", argv[0]);
+    const char *path = NULL;
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
+            diag_verbose = true;
+            continue;
+        }
+        path = argv[i];
+    }
+    if (!path) {
+        fprintf(stderr, "usage: %s [--verbose] file\n", argv[0]);
         return 1;
     }
-    char *src = read_file(argv[1]);
+    char *src = read_file(path);
     if (!src) {
         perror("read_file");
         return 1;
