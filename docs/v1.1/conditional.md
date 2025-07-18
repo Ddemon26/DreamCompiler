@@ -1,4 +1,8 @@
-# Conditional Operator *(planned)*
+# Conditional Operator
 
-The ternary `?:` operator will evaluate an expression based on a condition. It is not yet available in Dream.dr.
+The ternary `?:` chooses between two expressions based on a condition.
+
+```dream
+var result = condition ? "ok" : "fail";
+```
 
