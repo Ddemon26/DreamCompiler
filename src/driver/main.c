@@ -4,14 +4,10 @@
 #include "../parser/diagnostic.h"
 #include "../parser/parser.h"
 #include "../util/console_debug.h"
+#include "../util/platform.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <sys/stat.h>
-#endif
 
 /**
  * @brief Reads the contents of a file into a dynamically allocated buffer.
@@ -57,9 +53,9 @@ static char *read_file(const char *path) {
  * @return int Exit status of the program.
  */
 int main(int argc, char *argv[]) {
-  bool opt1 = false; /**< Flag for enabling optimization level 1. */
-  bool emit_c = true; /**< Flag for emitting C code. */
-  bool emit_obj = false; /**< Flag for emitting object code. */
+  bool opt1 = false;        /**< Flag for enabling optimization level 1. */
+  bool emit_c = true;       /**< Flag for emitting C code. */
+  bool emit_obj = false;    /**< Flag for emitting object code. */
   const char *input = NULL; /**< Path to the input file. */
 
   for (int i = 1; i < argc; i++) {
@@ -103,13 +99,8 @@ int main(int argc, char *argv[]) {
   run_pipeline(NULL, opt1);
 
   if (emit_c) {
-#ifdef _WIN32
-    _mkdir("build");
-    _mkdir("build/bin");
-#else
-    mkdir("build", 0755);
-    mkdir("build/bin", 0755);
-#endif
+    dr_mkdir("build");
+    dr_mkdir("build/bin");
     FILE *out = fopen("build/bin/dream.c", "w");
     if (!out) {
       perror("fopen");
@@ -121,12 +112,14 @@ int main(int argc, char *argv[]) {
     if (!cc)
       cc = "zig cc";
     char cmd[256];
-    snprintf(cmd, sizeof(cmd), "%s -c runtime/console.c -o build/console.o", cc);
+    snprintf(cmd, sizeof(cmd), "%s -c runtime/console.c -o build/console.o",
+             cc);
     int res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
 #ifdef _WIN32
-    snprintf(cmd, sizeof(cmd), "%s -Iruntime build/bin/dream.c build/console.o -o dream", cc);
+    snprintf(cmd, sizeof(cmd),
+             "%s -Iruntime build/bin/dream.c build/console.o -o dream", cc);
     res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
@@ -135,7 +128,8 @@ int main(int argc, char *argv[]) {
     res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
-    snprintf(cmd, sizeof(cmd), "%s -Iruntime build/bin/dream.c -Lbuild -ldruntime -o dream", cc);
+    snprintf(cmd, sizeof(cmd),
+             "%s -Iruntime build/bin/dream.c -Lbuild -ldruntime -o dream", cc);
     res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);

@@ -45,3 +45,9 @@ Version 1.1.03 (2025-07-18)
 - Added basic try/catch statements and the `throw` keyword.
 - Code generation now uses setjmp/longjmp for simple exception handling.
 - Updated grammar and added tests for exception handling.
+
+Version 1.1.04 (2025-07-19)
+- Improved cross-platform support for Linux and Windows.
+- Added `src/util/platform.h` and updated code to use it.
+- CI now builds and tests on Windows.
+- Updated Windows setup scripts to rely on MinGW's bundled gdb.

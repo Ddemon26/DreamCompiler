@@ -29,7 +29,7 @@ The steps below show how to build and use Dream on Linux **or Windows**.
      ```bash
      sudo apt update && sudo apt install -y build-essential gcc git
      ```
-   - On Windows run `codex\_startup.ps1` from an elevated PowerShell (requires Chocolatey).
+   - On Windows run `codex\_startup.ps1` from an elevated PowerShell (requires Chocolatey). The script installs MinGW (with `gdb`) and other tools automatically.
    - Install [Zig 0.15.0 or newer](https://ziglang.org/download/) and add `zig` to your `PATH`.
 2. **Clone the repository**
    ```bash
@@ -38,7 +38,9 @@ The steps below show how to build and use Dream on Linux **or Windows**.
    ```
 3. **Build the compiler**
    ```bash
-   zig build
+   zig build             # detects your platform automatically
+   # cross-compile for Windows from Linux:
+   zig build -Dtarget=x86_64-windows
    ```
 4. **Compile a file**
    ```bash
@@ -46,7 +48,7 @@ The steps below show how to build and use Dream on Linux **or Windows**.
    ```
 5. **Run the tests**
    ```bash
-   ./python/test_runner
+   python codex/python/test_runner
    ```
 
 The resulting compiler binary is placed under `zig-out/bin`.

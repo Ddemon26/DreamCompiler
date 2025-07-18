@@ -3,7 +3,6 @@ const std = @import("std");
 /// A list of all C source files used in the project.
 const AllCSources = [_][]const u8{
     "src/driver/main.c",
-    "src/lexer/lexer.c",
     "src/parser/ast.c",
     "src/parser/parser.c",
     "src/parser/error.c",
@@ -24,6 +23,14 @@ const AllCSources = [_][]const u8{
     "src/codegen/codegen.c",
 };
 
+const CFLAGS = [_][]const u8{
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-D_GNU_SOURCE",
+    "-Isrc/lexer",
+};
+
 /// Builds the project by defining targets, modules, and build steps.
 ///
 /// @param b The build context.
@@ -36,21 +43,19 @@ pub fn build(b: *std.Build) void {
     const lex_mod = b.createModule(.{ .target = target, .optimize = optimize });
     const parse_mod = b.createModule(.{ .target = target, .optimize = optimize });
 
-    const re2c_step = b.addSystemCommand(&.{ "re2c", "-c", "-o", "src/lexer/lexer.c" });
+    const re2c_step = b.addSystemCommand(&.{ "re2c", "-c", "-o" });
+    const lexer_c = re2c_step.addOutputFileArg("src/lexer/lexer.c");
     re2c_step.addFileArg(b.path("src/lexer/lexer.re"));
     re2c_step.addFileInput(b.path("src/lexer/tokens.def"));
 
     const bootstrap = b.addExecutable(.{ .name = "dreamc-bootstrap", .root_module = bootstrap_mod });
     bootstrap.step.dependOn(&re2c_step.step);
-    bootstrap.addCSourceFiles(.{ .files = &AllCSources, .flags = &.{
-        "-std=c11",
-        "-Wall",
-        "-Wextra",
-        "-D_GNU_SOURCE",
-    } });
+    bootstrap.addCSourceFiles(.{ .files = &AllCSources, .flags = &CFLAGS });
+    bootstrap.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
 
     const lexexe = b.addExecutable(.{ .name = "lexdump", .root_module = lex_mod });
-    lexexe.addCSourceFiles(.{ .files = &.{ "src/driver/lex_main.c", "src/lexer/lexer.c" }, .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" } });
+    lexexe.addCSourceFiles(.{ .files = &.{"src/driver/lex_main.c"}, .flags = &CFLAGS });
+    lexexe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
     lexexe.linkLibC();
     lexexe.step.dependOn(&re2c_step.step);
     b.installArtifact(lexexe);
@@ -58,14 +63,14 @@ pub fn build(b: *std.Build) void {
     const parseexe = b.addExecutable(.{ .name = "parse", .root_module = parse_mod });
     parseexe.addCSourceFiles(.{ .files = &.{
         "src/driver/parse_main.c",
-        "src/lexer/lexer.c",
         "src/parser/ast.c",
         "src/parser/parser.c",
         "src/parser/error.c",
         "src/parser/diagnostic.c",
         "src/sem/type.c",
         "src/sem/infer.c",
-    }, .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" } });
+    }, .flags = &CFLAGS });
+    parseexe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
     parseexe.linkLibC();
     parseexe.step.dependOn(&re2c_step.step);
     b.installArtifact(parseexe);
@@ -75,14 +80,10 @@ pub fn build(b: *std.Build) void {
 
     const exe = b.addExecutable(.{ .name = "DreamCompiler", .root_module = exe_mod });
     exe.step.dependOn(compile_step.step);
-    exe.addCSourceFiles(.{ .files = &AllCSources, .flags = &.{
-        "-std=c11",
-        "-Wall",
-        "-Wextra",
-        "-D_GNU_SOURCE",
-    } });
+    exe.addCSourceFiles(.{ .files = &AllCSources, .flags = &CFLAGS });
+    exe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
     for (compile_step.files) |gen| {
-        exe.addCSourceFile(.{ .file = gen, .flags = &.{ "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE" } });
+        exe.addCSourceFile(.{ .file = gen, .flags = &CFLAGS });
     }
     exe.linkLibC();
     b.installArtifact(exe);

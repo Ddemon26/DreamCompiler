@@ -1,12 +1,11 @@
 #include "codegen.h"
+#include "../util/platform.h"
 #include "c_emit.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
 #include <io.h>
-#else
-#include <unistd.h>
 #endif
 
 /**
@@ -60,7 +59,8 @@ static const char *op_text(TokenKind k) {
   case TK_RSHIFTEQ:
     return ">>=";
   case TK_QMARKQMARKEQ:
-    return "?" "?=";
+    return "?"
+           "?=";
   case TK_TILDE:
     return "~";
   case TK_PLUSPLUS:
@@ -263,7 +263,8 @@ static int is_string_expr(CGCtx *ctx, Node *n) {
 /**
  * @brief Emits an expression node to the output buffer.
  *
- * Generates C code for the given expression node and writes it to the output buffer.
+ * Generates C code for the given expression node and writes it to the output
+ * buffer.
  *
  * @param ctx Pointer to the code generation context.
  * @param b Pointer to the output buffer.
@@ -274,7 +275,8 @@ static void emit_expr(CGCtx *ctx, COut *b, Node *n);
 /**
  * @brief Emits a statement node to the output buffer.
  *
- * Generates C code for the given statement node and writes it to the output buffer.
+ * Generates C code for the given statement node and writes it to the output
+ * buffer.
  *
  * @param ctx Pointer to the code generation context.
  * @param b Pointer to the output buffer.
@@ -285,7 +287,8 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n);
 /**
  * @brief Emits a function node to the output buffer.
  *
- * Generates C code for the given function node and writes it to the output buffer.
+ * Generates C code for the given function node and writes it to the output
+ * buffer.
  *
  * @param b Pointer to the output buffer.
  * @param n Pointer to the function node.
@@ -295,9 +298,10 @@ static void emit_func(COut *b, Node *n);
 /**
  * @brief Emits an expression node to the output buffer.
  *
- * Generates C code for the given expression node and writes it to the output buffer.
- * Handles various node kinds, including literals, identifiers, unary and binary operations,
- * conditional expressions, array indexing, and function calls.
+ * Generates C code for the given expression node and writes it to the output
+ * buffer. Handles various node kinds, including literals, identifiers, unary
+ * and binary operations, conditional expressions, array indexing, and function
+ * calls.
  *
  * @param ctx Pointer to the code generation context.
  * @param b Pointer to the output buffer.
@@ -486,9 +490,10 @@ static void emit_func(COut *b, Node *n) {
 /**
  * @brief Emits a statement node to the output buffer.
  *
- * Generates C code for the given statement node and writes it to the output buffer.
- * Handles various statement types, including variable declarations, function definitions,
- * control flow statements (if, while, do-while, for, switch), and console calls.
+ * Generates C code for the given statement node and writes it to the output
+ * buffer. Handles various statement types, including variable declarations,
+ * function definitions, control flow statements (if, while, do-while, for,
+ * switch), and console calls.
  *
  * @param ctx Pointer to the code generation context.
  * @param b Pointer to the output buffer.
@@ -652,7 +657,8 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
         c_out_write(b, "dream_readline();");
         c_out_newline(b);
       } else if (is_string_expr(ctx, call->as.console.arg)) {
-        c_out_write(b, call->as.console.newline ? "dr_console_writeln(" : "dr_console_write(");
+        c_out_write(b, call->as.console.newline ? "dr_console_writeln("
+                                                : "dr_console_write(");
         emit_expr(ctx, b, call->as.console.arg);
         c_out_write(b, ");");
         c_out_newline(b);
@@ -676,7 +682,8 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     if (n->as.console.read) {
       c_out_write(b, "dream_readline()");
     } else if (is_string_expr(ctx, n->as.console.arg)) {
-      c_out_write(b, n->as.console.newline ? "dr_console_writeln(" : "dr_console_write(");
+      c_out_write(b, n->as.console.newline ? "dr_console_writeln("
+                                           : "dr_console_write(");
       emit_expr(ctx, b, n->as.console.arg);
       c_out_write(b, ")");
     } else {
@@ -741,7 +748,8 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_newline(&builder);
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");
   c_out_write(&builder, "static int dream_jmp_top = -1;\n");
-  c_out_write(&builder, "static void dream_throw(void) { longjmp(dream_jmp_buf[dream_jmp_top], 1); }\n");
+  c_out_write(&builder, "static void dream_throw(void) { "
+                        "longjmp(dream_jmp_buf[dream_jmp_top], 1); }\n");
   c_out_newline(&builder);
   c_out_write(&builder,
               "static char *dream_concat(const char *a, const char *b) {\n");
@@ -756,9 +764,11 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_newline(&builder);
   c_out_write(&builder, "static char *dream_readline(void) {\n");
   c_out_write(&builder, "    static char buf[256];\n");
-  c_out_write(&builder, "    if (!fgets(buf, sizeof buf, stdin)) return NULL;\n");
+  c_out_write(&builder,
+              "    if (!fgets(buf, sizeof buf, stdin)) return NULL;\n");
   c_out_write(&builder, "    size_t len = strlen(buf);\n");
-  c_out_write(&builder, "    if (len && buf[len-1] == '\\n') buf[len-1] = 0;\n");
+  c_out_write(&builder,
+              "    if (len && buf[len-1] == '\\n') buf[len-1] = 0;\n");
   c_out_write(&builder, "    return buf;\n}");
   c_out_newline(&builder);
   c_out_newline(&builder);
@@ -797,8 +807,8 @@ void codegen_emit_c(Node *root, FILE *out) {
 /**
  * @brief Emits an object file for the given AST root node.
  *
- * Generates an intermediate C file from the AST, compiles it into an object file,
- * and writes the result to the specified path. Handles platform-specific
+ * Generates an intermediate C file from the AST, compiles it into an object
+ * file, and writes the result to the specified path. Handles platform-specific
  * temporary file creation and cleanup.
  *
  * @param root Pointer to the root node of the AST.
@@ -828,7 +838,7 @@ void codegen_emit_obj(Node *root, const char *path) {
   if (!f) {
     perror("fdopen");
     close(fd);
-    unlink(tmp);
+    dr_unlink(tmp);
     return;
   }
 #endif
@@ -839,9 +849,5 @@ void codegen_emit_obj(Node *root, const char *path) {
   int res = system(cmd);
   if (res != 0)
     fprintf(stderr, "failed to run: %s\n", cmd);
-#ifdef _WIN32
-  remove(tmp);
-#else
-  unlink(tmp);
-#endif
+  dr_unlink(tmp);
 }
