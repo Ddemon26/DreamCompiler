@@ -4,5 +4,5 @@ class Person {
 }
 Person p;
 p.age = 30;
-Console.WriteLine(p.age);
+Console.WriteLine(p.age); // Expected: 30
 

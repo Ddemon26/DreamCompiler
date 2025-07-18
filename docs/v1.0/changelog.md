@@ -371,3 +371,9 @@ Version 1.0.68 (2025-08-16)
 * Functions can now declare an explicit return type after `func`.
 * Updated code generation to handle typed returns.
 * Added documentation and a regression test for typed return values.
+
+Version 1.0.69 (2025-08-17)
+
+* Implemented object instantiation for classes and structs.
+* Field access via `.` is now supported in expressions.
+* Updated tasks and added a regression test for object creation.
