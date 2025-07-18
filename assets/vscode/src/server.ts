@@ -45,23 +45,25 @@ function getParseExecutable(): string {
 
 function analyzeDocument(doc: TextDocument): void {
   const info = { symbols: new Map<string, SymbolInfo>() };
-  const text = doc.getText();
-  const lines = text.split(/\r?\n/);
-  const symbolRegex = /^(func|var|class)\s+(\w+)/;
-  lines.forEach((line, idx) => {
-    const m = symbolRegex.exec(line);
-    if (m) {
-      info.symbols.set(m[2], { line: idx, character: line.indexOf(m[2]), kind: m[1] as SymbolInfo['kind'] });
+  const parseExe = getParseExecutable();
+  const res = spawnSync(parseExe, ['--symbols', doc.uri.replace('file://', '')]);
+  if (res.stdout) {
+    try {
+      const symbols: SymbolInfo[] = JSON.parse(res.stdout.toString());
+      for (const s of symbols) {
+        info.symbols.set(s.name, s);
+      }
+    } catch {
+      // ignore JSON errors
     }
-  });
+  }
   documentsInfo.set(doc.uri, info);
 
-  const parseExe = getParseExecutable();
-  const res = spawnSync(parseExe, [doc.uri.replace('file://', '')]);
+  const res2 = spawnSync(parseExe, [doc.uri.replace('file://', '')]);
   const diagnostics: Diagnostic[] = [];
-  if (res.stderr) {
+  if (res2.stderr) {
     const pattern = /(\d+):(\d+): (error|warning): (.*)/;
-    res.stderr.toString().split(/\r?\n/).forEach(line => {
+    res2.stderr.toString().split(/\r?\n/).forEach(line => {
       const m = pattern.exec(line.trim());
       if (m) {
         diagnostics.push({
