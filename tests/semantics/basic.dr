@@ -1,0 +1,6 @@
+func int Twice(int x) {
+    return x * 2;
+}
+
+int y = Twice(3);
+Console.WriteLine(y); // Expected: 6
