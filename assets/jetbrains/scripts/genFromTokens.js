@@ -52,8 +52,9 @@ const tokens = [
   {
     name: 'keyword',
     regex: `\\b(${kwRegex})\\b`,
-    // In .flex we only need a single backslash for word boundaries
-    flex: `\b(${kwRegex})\b`,
+    // In .flex we also need two characters, backslash and 'b', to avoid writing
+    // the backspace control code. Use double escaping so JFlex receives "\\b".
+    flex: `\\b(${kwRegex})\\b`,
     scope: 'keyword.control',
   },
   // JFlex does not support non-capturing groups, so use a normal group instead
@@ -70,7 +71,9 @@ const tokens = [
   {
     name: 'function',
     regex: `\\b${defs.IDENT}(?=\\s*\\()`,
-    flex: `\b${defs.IDENT}(?=\\s*\\()`,
+    // Trailing context syntax (re1 / re2) ensures '(' is not consumed. The
+    // separating space avoids treating '/' as a literal character.
+    flex: `\\b${defs.IDENT} /\\s*\\(`,
     scope: 'entity.name.function',
   },
   {
