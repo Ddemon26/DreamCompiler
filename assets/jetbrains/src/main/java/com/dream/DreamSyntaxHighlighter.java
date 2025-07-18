@@ -48,9 +48,9 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
         if (tokenType == DreamTokenTypes.KEYWORD) return KEYWORD_KEYS;
         if (tokenType == DreamTokenTypes.NUMBER) return NUMBER_KEYS;
         if (tokenType == DreamTokenTypes.STRING) return STRING_KEYS;
-        if (tokenType == DreamTokenTypes.COMMENT ||
-            tokenType == DreamTokenTypes.COMMENTBLOCK ||
-            tokenType == DreamTokenTypes.COMMENTDOC) return COMMENT_KEYS;
+        if (tokenType == DreamTokenTypes.LINE_COMMENT ||
+            tokenType == DreamTokenTypes.BLOCK_COMMENT ||
+            tokenType == DreamTokenTypes.DOC_COMMENT) return COMMENT_KEYS;
         if (tokenType == DreamTokenTypes.OPERATOR) return OPERATOR_KEYS;
         if (tokenType == DreamTokenTypes.SEMICOLON) return SEMICOLON_KEYS;
         if (tokenType == DreamTokenTypes.COMMA) return COMMA_KEYS;

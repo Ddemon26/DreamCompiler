@@ -96,9 +96,9 @@ npx vsce package
 
 ```bash
 cd assets/jetbrains
-./gradlew generateLexer build test
+gradle generateLexer build test
 ```
-Ensure a JDK 17 is available. The build regenerates the lexer from `tokens.def` before compiling and running the tests.
+Ensure `node` is on your `PATH` so `scripts/genFromTokens.js` can rebuild the lexer from `src/lexer/tokens.def` before compiling and running the tests.
 
 The resulting VSIX and plugin zip live in their respective directories.
 

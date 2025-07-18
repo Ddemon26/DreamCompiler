@@ -65,9 +65,9 @@ const tokens = [
     scope: 'constant.numeric',
   },
   { name: 'string', regex: defs.STRING_LITERAL, scope: 'string.quoted.double' },
-  { name: 'commentDoc', regex: '/\\*\\*[^]*?\\*/|///.*', scope: 'comment.block.documentation' },
-  { name: 'comment', regex: '//.*', scope: 'comment.line.double-slash' },
-  { name: 'commentBlock', regex: '/\\*[\\s\\S]*?\\*/', scope: 'comment.block' },
+  { name: 'doc_comment', regex: '/\\*\\*[^]*?\\*/|///.*', scope: 'comment.block.documentation' },
+  { name: 'line_comment', regex: '//.*', scope: 'comment.line.double-slash' },
+  { name: 'block_comment', regex: '/\\*[\\s\\S]*?\\*/', scope: 'comment.block' },
   {
     name: 'identifier',
     regex: `\\b${defs.IDENT}\\b`,

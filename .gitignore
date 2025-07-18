@@ -37,6 +37,7 @@
 dream
 !assets/jetbrains/src/main/java/com/dream
 !assets/jetbrains/src/main/kotlin/com/dream
+!assets/jetbrains/src/test/kotlin/com/dream
 output.c
 
 # Zig

@@ -681,7 +681,7 @@ public class DreamLexer implements com.intellij.lexer.FlexLexer {
           // fall through
           case 25: break;
           case 10:
-            { return DreamTokenTypes.COMMENT;
+            { return DreamTokenTypes.LINE_COMMENT;
             }
           // fall through
           case 26: break;
@@ -706,12 +706,12 @@ public class DreamLexer implements com.intellij.lexer.FlexLexer {
           // fall through
           case 30: break;
           case 15:
-            { return DreamTokenTypes.COMMENTBLOCK;
+            { return DreamTokenTypes.BLOCK_COMMENT;
             }
           // fall through
           case 31: break;
           case 16:
-            { return DreamTokenTypes.COMMENTDOC;
+            { return DreamTokenTypes.DOC_COMMENT;
             }
           // fall through
           case 32: break;
