@@ -23,6 +23,7 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
             new AttributesDescriptor("Dot", DreamSyntaxHighlighter.DOT),
             new AttributesDescriptor("Parentheses", DreamSyntaxHighlighter.PAREN),
             new AttributesDescriptor("Braces", DreamSyntaxHighlighter.BRACE),
+            new AttributesDescriptor("Function", DreamSyntaxHighlighter.FUNCTION),
             new AttributesDescriptor("Brackets", DreamSyntaxHighlighter.BRACKET)
     };
 

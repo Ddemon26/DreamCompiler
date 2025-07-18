@@ -68,6 +68,12 @@ const tokens = [
   { name: 'comment', regex: '//.*', scope: 'comment.line.double-slash' },
   { name: 'commentBlock', regex: '/\\*[\\s\\S]*?\\*/', scope: 'comment.block' },
   {
+    name: 'function',
+    regex: `\\b${defs.IDENT}(?=\\s*\\()`,
+    flex: `\b${defs.IDENT}(?=\\s*\\()`,
+    scope: 'entity.name.function',
+  },
+  {
     name: 'identifier',
     regex: `\\b${defs.IDENT}\\b`,
     flex: `\b${defs.IDENT}\b`,

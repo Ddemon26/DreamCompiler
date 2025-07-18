@@ -43,4 +43,20 @@ class DreamHighlightingTest : BasePlatformTestCase() {
         assertTrue(tokens.contains(com.dream.DreamTokenTypes.KEYWORD))
         assertTrue(tokens.contains(com.dream.DreamTokenTypes.NUMBER))
     }
+
+    fun testFunctionTokenRecognized() {
+        val text = "func int Add() {}"
+        val file = myFixture.configureByText("sample.dr", text)
+        val highlighter = SyntaxHighlighterFactory.getSyntaxHighlighter(DreamLanguage, project, file.virtualFile)
+        val lexer = highlighter.highlightingLexer
+        var found = false
+        lexer.start(text)
+        while (lexer.tokenType != null) {
+            if (lexer.tokenType == com.dream.DreamTokenTypes.FUNCTION) {
+                found = true
+            }
+            lexer.advance()
+        }
+        assertTrue(found)
+    }
 }

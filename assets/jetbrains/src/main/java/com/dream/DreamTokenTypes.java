@@ -16,6 +16,7 @@ public final class DreamTokenTypes {
     public static final IElementType DOT = new DreamElementType("DOT");
     public static final IElementType PAREN = new DreamElementType("PAREN");
     public static final IElementType BRACE = new DreamElementType("BRACE");
+    public static final IElementType FUNCTION = new DreamElementType("FUNCTION");
     public static final IElementType IDENTIFIER = new DreamElementType("IDENTIFIER");
     public static final IElementType BRACKET = new DreamElementType("BRACKET");
     public static final IElementType COMMENTDOC = new DreamElementType("COMMENTDOC");

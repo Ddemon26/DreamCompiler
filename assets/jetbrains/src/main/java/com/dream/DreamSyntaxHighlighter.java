@@ -28,6 +28,7 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey DOT = TextAttributesKey.createTextAttributesKey("DREAM_DOT", DefaultLanguageHighlighterColors.DOT);
     public static final TextAttributesKey PAREN = TextAttributesKey.createTextAttributesKey("DREAM_PAREN", DefaultLanguageHighlighterColors.PARENTHESES);
     public static final TextAttributesKey BRACE = TextAttributesKey.createTextAttributesKey("DREAM_BRACE", DefaultLanguageHighlighterColors.BRACES);
+    public static final TextAttributesKey FUNCTION = TextAttributesKey.createTextAttributesKey("DREAM_FUNCTION", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION);
     public static final TextAttributesKey BRACKET = TextAttributesKey.createTextAttributesKey("DREAM_BRACKET", DefaultLanguageHighlighterColors.BRACKETS);
 
     private static final TextAttributesKey[] KEYWORD_KEYS = pack(KEYWORD);
@@ -40,6 +41,7 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TextAttributesKey[] DOT_KEYS = pack(DOT);
     private static final TextAttributesKey[] PAREN_KEYS = pack(PAREN);
     private static final TextAttributesKey[] BRACE_KEYS = pack(BRACE);
+    private static final TextAttributesKey[] FUNCTION_KEYS = pack(FUNCTION);
     private static final TextAttributesKey[] BRACKET_KEYS = pack(BRACKET);
 
     @NotNull
@@ -57,6 +59,7 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
         if (tokenType == DreamTokenTypes.DOT) return DOT_KEYS;
         if (tokenType == DreamTokenTypes.PAREN) return PAREN_KEYS;
         if (tokenType == DreamTokenTypes.BRACE) return BRACE_KEYS;
+        if (tokenType == DreamTokenTypes.FUNCTION) return FUNCTION_KEYS;
         if (tokenType == DreamTokenTypes.BRACKET) return BRACKET_KEYS;
         return TextAttributesKey.EMPTY_ARRAY;
     }
