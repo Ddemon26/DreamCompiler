@@ -1,0 +1,9 @@
+class Counter {
+    static int value;
+    static func Inc() {
+        Counter.value = Counter.value + 1;
+    }
+}
+Counter.Inc();
+Counter.Inc();
+Console.WriteLine(Counter.value); // Expected: 2

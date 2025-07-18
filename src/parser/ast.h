@@ -153,6 +153,7 @@ struct Node {
       Slice name;       /**< Variable name. */
       Node *init;       /**< Initializer expression. */
       size_t array_len; /**< Array length (0 if not an array). */
+      int is_static;    /**< 1 if this is a static member field. */
     } var_decl;
     struct {
       Node *cond;    /**< Condition expression for ND_IF nodes. */
@@ -200,6 +201,8 @@ struct Node {
     } call;
     struct {
       Slice type_name; /**< Name of the type for ND_NEW nodes. */
+      Node **args;     /**< Arguments to the constructor. */
+      size_t arg_len;  /**< Number of constructor arguments. */
     } new_expr;
     struct {
       TokenKind ret_type; /**< Return type for ND_FUNC nodes. */
@@ -207,6 +210,7 @@ struct Node {
       Node **params;      /**< Array of parameters. */
       size_t param_len;   /**< Number of parameters. */
       Node *body;         /**< Function body. */
+      int is_static;      /**< 1 if this is a static method. */
     } func;
     struct {
       Slice name;     /**< Name of the struct or class. */

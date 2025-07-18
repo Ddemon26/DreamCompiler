@@ -550,6 +550,7 @@ static Node *parse_func(Parser *p) {
   fn->as.func.params = params;
   fn->as.func.param_len = len;
   fn->as.func.body = body;
+  fn->as.func.is_static = 0;
   return fn;
 }
 
@@ -574,11 +575,20 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
       next(p);
       continue;
     }
+    int is_static = 0;
+    if (p->tok.kind == TK_KW_STATIC) {
+      is_static = 1;
+      next(p);
+    }
     Node *m = NULL;
     if (p->tok.kind == TK_KW_FUNC) {
       m = parse_func(p);
+      if (m->kind == ND_FUNC)
+        m->as.func.is_static = is_static;
     } else if (is_type_token(p->tok.kind)) {
       m = parse_var_decl(p);
+      if (m->kind == ND_VAR_DECL)
+        m->as.var_decl.is_static = is_static;
     } else {
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected member declaration");
       m = parse_stmt(p);
@@ -684,12 +694,27 @@ static Node *parse_primary(Parser *p) {
       return node_new(p->arena, ND_ERROR);
     }
     next(p);
+    Node **args = NULL;
+    size_t alen = 0, acap = 0;
+    if (p->tok.kind != TK_RPAREN) {
+      for (;;) {
+        Node *arg = parse_expr_prec(p, 0);
+        nodevec_push(&args, &alen, &acap, arg);
+        if (p->tok.kind == TK_COMMA) {
+          next(p);
+          continue;
+        }
+        break;
+      }
+    }
     if (p->tok.kind == TK_RPAREN)
       next(p);
     else
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
     n = node_new(p->arena, ND_NEW);
     n->as.new_expr.type_name = type_name;
+    n->as.new_expr.args = args;
+    n->as.new_expr.arg_len = alen;
     return n;
   }
   case TK_KW_TRUE:
@@ -848,6 +873,7 @@ static Node *parse_var_decl(Parser *p) {
     n->as.var_decl.name.start = p->tok.start;
     n->as.var_decl.name.len = p->tok.len;
     n->as.var_decl.array_len = 0;
+    n->as.var_decl.is_static = 0;
     next(p);
     if (p->tok.kind == TK_LBRACKET) {
       next(p);

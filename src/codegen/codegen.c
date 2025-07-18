@@ -54,8 +54,15 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
         tcap = tcap ? tcap * 2 : 4;
         tinfo = realloc(tinfo, tcap * sizeof(CGTypeInfo));
       }
-      tinfo[tlen++] =
-          (CGTypeInfo){it->as.type_decl.name, it->kind == ND_CLASS_DECL};
+      int has_init = 0;
+      for (size_t j = 0; j < it->as.type_decl.len; j++) {
+        Node *m = it->as.type_decl.members[j];
+        if (m->kind == ND_FUNC && m->as.func.name.len == 4 &&
+            strncmp(m->as.func.name.start, "init", 4) == 0)
+          has_init = 1;
+      }
+      tinfo[tlen++] = (CGTypeInfo){it->as.type_decl.name,
+                                   it->kind == ND_CLASS_DECL, has_init};
     }
   }
   cg_register_types(tinfo, tlen);
@@ -79,21 +86,48 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
       emit_func(&builder, it, src_file);
   }
 
-  c_out_write(&builder, "int main(void){\n");
-  c_out_indent(&builder);
-  CGCtx ctx = {0};
-  ctx.ret_type = TK_KW_INT;
-  cgctx_scope_enter(&ctx);
-  for (size_t i = 0; i < root->as.block.len; i++) {
+  Slice main_class = {NULL, 0};
+  int has_main = 0; /* 1 global, 2 static method */
+  for (size_t i = 0; i < root->as.block.len && !has_main; i++) {
     Node *it = root->as.block.items[i];
-    if (it->kind != ND_FUNC)
-      cg_emit_stmt(&ctx, &builder, it, src_file);
+    if (it->kind == ND_FUNC && it->as.func.name.len == 4 &&
+        strncmp(it->as.func.name.start, "main", 4) == 0)
+      has_main = 1;
+    else if ((it->kind == ND_CLASS_DECL || it->kind == ND_STRUCT_DECL)) {
+      for (size_t j = 0; j < it->as.type_decl.len && !has_main; j++) {
+        Node *m = it->as.type_decl.members[j];
+        if (m->kind == ND_FUNC && m->as.func.is_static &&
+            m->as.func.name.len == 4 &&
+            strncmp(m->as.func.name.start, "main", 4) == 0) {
+          has_main = 2;
+          main_class = it->as.type_decl.name;
+        }
+      }
+    }
   }
-  cgctx_scope_leave(&ctx);
-  free(ctx.vars);
-  c_out_write(&builder, "return 0;\n");
-  c_out_dedent(&builder);
-  c_out_write(&builder, "}\n");
+
+  if (has_main != 1) {
+    c_out_write(&builder, "int main(void){\n");
+    c_out_indent(&builder);
+    if (has_main == 2) {
+      c_out_write(&builder, "return %.*s_main();\n", (int)main_class.len,
+                  main_class.start);
+    } else {
+      CGCtx ctx = {0};
+      ctx.ret_type = TK_KW_INT;
+      cgctx_scope_enter(&ctx);
+      for (size_t i = 0; i < root->as.block.len; i++) {
+        Node *it = root->as.block.items[i];
+        if (it->kind != ND_FUNC)
+          cg_emit_stmt(&ctx, &builder, it, src_file);
+      }
+      cgctx_scope_leave(&ctx);
+      free(ctx.vars);
+      c_out_write(&builder, "return 0;\n");
+    }
+    c_out_dedent(&builder);
+    c_out_write(&builder, "}\n");
+  }
   c_out_write(&builder, "#endif /* DREAM_GENERATED */\n");
 
   c_out_dump(out, &builder);

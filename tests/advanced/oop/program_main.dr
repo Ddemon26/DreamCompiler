@@ -1,0 +1,6 @@
+class Program {
+    static func int main() {
+        Console.WriteLine(7); // Expected: 7
+        return 0;
+    }
+}

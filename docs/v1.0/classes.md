@@ -5,6 +5,15 @@ A class declares a name and a list of members. Methods are emitted as
 regular C functions taking a `this` pointer. The `struct` keyword remains
 an alias for `class`.
 
+Static fields and methods can be declared using the `static` keyword. Static
+methods are emitted as plain C functions prefixed with the class name and do not
+take a `this` pointer. Static fields become global variables also prefixed with
+the class name.
+
+Constructors are provided by a method named `init`. When `new` is used on a
+class type the compiler allocates the object and calls `ClassName_init` with the
+new instance and any arguments supplied in the `new` expression.
+
 ```
 class Person {
     int age;

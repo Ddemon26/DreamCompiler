@@ -31,3 +31,10 @@ func string Hello() {
 
 Console.WriteLine(Hello());
 ```
+
+### Program Entry
+
+If a function named `main` exists it becomes the entry point of the compiled
+program. Alternatively a `main` method may be declared `static` inside a class.
+In that case the generated `C` `main()` will call `ClassName_main()` and return
+its value.

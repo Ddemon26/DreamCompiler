@@ -38,3 +38,12 @@ Slice cgctx_lookup_name(CGCtx *ctx, const char *start, size_t len) {
   }
   return (Slice){NULL, 0};
 }
+
+int cgctx_has_var(CGCtx *ctx, const char *start, size_t len) {
+  for (size_t i = ctx->len; i-- > 0;) {
+    VarBinding *v = &ctx->vars[i];
+    if (v->len == len && strncmp(v->start, start, len) == 0)
+      return 1;
+  }
+  return 0;
+}

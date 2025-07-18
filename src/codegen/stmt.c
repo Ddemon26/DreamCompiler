@@ -6,6 +6,9 @@
 static CGTypeInfo *g_types = NULL;
 static size_t g_type_len = 0;
 
+static void emit_func_impl(COut *b, Slice prefix, Node *n,
+                           const char *src_file);
+
 void cg_register_types(CGTypeInfo *types, size_t n) {
   g_types = types;
   g_type_len = n;
@@ -16,6 +19,24 @@ int cg_is_class_type(Slice name) {
     if (g_types[i].name.len == name.len &&
         strncmp(g_types[i].name.start, name.start, name.len) == 0)
       return g_types[i].is_class;
+  }
+  return 0;
+}
+
+int cg_is_known_type(Slice name) {
+  for (size_t i = 0; i < g_type_len; i++) {
+    if (g_types[i].name.len == name.len &&
+        strncmp(g_types[i].name.start, name.start, name.len) == 0)
+      return 1;
+  }
+  return 0;
+}
+
+int cg_has_init(Slice name) {
+  for (size_t i = 0; i < g_type_len; i++) {
+    if (g_types[i].name.len == name.len &&
+        strncmp(g_types[i].name.start, name.start, name.len) == 0)
+      return g_types[i].has_init;
   }
   return 0;
 }
@@ -58,7 +79,7 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
   c_out_indent(b);
   for (size_t i = 0; i < n->as.type_decl.len; i++) {
     Node *m = n->as.type_decl.members[i];
-    if (m->kind == ND_VAR_DECL) {
+    if (m->kind == ND_VAR_DECL && !m->as.var_decl.is_static) {
       emit_type(b, m->as.var_decl.type, m->as.var_decl.type_name);
       c_out_write(b, " %.*s;", (int)m->as.var_decl.name.len,
                   m->as.var_decl.name.start);
@@ -71,8 +92,26 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
   c_out_newline(b);
   for (size_t i = 0; i < n->as.type_decl.len; i++) {
     Node *m = n->as.type_decl.members[i];
+    if (m->kind == ND_VAR_DECL && m->as.var_decl.is_static) {
+      c_out_write(b, "%s %.*s_%.*s",
+                  type_to_c(m->as.var_decl.type),
+                  (int)n->as.type_decl.name.len, n->as.type_decl.name.start,
+                  (int)m->as.var_decl.name.len, m->as.var_decl.name.start);
+      if (m->as.var_decl.init) {
+        c_out_write(b, " = ");
+        CGCtx ctx = {0};
+        cg_emit_expr(&ctx, b, m->as.var_decl.init);
+      }
+      c_out_write(b, ";\n");
+    }
+  }
+  for (size_t i = 0; i < n->as.type_decl.len; i++) {
+    Node *m = n->as.type_decl.members[i];
     if (m->kind == ND_FUNC) {
-      emit_method(b, n->as.type_decl.name, m, src_file);
+      if (m->as.func.is_static)
+        emit_func_impl(b, n->as.type_decl.name, m, src_file);
+      else
+        emit_method(b, n->as.type_decl.name, m, src_file);
     }
   }
   c_out_newline(b);
@@ -88,6 +127,10 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
     c_out_write(b, "static %s %.*s_%.*s(", type_to_c(n->as.func.ret_type),
                 (int)prefix.len, prefix.start, (int)n->as.func.name.len,
                 n->as.func.name.start);
+  else if (n->as.func.name.len == 4 &&
+           strncmp(n->as.func.name.start, "main", 4) == 0)
+    c_out_write(b, "%s %.*s(", type_to_c(n->as.func.ret_type),
+                (int)n->as.func.name.len, n->as.func.name.start);
   else
     c_out_write(b, "static %s %.*s(", type_to_c(n->as.func.ret_type),
                 (int)n->as.func.name.len, n->as.func.name.start);

@@ -1,0 +1,10 @@
+class Person {
+    int age;
+    string name;
+    func init(string n, int a) {
+        this.name = n;
+        this.age = a;
+    }
+}
+Person p = new Person("X", 30);
+Console.WriteLine(p.age); // Expected: 30
