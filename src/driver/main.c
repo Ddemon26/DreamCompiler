@@ -1,6 +1,8 @@
 #include "../codegen/codegen.h"
 #include "../lexer/lexer.h"
 #include "../opt/pipeline.h"
+#include "../ir/lower.h"
+#include "../ssa/ssa.h"
 #include "../parser/diagnostic.h"
 #include "../parser/parser.h"
 #include "../util/console_debug.h"
@@ -96,7 +98,14 @@ int main(int argc, char *argv[]) {
   Node *root = parse_program(&p);
   print_diagnostics(src, &p.diags);
 
-  run_pipeline(NULL, opt1);
+  int nvars = 0;
+  CFG *cfg = ir_lower_program(root, &nvars);
+  cfg_compute_dominators(cfg);
+  ssa_place_phi(cfg, nvars);
+  ssa_rename(cfg, nvars);
+  if (ssa_verify(cfg))
+    run_pipeline(cfg, opt1);
+  cfg_free(cfg);
 
   if (emit_c) {
     dr_mkdir("build");
