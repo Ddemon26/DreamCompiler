@@ -58,8 +58,22 @@ def run_test(path: Path) -> bool:
     exe = "dream.exe" if platform.system() == "Windows" else "dream"
     exe_path = ROOT / exe
     if not exe_path.exists():
-        logging.error("[FAIL] %s (compiled binary '%s' missing)", path, exe_path)
-        return False
+        logging.warning(
+            "compiled binary '%s' missing; attempting manual build", exe_path
+        )
+        manual = [
+            "zig",
+            "cc",
+            "-Iruntime",
+            "build/bin/dream.c",
+            str(RUNTIME_DIR / "console.c"),
+            "-o",
+            str(exe_path),
+        ]
+        res_manual = run_cmd(manual)
+        if res_manual.returncode != 0 or not exe_path.exists():
+            logging.error("[FAIL] %s (manual compile failed)", path)
+            return False
 
     res2 = run_cmd([str(exe_path)])
     if res2.returncode != 0:
@@ -69,6 +83,10 @@ def run_test(path: Path) -> bool:
     output = res2.stdout.strip()
     if output == expected:
         logging.info("[PASS] %s", path)
+        try:
+            exe_path.unlink()
+        except OSError as e:
+            logging.debug("could not remove %s: %s", exe_path, e)
         return True
 
     logging.error("[FAIL] %s (expected '%s', got '%s')", path, expected, output)

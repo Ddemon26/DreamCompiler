@@ -47,9 +47,13 @@ The steps below show how to build and use Dream on Linux **or Windows**.
    zig build run -- path/to/file.dr
    ```
 5. **Run the tests**
-   ```bash
+```bash
    python codex/python/test_runner
-   ```
+```
+
+This script builds the compiler and runs each `.dr` test. It compiles the
+generated `dream.c` with the bundled runtime, executes the resulting binary,
+and checks the output before moving on to the next test.
 
 The resulting compiler binary is placed under `zig-out/bin`.
 
