@@ -1,16 +1,14 @@
 {
-  "name": "dream-syntax",
-  "displayName": "Dream Syntax",
-  "version": "0.0.1",
-  "description": "Syntax highlighting for Dream",
+  "name": "dream-intellisense",
+  "displayName": "Dream IntelliSense",
+  "version": "0.1.0",
+  "description": "Language support and IntelliSense for Dream",
   "publisher": "dream",
   "engines": {
     "vscode": "^1.90.0"
   },
-  "activationEvents": [
-    "onLanguage:dream"
-  ],
-  "main": "./out/extension.js",
+  "activationEvents": ["onLanguage:dream"],
+  "main": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
@@ -38,10 +36,19 @@
     ]
   },
   "scripts": {
+    "build": "tsc -p ./tsconfig.json",
     "package": "vsce package"
   },
   "devDependencies": {
-    "vsce": "^2.15.0"
+    "@types/node": "^20.0.0",
+    "typescript": "~5.4.0",
+    "vsce": "^2.15.0",
+    "vscode": "^1.90.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.1"
   },
   "repository": ""
 }

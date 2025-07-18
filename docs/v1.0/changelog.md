@@ -377,3 +377,17 @@ Version 1.0.69 (2025-08-17)
 * Implemented object instantiation for classes and structs.
 * Field access via `.` is now supported in expressions.
 * Updated tasks and added a regression test for object creation.
+
+Version 1.0.70 (2025-08-18)
+
+* Added VS Code language server extension skeleton for IntelliSense.
+
+
+Version 1.0.71 (2025-08-18)
+
+* Added JetBrains language server plugin skeleton for IntelliSense.
+
+Version 1.0.72 (2025-08-18)
+
+* Implemented basic JetBrains plugin completions and hover docs.
+* Gradle build now produces a runnable plugin zip under `assets/jetbrains/build`.
