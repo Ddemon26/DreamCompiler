@@ -35,6 +35,8 @@
 # Build artifacts
 /build
 dream
+!assets/jetbrains/src/main/java/com/dream
+!assets/jetbrains/src/main/kotlin/com/dream
 output.c
 
 # Zig
