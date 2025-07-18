@@ -1,8 +1,8 @@
 #ifndef CFG_H
 #define CFG_H
 #include "../ir/ir.h"
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 /**
  * @brief Represents a basic block in the control flow graph (CFG).
@@ -24,17 +24,18 @@
  */
 typedef struct BasicBlock BasicBlock;
 struct BasicBlock {
-    int id;
-    int dfnum;
-    IRInstr **instrs;
-    size_t ninstrs;
-    BasicBlock **succ;
-    size_t nsucc;
-    BasicBlock **pred;
-    size_t npred;
-    BasicBlock *idom;
-    BasicBlock **df;
-    size_t ndf;
+  int id;
+  int dfnum;
+  IRInstr **instrs;
+  size_t ninstrs;
+  BasicBlock **succ;
+  size_t nsucc;
+  BasicBlock **pred;
+  size_t npred;
+  BasicBlock *idom;
+  BasicBlock **df;
+  size_t ndf;
+  int visited;
 };
 
 /**
@@ -48,9 +49,9 @@ struct BasicBlock {
  * @param entry Entry point of the CFG.
  */
 typedef struct {
-    BasicBlock **blocks;
-    size_t nblocks;
-    BasicBlock *entry;
+  BasicBlock **blocks;
+  size_t nblocks;
+  BasicBlock *entry;
 } CFG;
 
 /**
