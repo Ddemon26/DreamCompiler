@@ -52,16 +52,15 @@ const tokens = [
   {
     name: 'keyword',
     regex: `\\b(${kwRegex})\\b`,
-    // JFlex uses Java-style regexes. To get a word boundary we need to double
-    // escape the backslash so the generated .flex file contains `\b`.
-    flex: `\\b(${kwRegex})\\b`,
+    // In .flex we only need a single backslash for word boundaries
+    flex: `\b(${kwRegex})\b`,
     scope: 'keyword.control',
   },
   // JFlex does not support non-capturing groups, so use a normal group instead
   {
     name: 'number',
     regex: `\\b(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})\\b`,
-    flex: `\\b(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})\\b`,
+    flex: `\b(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})\b`,
     scope: 'constant.numeric',
   },
   { name: 'string', regex: defs.STRING_LITERAL, scope: 'string.quoted.double' },
@@ -71,7 +70,7 @@ const tokens = [
   {
     name: 'identifier',
     regex: `\\b${defs.IDENT}\\b`,
-    flex: `\\b${defs.IDENT}\\b`,
+    flex: `\b${defs.IDENT}\b`,
     scope: 'variable.other',
   },
   { name: 'operator', regex: opRegex, scope: 'keyword.operator' },

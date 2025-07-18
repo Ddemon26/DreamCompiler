@@ -10,13 +10,13 @@ package com.dream;
 
 %%
 <YYINITIAL> {
-  \b(if|else|while|for|do|break|continue|return|class|struct|int|string|bool|float|char|void|var|true|false|func|switch|case|default|Console|WriteLine|Write|ReadLine)\b { return DreamTokenTypes.KEYWORD; }
-  \b([0-9]+\\.[0-9]+|[0-9]+)\b { return DreamTokenTypes.NUMBER; }
+  (if|else|while|for|do|break|continue|return|class|struct|int|string|bool|float|char|void|var|let|true|false|func|switch|case|default|Console|WriteLine|Write|ReadLine) { return DreamTokenTypes.KEYWORD; }
+  ([0-9]+\\.[0-9]+|[0-9]+) { return DreamTokenTypes.NUMBER; }
   \"([^\\\"\\n]|\\\\.)*\" { return DreamTokenTypes.STRING; }
   "/\*\*[^]*?\\*\/|\/\//.*" { return DreamTokenTypes.COMMENTDOC; }
   \/\/.* { return DreamTokenTypes.COMMENT; }
   "/\*[\s\S]*?\\*\/" { return DreamTokenTypes.COMMENTBLOCK; }
-  \b[a-zA-Z_][a-zA-Z0-9_]*\b { return DreamTokenTypes.IDENTIFIER; }
+  [a-zA-Z_][a-zA-Z0-9_]* { return DreamTokenTypes.IDENTIFIER; }
   "\\+\\+"|"--"|"\\+="|"-="|"\\*="|"/="|"%="|"&="|"\\|="|"\\^="|"<<="|">>="|"\\+"|"-"|"\\*"|"/"|"%"|"\\^"|"<<"|">>"|"<="|">="|"=="|"!="|"<"|">"|"&&"|"\\|\\|"|"&"|"\\|"|"~"|"!"|"="|"\\?"|"\\?\\?"|"\\?\\?=" { return DreamTokenTypes.OPERATOR; }
   ; { return DreamTokenTypes.SEMICOLON; }
   , { return DreamTokenTypes.COMMA; }
