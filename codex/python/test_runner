@@ -1,17 +1,42 @@
 #!/usr/bin/env python3
-import subprocess, re, sys, platform
+"""DreamCompiler regression test runner with verbose diagnostics."""
+
+import argparse
+import logging
+import os
+import platform
+import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-TEST_DIR = ROOT / 'tests'
+TEST_DIR = ROOT / "tests"
+RUNTIME_DIR = ROOT / "runtime"
+
+
+def run_cmd(cmd: list[str], *, cwd: Path = ROOT) -> subprocess.CompletedProcess:
+    """Run a command and emit detailed logs."""
+    logging.debug("Running command: %s", " ".join(cmd))
+    logging.debug("Working directory: %s", cwd)
+    res = subprocess.run(cmd, cwd=cwd, text=True, capture_output=True)
+    logging.debug("Return code: %s", res.returncode)
+    if res.stdout:
+        logging.debug("stdout:\n%s", res.stdout)
+    if res.stderr:
+        logging.debug("stderr:\n%s", res.stderr)
+    return res
 
 def run_test(path: Path) -> bool:
+    """Compile and execute a single test file."""
+    logging.info("Testing %s", path)
     text = path.read_text()
     matches = re.findall(r"//\s*Expected:\s*(.*)", text)
     opts = re.findall(r"//\s*Options:\s*(.*)", text)
     if not matches:
-        print(f"[SKIP] {path}")
+        logging.info("[SKIP] %s", path)
         return True
+
     parts = []
     for m in matches:
         m = m.strip()
@@ -19,34 +44,70 @@ def run_test(path: Path) -> bool:
             continue
         parts.append(m)
     expected = "\n".join(parts)
-    args = ['zig', 'build', 'run', '--']
+
+    args = ["zig", "build", "run", "--"]
     if opts:
         args.extend(opts[0].split())
     args.append(str(path))
-    res = subprocess.run(args, capture_output=True, text=True, cwd=ROOT)
+
+    res = run_cmd(args)
     if res.returncode != 0:
-        sys.stdout.write(res.stdout)
-        sys.stderr.write(res.stderr)
-        print(f"[FAIL] {path} (compile error)")
-        return False
-    exe = 'dream.exe' if platform.system() == 'Windows' else 'dream'
-    res2 = subprocess.run([str(ROOT / exe)], capture_output=True, text=True)
-    if res2.returncode != 0:
-        sys.stdout.write(res2.stdout)
-        sys.stderr.write(res2.stderr)
-        print(f"[FAIL] {path} (runtime error)")
-        return False
-    output = res2.stdout.strip()
-    if output == expected:
-        print(f"[PASS] {path}")
-        return True
-    else:
-        print(f"[FAIL] {path} (expected '{expected}', got '{output}')")
+        logging.error("[FAIL] %s (compile error)", path)
         return False
 
-def main():
-    pattern = '**/*.dr'
-    tests = sorted(TEST_DIR.glob(pattern))
+    exe = "dream.exe" if platform.system() == "Windows" else "dream"
+    exe_path = ROOT / exe
+    if not exe_path.exists():
+        logging.error("[FAIL] %s (compiled binary '%s' missing)", path, exe_path)
+        return False
+
+    res2 = run_cmd([str(exe_path)])
+    if res2.returncode != 0:
+        logging.error("[FAIL] %s (runtime error)", path)
+        return False
+
+    output = res2.stdout.strip()
+    if output == expected:
+        logging.info("[PASS] %s", path)
+        return True
+
+    logging.error("[FAIL] %s (expected '%s', got '%s')", path, expected, output)
+    return False
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run DreamCompiler tests")
+    parser.add_argument(
+        "--filter",
+        default="**/*.dr",
+        help="glob pattern selecting which tests to run",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="enable verbose debug logging",
+    )
+
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.debug else logging.INFO,
+        format="%(levelname)s: %(message)s",
+    )
+
+    logging.debug("Python %s", sys.version.replace("\n", ""))
+    logging.debug("Platform: %s", platform.platform())
+    logging.debug("ROOT: %s", ROOT)
+    logging.debug("TEST_DIR: %s", TEST_DIR)
+    logging.debug("PATH: %s", os.environ.get("PATH"))
+    logging.debug(
+        "Runtime libs: %s",
+        ", ".join(p.name for p in RUNTIME_DIR.glob("*")),
+    )
+
+    tests = sorted(TEST_DIR.glob(args.filter))
+    if not tests:
+        logging.warning("No tests found for pattern: %s", args.filter)
+
     ok = True
     for t in tests:
         if not run_test(t):
