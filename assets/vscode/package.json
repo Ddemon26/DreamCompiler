@@ -24,8 +24,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./icons/Dream.svg",
-          "dark": "./icons/Dream.svg"
+          "light": "./icons/DreamScriptLogo.svg",
+          "dark": "./icons/DreamScriptLogo.svg"
         }
       }
     ],

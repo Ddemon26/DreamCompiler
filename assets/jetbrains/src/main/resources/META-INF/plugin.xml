@@ -12,7 +12,7 @@
               fieldName="INSTANCE"
               language="dream"
               extensions="dr"
-              icon="/icons/Dream.svg"/>
+              icon="/icons/DreamScriptLogo.svg"/>
     <lang.syntaxHighlighterFactory language="dream" implementationClass="com.dream.DreamSyntaxHighlighterFactory"/>
     <colorSettingsPage implementation="com.dream.DreamColorSettingsPage"/>
     <codeStyleSettingsProvider implementation="com.dream.DreamCodeStyleSettingsProvider"/>
