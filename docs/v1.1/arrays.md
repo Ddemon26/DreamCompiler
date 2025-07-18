@@ -1,4 +1,12 @@
-# Arrays *(planned)*
+# Arrays
 
-Support for array types is planned but not yet implemented. Future versions will allow fixed-length arrays using bracket syntax similar to C.
+Dream.dr supports fixed-length arrays of primitive types. Declare them with square brackets:
+
+```dream
+int[3] nums = {1, 2, 3};
+char[5] letters;
+letters[0] = 'a';
+```
+
+Indexing is zero-based and arrays behave similarly to C arrays.
 

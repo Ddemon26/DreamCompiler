@@ -1,4 +1,17 @@
-# Switch Statements *(planned)*
+# Switch Statements
 
-A `switch` construct will allow branching on integer values. It is not yet available.
+`switch` provides multi-way branching on integer values.
+
+```dream
+switch (value) {
+    case 1:
+        Console.WriteLine("one");
+        break;
+    case 2:
+        Console.WriteLine("two");
+        break;
+    default:
+        Console.WriteLine("other");
+}
+```
 

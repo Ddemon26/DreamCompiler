@@ -1,4 +1,13 @@
-# Console Output *(planned)*
+# Console I/O
 
-A standard library for console I/O will provide `Console.WriteLine` and similar routines. Until then, output functions are stubbed.
+Dream's standard library exposes simple console functions.
+
+- `Console.Write` and `Console.WriteLine` output text.
+- `Console.ReadLine` reads a line from standard input.
+
+```dream
+Console.Write("Enter name: ");
+string name = Console.ReadLine();
+Console.WriteLine("Hello, " + name);
+```
 

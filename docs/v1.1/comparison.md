@@ -1,4 +1,13 @@
-# Comparison *(planned)*
+# Comparison
 
-Equality and relational operators will allow comparing numbers and strings. Implementation work has not started yet.
+Dream.dr includes standard comparison operators:
+
+- `<`, `<=`, `>`, `>=` for numeric ordering
+- `==`, `!=` for equality tests on numbers and strings
+
+```dream
+if (a >= b) {
+    Console.WriteLine("a >= b");
+}
+```
 
