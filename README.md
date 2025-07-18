@@ -12,7 +12,10 @@ The compiler currently supports:
 - Arrays of primitive types
 - Arithmetic, bitwise and comparison operators
 - Control flow statements: `if`/`else`, loops and `switch`
-- Console output via `Console.Write` and `Console.WriteLine`
+- Functions with parameters and return values
+- Increment/decrement and compound assignment operators
+- Ternary operator `?:` and string concatenation with `+`
+- Console input/output via `Console.ReadLine`, `Console.Write` and `Console.WriteLine`
 See the [changelog](docs/v1.1/changelog.md) for details on recent additions.
 
 ## Getting Started
