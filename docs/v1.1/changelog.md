@@ -70,3 +70,8 @@ Version 1.1.08 (2025-07-23)
 - Implemented a cross-platform Language Server Protocol (LSP) backend.
 - VS Code and JetBrains extensions now use `dream-language-server` for
   completions, hover docs, go-to-definition and live diagnostics.
+
+Version 1.1.09 (2025-07-24)
+- `dream-language-server` now queries the compiler for symbol information.
+- Added `--symbols` flag to `parse` driver for JSON symbol output.
+- Editor completions and definitions are derived from the parsed AST.

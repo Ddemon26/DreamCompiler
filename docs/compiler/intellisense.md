@@ -52,6 +52,9 @@ This guide shows how to enable IntelliSense for `*.dr` files in VS Code and JetB
 ## 4. Implementing Completion & Features
 
 Both platforms rely on the language server’s `textDocument/completion`, `hover`, and `definition` handlers.
+The server obtains symbol information by invoking the `parse` driver with the
+`--symbols` flag which prints a JSON array of declarations. This allows
+completions and go-to-definition to reuse the compiler's AST.
 
 ### VS Code
 * Inside `server/src/server.ts` implement the handlers using the `vscode-languageserver` module. Example:

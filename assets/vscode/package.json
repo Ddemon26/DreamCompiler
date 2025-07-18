@@ -9,6 +9,9 @@
   },
   "activationEvents": ["onLanguage:dream"],
   "main": "./dist/extension.js",
+  "bin": {
+    "dream-language-server": "./dist/server.js"
+  },
   "contributes": {
     "languages": [
       {
