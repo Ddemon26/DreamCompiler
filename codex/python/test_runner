@@ -45,7 +45,10 @@ def run_test(path: Path) -> bool:
         parts.append(m)
     expected = "\n".join(parts)
 
-    args = ["zig", "build", "run", "--"]
+    if platform.system() == "Windows":
+        args = ["zig", "build", "-Dtarget=x86_64-windows-gnu", "run", "--"]
+    else:
+        args = ["zig", "build", "run", "--"]
     if opts:
         args.extend(opts[0].split())
     args.append(str(path))
@@ -58,15 +61,16 @@ def run_test(path: Path) -> bool:
         if not (ROOT / "build/bin/dream.c").exists():
             logging.error("[FAIL] %s (compile error)", path)
             return False
-        manual = [
-            "zig",
-            "cc",
+        manual = ["zig", "cc"]
+        if platform.system() == "Windows":
+            manual.extend(["-target", "x86_64-windows-gnu"])
+        manual.extend([
             "-Iruntime",
             "build/bin/dream.c",
             str(RUNTIME_DIR / "console.c"),
             "-o",
             str(exe_path),
-        ]
+        ])
         res = run_cmd(manual)
         if res.returncode != 0:
             logging.error("[FAIL] %s (manual compile failed)", path)
@@ -77,15 +81,16 @@ def run_test(path: Path) -> bool:
         logging.warning(
             "compiled binary '%s' missing; attempting manual build", exe_path
         )
-        manual = [
-            "zig",
-            "cc",
+        manual = ["zig", "cc"]
+        if platform.system() == "Windows":
+            manual.extend(["-target", "x86_64-windows-gnu"])
+        manual.extend([
             "-Iruntime",
             "build/bin/dream.c",
             str(RUNTIME_DIR / "console.c"),
             "-o",
             str(exe_path),
-        ]
+        ])
         res_manual = run_cmd(manual)
         if res_manual.returncode != 0 or not exe_path.exists():
             logging.error("[FAIL] %s (manual compile failed)", path)
