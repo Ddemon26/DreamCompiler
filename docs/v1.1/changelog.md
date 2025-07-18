@@ -35,3 +35,4 @@ Version 1.1.01 (2025-07-17)
 - Implemented function declarations with parameters and typed return values.
 - Added support for declaring multiple variables in a single statement.
 - Added `var` keyword for local type inference.
+- Parser now recognises `class` and `struct` declarations (no object creation yet).

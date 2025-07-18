@@ -32,7 +32,8 @@ void arena_init(Arena *a);
 void *arena_alloc(Arena *a, size_t size);
 
 /**
- * @brief Enumerates the different kinds of nodes in the abstract syntax tree (AST).
+ * @brief Enumerates the different kinds of nodes in the abstract syntax tree
+ * (AST).
  */
 typedef enum {
   ND_INT,
@@ -60,6 +61,8 @@ typedef enum {
   ND_CONSOLE_CALL,
   ND_CALL,
   ND_FUNC,
+  ND_STRUCT_DECL,
+  ND_CLASS_DECL,
   ND_ERROR
 } NodeKind;
 
@@ -95,7 +98,8 @@ Node *node_new(Arena *a, NodeKind kind);
  * is the default case, the value associated with the case,
  * and the body of the case.
  *
- * @param is_default Indicates if this is the default case (1 if true, 0 otherwise).
+ * @param is_default Indicates if this is the default case (1 if true, 0
+ * otherwise).
  * @param value Pointer to the value of the case (NULL if default).
  * @param body Pointer to the body of the case.
  */
@@ -126,9 +130,9 @@ struct Node {
       Node *rhs;    /**< Right-hand side expression. */
     } bin;
     struct {
-      Node *cond;       /**< Condition expression for ND_COND nodes. */
-      Node *then_expr;  /**< Expression if condition is true. */
-      Node *else_expr;  /**< Expression if condition is false. */
+      Node *cond;      /**< Condition expression for ND_COND nodes. */
+      Node *then_expr; /**< Expression if condition is true. */
+      Node *else_expr; /**< Expression if condition is false. */
     } cond;
     struct {
       Node *array; /**< Array expression for ND_INDEX nodes. */
@@ -136,6 +140,7 @@ struct Node {
     } index;
     struct {
       TokenKind type;   /**< Variable type for ND_VAR_DECL nodes. */
+      Slice type_name;  /**< Identifier for custom types. */
       Slice name;       /**< Variable name. */
       Node *init;       /**< Initializer expression. */
       size_t array_len; /**< Array length (0 if not an array). */
@@ -191,6 +196,11 @@ struct Node {
       size_t param_len;   /**< Number of parameters. */
       Node *body;         /**< Function body. */
     } func;
+    struct {
+      Slice name;     /**< Name of the struct or class. */
+      Node **members; /**< Array of member declarations. */
+      size_t len;     /**< Number of members. */
+    } type_decl;
   } as;
 };
 
