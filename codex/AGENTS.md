@@ -30,6 +30,16 @@ Everything lives in a Linux terminal environment where you invoke `zig build` fo
 
 ---
 
+## Debug Console Helpers
+
+The compiler relies on helper functions in `src/util/console_debug.h` for
+printing diagnostics during development. `Console.Write`, `Console.WriteLine`,
+`Console.ReadLine` and `Console.Read` map to these helpers. When the
+`DREAM_RELEASE` macro is defined they become no-ops, so ensure any debugging
+calls are removed or guarded before release builds.
+
+---
+
 ## Testing Instructions
 
 * The CI plan lives at `.github/workflows/ci.yml`.

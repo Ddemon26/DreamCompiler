@@ -16,7 +16,7 @@ Version 1.1.0 (2025-07-16)
 - Fixed Windows build by replacing `mkstemps` with portable `tmpnam_s` fallback.
 - Restored generation of `build/bin/dream.c` when compiling `.dr` files.
 - Added support for primitive types (`int`, `float`, `char`, `bool`, `string`) in the parser and C code generation.
-- Introduced developer-only `Console.Write`/`WriteLine` macros for compiler debugging.
+- Introduced developer-only `Console.Write`, `WriteLine`, `ReadLine` and `Read` macros for compiler debugging.
 
 Version 1.1.01 (2025-07-17)
 - Documented current feature gaps in codex/FEATURES.md and added tasks/TODO.md.
