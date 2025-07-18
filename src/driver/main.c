@@ -145,30 +145,38 @@ int main(int argc, char *argv[]) {
     if (!cc)
       cc = "zig cc";
     char cmd[256];
-    snprintf(cmd, sizeof(cmd), "%s -c runtime%cconsole.c -o build%cconsole.o",
+    snprintf(cmd, sizeof(cmd), "%s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"",
              cc, DR_PATH_SEP, DR_PATH_SEP);
     int res = system(cmd);
-    if (res != 0)
+    if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
+      return 1;
+    }
 #ifdef _WIN32
     snprintf(cmd, sizeof(cmd),
-             "%s -Iruntime build%cbin%cdream.c build%cconsole.o -o %s", cc,
-             DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+             "%s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" -o \"%s\"",
+             cc, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
-    if (res != 0)
+    if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
+      return 1;
+    }
 #else
     snprintf(cmd, sizeof(cmd), "ar rcs build%clibdruntime.a build%cconsole.o",
              DR_PATH_SEP, DR_PATH_SEP);
     res = system(cmd);
-    if (res != 0)
+    if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
+      return 1;
+    }
     snprintf(cmd, sizeof(cmd),
-             "%s -Iruntime build%cbin%cdream.c -Lbuild -ldruntime -o %s", cc,
-             DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+             "%s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
+             cc, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
-    if (res != 0)
+    if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
+      return 1;
+    }
 #endif
   } else if (emit_obj) {
     codegen_emit_obj(root, "a.o", input);

@@ -60,7 +60,13 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   }
   cg_register_types(tinfo, tlen);
 
-  c_out_write(&builder, "#line 1 \"%s\"\n", src_file);
+  char src_buf[512];
+  size_t i = 0;
+  for (; src_file[i] && i < sizeof(src_buf) - 1; i++) {
+    src_buf[i] = src_file[i] == '\\' ? '/' : src_file[i];
+  }
+  src_buf[i] = 0;
+  c_out_write(&builder, "#line 1 \"%s\"\n", src_buf);
 
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
@@ -127,9 +133,12 @@ void codegen_emit_obj(Node *root, const char *path, const char *src_file) {
   codegen_emit_c(root, f, src_file);
   fclose(f);
   char cmd[512];
-  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -c %s -o %s", tmp, path);
+  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -c \"%s\" -o \"%s\"", tmp, path);
   int res = system(cmd);
-  if (res != 0)
+  if (res != 0) {
     fprintf(stderr, "failed to run: %s\n", cmd);
+    dr_unlink(tmp);
+    return;
+  }
   dr_unlink(tmp);
 }
