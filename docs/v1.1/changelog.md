@@ -58,3 +58,7 @@ Version 1.1.05 (2025-07-20)
   future-reserved list in the grammar.
 - Added tests covering nested try/catch blocks and propagation
   across function calls.
+
+Version 1.1.06 (2025-07-21)
+- Diagnostics now report line and column numbers.
+- Added `--verbose` flag for caret-highlighted messages.

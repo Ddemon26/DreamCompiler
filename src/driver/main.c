@@ -84,6 +84,10 @@ int main(int argc, char *argv[]) {
       opt1 = true;
       continue;
     }
+    if (strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
+      diag_verbose = true;
+      continue;
+    }
     if (strcmp(argv[i], "--emit-c") == 0) {
       emit_c = true;
       emit_obj = false;

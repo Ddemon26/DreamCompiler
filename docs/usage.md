@@ -151,7 +151,22 @@ while (x)       Console.WriteLine(y);
    ```
 
     * The compiler uses the `CC` environment variable for the C back‑end.
-    * If `CC` is unset, **gcc** is used by default.
+   * If `CC` is unset, **gcc** is used by default.
+
+---
+
+## Diagnostics
+
+The compiler reports errors and warnings with line and column numbers. Use
+`--verbose` (or `-v`) to see the offending line highlighted with a caret.
+
+Example output:
+
+```text
+2:5: error: expected ';'
+Console.WriteLine("hi")
+    ^
+```
 
 ---
 
