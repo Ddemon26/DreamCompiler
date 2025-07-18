@@ -7,6 +7,9 @@
  */
 typedef struct { int *data; size_t len; } IntStack;
 
+typedef struct { int *data; size_t len; } IntVec;
+static void ivec_push(IntVec *v, int x) { v->data = realloc(v->data, sizeof(int)*(v->len+1)); v->data[v->len++] = x; }
+
 /**
  * @brief Pushes an integer onto the stack.
  *
@@ -30,10 +33,40 @@ static int stack_pop(IntStack *s) { return s->data[--s->len]; }
  * @param nvars Number of variables in the program.
  */
 void ssa_place_phi(CFG *cfg, int nvars) {
-    (void)nvars; // placeholder using the dominance frontier
+    if (!cfg) return;
+    IntVec *defsites = calloc((size_t)nvars, sizeof(IntVec));
     for (size_t i = 0; i < cfg->nblocks; i++) {
-        cfg->blocks[i]->df = cfg->blocks[i]->df; // no-op to silence unused
+        BasicBlock *b = cfg->blocks[i];
+        for (size_t j = 0; j < b->ninstrs; j++) {
+            IRInstr *ins = b->instrs[j];
+            if (ins->dst.id >= 0) {
+                ivec_push(&defsites[ins->dst.id], (int)i);
+            }
+        }
     }
+    for (int v = 0; v < nvars; v++) {
+        IntVec work = defsites[v];
+        for (size_t w = 0; w < work.len; w++) {
+            BasicBlock *b = cfg->blocks[work.data[w]];
+            for (size_t k = 0; k < b->ndf; k++) {
+                BasicBlock *y = b->df[k];
+                bool exists = false;
+                for (size_t t = 0; t < y->ninstrs; t++) {
+                    IRInstr *ins = y->instrs[t];
+                    if (ins->op == IR_PHI && ins->dst.id == v) { exists = true; break; }
+                }
+                if (!exists) {
+                    IRInstr *phi = ir_instr_new(IR_PHI, (IRValue){.id=v}, (IRValue){0}, (IRValue){0});
+                    y->instrs = realloc(y->instrs, sizeof(IRInstr*) * (y->ninstrs + 1));
+                    memmove(&y->instrs[1], &y->instrs[0], sizeof(IRInstr*) * y->ninstrs);
+                    y->instrs[0] = phi;
+                    y->ninstrs++;
+                }
+            }
+        }
+        free(work.data);
+    }
+    free(defsites);
 }
 
 /**
@@ -43,12 +76,28 @@ void ssa_place_phi(CFG *cfg, int nvars) {
  * @param stacks Pointer to the stack of variable names.
  * @param nvars Number of variables in the program.
  */
+static int rename_next = 0;
+
 static void rename_block(BasicBlock *b, IntStack *stacks, int nvars) {
     for (size_t i = 0; i < b->ninstrs; i++) {
-        (void)nvars; (void)stacks; // placeholder
+        IRInstr *ins = b->instrs[i];
+        if (ins->a.id >= 0 && stacks[ins->a.id].len)
+            ins->a.id = stacks[ins->a.id].data[stacks[ins->a.id].len-1];
+        if (ins->b.id >= 0 && stacks[ins->b.id].len)
+            ins->b.id = stacks[ins->b.id].data[stacks[ins->b.id].len-1];
+        if (ins->dst.id >= 0) {
+            int new_id = rename_next++;
+            stack_push(&stacks[ins->dst.id], new_id);
+            ins->dst.id = new_id;
+        }
     }
     for (size_t i = 0; i < b->nsucc; i++) {
         rename_block(b->succ[i], stacks, nvars);
+    }
+    for (size_t i = 0; i < b->ninstrs; i++) {
+        IRInstr *ins = b->instrs[i];
+        if (ins->dst.id >= 0 && stacks[ins->dst.id].len)
+            stack_pop(&stacks[ins->dst.id]);
     }
 }
 

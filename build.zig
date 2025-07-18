@@ -12,6 +12,7 @@ const AllCSources = [_][]const u8{
     "src/sem/type.c",
     "src/sem/infer.c",
     "src/ir/ir.c",
+    "src/ir/lower.c",
     "src/cfg/cfg.c",
     "src/ssa/ssa.c",
     "src/opt/pipeline.c",
