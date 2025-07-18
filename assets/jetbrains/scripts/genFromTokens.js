@@ -17,7 +17,9 @@ function parseTokensDef(content) {
   //   - "((?:\\.|[^"])*)" captures the value string allowing escapes
   const re = /TOKEN\(([^,]+),\s*"((?:\\.|[^"])*)"\)/g;
   for (const m of content.matchAll(re)) {
-    map[m[1]] = m[2];
+    const raw = m[2];
+    const js = '"' + raw.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+    map[m[1]] = JSON.parse(js);
   }
   return map;
 }
@@ -50,16 +52,16 @@ const tokens = [
   {
     name: 'keyword',
     regex: `\\b(${kwRegex})\\b`,
-    // JFlex lacks Java's word boundary token, so we emulate it using a trailing
-    // negative lookahead. Preceding characters are handled by rule ordering.
-    flex: `(${kwRegex})(?![A-Za-z0-9_])`,
+    // JFlex uses Java-style regexes. To get a word boundary we need to double
+    // escape the backslash so the generated .flex file contains `\b`.
+    flex: `\\b(${kwRegex})\\b`,
     scope: 'keyword.control',
   },
   // JFlex does not support non-capturing groups, so use a normal group instead
   {
     name: 'number',
     regex: `\\b(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})\\b`,
-    flex: `(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})(?![A-Za-z0-9_])`,
+    flex: `\\b(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})\\b`,
     scope: 'constant.numeric',
   },
   { name: 'string', regex: defs.STRING_LITERAL, scope: 'string.quoted.double' },
@@ -69,7 +71,7 @@ const tokens = [
   {
     name: 'identifier',
     regex: `\\b${defs.IDENT}\\b`,
-    flex: `${defs.IDENT}(?![A-Za-z0-9_])`,
+    flex: `\\b${defs.IDENT}\\b`,
     scope: 'variable.other',
   },
   { name: 'operator', regex: opRegex, scope: 'keyword.operator' },
