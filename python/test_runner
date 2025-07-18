@@ -2,7 +2,7 @@
 import subprocess, re, sys
 from pathlib import Path
 
-TEST_DIR = Path('tests')
+TEST_DIR = Path('../tests')
 
 def run_test(path: Path) -> bool:
     text = path.read_text()

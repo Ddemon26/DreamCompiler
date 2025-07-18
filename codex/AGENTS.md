@@ -1,6 +1,6 @@
 # Dream Compiler CLI Agent
 
-*Last updated: 17 July 2025*
+*Last updated: 18 July 2025*
 
 ---
 
@@ -13,6 +13,8 @@ The **Dream Compiler CLI agent** bootstraps, grows, and maintains the DreamCompi
 ```
 
 Everything lives in a Linux terminal environment where you invoke `zig build` for building, and use GNU tools (e.g., `make test`, `gcc`, `gdb`) for testing and debugging.
+
+* **Python Helper Scripts** – if the agent needs to perform any heavy tasks (e.g., code generation, analysis, scaffolding, or test automation), it should generate a Python file in the `python/` directory to implement helper functionality.
 
 ---
 
@@ -86,6 +88,7 @@ When the command `go` is issued the agent should:
     * Ensure the implementation matches the spec and is documented.
     * Write tests for the new feature under `tests/`.
     * If a bug is fixed, document it in `docs/changelog.md` and add a regression test.
+    * For any substantial or repetitive operations, scaffold or automate using Python helper scripts placed under `python/`.
 4. **Update docs & tests**
 
     * Regenerate lexer (`re2c`), rebuild compiler, and run all tests.
@@ -121,6 +124,7 @@ docs/       – Language spec, change‑log, design docs
 tests/      – Regression test suite (.dr → expected)
 codex/      – Agent docs & startup scripts
 build.zig   – Zig build pipeline (dr → c → exe)
+python/     – Generated Python helper scripts
 ```
 
 ---
