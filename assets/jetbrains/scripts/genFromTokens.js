@@ -11,6 +11,10 @@ const TOKENS_DEF = path.join(repoRoot, 'src', 'lexer', 'tokens.def');
 
 function parseTokensDef(content) {
   const map = {};
+  // Match lines of the form: TOKEN(NAME, "value")
+  //   - ([^,]+) captures the token name
+  //   - \s* consumes optional whitespace after the comma
+  //   - "((?:\\.|[^"])*)" captures the value string allowing escapes
   const re = /TOKEN\(([^,]+),\s*"((?:\\.|[^"])*)"\)/g;
   for (const m of content.matchAll(re)) {
     map[m[1]] = m[2];
@@ -25,14 +29,22 @@ const kwRegex = Object.entries(defs)
   .map(([, re]) => re)
   .join('|');
 
-const operatorNames = [
-  'PLUSPLUS','MINUSMINUS','PLUSEQ','MINUSEQ','STAREQ','SLASHEQ','PERCENTEQ',
-  'ANDEQ','OREQ','XOREQ','LSHIFTEQ','RSHIFTEQ','PLUS','MINUS','STAR','SLASH',
-  'PERCENT','CARET','LSHIFT','RSHIFT','LTEQ','GTEQ','EQEQ','NEQ','LT','GT',
-  'ANDAND','OROR','AND','OR','TILDE','BANG','EQ','QUESTION','QMARKQMARK',
-  'QMARKQMARKEQ'
-];
-const opRegex = operatorNames.map(n => defs[n]).filter(Boolean).join('|');
+const operatorNames = Object.keys(defs)
+  .filter(name =>
+    !name.startsWith('KW_') &&
+    !name.endsWith('_LITERAL') &&
+    ![
+      'IDENT','SEMICOLON','COMMA','DOT','LPAREN','RPAREN',
+      'LBRACE','RBRACE','LBRACKET','RBRACKET','COLON','DCOLON',
+      'ARROW','FATARROW','EOF','ERROR'
+    ].includes(name)
+  );
+const opRegex = operatorNames
+  .map(n => {
+    if (!defs[n]) throw new Error(`Missing operator definition for: ${n}`);
+    return defs[n];
+  })
+  .join('|');
 
 const tokens = [
   { name: 'keyword', regex: `\\b(${kwRegex})\\b`, scope: 'keyword.control' },
@@ -73,7 +85,7 @@ function escapeFlex(re){
 for(const t of tokens){
   let pattern = escapeFlex(t.regex);
   if (t.name === 'operator') {
-    const ops = ['++','--','+=','-=','*=','/=','%=','+','-','*','/','%','^','<<','>>','<=','>=','==','!=','<','>','&&','||','!','=','?'];
+    const ops = operatorNames.map(n => escapeFlex(defs[n]));
     pattern = ops.map(op => `"${op}"`).join('|');
   } else if (t.regex.startsWith('\/\\*')) {
     pattern = `"${pattern}"`;
