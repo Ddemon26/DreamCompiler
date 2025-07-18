@@ -220,9 +220,10 @@ static void hoist_loop(BasicBlock **loop, size_t n, BasicBlock *pre) {
  *
  * @param cfg Pointer to the control flow graph to optimize.
  */
-void licm(CFG *cfg) {
+bool licm(CFG *cfg) {
   if (!cfg)
-    return;
+    return false;
+  bool changed = false;
   for (size_t i = 0; i < cfg->nblocks; i++) {
     BasicBlock *b = cfg->blocks[i];
     for (size_t s = 0; s < b->nsucc; s++) {
@@ -232,10 +233,13 @@ void licm(CFG *cfg) {
         size_t n = 0;
         collect_loop(t, b, &loop, &n);
         BasicBlock *pre = find_preheader(t, loop, n);
-        if (pre)
+        if (pre) {
           hoist_loop(loop, n, pre);
+          changed = true;
+        }
         free(loop);
       }
     }
   }
+  return changed;
 }

@@ -14,7 +14,8 @@
  * @brief Performs Sparse Conditional Constant Propagation (SCCP) on a control flow graph (CFG).
  *
  * @param cfg Pointer to the control flow graph to optimize.
+ * @return true if the CFG was modified.
  */
-void sccp(CFG *cfg);
+bool sccp(CFG *cfg);
 
 #endif

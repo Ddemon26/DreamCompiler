@@ -19,9 +19,10 @@ static int is_used(CFG *cfg, IRValue v) {
   return 0;
 }
 
-void dce(CFG *cfg) {
+bool dce(CFG *cfg) {
   if (!cfg)
-    return;
+    return false;
+  bool changed = false;
   for (size_t i = 0; i < cfg->nblocks; i++) {
     BasicBlock *b = cfg->blocks[i];
     size_t w = 0;
@@ -47,6 +48,7 @@ void dce(CFG *cfg) {
       case IR_MOV:
         if (!is_used(cfg, ins->dst)) {
           free(ins);
+          changed = true;
           continue;
         }
         break;
@@ -57,4 +59,5 @@ void dce(CFG *cfg) {
     }
     b->ninstrs = w;
   }
+  return changed;
 }

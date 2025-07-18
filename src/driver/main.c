@@ -74,14 +74,22 @@ static char *read_file(const char *path) {
  * @return int Exit status of the program.
  */
 int main(int argc, char *argv[]) {
-  bool opt1 = false;        /**< Flag for enabling optimization level 1. */
+  int opt_level = 0;        /**< Optimization level (0-3). */
   bool emit_c = true;       /**< Flag for emitting C code. */
   bool emit_obj = false;    /**< Flag for emitting object code. */
   const char *input = NULL; /**< Path to the input file. */
 
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-O1") == 0 || strcmp(argv[i], "--O1") == 0) {
-      opt1 = true;
+      opt_level = 1;
+      continue;
+    }
+    if (strcmp(argv[i], "-O2") == 0 || strcmp(argv[i], "--O2") == 0) {
+      opt_level = 2;
+      continue;
+    }
+    if (strcmp(argv[i], "-O3") == 0 || strcmp(argv[i], "--O3") == 0) {
+      opt_level = 3;
       continue;
     }
     if (strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
@@ -126,7 +134,7 @@ int main(int argc, char *argv[]) {
   CFG *cfg = ir_lower_program(root, &nvars);
   cfg_compute_dominators(cfg);
   /* SSA construction disabled for now while control-flow lowering evolves */
-  (void)opt1;
+  run_pipeline(cfg, opt_level);
   cfg_free(cfg);
 
   if (emit_c) {
@@ -143,9 +151,10 @@ int main(int argc, char *argv[]) {
     if (!cc)
       cc = "zig cc";
     char cmd[256];
+    const char *optflag = opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
     snprintf(cmd, sizeof(cmd),
-             "%s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"", cc,
-             DR_PATH_SEP, DR_PATH_SEP);
+             "%s %s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"", cc,
+             optflag, DR_PATH_SEP, DR_PATH_SEP);
     int res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
@@ -154,8 +163,8 @@ int main(int argc, char *argv[]) {
 #ifdef _WIN32
     snprintf(
         cmd, sizeof(cmd),
-        "%s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" -o \"%s\"",
-        cc, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+        "%s %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" -o \"%s\"",
+        cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
@@ -171,8 +180,8 @@ int main(int argc, char *argv[]) {
     }
     snprintf(
         cmd, sizeof(cmd),
-        "%s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"", cc,
-        DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+        "%s %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"", cc,
+        optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);

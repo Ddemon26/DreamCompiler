@@ -18,7 +18,8 @@
  * expressions.
  *
  * @param cfg Pointer to the control flow graph to process.
+ * @return true if the CFG was modified.
  */
-void value_numbering(CFG *cfg);
+bool value_numbering(CFG *cfg);
 
 #endif

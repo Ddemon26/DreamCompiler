@@ -80,7 +80,8 @@ static void vn_free(VNEntry *head) {
  *
  * @param bb Pointer to the basic block to process.
  */
-static void value_number_block(BasicBlock *bb) {
+static bool value_number_block(BasicBlock *bb) {
+  bool changed = false;
   VNEntry *map = NULL;
   for (size_t i = 0; i < bb->ninstrs; i++) {
     IRInstr *ins = bb->instrs[i];
@@ -92,12 +93,14 @@ static void value_number_block(BasicBlock *bb) {
         ins->op = IR_MOV;
         ins->a.id = e->value;
         ins->b.id = 0;
+        changed = true;
       } else {
         vn_insert(&map, ins->op, ins->a.id, ins->b.id, ins->dst.id);
       }
     }
   }
   vn_free(map);
+  return changed;
 }
 
 /**
@@ -108,10 +111,12 @@ static void value_number_block(BasicBlock *bb) {
  *
  * @param cfg Pointer to the control flow graph to process.
  */
-void value_numbering(CFG *cfg) {
+bool value_numbering(CFG *cfg) {
   if (!cfg)
-    return;
+    return false;
+  bool changed = false;
   for (size_t i = 0; i < cfg->nblocks; i++) {
-    value_number_block(cfg->blocks[i]);
+    changed |= value_number_block(cfg->blocks[i]);
   }
+  return changed;
 }

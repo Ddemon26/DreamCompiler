@@ -5,7 +5,8 @@
  * @brief Performs dead code elimination on a control flow graph.
  *
  * @param cfg Pointer to the control flow graph to optimize.
+ * @return true if the CFG was modified.
  */
-void dce(CFG *cfg);
+bool dce(CFG *cfg);
 
 #endif

@@ -14,7 +14,8 @@
  * @brief Performs loop-invariant code motion (LICM) optimization on a control flow graph (CFG).
  *
  * @param cfg Pointer to the control flow graph to optimize.
+ * @return true if the CFG was modified.
  */
-void licm(CFG *cfg);
+bool licm(CFG *cfg);
 
 #endif

@@ -75,3 +75,10 @@ Version 1.1.09 (2025-07-24)
 - `dream-language-server` now queries the compiler for symbol information.
 - Added `--symbols` flag to `parse` driver for JSON symbol output.
 - Editor completions and definitions are derived from the parsed AST.
+
+Version 1.1.10 (2025-07-25)
+- Optimisation pipeline upgraded with copy propagation, common subexpression
+  elimination and peephole passes.
+- SCCP now folds conditional branches and prunes unreachable blocks.
+- `DreamCompiler` accepts `-O1`/`-O2`/`-O3` and forwards optimisation flags to
+  the C compiler.
