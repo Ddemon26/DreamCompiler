@@ -1,5 +1,6 @@
 const std = @import("std");
 
+/// A list of all C source files used in the project.
 const AllCSources = [_][]const u8{
     "src/driver/main.c",
     "src/lexer/lexer.c",
@@ -23,6 +24,9 @@ const AllCSources = [_][]const u8{
     "src/codegen/codegen.c",
 };
 
+/// Builds the project by defining targets, modules, and build steps.
+///
+/// @param b The build context.
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -107,6 +111,10 @@ pub fn build(b: *std.Build) void {
     fmt_step.dependOn(&fmt_c.step);
 }
 
+/// Collects all `.dr` source files from the `src` directory.
+///
+/// @param b The build context.
+/// @return A list of paths to `.dr` source files.
 fn collectDrSources(b: *std.Build) []const []const u8 {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -122,6 +130,14 @@ fn collectDrSources(b: *std.Build) []const []const u8 {
     return b.dupeStrings(list.items);
 }
 
+/// Adds a compilation step for `.dr` source files.
+///
+/// @param b The build context.
+/// @param bootstrap The bootstrap compiler step.
+/// @param target The resolved target configuration.
+/// @param optimize The optimization mode.
+/// @param sources The list of `.dr` source files to compile.
+/// @return A struct containing the compilation step and the generated file paths.
 fn addCompileDrStep(
     b: *std.Build,
     bootstrap: *std.Build.Step.Compile,
