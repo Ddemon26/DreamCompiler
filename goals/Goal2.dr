@@ -1,23 +1,87 @@
-int dateToDays(int y, int m, int d) {
-if(m < 3){
-y = y - 1;
-m = m + 12;
-}
-return 365 * y + y / 4 - y / 100 + y / 400 + (153 * m - 457) / 5 + d - 306;
+func int dateToDays(int y, int m, int d) {
+    if (m < 3) {
+        y = y - 1;
+        m = m + 12;
+    }
+    return 365 * y + y / 4 - y / 100 + y / 400 + (153 * m - 457) / 5 + d - 306;
 }
 
-int main(string[] args) {
-string targetInput = Console.ReadLine();
-string currentInput = getSystemDate();
-string[] targetParts = splitString(targetInput, '-');
-int targetY = parseInt(targetParts[0]);
-int targetM = parseInt(targetParts[1]);
-int targetD = parseInt(targetParts[2]);
-string[] currentParts = splitString(currentInput, '-');
-int currentY = parseInt(currentParts[0]);
-int currentM = parseInt(currentParts[1]);
-int currentD = parseInt(currentParts[2]);
-int diff = dateToDays(targetY, targetM, targetD) - dateToDays(currentY, currentM, currentD);
-Console.WriteLine(diff);
-return 0;
+func int parseInt(string s) {
+    int result = 0;
+    int sign = 1;
+    int i = 0;
+    if (s[0] == '-') {
+        sign = -1;
+        i = 1;
+    }
+    int len = 0;
+    while (s[len] != '\0') {
+        len = len + 1;
+    }
+    int j = i;
+    while (j < len) {
+        if (s[j] >= '0' && s[j] <= '9') {
+            result = result * 10 + (s[j] - '0');
+        }
+        j = j + 1;
+    }
+    return result * sign;
+}
+
+func int parseSegment(string s, int start, int end) {
+    int result = 0;
+    int i = start;
+    while (i < end) {
+        result = result * 10 + (s[i] - '0');
+        i = i + 1;
+    }
+    return result;
+}
+
+func int main() {
+    while (true) {
+        Console.WriteLine("Enter target date (YYYY-MM-DD) or exit:");
+        string target = Console.ReadLine();
+        if (target == "exit") {
+            break;
+        }
+        Console.WriteLine("Enter current date (YYYY-MM-DD):");
+        string current = Console.ReadLine();
+
+        int first = 0;
+        while (target[first] != '-') {
+            first = first + 1;
+        }
+        int second = first + 1;
+        while (target[second] != '-') {
+            second = second + 1;
+        }
+        int targetY = parseSegment(target, 0, first);
+        int targetM = parseSegment(target, first + 1, second);
+        int lenT = 0;
+        while (target[lenT] != '\0') {
+            lenT = lenT + 1;
+        }
+        int targetD = parseSegment(target, second + 1, lenT);
+
+        first = 0;
+        while (current[first] != '-') {
+            first = first + 1;
+        }
+        second = first + 1;
+        while (current[second] != '-') {
+            second = second + 1;
+        }
+        int currentY = parseSegment(current, 0, first);
+        int currentM = parseSegment(current, first + 1, second);
+        int lenC = 0;
+        while (current[lenC] != '\0') {
+            lenC = lenC + 1;
+        }
+        int currentD = parseSegment(current, second + 1, lenC);
+
+        int diff = dateToDays(targetY, targetM, targetD) - dateToDays(currentY, currentM, currentD);
+        Console.WriteLine("Days difference: " + diff);
+    }
+    return 0;
 }

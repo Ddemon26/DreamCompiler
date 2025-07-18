@@ -2,7 +2,7 @@
 import subprocess, re, sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 TEST_DIR = ROOT / 'tests'
 
 def run_test(path: Path) -> bool:
