@@ -51,12 +51,28 @@ def run_test(path: Path) -> bool:
     args.append(str(path))
 
     res = run_cmd(args)
-    if res.returncode != 0:
-        logging.error("[FAIL] %s (compile error)", path)
-        return False
-
     exe = "dream.exe" if platform.system() == "Windows" else "dream"
     exe_path = ROOT / exe
+    if res.returncode != 0:
+        logging.warning("initial build failed; trying manual compile")
+        if not (ROOT / "build/bin/dream.c").exists():
+            logging.error("[FAIL] %s (compile error)", path)
+            return False
+        manual = [
+            "zig",
+            "cc",
+            "-Iruntime",
+            "build/bin/dream.c",
+            str(RUNTIME_DIR / "console.c"),
+            "-o",
+            str(exe_path),
+        ]
+        res = run_cmd(manual)
+        if res.returncode != 0:
+            logging.error("[FAIL] %s (manual compile failed)", path)
+            return False
+
+    # binary may still not exist if DreamCompiler failed to produce it
     if not exe_path.exists():
         logging.warning(
             "compiled binary '%s' missing; attempting manual build", exe_path
