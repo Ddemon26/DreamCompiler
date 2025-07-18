@@ -36,3 +36,7 @@ Version 1.1.01 (2025-07-17)
 - Added support for declaring multiple variables in a single statement.
 - Added `var` keyword for local type inference.
 - Parser now recognises `class` and `struct` declarations (no object creation yet).
+
+Version 1.1.02 (2025-07-18)
+- Implemented object construction for classes and structs using the `new` keyword.
+- Updated documentation and added regression tests.

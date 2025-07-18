@@ -617,6 +617,27 @@ static Node *parse_primary(Parser *p) {
     n->as.console.read = read;
     return n;
   }
+  case TK_KW_NEW: {
+    next(p); /* consume 'new' */
+    if (p->tok.kind != TK_IDENT || !typevec_contains(p, p->tok)) {
+      diag_push(p, p->tok.pos, "expected type identifier");
+      return node_new(p->arena, ND_ERROR);
+    }
+    Slice type_name = {p->tok.start, p->tok.len};
+    next(p);
+    if (p->tok.kind != TK_LPAREN) {
+      diag_push(p, p->tok.pos, "expected '('");
+      return node_new(p->arena, ND_ERROR);
+    }
+    next(p);
+    if (p->tok.kind == TK_RPAREN)
+      next(p);
+    else
+      diag_push(p, p->tok.pos, "expected ')'");
+    n = node_new(p->arena, ND_NEW);
+    n->as.new_expr.type_name = type_name;
+    return n;
+  }
   case TK_KW_TRUE:
   case TK_KW_FALSE:
     n = node_new(p->arena, ND_BOOL);

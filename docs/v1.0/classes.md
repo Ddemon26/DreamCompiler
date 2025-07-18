@@ -26,3 +26,11 @@ Person p;
 p.age = 30;
 Console.WriteLine(p.age);
 ```
+
+You can also create an instance using `new` and assign it to a variable in a single statement:
+
+```
+Person q = new Person();
+q.age = 42;
+Console.WriteLine(q.age);
+```
