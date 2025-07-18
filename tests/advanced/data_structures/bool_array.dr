@@ -1,3 +1,4 @@
+// Expected: 1
 bool flags[2];
 flags[0] = true;
 flags[1] = false;

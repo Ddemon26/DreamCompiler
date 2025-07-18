@@ -1,4 +1,6 @@
+// Expected: hi
 func string Hello() {
     return "hi";
 }
-Console.WriteLine(Hello());
+string s = Hello();
+Console.WriteLine(s);

@@ -1,4 +1,6 @@
+// Expected: 4.000000
 float nums[2];
 nums[0] = 1.5;
 nums[1] = nums[0] + 2.5;
-Console.WriteLine(nums[1]);
+float r = nums[1];
+Console.WriteLine(r);

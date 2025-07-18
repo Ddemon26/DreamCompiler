@@ -1,2 +1,4 @@
+// Expected: hi
+// Expected: She said "hi"
 Console.Write("hi\n");
 Console.WriteLine("She said \"hi\"");

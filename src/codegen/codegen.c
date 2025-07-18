@@ -60,7 +60,7 @@ static const char *op_text(TokenKind k) {
   case TK_RSHIFTEQ:
     return ">>=";
   case TK_QMARKQMARKEQ:
-    return "??=";
+    return "?" "?=";
   case TK_TILDE:
     return "~";
   case TK_PLUSPLUS:
@@ -92,6 +92,11 @@ static const char *op_text(TokenKind k) {
   }
 }
 
+// Forward declarations for use in fmt_for_arg
+typedef struct CGCtx CGCtx;
+static int is_string_expr(CGCtx *ctx, Node *n);
+static TokenKind cgctx_lookup(CGCtx *ctx, const char *start, size_t len);
+
 /**
  * @brief Determines the appropriate format specifier for a given argument.
  *
@@ -101,10 +106,23 @@ static const char *op_text(TokenKind k) {
  * @param arg Pointer to the node representing the argument.
  * @return The format specifier as a string.
  */
-static const char *fmt_for_arg(Node *arg) {
-  switch (arg->kind) {
-  case ND_STRING:
+static const char *fmt_for_arg(CGCtx *ctx, Node *arg) {
+  if (is_string_expr(ctx, arg))
     return "%s";
+  if (arg->kind == ND_IDENT) {
+    TokenKind ty = cgctx_lookup(ctx, arg->as.ident.start, arg->as.ident.len);
+    switch (ty) {
+    case TK_KW_CHAR:
+      return "%c";
+    case TK_KW_FLOAT:
+      return "%f";
+    case TK_KW_STRING:
+      return "%s";
+    default:
+      break;
+    }
+  }
+  switch (arg->kind) {
   case ND_CHAR:
     return "%c";
   case ND_CONSOLE_CALL:
@@ -146,7 +164,7 @@ typedef struct {
  * @param cap Maximum capacity of the variable bindings array.
  * @param depth Current scope depth.
  */
-typedef struct {
+typedef struct CGCtx {
   VarBinding *vars;
   size_t len;
   size_t cap;
@@ -582,7 +600,7 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
         c_out_newline(b);
       } else {
         c_out_write(b, "printf(\"");
-        c_out_write(b, "%s", fmt_for_arg(call->as.console.arg));
+        c_out_write(b, "%s", fmt_for_arg(ctx, call->as.console.arg));
         if (call->as.console.newline)
           c_out_write(b, "\\n");
         c_out_write(b, "\", ");
@@ -601,7 +619,7 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
       c_out_write(b, "dream_readline()");
     } else {
       c_out_write(b, "printf(\"");
-      c_out_write(b, "%s", fmt_for_arg(n->as.console.arg));
+      c_out_write(b, "%s", fmt_for_arg(ctx, n->as.console.arg));
       if (n->as.console.newline)
         c_out_write(b, "\\n");
       c_out_write(b, "\", ");
