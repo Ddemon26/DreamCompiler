@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import subprocess, re, sys
+import subprocess, re, sys, platform
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -24,7 +24,8 @@ def run_test(path: Path) -> bool:
         sys.stderr.write(res.stderr)
         print(f"[FAIL] {path} (compile error)")
         return False
-    res2 = subprocess.run([str(ROOT / 'dream')], capture_output=True, text=True)
+    exe = 'dream.exe' if platform.system() == 'Windows' else 'dream'
+    res2 = subprocess.run([str(ROOT / exe)], capture_output=True, text=True)
     if res2.returncode != 0:
         sys.stdout.write(res2.stdout)
         sys.stderr.write(res2.stderr)

@@ -125,6 +125,12 @@ int main(int argc, char *argv[]) {
     int res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
+#ifdef _WIN32
+    snprintf(cmd, sizeof(cmd), "%s -Iruntime build/bin/dream.c build/console.o -o dream", cc);
+    res = system(cmd);
+    if (res != 0)
+      fprintf(stderr, "failed to run: %s\n", cmd);
+#else
     snprintf(cmd, sizeof(cmd), "ar rcs build/libdruntime.a build/console.o");
     res = system(cmd);
     if (res != 0)
@@ -133,6 +139,7 @@ int main(int argc, char *argv[]) {
     res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
+#endif
   } else if (emit_obj) {
     codegen_emit_obj(root, "a.o");
   }
