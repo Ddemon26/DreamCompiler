@@ -1,5 +1,6 @@
 int i = 2;
 while (i) {
     i = i - 1;
-    Console.WriteLine(i);
+    Console.WriteLine(i); // Expected: 1
 }
+// Expected: 0

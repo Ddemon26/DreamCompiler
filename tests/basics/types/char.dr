@@ -1,2 +1,2 @@
 char c = 'A';
-Console.WriteLine(c);
+Console.WriteLine(c); // Expected: 65

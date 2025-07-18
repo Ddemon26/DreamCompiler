@@ -61,6 +61,8 @@ static const char *op_text(TokenKind k) {
     return ">>=";
   case TK_QMARKQMARKEQ:
     return "??=";
+  case TK_TILDE:
+    return "~";
   case TK_PLUSPLUS:
     return "++";
   case TK_MINUSMINUS:

@@ -1,5 +1,5 @@
 int x = 1;
 if (x) {
-    Console.WriteLine(x);
-    Console.WriteLine(0);
+    Console.WriteLine(x); // Expected: 1
+    Console.WriteLine(0); // Expected: 0
 }

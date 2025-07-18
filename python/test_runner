@@ -2,7 +2,8 @@
 import subprocess, re, sys
 from pathlib import Path
 
-TEST_DIR = Path('../tests')
+ROOT = Path(__file__).resolve().parent.parent
+TEST_DIR = ROOT / 'tests'
 
 def run_test(path: Path) -> bool:
     text = path.read_text()
@@ -17,13 +18,13 @@ def run_test(path: Path) -> bool:
             continue
         parts.append(m)
     expected = "\n".join(parts)
-    res = subprocess.run(['zig', 'build', 'run', '--', str(path)], capture_output=True, text=True)
+    res = subprocess.run(['zig', 'build', 'run', '--', str(path)], capture_output=True, text=True, cwd=ROOT)
     if res.returncode != 0:
         sys.stdout.write(res.stdout)
         sys.stderr.write(res.stderr)
         print(f"[FAIL] {path} (compile error)")
         return False
-    res2 = subprocess.run(['./dream'], capture_output=True, text=True)
+    res2 = subprocess.run([str(ROOT / 'dream')], capture_output=True, text=True)
     if res2.returncode != 0:
         sys.stdout.write(res2.stdout)
         sys.stderr.write(res2.stderr)

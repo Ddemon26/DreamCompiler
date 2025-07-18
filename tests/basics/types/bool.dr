@@ -1,4 +1,4 @@
 bool flag = true;
-Console.WriteLine(flag);
+Console.WriteLine(flag); // Expected: 1
 flag = false;
-Console.WriteLine(flag);
+Console.WriteLine(flag); // Expected: 0
