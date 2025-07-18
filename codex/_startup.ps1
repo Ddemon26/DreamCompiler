@@ -5,7 +5,6 @@ $packages = @(
     'git',
     'make',
     'mingw',
-    'gdb',
     're2c',
     'zig'
 )

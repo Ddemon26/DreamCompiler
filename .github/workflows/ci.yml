@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
         run: |
-          choco install -y make mingw gdb re2c
+          choco install -y make mingw re2c
       - name: Build
         run: zig build
       - name: Run tests

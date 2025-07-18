@@ -29,7 +29,7 @@ The steps below show how to build and use Dream on Linux **or Windows**.
      ```bash
      sudo apt update && sudo apt install -y build-essential gcc git
      ```
-   - On Windows run `codex\_startup.ps1` from an elevated PowerShell (requires Chocolatey).
+   - On Windows run `codex\_startup.ps1` from an elevated PowerShell (requires Chocolatey). The script installs MinGW (with `gdb`) and other tools automatically.
    - Install [Zig 0.15.0 or newer](https://ziglang.org/download/) and add `zig` to your `PATH`.
 2. **Clone the repository**
    ```bash

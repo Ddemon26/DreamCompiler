@@ -50,3 +50,4 @@ Version 1.1.04 (2025-07-19)
 - Improved cross-platform support for Linux and Windows.
 - Added `src/util/platform.h` and updated code to use it.
 - CI now builds and tests on Windows.
+- Updated Windows setup scripts to rely on MinGW's bundled gdb.
