@@ -2,34 +2,18 @@ const std = @import("std");
 
 /// A list of all C source files used in the project.
 const AllCSources = [_][]const u8{
-    "src/driver/main.c",
-    "src/parser/ast.c",
-    "src/parser/parser.c",
-    "src/parser/error.c",
-    "src/parser/diagnostic.c",
-    "src/sem/scope.c",
-    "src/sem/symbol.c",
-    "src/sem/type.c",
-    "src/sem/infer.c",
-    "src/ir/ir.c",
-    "src/ir/lower.c",
-    "src/cfg/cfg.c",
-    "src/ssa/ssa.c",
-    "src/opt/pipeline.c",
-    "src/opt/sccp.c",
-    "src/opt/dce.c",
-    "src/opt/value_numbering.c",
-    "src/opt/licm.c",
-    "src/codegen/c_emit.c",
-    "src/codegen/codegen.c",
+    "src/driver/main.c",    "src/parser/ast.c",          "src/parser/parser.c",
+    "src/parser/error.c",   "src/parser/diagnostic.c",   "src/sem/scope.c",
+    "src/sem/symbol.c",     "src/sem/type.c",            "src/sem/infer.c",
+    "src/ir/ir.c",          "src/ir/lower.c",            "src/cfg/cfg.c",
+    "src/ssa/ssa.c",        "src/opt/pipeline.c",        "src/opt/sccp.c",
+    "src/opt/dce.c",        "src/opt/value_numbering.c", "src/opt/licm.c",
+    "src/codegen/c_emit.c", "src/codegen/context.c",     "src/codegen/expr.c",
+    "src/codegen/stmt.c",   "src/codegen/codegen.c",
 };
 
 const CFLAGS = [_][]const u8{
-    "-std=c11",
-    "-Wall",
-    "-Wextra",
-    "-D_GNU_SOURCE",
-    "-Isrc/lexer",
+    "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE", "-Isrc/lexer",
 };
 
 /// Builds the project by defining targets, modules, and build steps.
@@ -40,7 +24,8 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const exe_mod = b.createModule(.{ .target = target, .optimize = optimize });
-    const bootstrap_mod = b.createModule(.{ .target = target, .optimize = optimize });
+    const bootstrap_mod =
+        b.createModule(.{ .target = target, .optimize = optimize });
     const lex_mod = b.createModule(.{ .target = target, .optimize = optimize });
     const parse_mod = b.createModule(.{ .target = target, .optimize = optimize });
 
@@ -61,7 +46,8 @@ pub fn build(b: *std.Build) void {
     lexexe.step.dependOn(&re2c_step.step);
     b.installArtifact(lexexe);
 
-    const parseexe = b.addExecutable(.{ .name = "parse", .root_module = parse_mod });
+    const parseexe =
+        b.addExecutable(.{ .name = "parse", .root_module = parse_mod });
     parseexe.addCSourceFiles(.{ .files = &.{
         "src/driver/parse_main.c",
         "src/parser/ast.c",
@@ -77,9 +63,11 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(parseexe);
 
     const dr_files = collectDrSources(b);
-    const compile_step = addCompileDrStep(b, bootstrap, target, optimize, dr_files);
+    const compile_step =
+        addCompileDrStep(b, bootstrap, target, optimize, dr_files);
 
-    const exe = b.addExecutable(.{ .name = "DreamCompiler", .root_module = exe_mod });
+    const exe =
+        b.addExecutable(.{ .name = "DreamCompiler", .root_module = exe_mod });
     exe.step.dependOn(compile_step.step);
     exe.addCSourceFiles(.{ .files = &AllCSources, .flags = &CFLAGS });
     exe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
@@ -139,7 +127,8 @@ fn collectDrSources(b: *std.Build) []const []const u8 {
 /// @param target The resolved target configuration.
 /// @param optimize The optimization mode.
 /// @param sources The list of `.dr` source files to compile.
-/// @return A struct containing the compilation step and the generated file paths.
+/// @return A struct containing the compilation step and the generated file
+/// paths.
 fn addCompileDrStep(
     b: *std.Build,
     bootstrap: *std.Build.Step.Compile,
@@ -163,7 +152,8 @@ fn addCompileDrStep(
         run.addArgs(&.{ "--emit-c", "--target", triple, "--build-mode", mode_str });
         run.addFileArg(b.path(src));
         run.addFileInput(b.path("src/lexer/tokens.def"));
-        const out = run.addOutputFileArg(b.fmt("{s}.c", .{std.fs.path.stem(src)}));
+        const out =
+            run.addOutputFileArg(b.fmt("{s}.c", .{std.fs.path.stem(src)}));
         generated.append(out) catch @panic("OOM");
         step.dependOn(&run.step);
     }
