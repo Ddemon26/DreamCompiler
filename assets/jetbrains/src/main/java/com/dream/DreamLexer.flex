@@ -10,7 +10,7 @@ package com.dream;
 
 %%
 <YYINITIAL> {
-  (if|else|while|for|do|break|continue|return|class|struct|new|int|string|bool|float|char|void|var|let|true|false|func|switch|case|default|Console|WriteLine|Write|ReadLine) { return DreamTokenTypes.KEYWORD; }
+  (if|else|while|for|do|break|continue|return|class|struct|new|int|string|bool|float|char|void|var|let|true|false|func|switch|case|default|Console|WriteLine|Write|ReadLine|try|catch|finally|throw) { return DreamTokenTypes.KEYWORD; }
   ([0-9]+\\.[0-9]+|[0-9]+) { return DreamTokenTypes.NUMBER; }
   \"([^\\\"\\n]|\\\\.)*\" { return DreamTokenTypes.STRING; }
   "/\*\*[^]*?\\*\/|\/\//.*" { return DreamTokenTypes.COMMENTDOC; }
