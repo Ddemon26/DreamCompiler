@@ -96,7 +96,7 @@ npx vsce package
 
 ```bash
 cd assets/jetbrains
-./gradlew generateLexer build test
+gradle generateLexer build test
 ```
 Ensure a JDK 17 is available. The build regenerates the lexer from `tokens.def` before compiling and running the tests.
 

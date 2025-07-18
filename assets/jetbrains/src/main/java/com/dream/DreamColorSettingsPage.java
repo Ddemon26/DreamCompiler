@@ -40,6 +40,7 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
     @Override
     public String getDemoText() {
         return """
+/** Documentation comment */
 // This is a single-line comment.
 /*
   This is a

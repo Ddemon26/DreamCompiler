@@ -30,17 +30,17 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey BRACE = TextAttributesKey.createTextAttributesKey("DREAM_BRACE", DefaultLanguageHighlighterColors.BRACES);
     public static final TextAttributesKey BRACKET = TextAttributesKey.createTextAttributesKey("DREAM_BRACKET", DefaultLanguageHighlighterColors.BRACKETS);
 
-    private static final TextAttributesKey[] KEYWORD_KEYS = new TextAttributesKey[]{KEYWORD};
-    private static final TextAttributesKey[] NUMBER_KEYS = new TextAttributesKey[]{NUMBER};
-    private static final TextAttributesKey[] STRING_KEYS = new TextAttributesKey[]{STRING};
-    private static final TextAttributesKey[] COMMENT_KEYS = new TextAttributesKey[]{COMMENT};
-    private static final TextAttributesKey[] OPERATOR_KEYS = new TextAttributesKey[]{OPERATOR};
-    private static final TextAttributesKey[] SEMICOLON_KEYS = new TextAttributesKey[]{SEMICOLON};
-    private static final TextAttributesKey[] COMMA_KEYS = new TextAttributesKey[]{COMMA};
-    private static final TextAttributesKey[] DOT_KEYS = new TextAttributesKey[]{DOT};
-    private static final TextAttributesKey[] PAREN_KEYS = new TextAttributesKey[]{PAREN};
-    private static final TextAttributesKey[] BRACE_KEYS = new TextAttributesKey[]{BRACE};
-    private static final TextAttributesKey[] BRACKET_KEYS = new TextAttributesKey[]{BRACKET};
+    private static final TextAttributesKey[] KEYWORD_KEYS = pack(KEYWORD);
+    private static final TextAttributesKey[] NUMBER_KEYS = pack(NUMBER);
+    private static final TextAttributesKey[] STRING_KEYS = pack(STRING);
+    private static final TextAttributesKey[] COMMENT_KEYS = pack(COMMENT);
+    private static final TextAttributesKey[] OPERATOR_KEYS = pack(OPERATOR);
+    private static final TextAttributesKey[] SEMICOLON_KEYS = pack(SEMICOLON);
+    private static final TextAttributesKey[] COMMA_KEYS = pack(COMMA);
+    private static final TextAttributesKey[] DOT_KEYS = pack(DOT);
+    private static final TextAttributesKey[] PAREN_KEYS = pack(PAREN);
+    private static final TextAttributesKey[] BRACE_KEYS = pack(BRACE);
+    private static final TextAttributesKey[] BRACKET_KEYS = pack(BRACKET);
 
     @NotNull
     @Override
