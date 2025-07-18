@@ -169,6 +169,7 @@ typedef struct CGCtx {
   size_t len;
   size_t cap;
   int depth;
+  TokenKind ret_type; /**< Return type of current function. */
 } CGCtx;
 
 /**
@@ -431,6 +432,7 @@ static void emit_func(COut *b, Node *n) {
   }
   c_out_write(b, ") ");
   CGCtx ctx = {0};
+  ctx.ret_type = n->as.func.ret_type;
   cgctx_scope_enter(&ctx);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
@@ -576,6 +578,8 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     if (n->as.ret.expr) {
       c_out_write(b, " ");
       emit_expr(ctx, b, n->as.ret.expr);
+    } else if (ctx->ret_type != TK_KW_VOID) {
+      c_out_write(b, " 0");
     }
     c_out_write(b, ";");
     c_out_newline(b);
@@ -681,6 +685,7 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_newline(&builder);
   c_out_indent(&builder);
   CGCtx ctx = {0};
+  ctx.ret_type = TK_KW_INT;
   cgctx_scope_enter(&ctx);
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
