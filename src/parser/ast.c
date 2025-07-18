@@ -11,9 +11,9 @@
  * @param a Pointer to the memory arena to initialize.
  */
 void arena_init(Arena *a) {
-    a->ptr = NULL;
-    a->len = 0;
-    a->cap = 0;
+  a->ptr = NULL;
+  a->len = 0;
+  a->cap = 0;
 }
 
 /**
@@ -26,11 +26,11 @@ void arena_init(Arena *a) {
  * @param min Minimum additional size required.
  */
 static void arena_grow(Arena *a, size_t min) {
-    size_t new_cap = a->cap ? a->cap * 2 : 4096;
-    if (new_cap < a->len + min)
-        new_cap = a->len + min;
-    a->ptr = realloc(a->ptr, new_cap);
-    a->cap = new_cap;
+  size_t new_cap = a->cap ? a->cap * 2 : 4096;
+  if (new_cap < a->len + min)
+    new_cap = a->len + min;
+  a->ptr = realloc(a->ptr, new_cap);
+  a->cap = new_cap;
 }
 
 /**
@@ -46,13 +46,13 @@ static void arena_grow(Arena *a, size_t min) {
  * @return Pointer to the allocated memory block.
  */
 void *arena_alloc(Arena *a, size_t size) {
-    if (a->len + size > a->cap)
-        arena_grow(a, size);
-    void *ptr = a->ptr + a->len;
-    a->len += size;
-    // zero memory for determinism
-    memset(ptr, 0, size);
-    return ptr;
+  if (a->len + size > a->cap)
+    arena_grow(a, size);
+  void *ptr = a->ptr + a->len;
+  a->len += size;
+  // zero memory for determinism
+  memset(ptr, 0, size);
+  return ptr;
 }
 
 /**
@@ -66,8 +66,8 @@ void *arena_alloc(Arena *a, size_t size) {
  * @return Pointer to the newly created node.
  */
 Node *node_new(Arena *a, NodeKind kind) {
-    Node *n = arena_alloc(a, sizeof(Node));
-    n->kind = kind;
-    return n;
+  Node *n = arena_alloc(a, sizeof(Node));
+  n->kind = kind;
+  n->pos = (Pos){0, 0};
+  return n;
 }
-

@@ -62,3 +62,6 @@ Version 1.1.05 (2025-07-20)
 Version 1.1.06 (2025-07-21)
 - Diagnostics now report line and column numbers.
 - Added `--verbose` flag for caret-highlighted messages.
+
+Version 1.1.07 (2025-07-22)
+- Generated C now includes `#line` directives to improve debugging back to Dream source.

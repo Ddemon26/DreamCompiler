@@ -121,6 +121,7 @@ typedef struct {
  */
 struct Node {
   NodeKind kind; /**< The type of the node. */
+  Pos pos;       /**< Source position of this node. */
   union {
     Slice lit;   /**< Literal value for ND_* literal nodes. */
     Slice ident; /**< Identifier for ND_IDENT nodes. */
@@ -144,7 +145,7 @@ struct Node {
     } index;
     struct {
       Node *object; /**< Object expression for ND_FIELD nodes. */
-      Slice name;  /**< Field name. */
+      Slice name;   /**< Field name. */
     } field;
     struct {
       TokenKind type;   /**< Variable type for ND_VAR_DECL nodes. */
