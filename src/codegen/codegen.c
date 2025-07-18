@@ -253,6 +253,8 @@ static int is_string_expr(CGCtx *ctx, Node *n) {
   case ND_IDENT:
     return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) ==
            TK_KW_STRING;
+  case ND_CONSOLE_CALL:
+    return n->as.console.read;
   default:
     return 0;
   }
@@ -640,6 +642,11 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
       if (call->as.console.read) {
         c_out_write(b, "dream_readline();");
         c_out_newline(b);
+      } else if (is_string_expr(ctx, call->as.console.arg)) {
+        c_out_write(b, call->as.console.newline ? "dream_println(" : "dream_print(");
+        emit_expr(ctx, b, call->as.console.arg);
+        c_out_write(b, ");");
+        c_out_newline(b);
       } else {
         c_out_write(b, "printf(\"");
         c_out_write(b, "%s", fmt_for_arg(ctx, call->as.console.arg));
@@ -659,6 +666,10 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
   case ND_CONSOLE_CALL:
     if (n->as.console.read) {
       c_out_write(b, "dream_readline()");
+    } else if (is_string_expr(ctx, n->as.console.arg)) {
+      c_out_write(b, n->as.console.newline ? "dream_println(" : "dream_print(");
+      emit_expr(ctx, b, n->as.console.arg);
+      c_out_write(b, ")");
     } else {
       c_out_write(b, "printf(\"");
       c_out_write(b, "%s", fmt_for_arg(ctx, n->as.console.arg));
@@ -708,10 +719,18 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_newline(&builder);
   c_out_write(&builder, "static char *dream_readline(void) {\n");
   c_out_write(&builder, "    static char buf[256];\n");
-  c_out_write(&builder, "    if (!fgets(buf, sizeof buf, stdin)) buf[0] = 0;\n");
+  c_out_write(&builder, "    if (!fgets(buf, sizeof buf, stdin)) return NULL;\n");
   c_out_write(&builder, "    size_t len = strlen(buf);\n");
   c_out_write(&builder, "    if (len && buf[len-1] == '\\n') buf[len-1] = 0;\n");
   c_out_write(&builder, "    return buf;\n}");
+  c_out_newline(&builder);
+  c_out_newline(&builder);
+  c_out_write(&builder, "static void dream_print(const char *s) {\n");
+  c_out_write(&builder, "    if (s) printf(\"%%s\", s); else printf(\"(null)\");\n");
+  c_out_write(&builder, "}\n");
+  c_out_write(&builder, "static void dream_println(const char *s) {\n");
+  c_out_write(&builder, "    if (s) printf(\"%%s\\n\", s); else printf(\"(null)\\n\");\n");
+  c_out_write(&builder, "}\n");
   c_out_newline(&builder);
   c_out_newline(&builder);
   for (size_t i = 0; i < root->as.block.len; i++) {
