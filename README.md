@@ -22,10 +22,14 @@ See the [changelog](docs/v1.1/changelog.md) for details on recent additions.
 
 ## Getting Started
 
-The steps below show how to build and use Dream on Linux. Windows support is experimental.
+The steps below show how to build and use Dream on Linux **or Windows**.
 
 1. **Install prerequisites**
-   - `sudo apt update && sudo apt install -y build-essential gcc git`
+   - On Linux:
+     ```bash
+     sudo apt update && sudo apt install -y build-essential gcc git
+     ```
+   - On Windows run `codex\_startup.ps1` from an elevated PowerShell (requires Chocolatey).
    - Install [Zig 0.15.0 or newer](https://ziglang.org/download/) and add `zig` to your `PATH`.
 2. **Clone the repository**
    ```bash
@@ -58,7 +62,7 @@ Compile a `.dr` file directly:
 This writes `build/bin/dream.c` and builds a runnable program called `dream` in the current directory. Execute it with:
 
 ```bash
-./dream
+./dream    # use `dream.exe` on Windows
 ```
 
 Example programs can be found in the [tests](tests) directory.
