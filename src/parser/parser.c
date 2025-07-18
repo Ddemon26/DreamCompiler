@@ -122,7 +122,6 @@ static bool is_type_token(TokenKind k) {
   case TK_KW_CHAR:
   case TK_KW_STRING:
   case TK_KW_VAR:
-  case TK_IDENT:
   case TK_KW_STRUCT:
   case TK_KW_CLASS:
     return true;
