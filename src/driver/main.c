@@ -4,6 +4,7 @@
 #include "../opt/pipeline.h"
 #include "../parser/diagnostic.h"
 #include "../parser/parser.h"
+#include "../sem/analysis.h"
 #include "../ssa/ssa.h"
 #include "../util/console_debug.h"
 #include "../util/platform.h"
@@ -130,6 +131,11 @@ int main(int argc, char *argv[]) {
   Node *root = parse_program(&p);
   print_diagnostics(src, &p.diags);
 
+  SemAnalyzer sem;
+  sem_analyzer_init(&sem, &arena);
+  sem_analyze_program(&sem, root);
+  print_diagnostics(src, &sem.diags);
+
   int nvars = 0;
   CFG *cfg = ir_lower_program(root, &nvars);
   cfg_compute_dominators(cfg);
@@ -151,7 +157,8 @@ int main(int argc, char *argv[]) {
     if (!cc)
       cc = "zig cc";
     char cmd[256];
-    const char *optflag = opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
+    const char *optflag =
+        opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
     snprintf(cmd, sizeof(cmd),
              "%s %s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"", cc,
              optflag, DR_PATH_SEP, DR_PATH_SEP);
@@ -161,10 +168,10 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 #ifdef _WIN32
-    snprintf(
-        cmd, sizeof(cmd),
-        "%s %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" -o \"%s\"",
-        cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+    snprintf(cmd, sizeof(cmd),
+             "%s %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" -o "
+             "\"%s\"",
+             cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
@@ -180,8 +187,8 @@ int main(int argc, char *argv[]) {
     }
     snprintf(
         cmd, sizeof(cmd),
-        "%s %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"", cc,
-        optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+        "%s %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
+        cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
@@ -194,6 +201,7 @@ int main(int argc, char *argv[]) {
 
   free(src);
   free(p.diags.data);
+  sem_analyzer_free(&sem);
   free(arena.ptr);
   return 0;
 }

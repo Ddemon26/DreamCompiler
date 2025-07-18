@@ -2,15 +2,15 @@ const std = @import("std");
 
 /// A list of all C source files used in the project.
 const AllCSources = [_][]const u8{
-    "src/driver/main.c",    "src/parser/ast.c",          "src/parser/parser.c",
-    "src/parser/error.c",   "src/parser/diagnostic.c",   "src/sem/scope.c",
-    "src/sem/symbol.c",     "src/sem/type.c",            "src/sem/infer.c",
-    "src/ir/ir.c",          "src/ir/lower.c",            "src/cfg/cfg.c",
-    "src/ssa/ssa.c",        "src/opt/pipeline.c",        "src/opt/sccp.c",
-    "src/opt/dce.c",        "src/opt/value_numbering.c", "src/opt/licm.c",
-    "src/opt/copy_prop.c",  "src/opt/cse.c",            "src/opt/peephole.c",
-    "src/codegen/c_emit.c", "src/codegen/context.c",     "src/codegen/expr.c",
-    "src/codegen/stmt.c",   "src/codegen/codegen.c",
+    "src/driver/main.c",  "src/parser/ast.c",        "src/parser/parser.c",
+    "src/parser/error.c", "src/parser/diagnostic.c", "src/sem/scope.c",
+    "src/sem/symbol.c",   "src/sem/type.c",          "src/sem/infer.c",
+    "src/sem/analysis.c", "src/ir/ir.c",             "src/ir/lower.c",
+    "src/cfg/cfg.c",      "src/ssa/ssa.c",           "src/opt/pipeline.c",
+    "src/opt/sccp.c",     "src/opt/dce.c",           "src/opt/value_numbering.c",
+    "src/opt/licm.c",     "src/opt/copy_prop.c",     "src/opt/cse.c",
+    "src/opt/peephole.c", "src/codegen/c_emit.c",    "src/codegen/context.c",
+    "src/codegen/expr.c", "src/codegen/stmt.c",      "src/codegen/codegen.c",
 };
 
 const CFLAGS = [_][]const u8{
