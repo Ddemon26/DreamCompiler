@@ -2,8 +2,9 @@
 
 ![Dream Compiler Logo](assets/icons/DreamCompilerLogo.png)
 
-Dream is an advanced compiler that transforms a C#-like language called Dream into C code. The project is experimental
-but aims to grow into a fully featured compiler. This repository contains the source, example code, tests and documentation.
+Dream is an experimental compiler that translates a C#‑style language called Dream into C code using Zig as the build
+system. The project is still evolving but already compiles a subset of the language. This repository contains the
+compiler sources, regression tests and documentation.
 
 ## Features
 
@@ -16,16 +17,16 @@ The compiler currently supports:
 - Increment/decrement and compound assignment operators
 - Ternary operator `?:` and string concatenation with `+`
 - Console input/output via `Console.ReadLine`, `Console.Write` and `Console.WriteLine`
+See [codex/FEATURES.md](codex/FEATURES.md) for the full list of implemented language features.
 See the [changelog](docs/v1.1/changelog.md) for details on recent additions.
 
 ## Getting Started
 
-The steps below show how to build and use Dream on both Linux and Windows.
+The steps below show how to build and use Dream on Linux. Windows support is experimental.
 
 1. **Install prerequisites**
-   - Linux: `sudo apt update && sudo apt install -y build-essential gcc`
-   - Download Zig 0.15.0: [Linux x86_64 build](https://ziglang.org/builds/zig-x86_64-linux-0.15.0-dev.936+fc2c1883b.tar.xz) or [Windows aarch64 build](https://ziglang.org/builds/zig-aarch64-windows-0.15.0-dev.936+fc2c1883b.zip). Extract the archive and add the `zig` binary to your `PATH`.
-   - Windows also requires [Git for Windows](https://git-scm.com/).
+   - `sudo apt update && sudo apt install -y build-essential gcc git`
+   - Install [Zig 0.15.0 or newer](https://ziglang.org/download/) and add `zig` to your `PATH`.
 2. **Clone the repository**
    ```bash
    git clone https://github.com/Ddemon26/DreamCompiler.git
@@ -35,13 +36,13 @@ The steps below show how to build and use Dream on both Linux and Windows.
    ```bash
    zig build
    ```
-4. **Run the example**
+4. **Compile a file**
    ```bash
-   zig build run -- example.dr
+   zig build run -- path/to/file.dr
    ```
 5. **Run the tests**
    ```bash
-   zig build test
+   ./python/test_runner
    ```
 
 The resulting compiler binary is placed under `zig-out/bin`.
@@ -60,7 +61,7 @@ This writes `build/bin/dream.c` and builds a runnable program called `dream` in 
 ./dream
 ```
 
-An example program is provided in [example.dr](example.dr).
+Example programs can be found in the [tests](tests) directory.
 
 ## Documentation
 
