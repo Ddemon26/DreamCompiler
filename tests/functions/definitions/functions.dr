@@ -2,10 +2,10 @@ func PrintOne() {
     Console.WriteLine(1);
 }
 
-PrintOne();
+PrintOne(); // Expected: 1
 
 func int GetTwo() {
     return 2;
 }
 
-Console.WriteLine(GetTwo());
+Console.WriteLine(GetTwo()); // Expected: 2

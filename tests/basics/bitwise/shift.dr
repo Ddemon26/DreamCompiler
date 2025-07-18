@@ -1,5 +1,5 @@
 int a = 1;
 int b = a << 3;
-Console.WriteLine(b);
+Console.WriteLine(b); // Expected: 8
 int c = b >> 2;
-Console.WriteLine(c);
+Console.WriteLine(c); // Expected: 2

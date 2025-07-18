@@ -1,5 +1,5 @@
 int x;
 int y = 42;
 x = 100;
-Console.WriteLine(x); 
-Console.WriteLine(y); 
+Console.WriteLine(x); // Expected: 100
+Console.WriteLine(y); // Expected: 42

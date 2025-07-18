@@ -1,6 +1,6 @@
 int a = 6;
 int b = 3;
 int c = a & b;
-Console.WriteLine(c);
+Console.WriteLine(c); // Expected: 2
 int d = a | b;
-Console.WriteLine(d);
+Console.WriteLine(d); // Expected: 7

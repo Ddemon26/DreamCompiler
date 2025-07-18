@@ -2,7 +2,7 @@ int x = 2;
 switch (x) {
     case 1: Console.WriteLine(1);
     case 2: {
-        Console.WriteLine(2);
+        Console.WriteLine(2); // Expected: 2
     }
-    default: Console.WriteLine(0);
+    default: Console.WriteLine(0); // Expected: 0
 }

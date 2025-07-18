@@ -1,2 +1,2 @@
 var n = 10;
-Console.WriteLine(n);
+Console.WriteLine(n); // Expected: 10
