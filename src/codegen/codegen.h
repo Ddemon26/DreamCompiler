@@ -10,14 +10,13 @@
  * @param root Pointer to the root node of the AST.
  * @param out Pointer to the output file.
  */
-void codegen_emit_c(Node *root, FILE *out);
+void codegen_emit_c(Node *root, FILE *out, const char *src_file);
 /**
  * @brief Emits an object file for the given AST root node.
  *
  * @param root Pointer to the root node of the AST.
  * @param path Path to the output object file.
  */
-void codegen_emit_obj(Node *root, const char *path);
+void codegen_emit_obj(Node *root, const char *path, const char *src_file);
 
 #endif
-

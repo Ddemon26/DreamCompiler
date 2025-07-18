@@ -11,7 +11,7 @@
 #include <io.h>
 #endif
 
-void codegen_emit_c(Node *root, FILE *out) {
+void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   COut builder;
   c_out_init(&builder);
 
@@ -60,15 +60,17 @@ void codegen_emit_c(Node *root, FILE *out) {
   }
   cg_register_types(tinfo, tlen);
 
+  c_out_write(&builder, "#line 1 \"%s\"\n", src_file);
+
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_STRUCT_DECL || it->kind == ND_CLASS_DECL)
-      emit_type_decl(&builder, it);
+      emit_type_decl(&builder, it, src_file);
   }
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_FUNC)
-      emit_func(&builder, it);
+      emit_func(&builder, it, src_file);
   }
 
   c_out_write(&builder, "int main(void){\n");
@@ -79,7 +81,7 @@ void codegen_emit_c(Node *root, FILE *out) {
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind != ND_FUNC)
-      cg_emit_stmt(&ctx, &builder, it);
+      cg_emit_stmt(&ctx, &builder, it, src_file);
   }
   cgctx_scope_leave(&ctx);
   free(ctx.vars);
@@ -94,7 +96,7 @@ void codegen_emit_c(Node *root, FILE *out) {
   cg_register_types(NULL, 0);
 }
 
-void codegen_emit_obj(Node *root, const char *path) {
+void codegen_emit_obj(Node *root, const char *path, const char *src_file) {
 #ifdef _WIN32
   char tmp[L_tmpnam] = {0};
   if (tmpnam_s(tmp, L_tmpnam) != 0) {
@@ -122,7 +124,7 @@ void codegen_emit_obj(Node *root, const char *path) {
     return;
   }
 #endif
-  codegen_emit_c(root, f);
+  codegen_emit_c(root, f, src_file);
   fclose(f);
   char cmd[512];
   snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -c %s -o %s", tmp, path);
