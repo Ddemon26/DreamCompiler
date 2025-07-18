@@ -1,6 +1,24 @@
 #include "stmt.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+static CGTypeInfo *g_types = NULL;
+static size_t g_type_len = 0;
+
+void cg_register_types(CGTypeInfo *types, size_t n) {
+  g_types = types;
+  g_type_len = n;
+}
+
+int cg_is_class_type(Slice name) {
+  for (size_t i = 0; i < g_type_len; i++) {
+    if (g_types[i].name.len == name.len &&
+        strncmp(g_types[i].name.start, name.start, name.len) == 0)
+      return g_types[i].is_class;
+  }
+  return 0;
+}
 
 static const char *type_to_c(TokenKind k) {
   switch (k) {
@@ -24,6 +42,8 @@ static const char *type_to_c(TokenKind k) {
 static void emit_type(COut *b, TokenKind k, Slice name) {
   if (k == TK_IDENT) {
     c_out_write(b, "struct %.*s", (int)name.len, name.start);
+    if (cg_is_class_type(name))
+      c_out_write(b, " *");
     return;
   }
   c_out_write(b, "%s", type_to_c(k));
@@ -49,13 +69,25 @@ void emit_type_decl(COut *b, Node *n) {
   c_out_write(b, "};");
   c_out_newline(b);
   c_out_newline(b);
+  for (size_t i = 0; i < n->as.type_decl.len; i++) {
+    Node *m = n->as.type_decl.members[i];
+    if (m->kind == ND_FUNC) {
+      emit_method(b, n->as.type_decl.name, m);
+    }
+  }
+  c_out_newline(b);
 }
 
-void emit_func(COut *b, Node *n) {
+static void emit_func_impl(COut *b, Slice prefix, Node *n) {
   c_out_write(b, "/* Dream function %.*s */\n", (int)n->as.func.name.len,
               n->as.func.name.start);
-  c_out_write(b, "static %s %.*s(", type_to_c(n->as.func.ret_type),
-              (int)n->as.func.name.len, n->as.func.name.start);
+  if (prefix.len)
+    c_out_write(b, "static %s %.*s_%.*s(", type_to_c(n->as.func.ret_type),
+                (int)prefix.len, prefix.start, (int)n->as.func.name.len,
+                n->as.func.name.start);
+  else
+    c_out_write(b, "static %s %.*s(", type_to_c(n->as.func.ret_type),
+                (int)n->as.func.name.len, n->as.func.name.start);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
     if (i)
@@ -70,7 +102,43 @@ void emit_func(COut *b, Node *n) {
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
     cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
-               p->as.var_decl.type);
+               p->as.var_decl.type,
+               p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
+                                                : (Slice){NULL, 0});
+  }
+  cg_emit_stmt(&ctx, b, n->as.func.body);
+  cgctx_scope_leave(&ctx);
+  free(ctx.vars);
+  c_out_newline(b);
+}
+
+void emit_func(COut *b, Node *n) { emit_func_impl(b, (Slice){NULL, 0}, n); }
+
+void emit_method(COut *b, Slice class_name, Node *n) {
+  // implicit this parameter
+  // copy params with extra first param
+  c_out_write(b, "/* Dream method %.*s.%.*s */\n", (int)class_name.len,
+              class_name.start, (int)n->as.func.name.len, n->as.func.name.start);
+  c_out_write(b, "static %s %.*s_%.*s(struct %.*s *this",
+              type_to_c(n->as.func.ret_type), (int)class_name.len, class_name.start,
+              (int)n->as.func.name.len, n->as.func.name.start, (int)class_name.len,
+              class_name.start);
+  for (size_t i = 0; i < n->as.func.param_len; i++) {
+    Node *p = n->as.func.params[i];
+    c_out_write(b, ", %s %.*s", type_to_c(p->as.var_decl.type),
+                (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
+  }
+  c_out_write(b, ") ");
+  CGCtx ctx = {0};
+  ctx.ret_type = n->as.func.ret_type;
+  cgctx_scope_enter(&ctx);
+  cgctx_push(&ctx, "this", 4, TK_IDENT, class_name);
+  for (size_t i = 0; i < n->as.func.param_len; i++) {
+    Node *p = n->as.func.params[i];
+    cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
+               p->as.var_decl.type,
+               p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
+                                                : (Slice){NULL, 0});
   }
   cg_emit_stmt(&ctx, b, n->as.func.body);
   cgctx_scope_leave(&ctx);
@@ -99,7 +167,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
       }
     }
     cgctx_push(ctx, n->as.var_decl.name.start, n->as.var_decl.name.len,
-               n->as.var_decl.type);
+               n->as.var_decl.type,
+               n->as.var_decl.type == TK_IDENT ? n->as.var_decl.type_name
+                                                : (Slice){NULL, 0});
     c_out_write(b, ";");
     c_out_newline(b);
     break;
@@ -153,7 +223,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
           }
         }
         cgctx_push(ctx, vd->as.var_decl.name.start, vd->as.var_decl.name.len,
-                   vd->as.var_decl.type);
+                   vd->as.var_decl.type,
+                   vd->as.var_decl.type == TK_IDENT ? vd->as.var_decl.type_name
+                                                    : (Slice){NULL, 0});
       } else {
         cg_emit_expr(ctx, b, n->as.for_stmt.init);
       }

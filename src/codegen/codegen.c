@@ -45,6 +45,21 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_write(&builder, "    if(len && buf[len-1]=='\\n') buf[len-1]=0;\n");
   c_out_write(&builder, "    return buf;\n}\n\n");
 
+  CGTypeInfo *tinfo = NULL;
+  size_t tlen = 0, tcap = 0;
+  for (size_t i = 0; i < root->as.block.len; i++) {
+    Node *it = root->as.block.items[i];
+    if (it->kind == ND_STRUCT_DECL || it->kind == ND_CLASS_DECL) {
+      if (tlen + 1 > tcap) {
+        tcap = tcap ? tcap * 2 : 4;
+        tinfo = realloc(tinfo, tcap * sizeof(CGTypeInfo));
+      }
+      tinfo[tlen++] =
+          (CGTypeInfo){it->as.type_decl.name, it->kind == ND_CLASS_DECL};
+    }
+  }
+  cg_register_types(tinfo, tlen);
+
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_STRUCT_DECL || it->kind == ND_CLASS_DECL)
@@ -75,6 +90,8 @@ void codegen_emit_c(Node *root, FILE *out) {
 
   c_out_dump(out, &builder);
   c_out_free(&builder);
+  free(tinfo);
+  cg_register_types(NULL, 0);
 }
 
 void codegen_emit_obj(Node *root, const char *path) {

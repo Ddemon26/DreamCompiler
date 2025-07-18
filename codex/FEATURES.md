@@ -33,6 +33,7 @@
 - Arrays of primitive types
 - Function declarations with parameters and typed return values
 - Object construction for classes and structs
+- Instance methods on classes (emitted as C functions with a `this` pointer)
 - Exception handling with `try`/`catch` statements and `throw`
 
 ## Missing Features
