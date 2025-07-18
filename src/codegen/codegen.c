@@ -652,7 +652,7 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
         c_out_write(b, "dream_readline();");
         c_out_newline(b);
       } else if (is_string_expr(ctx, call->as.console.arg)) {
-        c_out_write(b, call->as.console.newline ? "dream_println(" : "dream_print(");
+        c_out_write(b, call->as.console.newline ? "dr_console_writeln(" : "dr_console_write(");
         emit_expr(ctx, b, call->as.console.arg);
         c_out_write(b, ");");
         c_out_newline(b);
@@ -676,7 +676,7 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     if (n->as.console.read) {
       c_out_write(b, "dream_readline()");
     } else if (is_string_expr(ctx, n->as.console.arg)) {
-      c_out_write(b, n->as.console.newline ? "dream_println(" : "dream_print(");
+      c_out_write(b, n->as.console.newline ? "dr_console_writeln(" : "dr_console_write(");
       emit_expr(ctx, b, n->as.console.arg);
       c_out_write(b, ")");
     } else {
@@ -736,6 +736,8 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_newline(&builder);
   c_out_write(&builder, "#include <setjmp.h>");
   c_out_newline(&builder);
+  c_out_write(&builder, "#include \"console.h\"");
+  c_out_newline(&builder);
   c_out_newline(&builder);
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");
   c_out_write(&builder, "static int dream_jmp_top = -1;\n");
@@ -758,14 +760,6 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_write(&builder, "    size_t len = strlen(buf);\n");
   c_out_write(&builder, "    if (len && buf[len-1] == '\\n') buf[len-1] = 0;\n");
   c_out_write(&builder, "    return buf;\n}");
-  c_out_newline(&builder);
-  c_out_newline(&builder);
-  c_out_write(&builder, "static void dream_print(const char *s) {\n");
-  c_out_write(&builder, "    if (s) printf(\"%%s\", s); else printf(\"(null)\");\n");
-  c_out_write(&builder, "}\n");
-  c_out_write(&builder, "static void dream_println(const char *s) {\n");
-  c_out_write(&builder, "    if (s) printf(\"%%s\\n\", s); else printf(\"(null)\\n\");\n");
-  c_out_write(&builder, "}\n");
   c_out_newline(&builder);
   c_out_newline(&builder);
   for (size_t i = 0; i < root->as.block.len; i++) {
