@@ -41,14 +41,13 @@ This guide shows how to enable IntelliSense for `*.dr` files in VS Code and JetB
 * In `extension.ts` initialise a `LanguageClient` pointing at the DreamCompiler server executable. Place server code in `server/`.
 
 ### JetBrains
-* `plugin.xml` registers custom completion and documentation providers:
+* `plugin.xml` registers a `lspServerDefinition` that launches `dream-language-server`:
   ```xml
   <extensions defaultExtensionNs="com.intellij">
-      <completion.contributor language="dream" implementationClass="com.dream.DreamCompletionContributor"/>
-      <documentationProvider language="dream" implementationClass="com.dream.DreamDocumentationProvider"/>
+      <lspServerDefinition implementation="com.dream.DreamLspServerDefinition"/>
   </extensions>
   ```
-* `DreamCompletionContributor` offers suggestions like `Console.Write` and `Console.WriteLine` while `DreamDocumentationProvider` displays simple hover text.
+* `DreamLspServerDefinition` starts the Node-based server bundled with the plugin.
 
 ## 4. Implementing Completion & Features
 
@@ -56,14 +55,15 @@ Both platforms rely on the language server’s `textDocument/completion`, `hover
 
 ### VS Code
 * Inside `server/src/server.ts` implement the handlers using the `vscode-languageserver` module. Example:
-  ```ts
-  connection.onCompletion(params => {
-      // compute completion items
-  });
-  ```
+```ts
+connection.onCompletion(params => {
+    // compute completion items
+});
+```
 
 ### JetBrains
-* The plugin already includes a `CompletionContributor` and `DocumentationProvider` for simple IntelliSense features.
+The bundled plugin delegates completion, hover and definitions to the same
+`dream-language-server` executable.
 
 ## 5. Building & Running Locally
 
