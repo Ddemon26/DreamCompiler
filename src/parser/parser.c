@@ -37,6 +37,9 @@ void parser_init(Parser *p, Arena *a, const char *src) {
   p->diags.data = NULL;
   p->diags.len = 0;
   p->diags.cap = 0;
+  p->types = NULL;
+  p->type_len = 0;
+  p->type_cap = 0;
   next(p);
 }
 
@@ -107,6 +110,8 @@ static Node *parse_var_decl(Parser *p);
  * @param n Pointer to the node to be added.
  */
 static void nodevec_push(Node ***data, size_t *len, size_t *cap, Node *n);
+static void typevec_push(Parser *p, Slice name);
+static bool typevec_contains(Parser *p, Token tok);
 
 /**
  * @brief Checks if the given token kind represents a type keyword.
@@ -536,6 +541,7 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
   n->as.type_decl.name = name;
   n->as.type_decl.members = members;
   n->as.type_decl.len = len;
+  typevec_push(p, name);
   return n;
 }
 
@@ -710,6 +716,18 @@ static Node *parse_postfix(Parser *p) {
       idxn->as.index.array = n;
       idxn->as.index.index = idx;
       n = idxn;
+    } else if (p->tok.kind == TK_DOT) {
+      next(p);
+      if (p->tok.kind != TK_IDENT) {
+        diag_push(p, p->tok.pos, "expected identifier");
+        return node_new(p->arena, ND_ERROR);
+      }
+      Node *fld = node_new(p->arena, ND_FIELD);
+      fld->as.field.object = n;
+      fld->as.field.name.start = p->tok.start;
+      fld->as.field.name.len = p->tok.len;
+      n = fld;
+      next(p);
     } else {
       break;
     }
@@ -954,6 +972,23 @@ static void nodevec_push(Node ***data, size_t *len, size_t *cap, Node *n) {
   (*data)[(*len)++] = n;
 }
 
+static void typevec_push(Parser *p, Slice name) {
+  if (p->type_len + 1 > p->type_cap) {
+    p->type_cap = p->type_cap ? p->type_cap * 2 : 4;
+    p->types = realloc(p->types, p->type_cap * sizeof(Slice));
+  }
+  p->types[p->type_len++] = name;
+}
+
+static bool typevec_contains(Parser *p, Token tok) {
+  for (size_t i = 0; i < p->type_len; i++) {
+    Slice s = p->types[i];
+    if (s.len == tok.len && strncmp(s.start, tok.start, tok.len) == 0)
+      return true;
+  }
+  return false;
+}
+
 /**
  * @brief Parses a statement based on the current token kind.
  *
@@ -996,6 +1031,11 @@ static Node *parse_stmt(Parser *p) {
   }
   if (is_type_token(p->tok.kind)) {
     return parse_var_decl(p);
+  }
+  if (p->tok.kind == TK_IDENT && typevec_contains(p, p->tok)) {
+    Token la = lexer_peek(&p->lx);
+    if (la.kind == TK_IDENT)
+      return parse_var_decl(p);
   }
   if (p->tok.kind == TK_LBRACE) {
     next(p);

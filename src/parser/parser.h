@@ -28,6 +28,9 @@ typedef struct {
     Token tok;
     Arena *arena;
     DiagnosticVec diags;
+    Slice *types;
+    size_t type_len;
+    size_t type_cap;
 } Parser;
 
 /**

@@ -47,6 +47,7 @@ typedef enum {
   ND_BINOP,
   ND_COND,
   ND_INDEX,
+  ND_FIELD,
   ND_VAR_DECL,
   ND_IF,
   ND_WHILE,
@@ -138,6 +139,10 @@ struct Node {
       Node *array; /**< Array expression for ND_INDEX nodes. */
       Node *index; /**< Index expression. */
     } index;
+    struct {
+      Node *object; /**< Object expression for ND_FIELD nodes. */
+      Slice name;  /**< Field name. */
+    } field;
     struct {
       TokenKind type;   /**< Variable type for ND_VAR_DECL nodes. */
       Slice type_name;  /**< Identifier for custom types. */
