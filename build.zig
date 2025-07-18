@@ -8,6 +8,7 @@ const AllCSources = [_][]const u8{
     "src/ir/ir.c",          "src/ir/lower.c",            "src/cfg/cfg.c",
     "src/ssa/ssa.c",        "src/opt/pipeline.c",        "src/opt/sccp.c",
     "src/opt/dce.c",        "src/opt/value_numbering.c", "src/opt/licm.c",
+    "src/opt/copy_prop.c",  "src/opt/cse.c",            "src/opt/peephole.c",
     "src/codegen/c_emit.c", "src/codegen/context.c",     "src/codegen/expr.c",
     "src/codegen/stmt.c",   "src/codegen/codegen.c",
 };

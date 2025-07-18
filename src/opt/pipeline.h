@@ -15,8 +15,8 @@
  * @brief Executes a series of optimization passes on a control flow graph (CFG).
  *
  * @param cfg Pointer to the control flow graph to optimize.
- * @param opt1 Boolean flag to enable or disable the optimization pipeline.
+ * @param opt_level Optimization level (0-3).
  */
-void run_pipeline(CFG *cfg, bool opt1);
+void run_pipeline(CFG *cfg, int opt_level);
 
 #endif

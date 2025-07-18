@@ -113,12 +113,13 @@ static IRValue fold_bin(IROp op, IRValue a, IRValue b) {
   return (IRValue){.id = -res - 1};
 }
 
-void sccp(CFG *cfg) {
+bool sccp(CFG *cfg) {
   if (!cfg)
-    return;
+    return false;
+  bool changed = false;
   int nvals = max_value_id(cfg);
   if (nvals <= 0)
-    return;
+    return false;
   LatticeVal *vals = calloc((size_t)nvals, sizeof(LatticeVal));
   for (size_t i = 0; i < cfg->nblocks; i++) {
     BasicBlock *b = cfg->blocks[i];
@@ -141,21 +142,56 @@ void sccp(CFG *cfg) {
     for (size_t j = 0; j < b->ninstrs; j++) {
       IRInstr *ins = b->instrs[j];
       if (ins->op == IR_MOV && vals[ins->dst.id].kind == VAL_CONST) {
-        ins->a.id = -vals[ins->dst.id].value - 1;
+        int newv = -vals[ins->dst.id].value - 1;
+        if (ins->a.id != newv) {
+          ins->a.id = newv;
+          changed = true;
+        }
       }
       if (is_binop(ins->op)) {
-        if (vals[ins->a.id].kind == VAL_CONST)
-          ins->a.id = -vals[ins->a.id].value - 1;
-        if (vals[ins->b.id].kind == VAL_CONST)
-          ins->b.id = -vals[ins->b.id].value - 1;
+        if (vals[ins->a.id].kind == VAL_CONST) {
+          int newv = -vals[ins->a.id].value - 1;
+          if (ins->a.id != newv) {
+            ins->a.id = newv;
+            changed = true;
+          }
+        }
+        if (vals[ins->b.id].kind == VAL_CONST) {
+          int newv = -vals[ins->b.id].value - 1;
+          if (ins->b.id != newv) {
+            ins->b.id = newv;
+            changed = true;
+          }
+        }
         if (ins->a.id < 0 && ins->b.id < 0) {
           IRValue c = fold_bin(ins->op, ins->a, ins->b);
           ins->op = IR_MOV;
           ins->a = c;
           ins->b.id = 0;
+          changed = true;
+        }
+      }
+      if (ins->op == IR_CJUMP && ir_is_const(ins->a)) {
+        int cond = ir_const_value(ins->a);
+        BasicBlock *taken = cond ? b->succ[0] : b->succ[1];
+        BasicBlock *dead = cond ? b->succ[1] : b->succ[0];
+        if (b->nsucc == 2) {
+          b->succ[0] = taken;
+          b->nsucc = 1;
+          for (size_t k = 0; k < dead->npred; k++) {
+            if (dead->pred[k] == b) {
+              for (size_t m = k + 1; m < dead->npred; m++)
+                dead->pred[m - 1] = dead->pred[m];
+              dead->npred--;
+              break;
+            }
+          }
+          ins->op = IR_JUMP;
+          changed = true;
         }
       }
     }
   }
   free(vals);
+  return changed;
 }
