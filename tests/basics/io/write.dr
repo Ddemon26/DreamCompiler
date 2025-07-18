@@ -1,2 +1,3 @@
-Console.Write("hello"); // Expected: hello
-Console.WriteLine(" world"); // Expected: hello world\n
+// Expected: hello world
+Console.Write("hello");
+Console.WriteLine(" world");

@@ -6,11 +6,17 @@ TEST_DIR = Path('tests')
 
 def run_test(path: Path) -> bool:
     text = path.read_text()
-    m = re.search(r"//\s*Expected:\s*(.*)", text)
-    if not m:
+    matches = re.findall(r"//\s*Expected:\s*(.*)", text)
+    if not matches:
         print(f"[SKIP] {path}")
         return True
-    expected = m.group(1).strip()
+    parts = []
+    for m in matches:
+        m = m.strip()
+        if m == "(no output)":
+            continue
+        parts.append(m)
+    expected = "\n".join(parts)
     res = subprocess.run(['zig', 'build', 'run', '--', str(path)], capture_output=True, text=True)
     if res.returncode != 0:
         sys.stdout.write(res.stdout)
