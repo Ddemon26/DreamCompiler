@@ -1,0 +1,4 @@
+func int main() {
+    Console.WriteLine(5); // Expected: 5
+    return 0;
+}

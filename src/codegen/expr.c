@@ -4,8 +4,15 @@
 
 static Slice expr_type(CGCtx *ctx, Node *n) {
   switch (n->kind) {
-  case ND_IDENT:
-    return cgctx_lookup_name(ctx, n->as.ident.start, n->as.ident.len);
+  case ND_IDENT: {
+    Slice found = cgctx_lookup_name(ctx, n->as.ident.start, n->as.ident.len);
+    if (found.len == 0) {
+      Slice id = {n->as.ident.start, n->as.ident.len};
+      if (cg_is_known_type(id))
+        return id;
+    }
+    return found;
+  }
   case ND_NEW:
     return n->as.new_expr.type_name;
   default:
@@ -199,31 +206,48 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     cg_emit_expr(ctx, b, n->as.index.index);
     c_out_write(b, "])");
     break;
-  case ND_FIELD:
-    cg_emit_expr(ctx, b, n->as.field.object);
+  case ND_FIELD: {
     Slice ty = expr_type(ctx, n->as.field.object);
-    if (cg_is_class_type(ty))
-      c_out_write(b, "->%.*s", (int)n->as.field.name.len,
-                  n->as.field.name.start);
-    else
-      c_out_write(b, ".%.*s", (int)n->as.field.name.len,
-                  n->as.field.name.start);
+    int is_var = 0;
+    if (n->as.field.object->kind == ND_IDENT)
+      is_var = cgctx_has_var(ctx, n->as.field.object->as.ident.start,
+                             n->as.field.object->as.ident.len);
+    if (ty.len && !is_var) {
+      c_out_write(b, "%.*s_%.*s", (int)ty.len, ty.start,
+                  (int)n->as.field.name.len, n->as.field.name.start);
+    } else {
+      cg_emit_expr(ctx, b, n->as.field.object);
+      if (cg_is_class_type(ty))
+        c_out_write(b, "->%.*s", (int)n->as.field.name.len,
+                    n->as.field.name.start);
+      else
+        c_out_write(b, ".%.*s", (int)n->as.field.name.len,
+                    n->as.field.name.start);
+    }
     break;
+  }
   case ND_CALL:
     if (n->as.call.callee->kind == ND_FIELD) {
       Node *fld = n->as.call.callee;
       Slice ty = expr_type(ctx, fld->as.field.object);
+      int is_var = 0;
+      if (fld->as.field.object->kind == ND_IDENT)
+        is_var = cgctx_has_var(ctx, fld->as.field.object->as.ident.start,
+                               fld->as.field.object->as.ident.len);
       if (ty.len) {
         c_out_write(b, "%.*s_%.*s(", (int)ty.len, ty.start,
                     (int)fld->as.field.name.len, fld->as.field.name.start);
-        if (cg_is_class_type(ty))
-          cg_emit_expr(ctx, b, fld->as.field.object);
-        else {
-          c_out_write(b, "&");
-          cg_emit_expr(ctx, b, fld->as.field.object);
+        if (is_var) {
+          if (cg_is_class_type(ty))
+            cg_emit_expr(ctx, b, fld->as.field.object);
+          else {
+            c_out_write(b, "&");
+            cg_emit_expr(ctx, b, fld->as.field.object);
+          }
         }
         for (size_t i = 0; i < n->as.call.len; i++) {
-          c_out_write(b, ", ");
+          if (is_var || i)
+            c_out_write(b, ", ");
           cg_emit_expr(ctx, b, n->as.call.args[i]);
         }
         c_out_write(b, ")");
@@ -241,12 +265,22 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     break;
   case ND_NEW:
     if (cg_is_class_type(n->as.new_expr.type_name)) {
-      c_out_write(b,
-                  "(struct %.*s*)calloc(1,sizeof(struct %.*s))",
+      c_out_write(b, "({struct %.*s *tmp = calloc(1,sizeof(struct %.*s));",
                   (int)n->as.new_expr.type_name.len,
                   n->as.new_expr.type_name.start,
                   (int)n->as.new_expr.type_name.len,
                   n->as.new_expr.type_name.start);
+      if (cg_has_init(n->as.new_expr.type_name)) {
+        c_out_write(b, "%.*s_init(tmp",
+                    (int)n->as.new_expr.type_name.len,
+                    n->as.new_expr.type_name.start);
+        for (size_t i = 0; i < n->as.new_expr.arg_len; i++) {
+          c_out_write(b, ", ");
+          cg_emit_expr(ctx, b, n->as.new_expr.args[i]);
+        }
+        c_out_write(b, ");");
+      }
+      c_out_write(b, " tmp; })");
     } else {
       c_out_write(b, "(struct %.*s){0}",
                   (int)n->as.new_expr.type_name.len,

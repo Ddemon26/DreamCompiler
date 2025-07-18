@@ -30,6 +30,7 @@ void cgctx_scope_enter(CGCtx *ctx);
 void cgctx_scope_leave(CGCtx *ctx);
 TokenKind cgctx_lookup(CGCtx *ctx, const char *start, size_t len);
 Slice cgctx_lookup_name(CGCtx *ctx, const char *start, size_t len);
+int cgctx_has_var(CGCtx *ctx, const char *start, size_t len);
 
 #ifdef __cplusplus
 }
