@@ -1,0 +1,23 @@
+int dateToDays(int y, int m, int d) {
+if(m < 3){
+y = y - 1;
+m = m + 12;
+}
+return 365 * y + y / 4 - y / 100 + y / 400 + (153 * m - 457) / 5 + d - 306;
+}
+
+int main(string[] args) {
+string targetInput = Console.ReadLine();
+string currentInput = getSystemDate();
+string[] targetParts = splitString(targetInput, '-');
+int targetY = parseInt(targetParts[0]);
+int targetM = parseInt(targetParts[1]);
+int targetD = parseInt(targetParts[2]);
+string[] currentParts = splitString(currentInput, '-');
+int currentY = parseInt(currentParts[0]);
+int currentM = parseInt(currentParts[1]);
+int currentD = parseInt(currentParts[2]);
+int diff = dateToDays(targetY, targetM, targetD) - dateToDays(currentY, currentM, currentD);
+Console.WriteLine(diff);
+return 0;
+}

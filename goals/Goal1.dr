@@ -1,0 +1,29 @@
+class Harold {
+    // Properties
+    string name = "Harold";
+    int age = 30;
+
+    // Constructor
+    public func init(name: string, age: Int) {
+        self.name = name;
+        self.age = age;
+    }
+
+    // Method to display information
+    public func displayInfo() {
+        print("Name: \(name), Age: \(age)");
+    }
+}
+
+class Program {
+	public static int main(string[] args) {
+        // Create an instance of Harold
+        var harold = new Harold(name: "Harold", age: 30);
+
+        // Display information
+        harold.displayInfo(); // Expected: Name: Harold, Age: 30
+
+        return 0;
+    }
+}
+
