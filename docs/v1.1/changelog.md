@@ -40,3 +40,8 @@ Version 1.1.01 (2025-07-17)
 Version 1.1.02 (2025-07-18)
 - Implemented object construction for classes and structs using the `new` keyword.
 - Updated documentation and added regression tests.
+
+Version 1.1.03 (2025-07-18)
+- Added basic try/catch statements and the `throw` keyword.
+- Code generation now uses setjmp/longjmp for simple exception handling.
+- Updated grammar and added tests for exception handling.

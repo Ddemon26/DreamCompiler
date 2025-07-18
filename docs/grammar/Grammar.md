@@ -215,6 +215,7 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write" | "ReadLine") Invoc
 5. `Console.Write`/`WriteLine`/`ReadLine` are built‑ins; they do not require namespace qualification.
 6. Target C code‑gen uses 32‑bit signed integers and zero‑terminated UTF‑8 strings.
 7. Control‑flow semantics follow C# where implemented; `switch` currently supports only constant integral cases without pattern guards.
+8. Basic exception handling with `try`/`catch` statements and `throw` uses a simple longjmp mechanism.
 
 ---
 
@@ -222,7 +223,6 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write" | "ReadLine") Invoc
 
 * Generics.
 * Access modifiers (`public`, `private`, …).
-* Exception handling (`try`‑`catch`).
 * Attributes and annotations.
 * Modular compilation & namespaces.
 * Lambdas / delegates / events.

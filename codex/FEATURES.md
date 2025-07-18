@@ -33,6 +33,7 @@
 - Arrays of primitive types
 - Function declarations with parameters and typed return values
 - Object construction for classes and structs
+- Exception handling with `try`/`catch` statements and `throw`
 
 ## Missing Features
 

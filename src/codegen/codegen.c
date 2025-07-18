@@ -624,6 +624,15 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     c_out_write(b, ";");
     c_out_newline(b);
     break;
+  case ND_THROW:
+    if (n->as.throw_stmt.expr) {
+      c_out_write(b, "(void)(");
+      emit_expr(ctx, b, n->as.throw_stmt.expr);
+      c_out_write(b, ");\n");
+    }
+    c_out_write(b, "dream_throw();");
+    c_out_newline(b);
+    break;
   case ND_BLOCK:
     c_out_write(b, "{");
     c_out_newline(b);
@@ -681,6 +690,26 @@ static void emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     }
     c_out_newline(b);
     break;
+  case ND_TRY:
+    c_out_write(b, "{");
+    c_out_newline(b);
+    c_out_indent(b);
+    c_out_write(b, "dream_jmp_top++;\n");
+    c_out_write(b, "if (!setjmp(dream_jmp_buf[dream_jmp_top])) ");
+    emit_stmt(ctx, b, n->as.try_stmt.body);
+    if (n->as.try_stmt.catch_body) {
+      c_out_write(b, " else ");
+      emit_stmt(ctx, b, n->as.try_stmt.catch_body);
+    } else {
+      c_out_newline(b);
+    }
+    c_out_write(b, "dream_jmp_top--;\n");
+    if (n->as.try_stmt.finally_body)
+      emit_stmt(ctx, b, n->as.try_stmt.finally_body);
+    c_out_dedent(b);
+    c_out_write(b, "}");
+    c_out_newline(b);
+    break;
   default:
     break;
   }
@@ -705,6 +734,12 @@ void codegen_emit_c(Node *root, FILE *out) {
   c_out_newline(&builder);
   c_out_write(&builder, "#include <stdlib.h>");
   c_out_newline(&builder);
+  c_out_write(&builder, "#include <setjmp.h>");
+  c_out_newline(&builder);
+  c_out_newline(&builder);
+  c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");
+  c_out_write(&builder, "static int dream_jmp_top = -1;\n");
+  c_out_write(&builder, "static void dream_throw(void) { longjmp(dream_jmp_buf[dream_jmp_top], 1); }\n");
   c_out_newline(&builder);
   c_out_write(&builder,
               "static char *dream_concat(const char *a, const char *b) {\n");
