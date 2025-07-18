@@ -11,7 +11,7 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(if|else|while|for|do|break|continue|return|class|struct|int|string|bool|float|char|void|var|let|true|false|func|switch|case|default|Console|WriteLine|Write|ReadLine)\\b"
+          "match": "\\b(if|else|while|for|do|break|continue|return|class|struct|new|int|string|bool|float|char|void|var|let|true|false|func|switch|case|default|Console|WriteLine|Write|ReadLine)\\b"
         },
         {
           "name": "constant.numeric",
