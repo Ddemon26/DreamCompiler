@@ -1,8 +1,8 @@
 #include "parser.h"
-#include <stdlib.h>
-#include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
  * @brief Adds a diagnostic message to the parser's diagnostic list.
@@ -19,7 +19,8 @@ static void diag_push(Parser *p, Pos pos, DiagSeverity sev, const char *msg) {
   p->diags.data[p->diags.len++] = (Diagnostic){pos, msg, sev};
 }
 
-static void diag_pushf(Parser *p, Pos pos, DiagSeverity sev, const char *fmt, ...) {
+static void diag_pushf(Parser *p, Pos pos, DiagSeverity sev, const char *fmt,
+                       ...) {
   va_list ap;
   va_start(ap, fmt);
   int n = vsnprintf(NULL, 0, fmt, ap);
@@ -490,6 +491,7 @@ static Node *parse_try(Parser *p) {
  * @return Pointer to the parsed function node.
  */
 static Node *parse_func(Parser *p) {
+  Pos start_pos = p->tok.pos;
   next(p); // consume 'func'
   TokenKind ret_type = TK_KW_VOID;
   if (is_type_token(p->tok.kind) || p->tok.kind == TK_KW_VOID) {
@@ -542,6 +544,7 @@ static Node *parse_func(Parser *p) {
     diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
   Node *body = parse_stmt(p);
   Node *fn = node_new(p->arena, ND_FUNC);
+  fn->pos = start_pos;
   fn->as.func.ret_type = ret_type;
   fn->as.func.name = name;
   fn->as.func.params = params;
@@ -551,6 +554,7 @@ static Node *parse_func(Parser *p) {
 }
 
 static Node *parse_type_decl(Parser *p, NodeKind kind) {
+  Pos start_pos = p->tok.pos;
   next(p); // consume 'class' or 'struct'
   if (p->tok.kind != TK_IDENT) {
     diag_push(p, p->tok.pos, DIAG_ERROR, "expected identifier");
@@ -586,6 +590,7 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
   else
     diag_push(p, p->tok.pos, DIAG_ERROR, "expected '}'");
   Node *n = node_new(p->arena, kind);
+  n->pos = start_pos;
   n->as.type_decl.name = name;
   n->as.type_decl.members = members;
   n->as.type_decl.len = len;
@@ -643,7 +648,8 @@ static Node *parse_primary(Parser *p) {
     } else if (p->tok.kind == TK_KW_READLINE) {
       read = 1;
     } else {
-      diag_push(p, p->tok.pos, DIAG_ERROR, "expected Write, WriteLine or ReadLine");
+      diag_push(p, p->tok.pos, DIAG_ERROR,
+                "expected Write, WriteLine or ReadLine");
       return node_new(p->arena, ND_ERROR);
     }
     next(p);
@@ -865,7 +871,8 @@ static Node *parse_var_decl(Parser *p) {
     }
     if (type_tok.kind == TK_KW_VAR) {
       if (!n->as.var_decl.init) {
-        diag_push(p, p->tok.pos, DIAG_ERROR, "var declaration requires initializer");
+        diag_push(p, p->tok.pos, DIAG_ERROR,
+                  "var declaration requires initializer");
         n->as.var_decl.type = TK_KW_INT;
       } else {
         n->as.var_decl.type = infer_var_type(n->as.var_decl.init);

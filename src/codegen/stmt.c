@@ -49,7 +49,7 @@ static void emit_type(COut *b, TokenKind k, Slice name) {
   c_out_write(b, "%s", type_to_c(k));
 }
 
-void emit_type_decl(COut *b, Node *n) {
+void emit_type_decl(COut *b, Node *n, const char *src_file) {
   c_out_write(b, "/* Dream struct %.*s */\n", (int)n->as.type_decl.name.len,
               n->as.type_decl.name.start);
   c_out_write(b, "struct %.*s {", (int)n->as.type_decl.name.len,
@@ -72,13 +72,16 @@ void emit_type_decl(COut *b, Node *n) {
   for (size_t i = 0; i < n->as.type_decl.len; i++) {
     Node *m = n->as.type_decl.members[i];
     if (m->kind == ND_FUNC) {
-      emit_method(b, n->as.type_decl.name, m);
+      emit_method(b, n->as.type_decl.name, m, src_file);
     }
   }
   c_out_newline(b);
 }
 
-static void emit_func_impl(COut *b, Slice prefix, Node *n) {
+static void emit_func_impl(COut *b, Slice prefix, Node *n,
+                           const char *src_file) {
+  if (n->pos.line)
+    c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
   c_out_write(b, "/* Dream function %.*s */\n", (int)n->as.func.name.len,
               n->as.func.name.start);
   if (prefix.len)
@@ -104,25 +107,28 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n) {
     cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
                p->as.var_decl.type,
                p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
-                                                : (Slice){NULL, 0});
+                                               : (Slice){NULL, 0});
   }
-  cg_emit_stmt(&ctx, b, n->as.func.body);
+  cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
   cgctx_scope_leave(&ctx);
   free(ctx.vars);
   c_out_newline(b);
 }
 
-void emit_func(COut *b, Node *n) { emit_func_impl(b, (Slice){NULL, 0}, n); }
+void emit_func(COut *b, Node *n, const char *src_file) {
+  emit_func_impl(b, (Slice){NULL, 0}, n, src_file);
+}
 
-void emit_method(COut *b, Slice class_name, Node *n) {
+void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
   // implicit this parameter
   // copy params with extra first param
   c_out_write(b, "/* Dream method %.*s.%.*s */\n", (int)class_name.len,
-              class_name.start, (int)n->as.func.name.len, n->as.func.name.start);
+              class_name.start, (int)n->as.func.name.len,
+              n->as.func.name.start);
   c_out_write(b, "static %s %.*s_%.*s(struct %.*s *this",
-              type_to_c(n->as.func.ret_type), (int)class_name.len, class_name.start,
-              (int)n->as.func.name.len, n->as.func.name.start, (int)class_name.len,
-              class_name.start);
+              type_to_c(n->as.func.ret_type), (int)class_name.len,
+              class_name.start, (int)n->as.func.name.len, n->as.func.name.start,
+              (int)class_name.len, class_name.start);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
     c_out_write(b, ", %s %.*s", type_to_c(p->as.var_decl.type),
@@ -138,15 +144,15 @@ void emit_method(COut *b, Slice class_name, Node *n) {
     cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
                p->as.var_decl.type,
                p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
-                                                : (Slice){NULL, 0});
+                                               : (Slice){NULL, 0});
   }
-  cg_emit_stmt(&ctx, b, n->as.func.body);
+  cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
   cgctx_scope_leave(&ctx);
   free(ctx.vars);
   c_out_newline(b);
 }
 
-void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
+void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   switch (n->kind) {
   case ND_VAR_DECL:
     if (n->as.var_decl.array_len > 0) {
@@ -169,32 +175,32 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     cgctx_push(ctx, n->as.var_decl.name.start, n->as.var_decl.name.len,
                n->as.var_decl.type,
                n->as.var_decl.type == TK_IDENT ? n->as.var_decl.type_name
-                                                : (Slice){NULL, 0});
+                                               : (Slice){NULL, 0});
     c_out_write(b, ";");
     c_out_newline(b);
     break;
   case ND_FUNC:
-    emit_func(b, n);
+    emit_func(b, n, src_file);
     break;
   case ND_IF:
     c_out_write(b, "if (");
     cg_emit_expr(ctx, b, n->as.if_stmt.cond);
     c_out_write(b, ") ");
-    cg_emit_stmt(ctx, b, n->as.if_stmt.then_br);
+    cg_emit_stmt(ctx, b, n->as.if_stmt.then_br, src_file);
     if (n->as.if_stmt.else_br) {
       c_out_write(b, " else ");
-      cg_emit_stmt(ctx, b, n->as.if_stmt.else_br);
+      cg_emit_stmt(ctx, b, n->as.if_stmt.else_br, src_file);
     }
     break;
   case ND_WHILE:
     c_out_write(b, "while (");
     cg_emit_expr(ctx, b, n->as.while_stmt.cond);
     c_out_write(b, ") ");
-    cg_emit_stmt(ctx, b, n->as.while_stmt.body);
+    cg_emit_stmt(ctx, b, n->as.while_stmt.body, src_file);
     break;
   case ND_DO_WHILE:
     c_out_write(b, "do ");
-    cg_emit_stmt(ctx, b, n->as.do_while_stmt.body);
+    cg_emit_stmt(ctx, b, n->as.do_while_stmt.body, src_file);
     c_out_write(b, " while (");
     cg_emit_expr(ctx, b, n->as.do_while_stmt.cond);
     c_out_write(b, ");");
@@ -237,7 +243,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     if (n->as.for_stmt.update)
       cg_emit_expr(ctx, b, n->as.for_stmt.update);
     c_out_write(b, ") ");
-    cg_emit_stmt(ctx, b, n->as.for_stmt.body);
+    cg_emit_stmt(ctx, b, n->as.for_stmt.body, src_file);
     break;
   case ND_SWITCH:
     c_out_write(b, "switch (");
@@ -255,7 +261,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
         c_out_write(b, ":");
       }
       c_out_newline(b);
-      cg_emit_stmt(ctx, b, sc->body);
+      cg_emit_stmt(ctx, b, sc->body, src_file);
     }
     c_out_dedent(b);
     c_out_write(b, "}");
@@ -295,7 +301,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     c_out_indent(b);
     cgctx_scope_enter(ctx);
     for (size_t i = 0; i < n->as.block.len; i++)
-      cg_emit_stmt(ctx, b, n->as.block.items[i]);
+      cg_emit_stmt(ctx, b, n->as.block.items[i], src_file);
     cgctx_scope_leave(ctx);
     c_out_dedent(b);
     c_out_write(b, "}");
@@ -355,18 +361,18 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     c_out_write(b, "dream_jmp_top++;\n");
     c_out_write(b, "if (!setjmp(dream_jmp_buf[dream_jmp_top])) {\n");
     c_out_indent(b);
-    cg_emit_stmt(ctx, b, n->as.try_stmt.body);
+    cg_emit_stmt(ctx, b, n->as.try_stmt.body, src_file);
     c_out_write(b, "dream_jmp_top--;\n");
     c_out_dedent(b);
     c_out_write(b, "} else {\n");
     c_out_indent(b);
     c_out_write(b, "dream_jmp_top--;\n");
     if (n->as.try_stmt.catch_body)
-      cg_emit_stmt(ctx, b, n->as.try_stmt.catch_body);
+      cg_emit_stmt(ctx, b, n->as.try_stmt.catch_body, src_file);
     c_out_dedent(b);
     c_out_write(b, "}\n");
     if (n->as.try_stmt.finally_body)
-      cg_emit_stmt(ctx, b, n->as.try_stmt.finally_body);
+      cg_emit_stmt(ctx, b, n->as.try_stmt.finally_body, src_file);
     c_out_dedent(b);
     c_out_write(b, "}");
     c_out_newline(b);
