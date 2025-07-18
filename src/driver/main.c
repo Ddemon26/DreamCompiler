@@ -121,8 +121,16 @@ int main(int argc, char *argv[]) {
     if (!cc)
       cc = "zig cc";
     char cmd[256];
-    snprintf(cmd, sizeof(cmd), "%s build/bin/dream.c -o dream", cc);
+    snprintf(cmd, sizeof(cmd), "%s -c runtime/console.c -o build/console.o", cc);
     int res = system(cmd);
+    if (res != 0)
+      fprintf(stderr, "failed to run: %s\n", cmd);
+    snprintf(cmd, sizeof(cmd), "ar rcs build/libdruntime.a build/console.o");
+    res = system(cmd);
+    if (res != 0)
+      fprintf(stderr, "failed to run: %s\n", cmd);
+    snprintf(cmd, sizeof(cmd), "%s -Iruntime build/bin/dream.c -Lbuild -ldruntime -o dream", cc);
+    res = system(cmd);
     if (res != 0)
       fprintf(stderr, "failed to run: %s\n", cmd);
   } else if (emit_obj) {

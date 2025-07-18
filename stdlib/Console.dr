@@ -1,0 +1,11 @@
+// stdlib/Console.dr
+package stdlib;
+
+public class Console {
+  // Marked as external: implementations provided by the C runtime
+  @extern("dr_console_write")
+  public static extern void write(String s);
+
+  @extern("dr_console_writeln")
+  public static extern void writeln(String s);
+}
