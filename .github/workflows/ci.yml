@@ -27,6 +27,9 @@ jobs:
           choco install -y make mingw re2c
       - name: Build
         run: zig build
+      - name: Cross-compile Windows binary
+        if: runner.os == 'Linux'
+        run: zig build -Dtarget=x86_64-windows-gnu
       - name: Run tests
         run: python codex/python/test_runner
         shell: bash
