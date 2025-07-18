@@ -125,10 +125,8 @@ int main(int argc, char *argv[]) {
   int nvars = 0;
   CFG *cfg = ir_lower_program(root, &nvars);
   cfg_compute_dominators(cfg);
-  ssa_place_phi(cfg, nvars);
-  ssa_rename(cfg, nvars);
-  if (ssa_verify(cfg))
-    run_pipeline(cfg, opt1);
+  /* SSA construction disabled for now while control-flow lowering evolves */
+  (void)opt1;
   cfg_free(cfg);
 
   if (emit_c) {
@@ -145,17 +143,19 @@ int main(int argc, char *argv[]) {
     if (!cc)
       cc = "zig cc";
     char cmd[256];
-    snprintf(cmd, sizeof(cmd), "%s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"",
-             cc, DR_PATH_SEP, DR_PATH_SEP);
+    snprintf(cmd, sizeof(cmd),
+             "%s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"", cc,
+             DR_PATH_SEP, DR_PATH_SEP);
     int res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
       return 1;
     }
 #ifdef _WIN32
-    snprintf(cmd, sizeof(cmd),
-             "%s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" -o \"%s\"",
-             cc, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+    snprintf(
+        cmd, sizeof(cmd),
+        "%s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" -o \"%s\"",
+        cc, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
@@ -169,9 +169,10 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "failed to run: %s\n", cmd);
       return 1;
     }
-    snprintf(cmd, sizeof(cmd),
-             "%s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
-             cc, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+    snprintf(
+        cmd, sizeof(cmd),
+        "%s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"", cc,
+        DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
