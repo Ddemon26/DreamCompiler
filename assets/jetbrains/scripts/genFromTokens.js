@@ -47,14 +47,31 @@ const opRegex = operatorNames
   .join('|');
 
 const tokens = [
-  { name: 'keyword', regex: `\\b(${kwRegex})\\b`, scope: 'keyword.control' },
+  {
+    name: 'keyword',
+    regex: `\\b(${kwRegex})\\b`,
+    // JFlex lacks Java's word boundary token, so we emulate it using a trailing
+    // negative lookahead. Preceding characters are handled by rule ordering.
+    flex: `(${kwRegex})(?![A-Za-z0-9_])`,
+    scope: 'keyword.control',
+  },
   // JFlex does not support non-capturing groups, so use a normal group instead
-  { name: 'number', regex: `\\b(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})\\b`, scope: 'constant.numeric' },
+  {
+    name: 'number',
+    regex: `\\b(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})\\b`,
+    flex: `(${defs.FLOAT_LITERAL}|${defs.INT_LITERAL})(?![A-Za-z0-9_])`,
+    scope: 'constant.numeric',
+  },
   { name: 'string', regex: defs.STRING_LITERAL, scope: 'string.quoted.double' },
   { name: 'commentDoc', regex: '/\\*\\*[^]*?\\*/|///.*', scope: 'comment.block.documentation' },
   { name: 'comment', regex: '//.*', scope: 'comment.line.double-slash' },
   { name: 'commentBlock', regex: '/\\*[\\s\\S]*?\\*/', scope: 'comment.block' },
-  { name: 'identifier', regex: `\\b${defs.IDENT}\\b`, scope: 'variable.other' },
+  {
+    name: 'identifier',
+    regex: `\\b${defs.IDENT}\\b`,
+    flex: `${defs.IDENT}(?![A-Za-z0-9_])`,
+    scope: 'variable.other',
+  },
   { name: 'operator', regex: opRegex, scope: 'keyword.operator' },
   { name: 'semicolon', regex: defs.SEMICOLON, scope: 'punctuation.terminator.statement' },
   { name: 'comma', regex: defs.COMMA, scope: 'punctuation.separator.comma' },
@@ -84,11 +101,12 @@ function escapeFlex(re){
     .replace(/\*\//g, '\\*\\/');
 }
 for(const t of tokens){
-  let pattern = escapeFlex(t.regex);
+  const raw = t.flex || t.regex;
+  let pattern = escapeFlex(raw);
   if (t.name === 'operator') {
     const ops = operatorNames.map(n => escapeFlex(defs[n]));
     pattern = ops.map(op => `"${op}"`).join('|');
-  } else if (t.regex.startsWith('\/\\*')) {
+  } else if (raw.startsWith('/\\*')) {
     pattern = `"${pattern}"`;
   }
   flex += `  ${pattern} { return DreamTokenTypes.${t.name.toUpperCase()}; }\n`;
