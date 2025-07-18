@@ -47,4 +47,12 @@ struct IRInstr {
  */
 IRInstr *ir_instr_new(IROp op, IRValue dst, IRValue a, IRValue b);
 
+static inline IRValue ir_const(int v) {
+    IRValue r; r.id = -v - 1; return r;
+}
+
+static inline int ir_is_const(IRValue v) { return v.id < 0; }
+
+static inline int ir_const_value(IRValue v) { return -v.id - 1; }
+
 #endif

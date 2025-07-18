@@ -8,6 +8,7 @@ TEST_DIR = ROOT / 'tests'
 def run_test(path: Path) -> bool:
     text = path.read_text()
     matches = re.findall(r"//\s*Expected:\s*(.*)", text)
+    opts = re.findall(r"//\s*Options:\s*(.*)", text)
     if not matches:
         print(f"[SKIP] {path}")
         return True
@@ -18,7 +19,11 @@ def run_test(path: Path) -> bool:
             continue
         parts.append(m)
     expected = "\n".join(parts)
-    res = subprocess.run(['zig', 'build', 'run', '--', str(path)], capture_output=True, text=True, cwd=ROOT)
+    args = ['zig', 'build', 'run', '--']
+    if opts:
+        args.extend(opts[0].split())
+    args.append(str(path))
+    res = subprocess.run(args, capture_output=True, text=True, cwd=ROOT)
     if res.returncode != 0:
         sys.stdout.write(res.stdout)
         sys.stderr.write(res.stderr)
