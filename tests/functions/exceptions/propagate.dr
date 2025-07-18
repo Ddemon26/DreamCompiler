@@ -1,0 +1,9 @@
+func foo() {
+    throw "x";
+}
+
+try {
+    foo();
+} catch {
+    Console.WriteLine("caught"); // Expected: caught
+}

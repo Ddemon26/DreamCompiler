@@ -281,15 +281,18 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n) {
     c_out_newline(b);
     c_out_indent(b);
     c_out_write(b, "dream_jmp_top++;\n");
-    c_out_write(b, "if (!setjmp(dream_jmp_buf[dream_jmp_top])) ");
+    c_out_write(b, "if (!setjmp(dream_jmp_buf[dream_jmp_top])) {\n");
+    c_out_indent(b);
     cg_emit_stmt(ctx, b, n->as.try_stmt.body);
-    if (n->as.try_stmt.catch_body) {
-      c_out_write(b, " else ");
-      cg_emit_stmt(ctx, b, n->as.try_stmt.catch_body);
-    } else {
-      c_out_newline(b);
-    }
     c_out_write(b, "dream_jmp_top--;\n");
+    c_out_dedent(b);
+    c_out_write(b, "} else {\n");
+    c_out_indent(b);
+    c_out_write(b, "dream_jmp_top--;\n");
+    if (n->as.try_stmt.catch_body)
+      cg_emit_stmt(ctx, b, n->as.try_stmt.catch_body);
+    c_out_dedent(b);
+    c_out_write(b, "}\n");
     if (n->as.try_stmt.finally_body)
       cg_emit_stmt(ctx, b, n->as.try_stmt.finally_body);
     c_out_dedent(b);

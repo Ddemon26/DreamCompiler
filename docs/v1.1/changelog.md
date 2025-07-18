@@ -51,3 +51,10 @@ Version 1.1.04 (2025-07-19)
 - Added `src/util/platform.h` and updated code to use it.
 - CI now builds and tests on Windows.
 - Updated Windows setup scripts to rely on MinGW's bundled gdb.
+
+Version 1.1.05 (2025-07-20)
+- Exception handling moved to a shared runtime library.
+- `catch` is now a fully supported keyword and removed from the
+  future-reserved list in the grammar.
+- Added tests covering nested try/catch blocks and propagation
+  across function calls.

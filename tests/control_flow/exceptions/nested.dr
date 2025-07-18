@@ -1,0 +1,10 @@
+try {
+    try {
+        throw "a";
+    } catch {
+        Console.WriteLine("inner"); // Expected: inner
+        throw "b";
+    }
+} catch {
+    Console.WriteLine("outer"); // Expected: outer
+}
