@@ -94,8 +94,8 @@ PredefinedType      ::= "int" | "bool" | "string" | "float" | "char"            
 #### 2.3.1 Class and Struct
 
 ```ebnf
-ClassDeclaration    ::= "class" Identifier "{" { ClassMemberDeclaration } "}"         // Partial (parsed; fields & funcs code‑gen)
-StructDeclaration   ::= "struct" Identifier "{" { ClassMemberDeclaration } "}"        // Partial
+ClassDeclaration    ::= "class" Identifier "{" { ClassMemberDeclaration } "}"         // Implemented
+StructDeclaration   ::= "struct" Identifier "{" { ClassMemberDeclaration } "}"        // Implemented
 ClassMemberDeclaration ::= FunctionDeclaration | VariableDeclaration | ";"            // Implemented
 ```
 

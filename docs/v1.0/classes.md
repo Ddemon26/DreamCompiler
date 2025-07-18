@@ -1,9 +1,9 @@
 # Classes in Dream
 
-Dream now supports simple class definitions to group related variables.
-A class declares a name and a list of fields. Only variable declarations
-are allowed inside the class body.
-The `struct` keyword is an alias for `class` and behaves the same way.
+Dream now supports simple class definitions with fields and methods.
+A class declares a name and a list of members. Methods are emitted as
+regular C functions taking a `this` pointer. The `struct` keyword remains
+an alias for `class`.
 
 ```
 class Person {
@@ -12,9 +12,9 @@ class Person {
 }
 ```
 
-Class definitions do not require a trailing semicolon. You can now declare
-variables of a class type to create objects. Field access uses the `.` operator.
-Methods are still unimplemented; classes are emitted as C `struct` types.
+Class definitions do not require a trailing semicolon. Variables of a class
+type are references (implemented as pointers), so `new` allocates storage.
+Field access still uses the `.` operator in Dream source.
 
 ```
 class Person {
@@ -22,7 +22,7 @@ class Person {
     string name;
 }
 
-Person p;
+Person p = new Person();
 p.age = 30;
 Console.WriteLine(p.age);
 ```

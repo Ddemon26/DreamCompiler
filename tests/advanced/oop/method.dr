@@ -1,0 +1,7 @@
+class Greeter {
+    func SayHi() {
+        Console.WriteLine(1);
+    }
+}
+Greeter g = new Greeter();
+g.SayHi(); // Expected: 1
