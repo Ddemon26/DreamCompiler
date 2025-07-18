@@ -1,4 +1,6 @@
-int a, b = 2, c;
+int a;
+int b = 2;
+int c;
 a = 1;
 c = a + b;
 Console.WriteLine(c); // Expected: 3
