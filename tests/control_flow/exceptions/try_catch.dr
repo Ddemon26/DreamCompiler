@@ -1,0 +1,8 @@
+try {
+    Console.WriteLine("A"); // Expected: A
+    throw "error";
+    Console.WriteLine("B");
+} catch {
+    Console.WriteLine("C"); // Expected: C
+}
+Console.WriteLine("D"); // Expected: D

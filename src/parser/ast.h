@@ -65,6 +65,8 @@ typedef enum {
   ND_NEW,
   ND_STRUCT_DECL,
   ND_CLASS_DECL,
+  ND_TRY,
+  ND_THROW,
   ND_ERROR
 } NodeKind;
 
@@ -210,6 +212,14 @@ struct Node {
       Node **members; /**< Array of member declarations. */
       size_t len;     /**< Number of members. */
     } type_decl;
+    struct {
+      Node *body;         /**< Body of the try block. */
+      Node *catch_body;   /**< Catch block (may be NULL). */
+      Node *finally_body; /**< Finally block (may be NULL). */
+    } try_stmt;
+    struct {
+      Node *expr; /**< Expression to throw (may be NULL). */
+    } throw_stmt;
   } as;
 };
 

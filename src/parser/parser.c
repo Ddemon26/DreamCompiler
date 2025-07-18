@@ -435,6 +435,40 @@ static Node *parse_return(Parser *p) {
   return n;
 }
 
+static Node *parse_throw(Parser *p) {
+  next(p); // consume 'throw'
+  Node *expr = NULL;
+  if (p->tok.kind != TK_SEMICOLON)
+    expr = parse_expr(p);
+  if (p->tok.kind == TK_SEMICOLON)
+    next(p);
+  else
+    diag_push(p, p->tok.pos, "expected ';'");
+  Node *n = node_new(p->arena, ND_THROW);
+  n->as.throw_stmt.expr = expr;
+  return n;
+}
+
+static Node *parse_try(Parser *p) {
+  next(p); // consume 'try'
+  Node *body = parse_stmt(p);
+  Node *catch_body = NULL;
+  Node *finally_body = NULL;
+  if (p->tok.kind == TK_KW_CATCH) {
+    next(p);
+    catch_body = parse_stmt(p);
+  }
+  if (p->tok.kind == TK_KW_FINALLY) {
+    next(p);
+    finally_body = parse_stmt(p);
+  }
+  Node *n = node_new(p->arena, ND_TRY);
+  n->as.try_stmt.body = body;
+  n->as.try_stmt.catch_body = catch_body;
+  n->as.try_stmt.finally_body = finally_body;
+  return n;
+}
+
 /**
  * @brief Parses a function definition.
  *
@@ -1040,6 +1074,12 @@ static Node *parse_stmt(Parser *p) {
   }
   if (p->tok.kind == TK_KW_RETURN) {
     return parse_return(p);
+  }
+  if (p->tok.kind == TK_KW_TRY) {
+    return parse_try(p);
+  }
+  if (p->tok.kind == TK_KW_THROW) {
+    return parse_throw(p);
   }
   if (p->tok.kind == TK_KW_CLASS) {
     return parse_type_decl(p, ND_CLASS_DECL);

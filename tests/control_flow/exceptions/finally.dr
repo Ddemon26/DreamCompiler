@@ -1,0 +1,6 @@
+int x = 0;
+try {
+    x = 1;
+} finally {
+    Console.WriteLine(x); // Expected: 1
+}
