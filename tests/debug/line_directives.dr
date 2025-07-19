@@ -1,0 +1,5 @@
+// Expected: 1
+int x = 1;
+if (x > 0) {
+    Console.WriteLine(x);
+}

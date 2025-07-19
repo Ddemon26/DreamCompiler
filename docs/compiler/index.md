@@ -10,4 +10,4 @@ Additional pages will be added here as the compiler grows.
 
 ## Debugging
 
-Starting with version 1.1.07, the generated C code contains `#line` directives mapping back to the original `.dr` source. Compiler errors and debugger breakpoints therefore reference Dream source lines, making troubleshooting easier.
+Starting with version 1.1.07, the generated C code contains `#line` directives mapping back to the original `.dr` source. As of 1.1.12 these directives are emitted before every statement and the C compiler is invoked with `-g`, so debuggers step through the original Dream source.

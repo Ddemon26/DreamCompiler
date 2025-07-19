@@ -76,17 +76,18 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
     src_buf[i] = src_file[i] == '\\' ? '/' : src_file[i];
   }
   src_buf[i] = 0;
-  c_out_write(&builder, "#line 1 \"%s\"\n", src_buf);
+  const char *src_norm = src_buf;
+  c_out_write(&builder, "#line 1 \"%s\"\n", src_norm);
 
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_STRUCT_DECL || it->kind == ND_CLASS_DECL)
-      emit_type_decl(&builder, it, src_file);
+      emit_type_decl(&builder, it, src_norm);
   }
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_FUNC)
-      emit_func(&builder, it, src_file);
+      emit_func(&builder, it, src_norm);
   }
 
   Slice main_class = {NULL, 0};
@@ -124,7 +125,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
       for (size_t i = 0; i < root->as.block.len; i++) {
         Node *it = root->as.block.items[i];
         if (it->kind != ND_FUNC)
-          cg_emit_stmt(&ctx, &builder, it, src_file);
+          cg_emit_stmt(&ctx, &builder, it, src_norm);
       }
       cgctx_scope_leave(&ctx);
       free(ctx.vars);
@@ -172,7 +173,8 @@ void codegen_emit_obj(Node *root, const char *path, const char *src_file) {
   codegen_emit_c(root, f, src_file);
   fclose(f);
   char cmd[512];
-  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -c \"%s\" -o \"%s\"", tmp, path);
+  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -g -c \"%s\" -o \"%s\"", tmp,
+           path);
   int res = system(cmd);
   if (res != 0) {
     fprintf(stderr, "failed to run: %s\n", cmd);
