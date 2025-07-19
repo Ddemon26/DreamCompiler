@@ -85,3 +85,8 @@ Version 1.1.10 (2025-07-25)
 Version 1.1.11 (2025-08-01)
 - Introduced rudimentary reference counting for strings and class instances.
 - All allocations are tracked and freed on program exit.
+
+Version 1.1.12 (2025-08-05)
+- `#line` directives now appear before every statement for improved debugger
+  mapping.
+- Compiled binaries include debug symbols by passing `-g` to `zig cc`.

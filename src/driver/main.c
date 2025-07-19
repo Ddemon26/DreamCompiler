@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
     const char *optflag =
         opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
     snprintf(cmd, sizeof(cmd),
-             "%s %s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"", cc,
+             "%s -g %s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"", cc,
              optflag, DR_PATH_SEP, DR_PATH_SEP);
     int res = system(cmd);
     if (res != 0) {
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
     snprintf(cmd, sizeof(cmd),
-             "%s %s -c \"runtime%cmemory.c\" -o \"build%cmemory.o\"", cc,
+             "%s -g %s -c \"runtime%cmemory.c\" -o \"build%cmemory.o\"", cc,
              optflag, DR_PATH_SEP, DR_PATH_SEP);
     res = system(cmd);
     if (res != 0) {
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
     }
 #ifdef _WIN32
     snprintf(cmd, sizeof(cmd),
-             "%s %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" "
+             "%s -g %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" "
              "\"build%cmemory.o\" -o \"%s\"",
              cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP,
              DR_EXE_NAME);
@@ -195,10 +195,10 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "failed to run: %s\n", cmd);
       return 1;
     }
-    snprintf(
-        cmd, sizeof(cmd),
-        "%s %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
-        cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+    snprintf(cmd, sizeof(cmd),
+             "%s -g %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o "
+             "\"%s\"",
+             cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);

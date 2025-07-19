@@ -93,8 +93,7 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
   for (size_t i = 0; i < n->as.type_decl.len; i++) {
     Node *m = n->as.type_decl.members[i];
     if (m->kind == ND_VAR_DECL && m->as.var_decl.is_static) {
-      c_out_write(b, "%s %.*s_%.*s",
-                  type_to_c(m->as.var_decl.type),
+      c_out_write(b, "%s %.*s_%.*s", type_to_c(m->as.var_decl.type),
                   (int)n->as.type_decl.name.len, n->as.type_decl.name.start,
                   (int)m->as.var_decl.name.len, m->as.var_decl.name.start);
       if (m->as.var_decl.init) {
@@ -196,6 +195,11 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
 }
 
 void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
+  if (n->pos.line) {
+    if (!b->at_line_start)
+      c_out_newline(b);
+    c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
+  }
   switch (n->kind) {
   case ND_VAR_DECL:
     if (n->as.var_decl.array_len > 0) {

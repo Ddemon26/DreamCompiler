@@ -1098,54 +1098,43 @@ static bool typevec_contains(Parser *p, Token tok) {
  * @return Pointer to the parsed statement node.
  */
 static Node *parse_stmt(Parser *p) {
+  Pos start_pos = p->tok.pos;
+  Node *n = NULL;
   if (p->tok.kind == TK_KW_IF) {
-    return parse_if(p);
-  }
-  if (p->tok.kind == TK_KW_DO) {
-    return parse_do_while(p);
-  }
-  if (p->tok.kind == TK_KW_FOR) {
-    return parse_for(p);
-  }
-  if (p->tok.kind == TK_KW_SWITCH) {
-    return parse_switch(p);
-  }
-  if (p->tok.kind == TK_KW_WHILE) {
-    return parse_while(p);
-  }
-  if (p->tok.kind == TK_KW_BREAK) {
-    return parse_break(p);
-  }
-  if (p->tok.kind == TK_KW_CONTINUE) {
-    return parse_continue(p);
-  }
-  if (p->tok.kind == TK_KW_RETURN) {
-    return parse_return(p);
-  }
-  if (p->tok.kind == TK_KW_TRY) {
-    return parse_try(p);
-  }
-  if (p->tok.kind == TK_KW_THROW) {
-    return parse_throw(p);
-  }
-  if (p->tok.kind == TK_KW_CLASS) {
-    return parse_type_decl(p, ND_CLASS_DECL);
-  }
-  if (p->tok.kind == TK_KW_STRUCT) {
-    return parse_type_decl(p, ND_STRUCT_DECL);
-  }
-  if (p->tok.kind == TK_KW_FUNC) {
-    return parse_func(p);
-  }
-  if (is_type_token(p->tok.kind)) {
-    return parse_var_decl(p);
+    n = parse_if(p);
+  } else if (p->tok.kind == TK_KW_DO) {
+    n = parse_do_while(p);
+  } else if (p->tok.kind == TK_KW_FOR) {
+    n = parse_for(p);
+  } else if (p->tok.kind == TK_KW_SWITCH) {
+    n = parse_switch(p);
+  } else if (p->tok.kind == TK_KW_WHILE) {
+    n = parse_while(p);
+  } else if (p->tok.kind == TK_KW_BREAK) {
+    n = parse_break(p);
+  } else if (p->tok.kind == TK_KW_CONTINUE) {
+    n = parse_continue(p);
+  } else if (p->tok.kind == TK_KW_RETURN) {
+    n = parse_return(p);
+  } else if (p->tok.kind == TK_KW_TRY) {
+    n = parse_try(p);
+  } else if (p->tok.kind == TK_KW_THROW) {
+    n = parse_throw(p);
+  } else if (p->tok.kind == TK_KW_CLASS) {
+    n = parse_type_decl(p, ND_CLASS_DECL);
+  } else if (p->tok.kind == TK_KW_STRUCT) {
+    n = parse_type_decl(p, ND_STRUCT_DECL);
+  } else if (p->tok.kind == TK_KW_FUNC) {
+    n = parse_func(p);
+  } else if (is_type_token(p->tok.kind)) {
+    n = parse_var_decl(p);
   }
   if (p->tok.kind == TK_IDENT && typevec_contains(p, p->tok)) {
     Token la = lexer_peek(&p->lx);
     if (la.kind == TK_IDENT)
-      return parse_var_decl(p);
+      n = parse_var_decl(p);
   }
-  if (p->tok.kind == TK_LBRACE) {
+  if (!n && p->tok.kind == TK_LBRACE) {
     next(p);
     Node **items = NULL;
     size_t len = 0, cap = 0;
@@ -1160,16 +1149,20 @@ static Node *parse_stmt(Parser *p) {
     Node *blk = node_new(p->arena, ND_BLOCK);
     blk->as.block.items = items;
     blk->as.block.len = len;
-    return blk;
+    n = blk;
   }
-  Node *expr = parse_expr(p);
-  if (p->tok.kind == TK_SEMICOLON)
-    next(p);
-  else
-    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
-  Node *st = node_new(p->arena, ND_EXPR_STMT);
-  st->as.expr_stmt.expr = expr;
-  return st;
+  if (!n) {
+    Node *expr = parse_expr(p);
+    if (p->tok.kind == TK_SEMICOLON)
+      next(p);
+    else
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
+    Node *st = node_new(p->arena, ND_EXPR_STMT);
+    st->as.expr_stmt.expr = expr;
+    n = st;
+  }
+  n->pos = start_pos;
+  return n;
 }
 
 /**
