@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 
 #ifdef _WIN32
 #define DR_EXE_NAME "dream.exe"
@@ -157,47 +158,74 @@ int main(int argc, char *argv[]) {
     if (!cc)
       cc = "zig cc";
     char cmd[256];
+    int res;
     const char *optflag =
         opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
-    snprintf(cmd, sizeof(cmd),
-             "%s -g %s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"", cc,
-             optflag, DR_PATH_SEP, DR_PATH_SEP);
-    int res = system(cmd);
-    if (res != 0) {
-      fprintf(stderr, "failed to run: %s\n", cmd);
+
+    DIR *rt = opendir("runtime");
+    if (!rt) {
+      perror("opendir runtime");
       return 1;
     }
-    snprintf(cmd, sizeof(cmd),
-             "%s -g %s -c \"runtime%cmemory.c\" -o \"build%cmemory.o\"", cc,
-             optflag, DR_PATH_SEP, DR_PATH_SEP);
-    res = system(cmd);
-    if (res != 0) {
-      fprintf(stderr, "failed to run: %s\n", cmd);
-      return 1;
+
+    char objs[16][64];
+    size_t obj_count = 0;
+    struct dirent *ent;
+    while ((ent = readdir(rt))) {
+      size_t len = strlen(ent->d_name);
+      if (len > 2 && strcmp(ent->d_name + len - 2, ".c") == 0) {
+        char obj[64];
+        snprintf(obj, sizeof(obj), "%.*s.o", (int)len - 2, ent->d_name);
+        snprintf(cmd, sizeof(cmd),
+                 "%s -g %s -c \"runtime%c%s\" -o \"build%c%s\"",
+                 cc, optflag, DR_PATH_SEP, ent->d_name, DR_PATH_SEP, obj);
+        res = system(cmd);
+        if (res != 0) {
+          fprintf(stderr, "failed to run: %s\n", cmd);
+          closedir(rt);
+          return 1;
+        }
+        strncpy(objs[obj_count++], obj, sizeof(objs[0]) - 1);
+      }
     }
+    closedir(rt);
+
 #ifdef _WIN32
-    snprintf(cmd, sizeof(cmd),
-             "%s -g %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" "
-             "\"build%cmemory.o\" -o \"%s\"",
-             cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP,
-             DR_EXE_NAME);
-    res = system(cmd);
+    char link_cmd[512];
+    snprintf(link_cmd, sizeof(link_cmd),
+             "%s -g %s -Iruntime \"build%cbin%cdream.c\"",
+             cc, optflag, DR_PATH_SEP, DR_PATH_SEP);
+    for (size_t i = 0; i < obj_count; i++) {
+      strncat(link_cmd, " \"build", sizeof(link_cmd) - strlen(link_cmd) - 1);
+      char sep[2] = {DR_PATH_SEP, 0};
+      strncat(link_cmd, sep, sizeof(link_cmd) - strlen(link_cmd) - 1);
+      strncat(link_cmd, objs[i], sizeof(link_cmd) - strlen(link_cmd) - 1);
+      strncat(link_cmd, "\"", sizeof(link_cmd) - strlen(link_cmd) - 1);
+    }
+    strncat(link_cmd, " -o \"" DR_EXE_NAME "\"", sizeof(link_cmd) - strlen(link_cmd) - 1);
+    res = system(link_cmd);
     if (res != 0) {
-      fprintf(stderr, "failed to run: %s\n", cmd);
+      fprintf(stderr, "failed to run: %s\n", link_cmd);
       return 1;
     }
 #else
-    snprintf(cmd, sizeof(cmd),
-             "ar rcs build%clibdruntime.a build%cconsole.o build%cmemory.o",
-             DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP);
-    res = system(cmd);
+    char archive_cmd[512] = "ar rcs build";
+    size_t pos = strlen(archive_cmd);
+    archive_cmd[pos++] = DR_PATH_SEP;
+    strcpy(archive_cmd + pos, "libdruntime.a");
+    for (size_t i = 0; i < obj_count; i++) {
+      strncat(archive_cmd, " build", sizeof(archive_cmd) - strlen(archive_cmd) - 1);
+      char sep[2] = {DR_PATH_SEP, 0};
+      strncat(archive_cmd, sep, sizeof(archive_cmd) - strlen(archive_cmd) - 1);
+      strncat(archive_cmd, objs[i], sizeof(archive_cmd) - strlen(archive_cmd) - 1);
+    }
+    res = system(archive_cmd);
     if (res != 0) {
-      fprintf(stderr, "failed to run: %s\n", cmd);
+      fprintf(stderr, "failed to run: %s\n", archive_cmd);
       return 1;
     }
     snprintf(cmd, sizeof(cmd),
-             "%s -g %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o "
-             "\"%s\"",
+             "%s -g %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
              cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {

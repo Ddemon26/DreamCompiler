@@ -109,6 +109,14 @@ else
     echo -e "${RED}✗ Test 6 FAILED: Could not generate C code${NC}"
 fi
 
+# Test 7: Custom runtime library detection
+echo -e "\n${YELLOW}Test 7: Custom Runtime Library${NC}"
+if [ -f "build/custom.o" ] || ( [ -f "build/libdruntime.a" ] && ar t build/libdruntime.a | grep -q custom.o ); then
+    echo -e "${GREEN}✓ Test 7 PASSED: custom runtime library compiled${NC}"
+else
+    echo -e "${RED}✗ Test 7 FAILED: custom runtime object missing${NC}"
+fi
+
 # Cleanup temporary files
 rm -f tests/temp_test*.dr
 
