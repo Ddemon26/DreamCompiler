@@ -39,16 +39,21 @@
                 
                 <li class="category"><span>Language Reference</span>
                     <ul>
+                        <li><a href="#" data-md="language-reference.md" class="nav-overview">Complete Reference</a></li>
+                        
                         <li class="subcategory"><span>Type System</span>
                             <ul>
+                                <li><a href="#" data-md="type-system.md">Type System Overview</a></li>
                                 <li><a href="#" data-md="variables.md">Variables & Types</a></li>
                                 <li><a href="#" data-md="arrays.md">Arrays</a></li>
                                 <li><a href="#" data-md="strings.md">Strings</a></li>
                                 <li><a href="#" data-md="classes.md">Classes & Structs</a></li>
                             </ul>
                         </li>
+                        
                         <li class="subcategory"><span>Operators</span>
                             <ul>
+                                <li><a href="#" data-md="operators.md">Operators Overview</a></li>
                                 <li><a href="#" data-md="arithmetic.md">Arithmetic</a></li>
                                 <li><a href="#" data-md="comparison.md">Comparison</a></li>
                                 <li><a href="#" data-md="logical.md">Logical</a></li>
@@ -56,21 +61,26 @@
                                 <li><a href="#" data-md="conditional.md">Conditional</a></li>
                             </ul>
                         </li>
+                        
                         <li class="subcategory"><span>Control Flow</span>
                             <ul>
+                                <li><a href="#" data-md="control-flow.md">Control Flow Overview</a></li>
                                 <li><a href="#" data-md="if.md">If Statements</a></li>
                                 <li><a href="#" data-md="loops.md">Loops</a></li>
                                 <li><a href="#" data-md="switch.md">Switch Statements</a></li>
                                 <li><a href="#" data-md="exceptions.md">Exception Handling</a></li>
                             </ul>
                         </li>
+                        
                         <li class="subcategory"><span>Functions</span>
                             <ul>
+                                <li><a href="#" data-md="functions-overview.md">Functions Overview</a></li>
                                 <li><a href="#" data-md="functions.md">Function Definitions</a></li>
                                 <li><a href="#" data-md="return.md">Return Values</a></li>
                                 <li><a href="#" data-md="parameters.md">Parameters</a></li>
                             </ul>
                         </li>
+                        
                         <li class="subcategory"><span>I/O & Console</span>
                             <ul>
                                 <li><a href="#" data-md="console.md">Console Operations</a></li>
@@ -176,10 +186,17 @@
             // Files that should use version-specific paths
             const versionedFiles = [
                 'variables.md', 'arrays.md', 'strings.md', 'classes.md',
-                'arithmetic.md', 'comparison.md', 'logical.md', 'conditional.md',
+                'arithmetic.md', 'comparison.md', 'logical.md', 'conditional.md', 'bitwise.md',
                 'if.md', 'loops.md', 'switch.md', 'return.md',
                 'functions.md', 'console.md', 'comments.md',
                 'changelog.md', 'architecture.md', 'parentheses.md'
+            ];
+            
+            // Version-independent index pages
+            const indexFiles = [
+                'language-reference.md', 'type-system.md', 'operators.md', 
+                'control-flow.md', 'functions-overview.md', 'modules.md',
+                'exceptions.md', 'memory.md', 'interop.md'
             ];
             
             // Check if this file should use version-specific path
