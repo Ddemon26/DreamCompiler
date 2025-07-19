@@ -338,18 +338,27 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_write(b, "dream_throw();");
     c_out_newline(b);
     break;
-  case ND_BLOCK:
+  case ND_BLOCK: {
     c_out_write(b, "{");
     c_out_newline(b);
     c_out_indent(b);
+    size_t block_start = ctx->len;
     cgctx_scope_enter(ctx);
     for (size_t i = 0; i < n->as.block.len; i++)
       cg_emit_stmt(ctx, b, n->as.block.items[i], src_file);
+    for (size_t i = ctx->len; i-- > block_start;) {
+      VarBinding *v = &ctx->vars[i];
+      if (v->type == TK_KW_STRING ||
+          (v->type == TK_IDENT && cg_is_class_type(v->type_name))) {
+        c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
+      }
+    }
     cgctx_scope_leave(ctx);
     c_out_dedent(b);
     c_out_write(b, "}");
     c_out_newline(b);
     break;
+  }
   case ND_EXPR_STMT:
     if (n->as.expr_stmt.expr->kind == ND_CONSOLE_CALL) {
       Node *call = n->as.expr_stmt.expr;

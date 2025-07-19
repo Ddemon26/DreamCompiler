@@ -1,0 +1,7 @@
+// Expected: done
+class Foo {
+    int x;
+}
+Foo f = new Foo();
+string s = "hi" + " there";
+Console.WriteLine("done");

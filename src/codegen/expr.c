@@ -265,7 +265,7 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     break;
   case ND_NEW:
     if (cg_is_class_type(n->as.new_expr.type_name)) {
-      c_out_write(b, "({struct %.*s *tmp = calloc(1,sizeof(struct %.*s));",
+      c_out_write(b, "({struct %.*s *tmp = dr_alloc(sizeof(struct %.*s));",
                   (int)n->as.new_expr.type_name.len,
                   n->as.new_expr.type_name.start,
                   (int)n->as.new_expr.type_name.len,
