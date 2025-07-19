@@ -22,10 +22,10 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include <stdlib.h>\n");
   c_out_write(&builder, "#include <setjmp.h>\n");
 
-  // Include runtime headers  
-  c_out_write(&builder, "#include \"../../src/runtime/console.h\"\n");
-  c_out_write(&builder, "#include \"../../src/runtime/custom.h\"\n");
-  c_out_write(&builder, "#include \"../../src/runtime/memory.h\"\n");
+  // Include runtime headers from build/libs for distribution
+  c_out_write(&builder, "#include \"../libs/console.h\"\n");
+  c_out_write(&builder, "#include \"../libs/custom.h\"\n");
+  c_out_write(&builder, "#include \"../libs/memory.h\"\n");
   c_out_newline(&builder);
 
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");

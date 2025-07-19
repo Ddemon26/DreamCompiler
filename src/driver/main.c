@@ -147,6 +147,32 @@ int main(int argc, char *argv[]) {
   if (emit_c) {
     dr_mkdir("build");
     dr_mkdir("build/bin");
+    dr_mkdir("build/libs");
+    
+    // Copy runtime headers to build/libs for distribution
+    const char *headers[] = {"console.h", "memory.h", "custom.h"};
+    for (size_t i = 0; i < sizeof(headers)/sizeof(headers[0]); i++) {
+      char src_path[256], dst_path[256];
+      snprintf(src_path, sizeof(src_path), "src%cruntime%c%s", DR_PATH_SEP, DR_PATH_SEP, headers[i]);
+      snprintf(dst_path, sizeof(dst_path), "build%clibs%c%s", DR_PATH_SEP, DR_PATH_SEP, headers[i]);
+      
+      FILE *src = fopen(src_path, "r");
+      FILE *dst = fopen(dst_path, "w");
+      if (src && dst) {
+        char buffer[4096];
+        size_t bytes;
+        while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+          fwrite(buffer, 1, bytes, dst);
+        }
+        fclose(src);
+        fclose(dst);
+      } else {
+        if (src) fclose(src);
+        if (dst) fclose(dst);
+        fprintf(stderr, "Failed to copy header %s\n", headers[i]);
+      }
+    }
+    
     FILE *out = fopen("build/bin/dream.c", "w");
     if (!out) {
       perror("fopen");
@@ -156,7 +182,7 @@ int main(int argc, char *argv[]) {
     fclose(out);
     const char *cc = getenv("CC");
     if (!cc)
-      cc = "zig cc";
+      cc = "gcc";
     char cmd[256];
     int res;
     const char *optflag =
@@ -177,8 +203,8 @@ int main(int argc, char *argv[]) {
         char obj[64];
         snprintf(obj, sizeof(obj), "%.*s.o", (int)len - 2, ent->d_name);
         snprintf(cmd, sizeof(cmd),
-                 "%s -g %s -c \"src%cruntime%c%s\" -o \"build%c%s\"",
-                 cc, optflag, DR_PATH_SEP, DR_PATH_SEP, ent->d_name, DR_PATH_SEP, obj);
+                 "%s -g %s -c \"src%cruntime%c%s\" -o \"build%clibs%c%s\"",
+                 cc, optflag, DR_PATH_SEP, DR_PATH_SEP, ent->d_name, DR_PATH_SEP, DR_PATH_SEP, obj);
         res = system(cmd);
         if (res != 0) {
           fprintf(stderr, "failed to run: %s\n", cmd);
@@ -199,6 +225,8 @@ int main(int argc, char *argv[]) {
       strncat(link_cmd, " \"build", sizeof(link_cmd) - strlen(link_cmd) - 1);
       char sep[2] = {DR_PATH_SEP, 0};
       strncat(link_cmd, sep, sizeof(link_cmd) - strlen(link_cmd) - 1);
+      strncat(link_cmd, "libs", sizeof(link_cmd) - strlen(link_cmd) - 1);
+      strncat(link_cmd, sep, sizeof(link_cmd) - strlen(link_cmd) - 1);
       strncat(link_cmd, objs[i], sizeof(link_cmd) - strlen(link_cmd) - 1);
       strncat(link_cmd, "\"", sizeof(link_cmd) - strlen(link_cmd) - 1);
     }
@@ -216,6 +244,8 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < obj_count; i++) {
       strncat(archive_cmd, " build", sizeof(archive_cmd) - strlen(archive_cmd) - 1);
       char sep[2] = {DR_PATH_SEP, 0};
+      strncat(archive_cmd, sep, sizeof(archive_cmd) - strlen(archive_cmd) - 1);
+      strncat(archive_cmd, "libs", sizeof(archive_cmd) - strlen(archive_cmd) - 1);
       strncat(archive_cmd, sep, sizeof(archive_cmd) - strlen(archive_cmd) - 1);
       strncat(archive_cmd, objs[i], sizeof(archive_cmd) - strlen(archive_cmd) - 1);
     }
