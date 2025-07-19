@@ -20,8 +20,39 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include <string.h>\n");
   c_out_write(&builder, "#include <stdlib.h>\n");
   c_out_write(&builder, "#include <setjmp.h>\n");
-  c_out_write(&builder, "#include \"console.h\"\n");
-  c_out_write(&builder, "#include \"memory.h\"\n\n");
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <glob.h>
+#endif
+
+  /* Include all runtime headers so generated C has access to runtime API */
+#ifdef _WIN32
+  WIN32_FIND_DATAA hdr;
+  HANDLE h = FindFirstFileA("runtime\\*.h", &hdr);
+  if (h != INVALID_HANDLE_VALUE) {
+    do {
+      c_out_write(&builder, "#include \"");
+      c_out_write(&builder, hdr.cFileName);
+      c_out_write(&builder, "\"\n");
+    } while (FindNextFileA(h, &hdr));
+    FindClose(h);
+  }
+#else
+  glob_t g;
+  if (glob("runtime/*.h", 0, NULL, &g) == 0) {
+    for (size_t i = 0; i < g.gl_pathc; i++) {
+      const char *p = g.gl_pathv[i];
+      const char *base = strrchr(p, '/');
+      base = base ? base + 1 : p;
+      c_out_write(&builder, "#include \"");
+      c_out_write(&builder, base);
+      c_out_write(&builder, "\"\n");
+    }
+    globfree(&g);
+  }
+#endif
+  c_out_write(&builder, "\n");
 
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");
   c_out_write(&builder, "static int dream_jmp_top = -1;\n");

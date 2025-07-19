@@ -47,10 +47,17 @@ EOF
 
 # Compile to C only to check headers
 if c_output=$(./dream --emit-c tests/temp_test3.dr 2>&1) && [ $? -eq 0 ]; then
-    if grep -q '#include "console.h"' build/bin/dream.c && grep -q '#include "memory.h"' build/bin/dream.c; then
+    missing_hdrs=()
+    for h in runtime/*.h; do
+        base=$(basename "$h")
+        if ! grep -q "#include \"$base\"" build/bin/dream.c; then
+            missing_hdrs+=("$base")
+        fi
+    done
+    if [ ${#missing_hdrs[@]} -eq 0 ]; then
         echo -e "${GREEN}✓ Test 3 PASSED: Runtime headers properly included${NC}"
     else
-        echo -e "${RED}✗ Test 3 FAILED: Runtime headers missing from generated C${NC}"
+        echo -e "${RED}✗ Test 3 FAILED: Missing headers: ${missing_hdrs[*]}${NC}"
     fi
 else
     echo -e "${RED}✗ Test 3 FAILED: Could not generate C code: $c_output${NC}"
@@ -58,13 +65,17 @@ fi
 
 # Test 4: Verify runtime object files exist and are linked
 echo -e "\n${YELLOW}Test 4: Runtime Object Files${NC}"
-if [ -f "build/console.o" ] && [ -f "build/memory.o" ]; then
+missing_objs=()
+for src in runtime/*.c; do
+    base=$(basename "$src" .c)
+    if [ ! -f "build/$base.o" ] && [ ! -f "build/libdruntime.a" ]; then
+        missing_objs+=("$base.o")
+    fi
+done
+if [ ${#missing_objs[@]} -eq 0 ]; then
     echo -e "${GREEN}✓ Test 4 PASSED: Runtime object files exist${NC}"
-elif [ -f "build/libdruntime.a" ]; then
-    echo -e "${GREEN}✓ Test 4 PASSED: Runtime library archive exists${NC}"
 else
-    echo -e "${RED}✗ Test 4 FAILED: Runtime object files missing${NC}"
-    echo -e "${RED}  Expected: build/console.o and build/memory.o OR build/libdruntime.a${NC}"
+    echo -e "${RED}✗ Test 4 FAILED: Missing objects: ${missing_objs[*]}${NC}"
 fi
 
 # Test 5: Cross-platform compilation test
