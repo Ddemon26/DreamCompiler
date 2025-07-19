@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #ifdef _WIN32
 #include <io.h>
 #endif
@@ -20,8 +21,12 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include <string.h>\n");
   c_out_write(&builder, "#include <stdlib.h>\n");
   c_out_write(&builder, "#include <setjmp.h>\n");
-  c_out_write(&builder, "#include \"console.h\"\n");
-  c_out_write(&builder, "#include \"memory.h\"\n\n");
+
+  // Include runtime headers from build/libs for distribution
+  c_out_write(&builder, "#include \"../libs/console.h\"\n");
+  c_out_write(&builder, "#include \"../libs/custom.h\"\n");
+  c_out_write(&builder, "#include \"../libs/memory.h\"\n");
+  c_out_newline(&builder);
 
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");
   c_out_write(&builder, "static int dream_jmp_top = -1;\n");

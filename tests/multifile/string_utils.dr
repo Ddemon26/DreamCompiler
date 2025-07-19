@@ -1,0 +1,14 @@
+// String utility module
+module string_utils;
+
+export func int string_length(string s) {
+    // This would use a built-in strlen function
+    int len = 0;
+    // Placeholder implementation
+    return len;
+}
+
+export func string concat_strings(string a, string b) {
+    // This would use the dream_concat function
+    return a + b;
+}

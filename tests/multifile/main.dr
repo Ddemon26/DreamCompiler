@@ -1,0 +1,27 @@
+// Main program demonstrating multi-file imports
+import math_utils;
+import string_utils;
+
+int main() {
+    // Test math utilities
+    int result1 = math_utils.add(5, 3);
+    int result2 = math_utils.multiply(4, 6);
+    int result3 = math_utils.factorial(5);
+    
+    Console.WriteLine("5 + 3 = ");
+    Console.WriteLine(result1);
+    Console.WriteLine("4 * 6 = ");
+    Console.WriteLine(result2);
+    Console.WriteLine("5! = ");
+    Console.WriteLine(result3);
+    
+    // Test string utilities
+    string greeting = "Hello";
+    string target = "World";
+    string message = string_utils.concat_strings(greeting, target);
+    
+    Console.WriteLine("Concatenated: ");
+    Console.WriteLine(message);
+    
+    return 0;
+}
