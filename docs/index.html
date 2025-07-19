@@ -19,53 +19,90 @@
                 <option value="v1.1">v1.1</option>
             </select>
             <ul>
-                <li><a href="#" data-md="index.md">Home</a></li>
-                <li class="category"><span>Compiler</span>
+                <li><a href="#" data-md="index.md" class="nav-overview">Overview</a></li>
+                
+                <li class="category"><span>Getting Started</span>
                     <ul>
-                        <li><a href="#" data-md="compiler/index.md">Overview</a></li>
-                        <li><a href="#" data-md="compiler/intellisense.md">IntelliSense Setup</a></li>
+                        <li><a href="#" data-md="intro.md">Quick Start</a></li>
+                        <li><a href="#" data-md="usage.md">Installation & Usage</a></li>
                     </ul>
                 </li>
-                <li class="category"><span>Dream.dr Language</span>
+                
+                <li class="category"><span>Compiler</span>
                     <ul>
-                        <li><a href="#" data-md="language/index.md">Overview</a></li>
-                        <li class="category"><span>Getting Started</span>
+                        <li><a href="#" data-md="compiler/index.md">Architecture</a></li>
+                        <li><a href="#" data-md="compiler/intellisense.md">IDE Integration</a></li>
+                        <li><a href="#" data-md="compiler/build.md">Build System</a></li>
+                        <li><a href="#" data-md="compiler/testing.md">Testing Framework</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category"><span>Language Reference</span>
+                    <ul>
+                        <li class="subcategory"><span>Type System</span>
                             <ul>
-                                <li><a href="#" data-md="intro.md">Introduction</a></li>
-                                <li><a href="#" data-md="usage.md">Usage Guide</a></li>
-                            </ul>
-                        </li>
-                        <li class="category"><span>Language Basics</span>
-                            <ul>
-                                <li><a href="#" data-md="variables.md">Variables</a></li>
+                                <li><a href="#" data-md="variables.md">Variables & Types</a></li>
                                 <li><a href="#" data-md="arrays.md">Arrays</a></li>
-                                <li><a href="#" data-md="arithmetic.md">Arithmetic</a></li>
-                                <li><a href="#" data-md="parentheses.md">Parentheses</a></li>
-                                <li><a href="#" data-md="comparison.md">Comparison</a></li>
-                                <li><a href="#" data-md="logical.md">Logical Operators</a></li>
-                                <li><a href="#" data-md="conditional.md">Conditional Operator</a></li>
-                                <li><a href="#" data-md="console.md">Console Output</a></li>
-                                <li><a href="#" data-md="strings.md">String Literals</a></li>
-                                <li><a href="#" data-md="comments.md">Comments</a></li>
-                                <li><a href="#" data-md="functions.md">Functions</a></li>
-                                <li><a href="#" data-md="classes.md">Classes</a></li>
+                                <li><a href="#" data-md="strings.md">Strings</a></li>
+                                <li><a href="#" data-md="classes.md">Classes & Structs</a></li>
                             </ul>
                         </li>
-                        <li class="category"><span>Control Flow</span>
+                        <li class="subcategory"><span>Operators</span>
+                            <ul>
+                                <li><a href="#" data-md="arithmetic.md">Arithmetic</a></li>
+                                <li><a href="#" data-md="comparison.md">Comparison</a></li>
+                                <li><a href="#" data-md="logical.md">Logical</a></li>
+                                <li><a href="#" data-md="bitwise.md">Bitwise</a></li>
+                                <li><a href="#" data-md="conditional.md">Conditional</a></li>
+                            </ul>
+                        </li>
+                        <li class="subcategory"><span>Control Flow</span>
                             <ul>
                                 <li><a href="#" data-md="if.md">If Statements</a></li>
                                 <li><a href="#" data-md="loops.md">Loops</a></li>
                                 <li><a href="#" data-md="switch.md">Switch Statements</a></li>
-                                <li><a href="#" data-md="return.md">Return</a></li>
+                                <li><a href="#" data-md="exceptions.md">Exception Handling</a></li>
                             </ul>
                         </li>
-                        <li class="category"><span>Other</span>
+                        <li class="subcategory"><span>Functions</span>
                             <ul>
-                                <li><a href="#" data-md="changelog.md">Changelog</a></li>
-                                <li><a href="#" data-md="architecture.md">Source Architecture</a></li>
-                                <li><a href="#" data-md="grammar/Grammar.md">Grammar Spec</a></li>
+                                <li><a href="#" data-md="functions.md">Function Definitions</a></li>
+                                <li><a href="#" data-md="return.md">Return Values</a></li>
+                                <li><a href="#" data-md="parameters.md">Parameters</a></li>
                             </ul>
                         </li>
+                        <li class="subcategory"><span>I/O & Console</span>
+                            <ul>
+                                <li><a href="#" data-md="console.md">Console Operations</a></li>
+                                <li><a href="#" data-md="input-output.md">Input/Output</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                
+                <li class="category"><span>Advanced Features</span>
+                    <ul>
+                        <li><a href="#" data-md="modules.md">Multi-file Compilation</a></li>
+                        <li><a href="#" data-md="memory.md">Memory Management</a></li>
+                        <li><a href="#" data-md="interop.md">C Interoperability</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category"><span>Reference</span>
+                    <ul>
+                        <li><a href="#" data-md="grammar/Grammar.md">Grammar Specification</a></li>
+                        <li><a href="#" data-md="keywords.md">Keywords & Operators</a></li>
+                        <li><a href="#" data-md="runtime.md">Runtime Library</a></li>
+                        <li><a href="#" data-md="changelog.md">Changelog</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category"><span>Examples</span>
+                    <ul>
+                        <li><a href="#" data-md="examples/basic.md">Basic Programs</a></li>
+                        <li><a href="#" data-md="examples/functions.md">Functions</a></li>
+                        <li><a href="#" data-md="examples/classes.md">Object-Oriented</a></li>
+                        <li><a href="#" data-md="examples/multifile.md">Multi-file Projects</a></li>
                     </ul>
                 </li>
             </ul>
