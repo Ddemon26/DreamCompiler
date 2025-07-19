@@ -46,10 +46,17 @@ Set-Content -Path "tests/temp_test3.dr" -Value $test3_content
 $c_output = & ".\dream.exe" "--emit-c" "tests/temp_test3.dr" 2>&1
 if ($LASTEXITCODE -eq 0) {
     $c_content = Get-Content "build/bin/dream.c" -Raw
-    if ($c_content -match '#include "console.h"' -and $c_content -match '#include "memory.h"') {
+    $missing = @()
+    Get-ChildItem runtime -Filter *.h | ForEach-Object {
+        $name = $_.Name
+        if ($c_content -notmatch "#include \"$name\"") {
+            $missing += $name
+        }
+    }
+    if ($missing.Count -eq 0) {
         Write-Host "✓ Test 3 PASSED: Runtime headers properly included" -ForegroundColor Green
     } else {
-        Write-Host "✗ Test 3 FAILED: Runtime headers missing from generated C" -ForegroundColor Red
+        Write-Host "✗ Test 3 FAILED: Missing headers: $($missing -join ', ')" -ForegroundColor Red
     }
 } else {
     Write-Host "✗ Test 3 FAILED: Could not generate C code: $c_output" -ForegroundColor Red
@@ -57,11 +64,17 @@ if ($LASTEXITCODE -eq 0) {
 
 # Test 4: Verify runtime object files exist and are linked
 Write-Host "`nTest 4: Runtime Object Files" -ForegroundColor Yellow
-if ((Test-Path "build/console.o") -and (Test-Path "build/memory.o")) {
+$missingObjs = @()
+Get-ChildItem runtime -Filter *.c | ForEach-Object {
+    $base = $_.BaseName
+    if (-not (Test-Path "build/$base.o") -and -not (Test-Path "build/libdruntime.a")) {
+        $missingObjs += "$base.o"
+    }
+}
+if ($missingObjs.Count -eq 0) {
     Write-Host "✓ Test 4 PASSED: Runtime object files exist" -ForegroundColor Green
 } else {
-    Write-Host "✗ Test 4 FAILED: Runtime object files missing" -ForegroundColor Red
-    Write-Host "  Expected: build/console.o and build/memory.o" -ForegroundColor Red
+    Write-Host "✗ Test 4 FAILED: Missing objects: $($missingObjs -join ', ')" -ForegroundColor Red
 }
 
 # Test 5: Cross-platform compilation test

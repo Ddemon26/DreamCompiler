@@ -8,6 +8,11 @@
 #include "../ssa/ssa.h"
 #include "../util/console_debug.h"
 #include "../util/platform.h"
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <glob.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -159,28 +164,65 @@ int main(int argc, char *argv[]) {
     char cmd[256];
     const char *optflag =
         opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
-    snprintf(cmd, sizeof(cmd),
-             "%s -g %s -c \"runtime%cconsole.c\" -o \"build%cconsole.o\"", cc,
-             optflag, DR_PATH_SEP, DR_PATH_SEP);
-    int res = system(cmd);
-    if (res != 0) {
-      fprintf(stderr, "failed to run: %s\n", cmd);
-      return 1;
+
+    char obj_list[512] = "";
+    int res = 0;
+#ifdef _WIN32
+    WIN32_FIND_DATAA fd;
+    HANDLE fh = FindFirstFileA("runtime\\*.c", &fd);
+    if (fh != INVALID_HANDLE_VALUE) {
+      do {
+        char base[MAX_PATH];
+        size_t len = strlen(fd.cFileName);
+        if (len < 3 || strcmp(fd.cFileName + len - 2, ".c") != 0) continue;
+        memcpy(base, fd.cFileName, len - 2);
+        base[len - 2] = 0;
+        snprintf(cmd, sizeof(cmd),
+                 "%s -g %s -c \"runtime\\%s\" -o \"build\\%s.o\"", cc,
+                 optflag, fd.cFileName, base);
+        int res = system(cmd);
+        if (res != 0) {
+          fprintf(stderr, "failed to run: %s\n", cmd);
+          FindClose(fh);
+          return 1;
+        }
+        strncat(obj_list, " \"build\\", sizeof(obj_list) - strlen(obj_list) - 1);
+        strncat(obj_list, base, sizeof(obj_list) - strlen(obj_list) - 1);
+        strncat(obj_list, ".o\"", sizeof(obj_list) - strlen(obj_list) - 1);
+      } while (FindNextFileA(fh, &fd));
+      FindClose(fh);
     }
-    snprintf(cmd, sizeof(cmd),
-             "%s -g %s -c \"runtime%cmemory.c\" -o \"build%cmemory.o\"", cc,
-             optflag, DR_PATH_SEP, DR_PATH_SEP);
-    res = system(cmd);
-    if (res != 0) {
-      fprintf(stderr, "failed to run: %s\n", cmd);
-      return 1;
+#else
+    glob_t g;
+    if (glob("runtime/*.c", 0, NULL, &g) == 0) {
+      for (size_t i = 0; i < g.gl_pathc; i++) {
+        const char *path = g.gl_pathv[i];
+        const char *base = strrchr(path, '/');
+        base = base ? base + 1 : path;
+        size_t len = strlen(base);
+        char name[128];
+        memcpy(name, base, len - 2);
+        name[len - 2] = 0;
+        snprintf(cmd, sizeof(cmd),
+                 "%s -g %s -c \"%s\" -o \"build/%s.o\"", cc, optflag, path,
+                 name);
+        int res = system(cmd);
+        if (res != 0) {
+          fprintf(stderr, "failed to run: %s\n", cmd);
+          globfree(&g);
+          return 1;
+        }
+        strncat(obj_list, " build/", sizeof(obj_list) - strlen(obj_list) - 1);
+        strncat(obj_list, name, sizeof(obj_list) - strlen(obj_list) - 1);
+        strncat(obj_list, ".o", sizeof(obj_list) - strlen(obj_list) - 1);
+      }
+      globfree(&g);
     }
+#endif
 #ifdef _WIN32
     snprintf(cmd, sizeof(cmd),
-             "%s -g %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" "
-             "\"build%cmemory.o\" -o \"%s\"",
-             cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP,
-             DR_EXE_NAME);
+             "%s -g %s -Iruntime \"build%cbin%cdream.c\"%s -o \"%s\"",
+             cc, optflag, DR_PATH_SEP, DR_PATH_SEP, obj_list, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
@@ -188,16 +230,15 @@ int main(int argc, char *argv[]) {
     }
 #else
     snprintf(cmd, sizeof(cmd),
-             "ar rcs build%clibdruntime.a build%cconsole.o build%cmemory.o",
-             DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP);
+             "ar rcs build%clibdruntime.a%s",
+             DR_PATH_SEP, obj_list);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
       return 1;
     }
     snprintf(cmd, sizeof(cmd),
-             "%s -g %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o "
-             "\"%s\"",
+             "%s -g %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
              cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
