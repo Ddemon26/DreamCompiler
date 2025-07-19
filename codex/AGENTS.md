@@ -1,6 +1,284 @@
 # Dream Compiler CLI Agent
 
-*Last updated: 18 July 2025*
+*Last updated: 19 July 2025*
+
+---
+
+## Repository Source Layout & Navigation Map
+
+**CRITICAL**: This map must be updated whenever files are moved, added, or removed. CLI agents should use this map to navigate the repository with speed and precision.
+
+### Core Compiler Source (`src/`)
+```
+src/
+├── lexer/           # Tokenization & lexical analysis
+│   ├── lexer.re     # re2c specification (source of truth)
+│   ├── lexer.c      # Generated lexer (DO NOT EDIT DIRECTLY)
+│   ├── lexer.h      # Lexer interface
+│   └── tokens.def   # Token definitions
+├── parser/          # Syntax analysis & AST construction
+│   ├── parser.c     # Pratt parser implementation
+│   ├── parser.h     # Parser interface
+│   ├── ast.c        # AST node construction/manipulation
+│   ├── ast.h        # AST data structures
+│   ├── diagnostic.c # Parser diagnostics
+│   ├── diagnostic.h # Diagnostic interface
+│   └── error.c      # Error handling
+├── sem/             # Semantic analysis & type system
+│   ├── analysis.c   # Semantic analysis passes
+│   ├── analysis.h   # Analysis interface
+│   ├── infer.c      # Type inference engine
+│   ├── infer.h      # Type inference interface
+│   ├── scope.c      # Scope management
+│   ├── scope.h      # Scope data structures
+│   ├── symbol.c     # Symbol table operations
+│   ├── symbol.h     # Symbol table interface
+│   ├── type.c       # Type system implementation
+│   └── type.h       # Type definitions
+├── ir/              # Intermediate representation
+│   ├── ir.c         # IR construction & manipulation
+│   ├── ir.h         # IR data structures
+│   ├── lower.c      # AST to IR lowering
+│   └── lower.h      # Lowering interface
+├── ssa/             # Static Single Assignment form
+│   ├── ssa.c        # SSA construction & utilities
+│   └── ssa.h        # SSA interface
+├── cfg/             # Control Flow Graph
+│   ├── cfg.c        # CFG construction & analysis
+│   └── cfg.h        # CFG data structures
+├── opt/             # Optimization passes
+│   ├── pipeline.c   # Optimization pipeline orchestration
+│   ├── pipeline.h   # Pipeline interface
+│   ├── sccp.c       # Sparse Conditional Constant Propagation
+│   ├── sccp.h       # SCCP interface
+│   ├── dce.c        # Dead Code Elimination
+│   ├── dce.h        # DCE interface
+│   ├── copy_prop.c  # Copy Propagation
+│   ├── copy_prop.h  # Copy Propagation interface
+│   ├── cse.c        # Common Subexpression Elimination
+│   ├── cse.h        # CSE interface
+│   ├── licm.c       # Loop Invariant Code Motion
+│   ├── licm.h       # LICM interface
+│   ├── peephole.c   # Peephole optimizations
+│   ├── peephole.h   # Peephole interface
+│   ├── value_numbering.c # Global Value Numbering
+│   └── value_numbering.h # GVN interface
+├── codegen/         # Code generation (C backend)
+│   ├── codegen.c    # Main code generation orchestration
+│   ├── codegen.h    # Codegen interface
+│   ├── c_emit.c     # C code emission
+│   ├── c_emit.h     # C emission interface
+│   ├── context.c    # Generation context management
+│   ├── context.h    # Context interface
+│   ├── expr.c       # Expression code generation
+│   ├── expr.h       # Expression codegen interface
+│   ├── stmt.c       # Statement code generation
+│   └── stmt.h       # Statement codegen interface
+├── driver/          # Compiler driver & main entry points
+│   ├── main.c       # Main compiler driver
+│   ├── lex_main.c   # Lexer-only mode
+│   └── parse_main.c # Parser-only mode
+└── util/            # Utility functions & platform abstraction
+    ├── console_debug.h # Debug console helpers
+    └── platform.h      # Platform-specific definitions
+```
+
+### Test Suite Organization (`tests/`)
+```
+tests/
+├── basics/          # Core language features
+│   ├── arithmetic/  # Math operations, operators
+│   ├── bitwise/     # Bitwise operations
+│   ├── comments/    # Comment parsing
+│   ├── expressions/ # Expression evaluation
+│   ├── io/          # Input/output operations
+│   ├── memory/      # Memory management
+│   ├── misc/        # Miscellaneous basic tests
+│   ├── strings/     # String operations
+│   ├── types/       # Basic type system
+│   └── variables/   # Variable declarations
+├── control_flow/    # Control structures
+│   ├── comparisons/ # Comparison operators
+│   ├── conditionals/# If/else statements
+│   ├── exceptions/  # Exception handling
+│   ├── increment/   # Increment/decrement
+│   ├── logical/     # Logical operators
+│   ├── loops/       # For/while loops
+│   └── switches/    # Switch statements
+├── functions/       # Function-related tests
+│   ├── definitions/ # Function definitions
+│   ├── exceptions/  # Function exception handling
+│   ├── parameters/  # Parameter passing
+│   └── returns/     # Return values
+├── advanced/        # Complex language features
+│   ├── concurrency/ # Concurrent programming
+│   ├── data_structures/ # Complex data types
+│   ├── oop/         # Object-oriented features
+│   └── ssa/         # SSA-specific tests
+├── semantics/       # Semantic analysis tests
+│   └── basic.dr     # Basic semantic tests
+├── debug/           # Debug feature tests
+│   └── line_directives.dr # Line directive handling
+└── hottests/        # Active development tests
+    ├── minimal_struct_test.dr
+    ├── struct_only.dr
+    └── test_struct_with_semicolon.dr
+```
+
+### Documentation (`docs/`)
+```
+docs/
+├── grammar/         # Language specification
+│   └── Grammar.md   # BNF grammar (AUTHORITATIVE SOURCE)
+├── language/        # Language documentation
+├── compiler/        # Compiler internals documentation
+├── v1.0/           # Version 1.0 documentation
+├── v1.1/           # Version 1.1 documentation
+├── index.md        # Main documentation index
+├── intro.md        # Introduction to Dream language
+├── usage.md        # Usage instructions
+├── index.html      # HTML documentation
+├── index.css       # Documentation styling
+└── index-dark.css  # Dark theme styling
+```
+
+### Build System & Configuration
+```
+build.zig           # Zig build configuration (MAIN BUILD FILE)
+.clang-tidy         # Clang-tidy configuration
+clang-format.txt    # Code formatting rules
+LICENSE             # Project license
+README.md           # Project overview
+CODEOWNERS          # Code ownership rules
+.gitignore          # Git ignore patterns
+.gitattributes      # Git attributes
+```
+
+### CLI Agent Resources (`codex/`)
+```
+codex/
+├── AGENTS.md       # This file - agent instructions
+├── BOT_PR_TEMPLATE.md # PR template for agents
+├── FEATURES.md     # Feature tracking
+├── TEST_GUIDE.md   # Comprehensive testing guide
+├── test_cli.sh     # Linux test CLI
+├── test_cli.ps1    # Windows test CLI
+├── test_cli.py     # Cross-platform test CLI
+├── test_config.json # Test configuration
+├── _startup.sh     # Linux environment setup
+├── _startup.ps1    # Windows environment setup
+├── go/             # Go testing suite
+│   ├── dream_test.go      # Unit tests via cgo
+│   ├── dream_bench_test.go # Performance benchmarks
+│   ├── dream_fuzz_test.go  # Fuzz testing
+│   ├── dream_api.c        # C API wrapper
+│   ├── dream.h            # C API header
+│   ├── Makefile           # Go test build system
+│   └── README.md          # Go testing documentation
+└── python/         # Python helper scripts (generated)
+```
+
+### Sub-Project: JetBrains Plugin (`assets/jetbrains/`)
+```
+assets/jetbrains/   # JetBrains IDE plugin (SEPARATE PROJECT)
+├── AGENTS.md       # Plugin-specific agent instructions
+├── build.gradle.kts # Gradle build configuration
+├── settings.gradle.kts # Gradle settings
+├── gradlew         # Gradle wrapper (Linux)
+├── gradlew.bat     # Gradle wrapper (Windows)
+├── tokens.json     # Token definitions for plugin
+├── package-lock.json # NPM dependencies
+├── src/            # Plugin source code
+│   ├── main/       # Main plugin code
+│   └── test/       # Plugin tests
+├── idea/           # IntelliJ IDEA specific files
+├── vscode/         # VS Code extension files
+├── scripts/        # Build scripts
+│   └── genFromTokens.js # Token generation script
+└── .gradle/        # Gradle cache (generated)
+```
+
+### Runtime & Standard Library
+```
+runtime/            # Runtime system components
+stdlib/             # Standard library implementation
+```
+
+### Generated & Cache Directories
+```
+.zig-cache/         # Zig build cache
+zig-out/            # Zig build output
+build/              # Build artifacts
+.venv/              # Python virtual environment
+.git/               # Git repository data
+.idea/              # IntelliJ IDEA project files
+```
+
+### Navigation Commands for CLI Agents
+
+**Quick file access patterns:**
+```bash
+# Core compiler components
+src/lexer/lexer.re          # Lexer specification
+src/parser/parser.c         # Main parser
+src/sem/type.c             # Type system
+src/codegen/c_emit.c       # C code generation
+docs/grammar/Grammar.md    # Language grammar
+
+# Test categories
+tests/basics/              # Basic language tests
+tests/advanced/            # Advanced feature tests
+tests/control_flow/        # Control structure tests
+
+# Build and configuration
+build.zig                  # Main build file
+codex/test_cli.py         # Cross-platform testing
+```
+
+**Project context switching:**
+- **Main compiler project**: Work in root directory, use `zig build` and test commands
+- **JetBrains plugin project**: `cd assets/jetbrains/`, use Gradle commands (`./gradlew build`, `./gradlew test`)
+
+**CRITICAL RULES:**
+1. **Always update this map** when moving, adding, or removing files
+2. **Use exact paths** from this map for navigation
+3. **Check project context** before running commands (main vs sub-project)
+4. **No `zig test` required** - the compiler is C-based, not Zig-based
+5. **Switch test commands** based on project context
+
+### Navigation Map Maintenance
+
+**MANDATORY**: Update this navigation map immediately when:
+- Adding new source files or directories
+- Moving files between directories
+- Removing files or directories
+- Restructuring the project layout
+- Adding new test categories
+- Creating new modules or components
+
+**Map Update Process**:
+1. Make file system changes
+2. Update the corresponding section in this navigation map
+3. Verify all paths are accurate
+4. Update any affected quick access patterns
+5. Test navigation commands to ensure they work
+
+**Quick Verification Commands**:
+```bash
+# Verify core paths exist
+ls src/lexer/lexer.re
+ls src/parser/parser.c
+ls docs/grammar/Grammar.md
+ls codex/test_cli.py
+
+# Verify test structure
+ls tests/basics/
+ls tests/advanced/
+ls tests/control_flow/
+
+# Verify sub-project
+ls assets/jetbrains/build.gradle.kts
+```
 
 ---
 
@@ -482,41 +760,130 @@ Every pull request **must** fill out `codex/BOT_PR_TEMPLATE.md`, covering:
 
 ---
 
+## Project Context Detection & Switching
+
+**CRITICAL**: Always detect which project context you're working in before executing commands.
+
+### Main Compiler Project (Root Directory)
+**Detection**: Working in root directory or any subdirectory except `assets/jetbrains/`
+**Build System**: Zig + C compilation
+**Test Commands**:
+```bash
+# Linux
+./codex/test_cli.sh quick
+make test
+
+# Windows  
+.\codex\test_cli.ps1 quick
+python codex/python/test_runner
+
+# Cross-platform
+python codex/test_cli.py quick
+```
+**Build Commands**:
+```bash
+zig build                    # Build compiler
+zig build run -- file.dr    # Run compiler on file
+```
+**Key Files**: `build.zig`, `src/`, `tests/`, `docs/grammar/Grammar.md`
+
+### JetBrains Plugin Sub-Project (`assets/jetbrains/`)
+**Detection**: Working in `assets/jetbrains/` directory
+**Build System**: Gradle + Kotlin/Java
+**Test Commands**:
+```bash
+# Linux/macOS
+./gradlew test
+./gradlew check
+
+# Windows
+.\gradlew.bat test
+.\gradlew.bat check
+```
+**Build Commands**:
+```bash
+# Linux/macOS
+./gradlew build
+./gradlew buildPlugin
+
+# Windows
+.\gradlew.bat build
+.\gradlew.bat buildPlugin
+```
+**Key Files**: `build.gradle.kts`, `src/main/`, `src/test/`, `tokens.json`
+
+### Context Switching Rules
+1. **Before any command**: Check current directory and project context
+2. **Main project changes**: Do NOT run JetBrains plugin tests
+3. **Plugin changes**: Do NOT run compiler tests
+4. **Cross-project changes**: Test both projects separately
+5. **File moves**: Update this navigation map immediately
+
 ## Workflow
 
 When the command `go` is issued the agent should:
 
-1. **Synchronise with the grammar**
+1. **Detect project context**
+    * Determine if working in main compiler project or JetBrains plugin sub-project
+    * Use appropriate build system and test commands for detected context
 
-    * Parse `docs/grammar/Grammar.md` and compare with `lexer/tokens.def` and precedence tables in `parser/parser.c`.
-    * Report mismatches; update code or open a task to correct the spec.
-2. **Review project state**
+2. **Synchronise with the grammar** (Main project only)
+    * Parse `docs/grammar/Grammar.md` and compare with `src/lexer/tokens.def` and precedence tables in `src/parser/parser.c`
+    * Report mismatches; update code or open a task to correct the spec
 
-    * Identify monolithic areas that need extraction before adding new code.
-3. **Implement the feature**
+3. **Review project state**
+    * Identify monolithic areas that need extraction before adding new code
+    * Check if changes affect both main project and plugin (token definitions, grammar changes)
 
-    * Add new functionality in the appropriate module (lexer, parser, semantic analysis, IR, etc.).
-    * Ensure the implementation matches the spec and is documented.
-    * Write tests for the new feature under `tests/`.
-    * If a bug is fixed, document it in `docs/changelog.md` and add a regression test.
-    * For any substantial or repetitive operations, scaffold or automate using Python helper scripts placed under `python/`, ensuring they detect and adapt to the host OS via preprocessor or runtime checks.
-4. **Update docs & tests**
+4. **Implement the feature**
+    * **Main project**: Add functionality in appropriate module (`src/lexer/`, `src/parser/`, `src/sem/`, etc.)
+    * **Plugin project**: Add functionality in `assets/jetbrains/src/main/`
+    * Ensure implementation matches spec and is documented
+    * Write tests in appropriate test directory
+    * For substantial operations, create Python helpers in `codex/python/`
 
-    * Regenerate lexer (`re2c`), rebuild compiler, and run all tests.
-5. **Build & run**
+5. **Update docs & tests**
+    * **Main project**: Regenerate lexer with `re2c`, rebuild with `zig build`
+    * **Plugin project**: Update `tokens.json` if needed, rebuild with Gradle
+    * Update navigation map in this file if files were moved/added/removed
 
-    * Run `zig build` (using OS defines if needed to adjust flags).
-    * If any Zig test files (`*.zig`) are present in the `tests/` directory, run `zig build test`; otherwise, skip it.
-    * Run tests:
-      - Linux: `make test` (or `./test_runner`)
-      - Windows: `python codex/python/test_runner`
-    * Optionally, run `zig build run -- <file.dr>`.
-6. **Cross-platform validation**
+6. **Build & test** (Context-specific)
+    
+    **Main Compiler Project**:
+    ```bash
+    # Build
+    zig build
+    
+    # Test (NO zig test - compiler is C-based)
+    # Linux
+    ./codex/test_cli.sh quick
+    
+    # Windows
+    .\codex\test_cli.ps1 quick
+    
+    # Cross-platform
+    python codex/test_cli.py quick
+    ```
+    
+    **JetBrains Plugin Project**:
+    ```bash
+    # Change to plugin directory
+    cd assets/jetbrains/
+    
+    # Build & test
+    # Linux/macOS
+    ./gradlew build test
+    
+    # Windows
+    .\gradlew.bat build test
+    ```
 
-    * Ensure tests pass on both Linux and Windows
-    * On Windows, expect struct-related tests to fail due to known parsing issues
-    * Document any platform-specific issues or workarounds
-7. **Commit** once tests succeed on the target platform.
+7. **Cross-platform validation**
+    * **Main project**: Test on both Linux and Windows (expect struct test failures on Windows)
+    * **Plugin project**: Test with Gradle on target platforms
+    * Document platform-specific issues
+
+8. **Commit** once tests succeed in the appropriate project context
 
 ---
 
