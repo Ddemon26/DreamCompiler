@@ -43,6 +43,10 @@ The compiler implements a full compilation pipeline:
 - **IDE Integration** - IntelliSense and language server support
 - **Comprehensive Testing** - 100+ automated test cases
 
+## Current Version: v1.1.12
+
+The latest stable release is **DreamCompiler v1.1.12**, featuring complete multi-file compilation, advanced optimization, and comprehensive language support.
+
 ## Platform Support
 
 | Platform | Status | Test Pass Rate |

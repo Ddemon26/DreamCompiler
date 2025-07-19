@@ -15,8 +15,8 @@
             <h2>Documentation</h2>
             <label for="version-select" class="version-label">Version:</label>
             <select id="version-select">
-                <option value="v1.0" selected>v1.0</option>
-                <option value="v1.1">v1.1</option>
+                <option value="v1.0">v1.0 (Stable)</option>
+                <option value="v1.1" selected>v1.1 (Current - v1.1.12)</option>
             </select>
             <ul>
                 <li><a href="#" data-md="index.md" class="nav-overview">Overview</a></li>
@@ -124,12 +124,17 @@
         const themeToggle = document.getElementById('theme-toggle');
         const themeLink = document.querySelector('link[rel="stylesheet"]');
         const categories = document.querySelectorAll('.category');
+        const versionSelect = document.getElementById('version-select');
 
         // Apply saved theme
         if (localStorage.getItem('theme') === 'dark') {
             themeLink.setAttribute('href', 'index-dark.css');
             themeToggle.textContent = 'Light Mode';
         }
+
+        // Apply saved version
+        const savedVersion = localStorage.getItem('version') || 'v1.1';
+        versionSelect.value = savedVersion;
 
         // Function to load and render markdown
         async function loadMarkdown(file) {
@@ -138,12 +143,52 @@
                 if (!response.ok) throw new Error('Failed to load markdown file');
                 const markdown = await response.text();
                 contentDiv.innerHTML = marked.parse(markdown);
+                
+                // Add copy buttons to code blocks
+                addCopyButtons();
             } catch (error) {
-                contentDiv.innerHTML = '<h1>Error</h1><p>Could not load the documentation page.</p>';
+                contentDiv.innerHTML = '<h1>Error</h1><p>Could not load the documentation page: ' + file + '</p>';
             }
         }
 
+        function addCopyButtons() {
+            const codeBlocks = contentDiv.querySelectorAll('pre');
+            codeBlocks.forEach(block => {
+                if (!block.querySelector('.copy-btn')) {
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.onclick = () => {
+                        const code = block.querySelector('code').textContent;
+                        navigator.clipboard.writeText(code).then(() => {
+                            copyBtn.textContent = 'Copied!';
+                            setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+                        });
+                    };
+                    block.appendChild(copyBtn);
+                }
+            });
+        }
+
         function resolvePath(mdFile) {
+            const version = versionSelect.value;
+            
+            // Files that should use version-specific paths
+            const versionedFiles = [
+                'variables.md', 'arrays.md', 'strings.md', 'classes.md',
+                'arithmetic.md', 'comparison.md', 'logical.md', 'conditional.md',
+                'if.md', 'loops.md', 'switch.md', 'return.md',
+                'functions.md', 'console.md', 'comments.md',
+                'changelog.md', 'architecture.md', 'parentheses.md'
+            ];
+            
+            // Check if this file should use version-specific path
+            const fileName = mdFile.split('/').pop();
+            if (versionedFiles.includes(fileName)) {
+                return `${version}/${mdFile}`;
+            }
+            
+            // Files that are version-independent
             return mdFile;
         }
 
@@ -167,7 +212,16 @@
             });
         });
 
-
+        // Handle version change
+        versionSelect.addEventListener('change', () => {
+            localStorage.setItem('version', versionSelect.value);
+            // Reload current page with new version
+            const activeLink = document.querySelector('.nav a.active');
+            if (activeLink) {
+                const mdFile = activeLink.getAttribute('data-md');
+                loadMarkdown(resolvePath(mdFile));
+            }
+        });
 
         // Toggle light/dark mode
         themeToggle.addEventListener('click', () => {
