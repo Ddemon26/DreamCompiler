@@ -1,0 +1,3 @@
+// Expected: Hello World
+// Test to verify runtime libraries are properly linked
+Console.WriteLine("Hello World");

@@ -1,0 +1,2 @@
+// Test basic console output functionality
+Console.WriteLine("Test 1: Console output works!");
