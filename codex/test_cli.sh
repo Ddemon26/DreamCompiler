@@ -5,10 +5,10 @@
 set -e
 
 # Configuration
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEST_DIR="$ROOT_DIR/tests"
 RESULTS_DIR="$ROOT_DIR/test_results"
-PYTHON_CLI="$ROOT_DIR/test_cli.py"
+PYTHON_CLI="$ROOT_DIR/codex/test_cli.py"
 
 # Colors for output
 RED='\033[0;31m'

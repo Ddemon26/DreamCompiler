@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 TEST_DIR = ROOT / "tests"
 RUNTIME_DIR = ROOT / "runtime"
 RESULTS_DIR = ROOT / "test_results"
-CONFIG_FILE = ROOT / "test_config.json"
+CONFIG_FILE = ROOT / "codex" / "test_config.json"
 
 class TestStatus(Enum):
     PASS = "PASS"

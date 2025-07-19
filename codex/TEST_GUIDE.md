@@ -10,18 +10,18 @@ The DreamCompiler testing framework provides comprehensive, cross-platform testi
 
 ```bash
 # Linux - Fastest possible test validation
-./test_cli.sh quick                    # < 5 seconds, basic validation
-./test_cli.sh fast                     # < 10 seconds, core features  
-./test_cli.sh bulk                     # < 30 seconds, all categories
+codex/test_cli.sh quick                    # < 5 seconds, basic validation
+codex/test_cli.sh fast                     # < 10 seconds, core features  
+codex/test_cli.sh bulk                     # < 30 seconds, all categories
 
 # Windows - Fastest possible test validation  
-.\test_cli.ps1 quick                   # < 5 seconds, basic validation
-.\test_cli.ps1 fast                    # < 10 seconds, core features
-.\test_cli.ps1 bulk                    # < 30 seconds, all categories
+codex\test_cli.ps1 quick                   # < 5 seconds, basic validation
+codex\test_cli.ps1 fast                    # < 10 seconds, core features
+codex\test_cli.ps1 bulk                    # < 30 seconds, all categories
 
 # Cross-platform Python (works everywhere)
-python test_cli.py quick               # Universal quick test
-python test_cli.py run --pattern "basics/**/*.dr"  # Filtered execution
+python codex/test_cli.py quick               # Universal quick test
+python codex/test_cli.py run --pattern "basics/**/*.dr"  # Filtered execution
 ```
 
 ### Installation & Setup
@@ -33,11 +33,11 @@ sudo apt-get update
 sudo apt-get install zig python3 make gcc
 
 # Make scripts executable
-chmod +x test_cli.sh
+chmod +x codex/test_cli.sh
 chmod +x codex/python/test_runner
 
 # Verify setup
-./test_cli.sh status
+codex/test_cli.sh status
 ```
 
 **Windows Requirements:**
@@ -51,7 +51,7 @@ choco install zig python mingw
 # - MinGW-w64 for GCC
 
 # Verify setup
-.\test_cli.ps1 status
+codex\test_cli.ps1 status
 ```
 
 ## Test Categories
@@ -76,50 +76,50 @@ choco install zig python mingw
 
 ```bash
 # Quick validation (< 5 seconds)
-python test_cli.py quick [test_file]
+python codex/test_cli.py quick [test_file]
 
 # Full test suite
-python test_cli.py run [--pattern "**/*.dr"] [--categories unit integration]
+python codex/test_cli.py run [--pattern "**/*.dr"] [--categories unit integration]
 
 # Analysis and reporting
-python test_cli.py analyze [--format text|html|charts] [--output file]
+python codex/test_cli.py analyze [--format text|html|charts] [--output file]
 
 # Test management
-python test_cli.py list [--pattern "**/*.dr"]
-python test_cli.py generate --validate
-python test_cli.py generate --generate
+python codex/test_cli.py list [--pattern "**/*.dr"]
+python codex/test_cli.py generate --validate
+python codex/test_cli.py generate --generate
 ```
 
 ### Linux-Specific Commands
 
 ```bash
 # Fast execution with shell optimizations
-./test_cli.sh quick [test_file]         # Quick test
-./test_cli.sh run [pattern] [debug]     # Full run with optional debug
-./test_cli.sh fast [pattern]            # Fast execution, minimal output
-./test_cli.sh bulk                      # All categories with summary
-./test_cli.sh filter <category>         # Category-specific testing
+codex/test_cli.sh quick [test_file]         # Quick test
+codex/test_cli.sh run [pattern] [debug]     # Full run with optional debug
+codex/test_cli.sh fast [pattern]            # Fast execution, minimal output
+codex/test_cli.sh bulk                      # All categories with summary
+codex/test_cli.sh filter <category>         # Category-specific testing
 
 # Advanced features
-./test_cli.sh watch [pattern]           # Continuous testing mode
-./test_cli.sh benchmark [iterations]    # Performance benchmarking
-./test_cli.sh analyze [format] [output] # Result analysis
+codex/test_cli.sh watch [pattern]           # Continuous testing mode
+codex/test_cli.sh benchmark [iterations]    # Performance benchmarking
+codex/test_cli.sh analyze [format] [output] # Result analysis
 ```
 
 ### Windows-Specific Commands
 
 ```powershell
 # Fast execution with PowerShell optimizations
-.\test_cli.ps1 quick [test_file]        # Quick test
-.\test_cli.ps1 run [pattern] [-debug]   # Full run with optional debug
-.\test_cli.ps1 fast [pattern]           # Fast execution, minimal output
-.\test_cli.ps1 bulk                     # All categories with summary
-.\test_cli.ps1 filter <category>        # Category-specific testing
+codex\test_cli.ps1 quick [test_file]        # Quick test
+codex\test_cli.ps1 run [pattern] [-debug]   # Full run with optional debug
+codex\test_cli.ps1 fast [pattern]           # Fast execution, minimal output
+codex\test_cli.ps1 bulk                     # All categories with summary
+codex\test_cli.ps1 filter <category>        # Category-specific testing
 
 # Advanced features
-.\test_cli.ps1 watch [pattern]          # Continuous testing mode
-.\test_cli.ps1 benchmark [iterations]   # Performance benchmarking
-.\test_cli.ps1 analyze [format] [output] # Result analysis
+codex\test_cli.ps1 watch [pattern]          # Continuous testing mode
+codex\test_cli.ps1 benchmark [iterations]   # Performance benchmarking
+codex\test_cli.ps1 analyze [format] [output] # Result analysis
 ```
 
 ## Test Patterns and Filters
@@ -138,12 +138,12 @@ python test_cli.py generate --generate
 ### Category Filters
 ```bash
 # Use with filter command
-./test_cli.sh filter basics            # Basic language features
-./test_cli.sh filter advanced          # Advanced features  
-./test_cli.sh filter control           # Control flow
-./test_cli.sh filter functions         # Function tests
-./test_cli.sh filter memory            # Memory tests
-./test_cli.sh filter struct            # Structure tests
+codex/test_cli.sh filter basics            # Basic language features
+codex/test_cli.sh filter advanced          # Advanced features  
+codex/test_cli.sh filter control           # Control flow
+codex/test_cli.sh filter functions         # Function tests
+codex/test_cli.sh filter memory            # Memory tests
+codex/test_cli.sh filter struct            # Structure tests
 ```
 
 ## Performance and Timing
@@ -158,12 +158,12 @@ python test_cli.py generate --generate
 ### Performance Optimization
 ```bash
 # For maximum speed in CI/CD
-./test_cli.sh fast "basics/**/*.dr"    # Fastest core validation
-python test_cli.py quick               # Cross-platform quick test
+codex/test_cli.sh fast "basics/**/*.dr"    # Fastest core validation
+python codex/test_cli.py quick               # Cross-platform quick test
 
 # For comprehensive validation
-./test_cli.sh bulk                     # All categories with summary
-python test_cli.py run                 # Full detailed run
+codex/test_cli.sh bulk                     # All categories with summary
+python codex/test_cli.py run                 # Full detailed run
 ```
 
 ## Result Analysis
@@ -179,14 +179,14 @@ All test commands provide immediate feedback:
 ### Detailed Analysis
 ```bash
 # Generate comprehensive reports
-python test_cli.py analyze --format html --output report.html
-python test_cli.py analyze --format text > summary.txt
+python codex/test_cli.py analyze --format html --output report.html
+python codex/test_cli.py analyze --format text > summary.txt
 
 # Performance analysis
-python test_cli.py analyze --format charts
+python codex/test_cli.py analyze --format charts
 
 # Historical trends
-python test_cli.py analyze --days 7    # Last week's results
+python codex/test_cli.py analyze --days 7    # Last week's results
 ```
 
 ### Result Storage
@@ -221,14 +221,14 @@ The following tests are expected to fail on Windows due to struct parsing issues
 ### GitHub Actions Example
 ```yaml
 - name: Run Tests (Linux)
-  run: ./test_cli.sh bulk
+  run: codex/test_cli.sh bulk
   
 - name: Run Tests (Windows)  
-  run: .\test_cli.ps1 bulk
+  run: codex\test_cli.ps1 bulk
   shell: powershell
 
 - name: Generate Report
-  run: python test_cli.py analyze --format html --output test-report.html
+  run: python codex/test_cli.py analyze --format html --output test-report.html
 ```
 
 ### Exit Codes
@@ -331,18 +331,23 @@ $env:TEST_TIMEOUT = "60"
 
 ```
 DreamCompiler/
-├── test_cli.py          # Universal Python CLI
-├── test_cli.sh          # Linux shell script
-├── test_cli.ps1         # Windows PowerShell script
-├── test_config.json     # Test configuration
-├── TEST_GUIDE.md        # This guide
 ├── tests/               # Test files organized by category
 ├── test_results/        # Generated test results
-├── codex/python/        # Advanced test management tools
-│   ├── test_manager.py  # Core test execution engine
-│   ├── test_analyzer.py # Result analysis and reporting
-│   └── test_generator.py # Test generation and validation
-└── codex/AGENTS.md      # Agent-specific documentation
+├── codex/               # CLI agent tools and documentation
+│   ├── test_cli.py      # Universal Python CLI
+│   ├── test_cli.sh      # Linux shell script
+│   ├── test_cli.ps1     # Windows PowerShell script
+│   ├── test_config.json # Test configuration
+│   ├── TEST_GUIDE.md    # This guide
+│   ├── python/          # Advanced test management tools
+│   │   ├── test_manager.py  # Core test execution engine
+│   │   ├── test_analyzer.py # Result analysis and reporting
+│   │   └── test_generator.py # Test generation and validation
+│   ├── go/              # Go testing suite for C API testing
+│   │   ├── dream_test.go    # Unit and integration tests
+│   │   ├── dream_bench_test.go # Performance benchmarks
+│   │   └── dream_fuzz_test.go  # Fuzz tests for robustness
+│   └── AGENTS.md        # Agent-specific documentation
 ```
 
 This testing framework provides CLI agents with fast, reliable, and comprehensive testing capabilities across all supported platforms.

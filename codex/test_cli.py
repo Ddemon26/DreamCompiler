@@ -12,8 +12,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Add codex/python to path for imports
-ROOT = Path(__file__).resolve().parent
+# Add python directory to path for imports
+ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "codex" / "python"))
 
 try:

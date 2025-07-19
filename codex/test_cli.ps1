@@ -10,10 +10,10 @@ param(
 )
 
 # Configuration
-$RootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$RootDir = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $TestDir = Join-Path $RootDir "tests"
 $ResultsDir = Join-Path $RootDir "test_results"
-$PythonCLI = Join-Path $RootDir "test_cli.py"
+$PythonCLI = Join-Path $RootDir "codex" | Join-Path -ChildPath "test_cli.py"
 
 # Color functions for output
 function Write-Info {

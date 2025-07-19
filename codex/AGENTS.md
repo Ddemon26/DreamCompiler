@@ -344,6 +344,114 @@ This testing framework ensures CLI agents can efficiently validate compiler chan
 
 ---
 
+## Go Testing Suite
+
+The DreamCompiler includes a comprehensive Go testing suite that provides direct C API testing, performance benchmarking, and fuzz testing to complement the Python-based end-to-end tests.
+
+### Key Features
+
+* **Direct C API Testing** - Unit tests via cgo for lexer, parser, and type system
+* **Performance Benchmarks** - Detailed performance analysis of hot paths
+* **Fuzz Testing** - Robustness testing with random inputs to detect crashes
+* **Memory Management Testing** - Arena allocation and resource cleanup validation
+* **Cross-Platform Support** - Works on Linux, Windows, and macOS
+
+### Quick Commands for CLI Agents
+
+**Build and test:**
+```bash
+# Build C library and run all tests
+cd codex/go && make test
+
+# Run performance benchmarks
+cd codex/go && make bench
+
+# Run fuzz tests (short duration)
+cd codex/go && make fuzz
+
+# Complete test suite with coverage
+cd codex/go && make test-all
+```
+
+**Individual test categories:**
+```bash
+# Unit tests only
+go test -v ./codex/go/...
+
+# Specific test patterns
+go test -run TestLexer ./codex/go/...
+go test -run TestParser ./codex/go/...
+
+# Benchmarks with memory profiling
+go test -bench=. -benchmem ./codex/go/...
+
+# Fuzz testing for specific components
+go test -fuzz=FuzzLexer -fuzztime=30s ./codex/go/...
+```
+
+### Test Categories
+
+**Unit Tests (`dream_test.go`):**
+- Lexer tokenization and position tracking
+- Parser AST construction and error handling
+- Type system operations and equality
+- Memory arena allocation and cleanup
+- End-to-end integration testing
+
+**Benchmarks (`dream_bench_test.go`):**
+- Lexer performance with various input types
+- Parser performance scaling with complexity
+- Code generation benchmarks
+- Memory allocation profiling
+- Comparative performance analysis
+
+**Fuzz Tests (`dream_fuzz_test.go`):**
+- Lexer robustness with random byte sequences
+- Parser stability with malformed syntax
+- Code generation with edge cases
+- Type system stress testing
+- Memory operation fuzzing
+
+### Integration with Development Workflow
+
+The Go tests integrate with the main development workflow:
+
+1. **Pre-commit validation** - `cd codex/go && make test` for quick C API validation
+2. **Performance monitoring** - `cd codex/go && make bench` to track performance regressions
+3. **Robustness testing** - `cd codex/go && make fuzz` to detect potential crashes
+4. **CI/CD integration** - `cd codex/go && make ci` for comprehensive automated testing
+
+### Performance Expectations
+
+**Typical execution times:**
+- Unit tests: < 10 seconds
+- Benchmarks: 30-60 seconds
+- Fuzz tests: 30 seconds (configurable)
+- Full suite: < 2 minutes
+
+**Benchmark results provide:**
+- Operations per second for each component
+- Memory allocation patterns
+- Performance scaling characteristics
+- Regression detection over time
+
+### Files and Structure
+
+```
+codex/go/
+├── dream_test.go         # Unit and integration tests
+├── dream_bench_test.go   # Performance benchmarks  
+├── dream_fuzz_test.go    # Fuzz tests for robustness
+├── dream.h              # C API header for cgo
+├── dream_api.c          # C API wrapper implementation
+├── Makefile             # Build system for C library
+└── README.md            # Comprehensive documentation
+```
+
+The Go testing suite provides CLI agents with direct access to compiler internals for detailed validation, performance analysis, and robustness testing that complements the high-level Python test framework.
+
+---
+
 ## PR Instructions
 
 Title format: `[dreamc] <Short, imperative summary>`
