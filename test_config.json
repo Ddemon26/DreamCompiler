@@ -1,0 +1,68 @@
+{
+  "version": "1.0",
+  "description": "DreamCompiler Test Configuration",
+  "timeout": 30,
+  "parallel_jobs": 1,
+  "memory_limit_mb": 512,
+  "categories": {
+    "basics": "unit",
+    "control_flow": "unit", 
+    "functions": "unit",
+    "advanced": "integration",
+    "semantics": "semantic",
+    "debug": "regression"
+  },
+  "platform_specific": {
+    "windows": {
+      "known_failures": [
+        "tests/advanced/data_structures/struct.dr",
+        "tests/advanced/data_structures/new_struct.dr",
+        "tests/advanced/oop/class.dr",
+        "tests/advanced/oop/constructor_call.dr",
+        "tests/advanced/oop/method.dr",
+        "tests/advanced/oop/new_object.dr",
+        "tests/advanced/oop/object.dr",
+        "tests/advanced/oop/static_member.dr",
+        "tests/advanced/oop/type.dr"
+      ],
+      "expected_pass_rate": 85.0,
+      "compiler_flags": ["-target", "x86_64-windows-gnu"]
+    },
+    "linux": {
+      "known_failures": [],
+      "expected_pass_rate": 95.0,
+      "compiler_flags": []
+    }
+  },
+  "test_patterns": {
+    "quick": "basics/arithmetic/*.dr",
+    "basic": "basics/**/*.dr",
+    "core": "{basics,control_flow,functions}/**/*.dr",
+    "advanced": "advanced/**/*.dr",
+    "all": "**/*.dr",
+    "memory": "**/memory/*.dr",
+    "structs": "**/data_structures/*.dr",
+    "oop": "**/oop/*.dr"
+  },
+  "performance_thresholds": {
+    "compile_time_max_ms": 5000,
+    "runtime_max_ms": 1000,
+    "memory_max_mb": 100,
+    "test_suite_max_minutes": 5
+  },
+  "reporting": {
+    "save_results": true,
+    "generate_html": true,
+    "track_performance": true,
+    "retention_days": 30
+  },
+  "ci_cd": {
+    "fail_on_known_failures": false,
+    "require_all_categories": true,
+    "performance_regression_threshold": 20.0,
+    "minimum_pass_rate": {
+      "linux": 90.0,
+      "windows": 80.0
+    }
+  }
+}
