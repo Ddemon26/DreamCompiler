@@ -22,20 +22,11 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include <stdlib.h>\n");
   c_out_write(&builder, "#include <setjmp.h>\n");
 
-  DIR *hdr_dir = opendir("runtime");
-  if (hdr_dir) {
-    struct dirent *ent;
-    while ((ent = readdir(hdr_dir))) {
-      size_t len = strlen(ent->d_name);
-      if (len > 2 && strcmp(ent->d_name + len - 2, ".h") == 0) {
-        c_out_write(&builder, "#include \"");
-        c_out_write(&builder, ent->d_name);
-        c_out_write(&builder, "\"\n");
-      }
-    }
-    closedir(hdr_dir);
-    c_out_newline(&builder);
-  }
+  // Include runtime headers  
+  c_out_write(&builder, "#include \"../../src/runtime/console.h\"\n");
+  c_out_write(&builder, "#include \"../../src/runtime/custom.h\"\n");
+  c_out_write(&builder, "#include \"../../src/runtime/memory.h\"\n");
+  c_out_newline(&builder);
 
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");
   c_out_write(&builder, "static int dream_jmp_top = -1;\n");

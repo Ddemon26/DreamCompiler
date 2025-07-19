@@ -162,9 +162,9 @@ int main(int argc, char *argv[]) {
     const char *optflag =
         opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
 
-    DIR *rt = opendir("runtime");
+    DIR *rt = opendir("src/runtime");
     if (!rt) {
-      perror("opendir runtime");
+      perror("opendir src/runtime");
       return 1;
     }
 
@@ -177,8 +177,8 @@ int main(int argc, char *argv[]) {
         char obj[64];
         snprintf(obj, sizeof(obj), "%.*s.o", (int)len - 2, ent->d_name);
         snprintf(cmd, sizeof(cmd),
-                 "%s -g %s -c \"runtime%c%s\" -o \"build%c%s\"",
-                 cc, optflag, DR_PATH_SEP, ent->d_name, DR_PATH_SEP, obj);
+                 "%s -g %s -c \"src%cruntime%c%s\" -o \"build%c%s\"",
+                 cc, optflag, DR_PATH_SEP, DR_PATH_SEP, ent->d_name, DR_PATH_SEP, obj);
         res = system(cmd);
         if (res != 0) {
           fprintf(stderr, "failed to run: %s\n", cmd);
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
 #ifdef _WIN32
     char link_cmd[512];
     snprintf(link_cmd, sizeof(link_cmd),
-             "%s -g %s -Iruntime \"build%cbin%cdream.c\"",
+             "%s -g %s -Isrc/runtime \"build%cbin%cdream.c\"",
              cc, optflag, DR_PATH_SEP, DR_PATH_SEP);
     for (size_t i = 0; i < obj_count; i++) {
       strncat(link_cmd, " \"build", sizeof(link_cmd) - strlen(link_cmd) - 1);
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
     snprintf(cmd, sizeof(cmd),
-             "%s -g %s -Iruntime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
+             "%s -g %s -Isrc/runtime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
              cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
