@@ -75,11 +75,16 @@ The combined token set recognised by the lexer includes all C# operators and pun
 ### 2.1 Compilation unit
 
 ```ebnf
-CompilationUnit     ::= { UsingDirective } { TopLevelDeclaration } EOF                // Implemented
-UsingDirective      ::= "using" Identifier ";"                                        // Partial (parsed; ignored until modules)
-TopLevelDeclaration ::= ClassDeclaration                                              // Implemented
-                     |  FunctionDeclaration                                           // Implemented
-                     |  GlobalVariableDeclaration                                     // Implemented
+CompilationUnit     ::= { ModuleDirective } { ImportDirective } { TopLevelDeclaration } EOF    // Enhanced
+ModuleDirective     ::= "module" Identifier ";"                                                 // New (optional module declaration)
+ImportDirective     ::= "import" ModulePath ";"                                                 // New (replaces UsingDirective)
+                     |  "using" Identifier ";"                                                  // Legacy (kept for compatibility)
+ModulePath          ::= Identifier { "." Identifier }                                           // New (dotted module names)
+TopLevelDeclaration ::= ClassDeclaration                                                        // Implemented
+                     |  FunctionDeclaration                                                     // Implemented  
+                     |  GlobalVariableDeclaration                                               // Implemented
+                     |  ExportDeclaration                                                       // New (for multi-file support)
+ExportDeclaration   ::= "export" ( FunctionDeclaration | ClassDeclaration | GlobalVariableDeclaration )  // New
 ```
 
 ### 2.2 Types

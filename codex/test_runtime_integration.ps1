@@ -85,6 +85,14 @@ foreach ($target in $targets) {
     }
 }
 
+# Test 6: Custom runtime library detection
+Write-Host "`nTest 6: Custom Runtime Library" -ForegroundColor Yellow
+if (Test-Path "build/custom.o" -or (Test-Path "build/libdruntime.a" -and (ar t "build/libdruntime.a" | Select-String -Quiet "custom.o"))) {
+    Write-Host "✓ Test 6 PASSED: custom runtime library compiled" -ForegroundColor Green
+} else {
+    Write-Host "✗ Test 6 FAILED: custom runtime object missing" -ForegroundColor Red
+}
+
 # Cleanup temporary files
 Remove-Item "tests/temp_test*.dr" -ErrorAction SilentlyContinue
 

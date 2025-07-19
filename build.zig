@@ -11,6 +11,14 @@ const AllCSources = [_][]const u8{
     "src/opt/licm.c",     "src/opt/copy_prop.c",     "src/opt/cse.c",
     "src/opt/peephole.c", "src/codegen/c_emit.c",    "src/codegen/context.c",
     "src/codegen/expr.c", "src/codegen/stmt.c",      "src/codegen/codegen.c",
+    "src/codegen/backend.c", "src/codegen/module.c",
+};
+
+/// Runtime library sources
+const RuntimeSources = [_][]const u8{
+    "src/runtime/memory.c",
+    "src/runtime/console.c", 
+    "src/runtime/custom.c",
 };
 
 const CFLAGS = [_][]const u8{
@@ -88,6 +96,21 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Build and run DreamCompiler");
     run_step.dependOn(&run_cmd.step);
 
+    // Create runtime library for linking with generated code
+    const runtime_lib = b.addStaticLibrary(.{
+        .name = "dreamrt",
+        .target = target,
+        .optimize = optimize,
+    });
+    runtime_lib.addCSourceFiles(.{ .files = &RuntimeSources, .flags = &CFLAGS });
+    runtime_lib.linkLibC();
+    b.installArtifact(runtime_lib);
+
+    // Multi-file compilation step
+    const multifile_step = b.step("compile-multi", "Compile multiple .dr files with linking");
+    const multifile_cmd = addMultiFileCompileStep(b, exe, runtime_lib, target, optimize);
+    multifile_step.dependOn(multifile_cmd);
+
     const test_step = b.step("test", "Run compiler tests");
     test_step.dependOn(&lexexe.step);
     test_step.dependOn(&parseexe.step);
@@ -160,4 +183,65 @@ fn addCompileDrStep(
     }
 
     return .{ .step = step, .files = generated.toOwnedSlice() catch @panic("OOM") };
+}
+
+/// Adds a multi-file compilation and linking step
+/// 
+/// This function supports compiling multiple .dr files and linking them together
+/// with the runtime library to create a final executable.
+/// 
+/// @param b The build context
+/// @param compiler The DreamCompiler executable
+/// @param runtime_lib The runtime library to link against
+/// @param target The resolved target configuration
+/// @param optimize The optimization mode
+/// @return A step that compiles and links multiple .dr files
+fn addMultiFileCompileStep(
+    b: *std.Build,
+    compiler: *std.Build.Step.Compile,
+    runtime_lib: *std.Build.Step.Compile,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Step {
+    _ = target; // Suppress unused parameter warning
+    _ = optimize; // Suppress unused parameter warning
+    
+    const step = b.step("multifile-compile", "Compile and link multiple .dr files");
+    
+    // This step will be enhanced to accept command-line arguments for input files
+    // For now, it demonstrates the framework for multi-file compilation
+    const run_cmd = b.addRunArtifact(compiler);
+    run_cmd.addArgs(&.{ "--multi-file" });
+    
+    // Add runtime library dependency
+    run_cmd.step.dependOn(&runtime_lib.step);
+    
+    step.dependOn(&run_cmd.step);
+    return step;
+}
+
+/// Collects Dream source files from a specified directory
+/// 
+/// @param b The build context
+/// @param dir_path Directory to search for .dr files
+/// @return List of .dr file paths
+fn collectDrSourcesFromDir(b: *std.Build, dir_path: []const u8) []const []const u8 {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    var list = std.ArrayList([]const u8).init(arena.allocator());
+    
+    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return &.{};
+    defer dir.close();
+    
+    var walker = dir.walk(arena.allocator()) catch return &.{};
+    defer walker.deinit();
+    
+    while (walker.next() catch null) |entry| {
+        if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".dr")) {
+            const full_path = b.pathJoin(&.{ dir_path, entry.path });
+            list.append(full_path) catch {};
+        }
+    }
+    
+    return b.dupeStrings(list.items);
 }

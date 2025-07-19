@@ -52,3 +52,5 @@ vscode/*.vsix
 /idea/.idea
 /idea/.gradle
 src/lexer/lexer.c
+/.claude
+CLAUDE.md
