@@ -1,0 +1,6 @@
+// Expected: ok
+class Bar {
+    int y;
+}
+Bar g = new Bar();
+Console.WriteLine("ok");

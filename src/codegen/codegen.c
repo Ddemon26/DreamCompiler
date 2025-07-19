@@ -20,7 +20,8 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include <string.h>\n");
   c_out_write(&builder, "#include <stdlib.h>\n");
   c_out_write(&builder, "#include <setjmp.h>\n");
-  c_out_write(&builder, "#include \"console.h\"\n\n");
+  c_out_write(&builder, "#include \"console.h\"\n");
+  c_out_write(&builder, "#include \"memory.h\"\n\n");
 
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");
   c_out_write(&builder, "static int dream_jmp_top = -1;\n");
@@ -33,17 +34,19 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
               "static char *dream_concat(const char *a,const char *b){\n");
   c_out_write(&builder, "    const size_t la=strlen(a);\n");
   c_out_write(&builder, "    const size_t lb=strlen(b);\n");
-  c_out_write(&builder, "    char *r=malloc(la+lb+1);\n");
+  c_out_write(&builder, "    char *r=dr_alloc(la+lb+1);\n");
   c_out_write(&builder, "    memcpy(r,a,la);\n");
   c_out_write(&builder, "    memcpy(r+la,b,lb);\n");
   c_out_write(&builder, "    r[la+lb]=0;\n    return r;\n}\n\n");
 
   c_out_write(&builder, "static char *dream_readline(void){\n");
-  c_out_write(&builder, "    static char buf[256];\n");
+  c_out_write(&builder, "    char buf[256];\n");
   c_out_write(&builder, "    if(!fgets(buf,sizeof buf,stdin)) return NULL;\n");
   c_out_write(&builder, "    size_t len=strlen(buf);\n");
-  c_out_write(&builder, "    if(len && buf[len-1]=='\\n') buf[len-1]=0;\n");
-  c_out_write(&builder, "    return buf;\n}\n\n");
+  c_out_write(&builder, "    if(len && buf[len-1]=='\\n') len--;\n");
+  c_out_write(&builder, "    char *r=dr_alloc(len+1);\n");
+  c_out_write(&builder, "    memcpy(r,buf,len);\n");
+  c_out_write(&builder, "    r[len]=0;\n    return r;\n}\n\n");
 
   CGTypeInfo *tinfo = NULL;
   size_t tlen = 0, tcap = 0;
@@ -110,8 +113,10 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
     c_out_write(&builder, "int main(void){\n");
     c_out_indent(&builder);
     if (has_main == 2) {
-      c_out_write(&builder, "return %.*s_main();\n", (int)main_class.len,
+      c_out_write(&builder, "int r = %.*s_main();\n", (int)main_class.len,
                   main_class.start);
+      c_out_write(&builder, "dr_release_all();\n");
+      c_out_write(&builder, "return r;\n");
     } else {
       CGCtx ctx = {0};
       ctx.ret_type = TK_KW_INT;
@@ -123,7 +128,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
       }
       cgctx_scope_leave(&ctx);
       free(ctx.vars);
-      c_out_write(&builder, "return 0;\n");
+      c_out_write(&builder, "dr_release_all();\nreturn 0;\n");
     }
     c_out_dedent(&builder);
     c_out_write(&builder, "}\n");

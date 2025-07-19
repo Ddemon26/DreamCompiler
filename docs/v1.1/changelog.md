@@ -82,3 +82,6 @@ Version 1.1.10 (2025-07-25)
 - SCCP now folds conditional branches and prunes unreachable blocks.
 - `DreamCompiler` accepts `-O1`/`-O2`/`-O3` and forwards optimisation flags to
   the C compiler.
+Version 1.1.11 (2025-08-01)
+- Introduced rudimentary reference counting for strings and class instances.
+- All allocations are tracked and freed on program exit.

@@ -167,19 +167,29 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "failed to run: %s\n", cmd);
       return 1;
     }
+    snprintf(cmd, sizeof(cmd),
+             "%s %s -c \"runtime%cmemory.c\" -o \"build%cmemory.o\"", cc,
+             optflag, DR_PATH_SEP, DR_PATH_SEP);
+    res = system(cmd);
+    if (res != 0) {
+      fprintf(stderr, "failed to run: %s\n", cmd);
+      return 1;
+    }
 #ifdef _WIN32
     snprintf(cmd, sizeof(cmd),
-             "%s %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" -o "
-             "\"%s\"",
-             cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+             "%s %s -Iruntime \"build%cbin%cdream.c\" \"build%cconsole.o\" "
+             "\"build%cmemory.o\" -o \"%s\"",
+             cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP,
+             DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
       return 1;
     }
 #else
-    snprintf(cmd, sizeof(cmd), "ar rcs build%clibdruntime.a build%cconsole.o",
-             DR_PATH_SEP, DR_PATH_SEP);
+    snprintf(cmd, sizeof(cmd),
+             "ar rcs build%clibdruntime.a build%cconsole.o build%cmemory.o",
+             DR_PATH_SEP, DR_PATH_SEP, DR_PATH_SEP);
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
