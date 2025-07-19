@@ -16,14 +16,14 @@
     // Linux-specific implementation
   #endif
   ```
-* In build and CI scripts, detect the OS and set appropriate commands and flags. Example in Bash:
+* In build and CI scripts, detect the OS and set appropriate commands and flags. Example in PowerShell:
 
-  ```bash
-  if [[ "$(uname -s)" == "Linux" ]]; then
-    zig build
-  elif [[ "$OS" == "Windows_NT" ]]; then
-    zig build
-  fi
+  ```powershell
+  if ($IsWindows) {
+      zig build
+  } elseif ($IsLinux) {
+      zig build
+  }
   ```
 * Ensure Python helper scripts adapt at runtime:
 
@@ -35,6 +35,21 @@
       # Linux paths or commands
   ```
 * Validate cross-platform compatibility by running CI jobs on both Linux and Windows matrices.
+
+### Windows-Specific Build Instructions
+
+* **Prerequisites**: Install Zig 0.15.0+, MinGW-w64 (for GCC), and re2c
+* **Build Command**: Use `zig build` (same as Linux)
+* **Test Command**: Use `python codex/python/test_runner` or `python codex/python/test_runner --debug` for verbose output
+* **Shell Commands**: Use PowerShell with `;` as command separator instead of `&&`
+* **Path Separators**: The compiler automatically handles Windows path separators (`\` vs `/`)
+* **Executable Names**: Windows executables have `.exe` extension (handled automatically)
+
+### Known Windows Issues
+
+* **Struct Declaration Parsing**: There is a known issue where struct declarations followed by variable declarations using those structs are not parsed correctly on Windows. This causes "incomplete type" errors during C compilation. The issue is in the parser's type vector management and affects tests in `tests/advanced/data_structures/` and `tests/advanced/oop/`.
+* **Workaround**: Struct declarations work correctly when not followed by variable declarations using the struct type.
+* **Status**: Under investigation - the issue appears to be in the `typevec_contains` function or the interaction between struct parsing and variable declaration parsing.
 
 ---
 
@@ -77,11 +92,24 @@ calls are removed or guarded before release builds.
 ## Testing Instructions
 
 * The CI plan lives at `.github/workflows/ci.yml`.
-* **Run everything** – from the repo root, use `make test` (or `./test_runner`).
-* **Narrow scope** – use `make test FILTER="<pattern>"` (or `./test_runner --filter "<pattern>"`) to run only matching tests.
+* **Run everything** – from the repo root:
+  - Linux: `make test` (or `./test_runner`)
+  - Windows: `python codex/python/test_runner`
+* **Narrow scope** – run specific tests:
+  - Linux: `make test FILTER="<pattern>"` (or `./test_runner --filter "<pattern>"`)
+  - Windows: `python codex/python/test_runner --filter="<pattern>"`
+* **Debug mode** – for verbose output:
+  - Windows: `python codex/python/test_runner --debug`
+  - Linux: Similar debug flags available
 * Fix *all* test or type errors until the whole suite is green.
 * After moving files or changing `#include` paths, run `zig fmt --check` and `zig build` to ensure formatting and compilation still pass.
 * *Always* add or update tests for the code you change, even if nobody asked.
+
+### Windows Test Status
+
+* **Passing**: Basic arithmetic, control flow, functions, I/O, and most language features
+* **Failing**: Struct-related tests due to parsing issues (see Known Windows Issues above)
+* **Total Pass Rate**: ~85% of tests pass on Windows (all non-struct tests)
 
 ---
 
@@ -140,16 +168,37 @@ When the command `go` is issued the agent should:
 
     * Run `zig build` (using OS defines if needed to adjust flags).
     * If any Zig test files (`*.zig`) are present in the `tests/` directory, run `zig build test`; otherwise, skip it.
-    * Run `make test` (or `./test_runner`).
+    * Run tests:
+      - Linux: `make test` (or `./test_runner`)
+      - Windows: `python codex/python/test_runner`
     * Optionally, run `zig build run -- <file.dr>`.
-6. **Commit** once tests succeed.
+6. **Cross-platform validation**
+
+    * Ensure tests pass on both Linux and Windows
+    * On Windows, expect struct-related tests to fail due to known parsing issues
+    * Document any platform-specific issues or workarounds
+7. **Commit** once tests succeed on the target platform.
 
 ---
 
 ## Environment
 
-* Ubuntu-based or Windows shell with Git, Zig (`>=0.13.0`), **GCC**/**MSVC**, **Make**/**nmake**, **GDB**/**WinDbg**, and **re2c** available.
-* Additional packages installed via `codex/_startup.sh` (Linux) or `codex/_startup.ps1` (Windows).
+### Linux Environment
+* Ubuntu-based shell with Git, Zig (`>=0.13.0`), **GCC**, **Make**, **GDB**, and **re2c** available.
+* Additional packages installed via `codex/_startup.sh`.
+
+### Windows Environment  
+* Windows 10/11 with PowerShell, Git, Zig (`>=0.15.0`), **MinGW-w64** (for GCC), and **re2c** available.
+* Additional packages can be installed via `codex/_startup.ps1` (if available).
+* **Required Tools**:
+  - Zig 0.15.0+ (add to PATH)
+  - MinGW-w64 (provides GCC for Windows)
+  - re2c (for lexer generation)
+  - Python 3.8+ (for test runner)
+* **Installation Notes**:
+  - Use Chocolatey, Scoop, or manual installation for tools
+  - Ensure `zig cc` works as the C compiler
+  - Test with `zig build` and `python codex/python/test_runner`
 
 ---
 

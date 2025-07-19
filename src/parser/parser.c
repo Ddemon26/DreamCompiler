@@ -599,6 +599,9 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
     next(p);
   else
     diag_push(p, p->tok.pos, DIAG_ERROR, "expected '}'");
+  // Consume optional semicolon after struct/class declaration
+  if (p->tok.kind == TK_SEMICOLON)
+    next(p);
   Node *n = node_new(p->arena, kind);
   n->pos = start_pos;
   n->as.type_decl.name = name;
