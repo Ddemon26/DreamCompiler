@@ -38,6 +38,7 @@
 - Vulkan handle and struct definitions for interop with the Vulkan API
 - Vulkan helper `dr_vk_enumerate_physical_devices` returns available devices
 - Runtime stubs `dr_vkCreateInstance` and `dr_vkDestroyInstance` call through to Vulkan
+- Vulkan module exposes `createInstance`, `destroyInstance`, device creation and buffer/memory management functions
 
 ## Missing Features
 
