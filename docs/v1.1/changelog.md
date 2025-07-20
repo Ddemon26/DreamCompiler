@@ -93,3 +93,7 @@ Version 1.1.12 (2025-08-05)
 
 Version 1.1.13 (2025-08-10)
 - Introduced Vulkan handle and struct definitions in the standard library.
+
+Version 1.1.14 (2025-08-15)
+- Added `dr_vk_enumerate_physical_devices` runtime helper returning a list of
+  available devices.

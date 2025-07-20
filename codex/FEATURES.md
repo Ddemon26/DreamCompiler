@@ -36,6 +36,7 @@
 - Instance methods on classes (emitted as C functions with a `this` pointer)
 - Exception handling with `try`/`catch` statements and `throw`
 - Vulkan handle and struct definitions for interop with the Vulkan API
+- Vulkan helper `dr_vk_enumerate_physical_devices` returns available devices
 
 ## Missing Features
 

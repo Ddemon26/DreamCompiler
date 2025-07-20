@@ -14,6 +14,12 @@ public struct VkCommandBuffer { long value; }
 public struct VkSurfaceKHR { long value; }
 public struct VkSwapchainKHR { long value; }
 
+// Helper structure returned by Vulkan.enumeratePhysicalDevices
+public struct VkPhysicalDeviceList {
+  VkPhysicalDevice* devices;
+  uint count;
+}
+
 // Primary result codes returned by Vulkan functions
 public enum VkResult {
   Success = 0,
@@ -40,4 +46,9 @@ public struct VkInstanceCreateInfo {
   VkApplicationInfo* appInfo;
   uint enabledExtensionCount;
   long ppEnabledExtensionNames; // char*[] pointer
+}
+
+public class Vulkan {
+  @extern("dr_vk_enumerate_physical_devices")
+  public static extern VkPhysicalDeviceList enumeratePhysicalDevices(VkInstance instance);
 }
