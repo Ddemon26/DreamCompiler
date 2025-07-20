@@ -20,6 +20,7 @@ const RuntimeSources = [_][]const u8{
     "src/runtime/console.c", 
     "src/runtime/custom.c",
     "src/runtime/task.c",
+    "src/runtime/exception.c",
 };
 
 const CFLAGS = [_][]const u8{

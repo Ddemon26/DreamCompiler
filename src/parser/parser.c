@@ -510,18 +510,51 @@ static Node *parse_try(Parser *p) {
   Node *body = parse_stmt(p);
   Node *catch_body = NULL;
   Node *finally_body = NULL;
+  Slice catch_param = {NULL, 0};
+  Slice catch_type = {NULL, 0};
+  
   if (p->tok.kind == TK_KW_CATCH) {
-    next(p);
+    next(p); // consume 'catch'
+    
+    // Parse optional catch parameter: catch (Exception e)
+    if (p->tok.kind == TK_LPAREN) {
+      next(p); // consume '('
+      
+      // Parse exception type
+      if (p->tok.kind == TK_IDENT) {
+        catch_type.start = p->tok.start;
+        catch_type.len = p->tok.len;
+        next(p);
+        
+        // Parse parameter name
+        if (p->tok.kind == TK_IDENT) {
+          catch_param.start = p->tok.start;
+          catch_param.len = p->tok.len;
+          next(p);
+        }
+      }
+      
+      if (p->tok.kind == TK_RPAREN) {
+        next(p); // consume ')'
+      } else {
+        diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
+      }
+    }
+    
     catch_body = parse_stmt(p);
   }
+  
   if (p->tok.kind == TK_KW_FINALLY) {
     next(p);
     finally_body = parse_stmt(p);
   }
+  
   Node *n = node_new(p->arena, ND_TRY);
   n->as.try_stmt.body = body;
   n->as.try_stmt.catch_body = catch_body;
   n->as.try_stmt.finally_body = finally_body;
+  n->as.try_stmt.catch_param = catch_param;
+  n->as.try_stmt.catch_type = catch_type;
   return n;
 }
 

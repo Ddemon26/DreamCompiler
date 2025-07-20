@@ -501,12 +501,19 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     break;
   case ND_THROW:
     if (n->as.throw_stmt.expr) {
-      c_out_write(b, "(void)(");
+      // Throw with expression (use expression as message)
+      c_out_write(b, "{\n");
+      c_out_indent(b);
+      c_out_write(b, "char *exc_msg = ");
       cg_emit_expr(ctx, b, n->as.throw_stmt.expr);
-      c_out_write(b, ");\n");
+      c_out_write(b, ";\n");
+      c_out_write(b, "dream_exception_throw(DREAM_EXC_GENERIC, exc_msg, __FILE__, __LINE__);\n");
+      c_out_dedent(b);
+      c_out_write(b, "}\n");
+    } else {
+      // Throw without expression (generic exception)
+      c_out_write(b, "dream_exception_throw(DREAM_EXC_GENERIC, \"An exception occurred\", __FILE__, __LINE__);\n");
     }
-    c_out_write(b, "dream_throw();");
-    c_out_newline(b);
     break;
   case ND_BLOCK: {
     c_out_write(b, "{");
@@ -576,29 +583,62 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     }
     c_out_newline(b);
     break;
-  case ND_TRY:
-    c_out_write(b, "{");
-    c_out_newline(b);
+  case ND_TRY: {
+    int has_finally = n->as.try_stmt.finally_body != NULL;
+    
+    c_out_write(b, "{\n");
     c_out_indent(b);
-    c_out_write(b, "dream_jmp_top++;\n");
-    c_out_write(b, "if (!setjmp(dream_jmp_buf[dream_jmp_top])) {\n");
+    
+    // Push exception context
+    c_out_write(b, "jmp_buf* exc_buf = dream_exception_push(%d);\n", has_finally);
+    c_out_write(b, "if (exc_buf && setjmp(*exc_buf) == 0) {\n");
     c_out_indent(b);
+    
+    // Try block
     cg_emit_stmt(ctx, b, n->as.try_stmt.body, src_file);
-    c_out_write(b, "dream_jmp_top--;\n");
+    
     c_out_dedent(b);
     c_out_write(b, "} else {\n");
     c_out_indent(b);
-    c_out_write(b, "dream_jmp_top--;\n");
-    if (n->as.try_stmt.catch_body)
-      cg_emit_stmt(ctx, b, n->as.try_stmt.catch_body, src_file);
+    
+    // Catch block
+    if (n->as.try_stmt.catch_body) {
+      // If we have catch parameter, declare it
+      if (n->as.try_stmt.catch_param.len > 0) {
+        // Declare exception variable in catch scope
+        cgctx_scope_enter(ctx);
+        if (n->as.try_stmt.catch_type.len > 0) {
+          // Custom exception type
+          c_out_write(b, "/* TODO: Custom exception type %.*s */\n",
+                     (int)n->as.try_stmt.catch_type.len, n->as.try_stmt.catch_type.start);
+        }
+        c_out_write(b, "DreamException *%.*s = dream_exception_current();\n",
+                   (int)n->as.try_stmt.catch_param.len, n->as.try_stmt.catch_param.start);
+        
+        cg_emit_stmt(ctx, b, n->as.try_stmt.catch_body, src_file);
+        cgctx_scope_leave(ctx);
+      } else {
+        cg_emit_stmt(ctx, b, n->as.try_stmt.catch_body, src_file);
+      }
+    }
+    
     c_out_dedent(b);
     c_out_write(b, "}\n");
-    if (n->as.try_stmt.finally_body)
+    
+    // Finally block
+    if (n->as.try_stmt.finally_body) {
+      c_out_write(b, "/* Finally block */\n");
       cg_emit_stmt(ctx, b, n->as.try_stmt.finally_body, src_file);
+      c_out_write(b, "dream_exception_finally_executed();\n");
+    }
+    
+    // Pop exception context
+    c_out_write(b, "dream_exception_pop();\n");
+    
     c_out_dedent(b);
-    c_out_write(b, "}");
-    c_out_newline(b);
+    c_out_write(b, "}\n");
     break;
+  }
   default:
     break;
   }

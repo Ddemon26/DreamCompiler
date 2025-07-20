@@ -1,0 +1,15 @@
+// Test basic exception handling
+func int test_main() {
+    try {
+        Console.WriteLine("Before throw");
+        throw "Something went wrong!";
+        Console.WriteLine("This should not print");
+    } catch (Exception e) {
+        Console.WriteLine("Caught exception");
+    } finally {
+        Console.WriteLine("Finally block executed");
+    }
+    
+    Console.WriteLine("Program continues");
+    return 0;
+}

@@ -229,6 +229,8 @@ struct Node {
       Node *body;         /**< Body of the try block. */
       Node *catch_body;   /**< Catch block (may be NULL). */
       Node *finally_body; /**< Finally block (may be NULL). */
+      Slice catch_param;  /**< Name of catch parameter (e.g., "e" in catch(Exception e)). */
+      Slice catch_type;   /**< Type of catch parameter (e.g., "Exception"). */
     } try_stmt;
     struct {
       Node *expr; /**< Expression to throw (may be NULL). */

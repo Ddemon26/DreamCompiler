@@ -64,6 +64,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include \"../libs/console.h\"\n");
   c_out_write(&builder, "#include \"../libs/custom.h\"\n");
   c_out_write(&builder, "#include \"../libs/memory.h\"\n");
+  c_out_write(&builder, "#include \"../libs/exception.h\"\n");
   
   // Only include task.h when async functions are used
   if (has_async_functions(root)) {
@@ -71,12 +72,10 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   }
   c_out_newline(&builder);
 
-  c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");
-  c_out_write(&builder, "static int dream_jmp_top = -1;\n");
-  c_out_write(
-      &builder,
-      "static void "
-      "dream_throw(void){longjmp(dream_jmp_buf[dream_jmp_top],1);}\n\n");
+  // Initialize exception handling system
+  c_out_write(&builder, "static void dream_init_runtime(void) {\n");
+  c_out_write(&builder, "    dream_exception_init();\n");
+  c_out_write(&builder, "}\n\n");
 
   c_out_write(&builder,
               "static char *dream_concat(const char *a,const char *b){\n");
@@ -161,6 +160,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   if (has_main != 1) {
     c_out_write(&builder, "int main(void){\n");
     c_out_indent(&builder);
+    c_out_write(&builder, "dream_init_runtime();\n");
     if (has_main == 2) {
       c_out_write(&builder, "int r = %.*s_main();\n", (int)main_class.len,
                   main_class.start);
