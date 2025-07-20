@@ -249,64 +249,71 @@ class TestManager:
         return expected_output, options
         
     def compile_test(self, test_path: Path, options: List[str]) -> Tuple[bool, float, str]:
-        """Compile a single test file using DreamCompiler"""
+        """Compile a single test file and link with runtime library"""
         start_time = time.time()
-        
-        # Find DreamCompiler executable
+
+        # Ensure compiler and runtime library are built
+        if self.run_command(["zig", "build"]).returncode != 0:
+            return False, 0.0, "Build failed"
+
         is_windows = platform.system() == "Windows"
         compiler_name = "DreamCompiler.exe" if is_windows else "DreamCompiler"
-        
-        # Possible compiler locations 
+
         possible_paths = [
-            ROOT / "zig-out" / "bin" / compiler_name,  # Zig build output
-            ROOT / "build" / "bin" / compiler_name,    # Build directory
-            ROOT / compiler_name,                      # Root directory
+            ROOT / "zig-out" / "bin" / compiler_name,
+            ROOT / "build" / "bin" / compiler_name,
+            ROOT / compiler_name,
         ]
-        
+
         compiler_path = None
         for path in possible_paths:
             if path.exists():
                 compiler_path = path
                 break
-                
+
         if not compiler_path:
-            return False, 0.0, f"DreamCompiler executable not found. Build the project first with 'zig build'"
-        
-        # Use --dev flag to avoid compilation issues and just generate C code
+            return False, 0.0, "DreamCompiler executable not found"
+
         cmd = [str(compiler_path), "--dev"] + options + [str(test_path)]
-        
-        try:
-            result = self.run_command(cmd)
-            compile_time = time.time() - start_time
-            
-            if result.returncode != 0:
-                return False, compile_time, result.stderr
-                
-            return True, compile_time, result.stdout
-            
-        except subprocess.TimeoutExpired:
-            return False, time.time() - start_time, "Compilation timeout"
+        result = self.run_command(cmd)
+        if result.returncode != 0:
+            return False, time.time() - start_time, result.stderr
+
+        exe = "dream.exe" if is_windows else "dream"
+        exe_path = ROOT / exe
+        lib = ROOT / "zig-out" / "lib" / "libdreamrt.a"
+        cc_cmd = [
+            "zig",
+            "cc",
+            "-Isrc/runtime",
+            "build/bin/dream.c",
+            str(lib),
+            "-o",
+            str(exe_path),
+        ]
+        link_res = self.run_command(cc_cmd)
+        compile_time = time.time() - start_time
+        if link_res.returncode != 0:
+            return False, compile_time, link_res.stderr
+
+        return True, compile_time, link_res.stdout
             
     def execute_test(self, test_path: Path) -> Tuple[bool, float, str]:
-        """For DreamCompiler tests, execution is part of compilation with --dev flag"""
-        # Since we use --dev flag, the "execution" is just reading the expected output
-        # and checking if compilation produced the right C code structure
-        
-        # Check if generated C file exists
-        c_file_path = ROOT / "build" / "bin" / "dream.c"
-        if c_file_path.exists():
-            try:
-                with open(c_file_path, 'r') as f:
-                    c_content = f.read()
-                    # Basic validation that C code was generated
-                    if "main(" in c_content or "int main" in c_content:
-                        return True, 0.0, "C code generated successfully"
-                    else:
-                        return False, 0.0, "Generated C code appears incomplete"
-            except Exception as e:
-                return False, 0.0, f"Error reading generated C file: {e}"
-        else:
-            return False, 0.0, "No C code generated"
+        """Run the compiled test executable"""
+        _ = test_path
+        start_time = time.time()
+
+        exe = "dream.exe" if platform.system() == "Windows" else "dream"
+        exe_path = ROOT / exe
+        if not exe_path.exists():
+            return False, 0.0, "Executable not found"
+
+        res = self.run_command([str(exe_path)])
+        runtime = time.time() - start_time
+        if res.returncode != 0:
+            return False, runtime, res.stderr
+
+        return True, runtime, res.stdout.strip()
             
     def run_single_test(self, test_path: Path) -> TestResult:
         """Execute a single test with comprehensive result tracking"""

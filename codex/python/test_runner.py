@@ -28,7 +28,7 @@ def run_cmd(cmd: list[str], *, cwd: Path = ROOT) -> subprocess.CompletedProcess:
     return res
 
 def run_test(path: Path) -> bool:
-    """Compile and execute a single test file."""
+    """Compile and execute a single test file with runtime library."""
     logging.info("Testing %s", path)
     text = path.read_text()
     matches = re.findall(r"//\s*Expected:\s*(.*)", text)
@@ -45,20 +45,40 @@ def run_test(path: Path) -> bool:
         parts.append(m)
     expected = "\n".join(parts)
 
-    args = ["zig", "build", "run", "--"]
-    if opts:
-        args.extend(opts[0].split())
-    args.append(str(path))
+    # Ensure compiler and runtime library are built
+    if run_cmd(["zig", "build"]).returncode != 0:
+        logging.error("[FAIL] %s (build failed)", path)
+        return False
 
-    res = run_cmd(args)
-    if res.returncode != 0:
+    compiler = ROOT / "zig-out" / "bin" / "DreamCompiler"
+    if platform.system() == "Windows":
+        compiler = compiler.with_suffix(".exe")
+
+    # Generate C code only
+    cmd = [str(compiler), "--dev"]
+    if opts:
+        cmd.extend(opts[0].split())
+    cmd.append(str(path))
+    if run_cmd(cmd).returncode != 0:
         logging.error("[FAIL] %s (compile error)", path)
         return False
 
     exe = "dream.exe" if platform.system() == "Windows" else "dream"
     exe_path = ROOT / exe
-    if not exe_path.exists():
-        logging.error("[FAIL] %s (compiled binary '%s' missing)", path, exe_path)
+    lib = ROOT / "zig-out" / "lib" / "libdreamrt.a"
+
+    # Compile generated C code with runtime library
+    cc_cmd = [
+        "zig",
+        "cc",
+        "-Isrc/runtime",
+        "build/bin/dream.c",
+        str(lib),
+        "-o",
+        str(exe_path),
+    ]
+    if run_cmd(cc_cmd).returncode != 0:
+        logging.error("[FAIL] %s (link error)", path)
         return False
 
     res2 = run_cmd([str(exe_path)])
@@ -71,7 +91,12 @@ def run_test(path: Path) -> bool:
         logging.info("[PASS] %s", path)
         return True
 
-    logging.error("[FAIL] %s (expected '%s', got '%s')", path, expected, output)
+    logging.error(
+        "[FAIL] %s (expected '%s', got '%s')",
+        path,
+        expected,
+        output,
+    )
     return False
 
 def main() -> None:
