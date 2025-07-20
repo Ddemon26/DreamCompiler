@@ -99,3 +99,6 @@ Version 1.1.14 (2025-08-15)
   available devices.
 Version 1.1.15 (2025-08-22)
 - Added `dr_vkCreateInstance` and `dr_vkDestroyInstance` runtime stubs for simple Vulkan setup.
+
+Version 1.1.16 (2025-08-30)
+- Published `Vulkan` standard module exposing instance creation, device enumeration and basic device/buffer management functions.

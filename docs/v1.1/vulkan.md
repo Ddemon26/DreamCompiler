@@ -22,3 +22,36 @@ Console.WriteLine(list.count);
 ```
 
 The returned `VkPhysicalDeviceList` struct contains a pointer to the devices array and a `count` field. Memory for the array is allocated with `dr_alloc` and should be released with `dr_release` when no longer needed.
+
+## Creating and Destroying an Instance
+
+Dream exposes wrappers for `vkCreateInstance` and `vkDestroyInstance` through the `Vulkan` class. Instance creation mirrors the C API closely:
+
+```dream
+VkInstance inst;
+VkResult res = Vulkan.createInstance(&info, &inst);
+if (res != VkResult.Success) {
+  Console.WriteLine("Failed to create instance");
+}
+// ... use the instance ...
+Vulkan.destroyInstance(inst);
+```
+
+Before calling any Vulkan function you can check availability and version using `Vulkan.available()` and `Vulkan.version()`.
+
+## Creating Devices and Buffers
+
+More advanced wrappers directly expose core Vulkan entry points for device and buffer management:
+
+```dream
+VkDevice dev;
+Vulkan.createDevice(list.devices[0], &deviceInfo, null, &dev);
+
+VkBuffer buf;
+Vulkan.createBuffer(dev, &bufferInfo, null, &buf);
+// allocate and bind memory...
+Vulkan.destroyBuffer(dev, buf, null);
+Vulkan.destroyDevice(dev, null);
+```
+
+These APIs retain Vulkan's low-level behaviour, requiring callers to manage memory and error codes just like the native C interface.

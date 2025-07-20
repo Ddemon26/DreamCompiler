@@ -13,6 +13,8 @@ public struct VkQueue { long value; }
 public struct VkCommandBuffer { long value; }
 public struct VkSurfaceKHR { long value; }
 public struct VkSwapchainKHR { long value; }
+public struct VkBuffer { long value; }
+public struct VkDeviceMemory { long value; }
 
 // Helper structure returned by Vulkan.enumeratePhysicalDevices
 public struct VkPhysicalDeviceList {
@@ -48,7 +50,79 @@ public struct VkInstanceCreateInfo {
   long ppEnabledExtensionNames; // char*[] pointer
 }
 
+// Minimal device creation structures
+public struct VkDeviceQueueCreateInfo {
+  uint queueFamilyIndex;
+  uint queueCount;
+  long pQueuePriorities; // float* pointer
+}
+
+public struct VkDeviceCreateInfo {
+  uint queueCreateInfoCount;
+  VkDeviceQueueCreateInfo* pQueueCreateInfos;
+}
+
+public struct VkBufferCreateInfo {
+  ulong size;
+  uint usage;
+  uint sharingMode;
+}
+
+public struct VkMemoryAllocateInfo {
+  ulong allocationSize;
+  uint memoryTypeIndex;
+}
+
+public struct VkAllocationCallbacks {
+  long userData;
+}
+
 public class Vulkan {
+  @extern("dr_vulkan_available")
+  public static extern int available();
+
+  @extern("dr_vulkan_version")
+  public static extern uint version();
+
+  @extern("dr_vkCreateInstance")
+  public static extern VkResult createInstance(VkInstanceCreateInfo* info,
+                                               VkInstance* outInstance);
+
+  @extern("dr_vkDestroyInstance")
+  public static extern void destroyInstance(VkInstance instance);
+
   @extern("dr_vk_enumerate_physical_devices")
   public static extern VkPhysicalDeviceList enumeratePhysicalDevices(VkInstance instance);
+
+  @extern("vkCreateDevice")
+  public static extern VkResult createDevice(VkPhysicalDevice physicalDevice,
+                                             VkDeviceCreateInfo* info,
+                                             VkAllocationCallbacks* alloc,
+                                             VkDevice* outDevice);
+
+  @extern("vkDestroyDevice")
+  public static extern void destroyDevice(VkDevice device,
+                                          VkAllocationCallbacks* alloc);
+
+  @extern("vkCreateBuffer")
+  public static extern VkResult createBuffer(VkDevice device,
+                                             VkBufferCreateInfo* info,
+                                             VkAllocationCallbacks* alloc,
+                                             VkBuffer* outBuffer);
+
+  @extern("vkDestroyBuffer")
+  public static extern void destroyBuffer(VkDevice device,
+                                          VkBuffer buffer,
+                                          VkAllocationCallbacks* alloc);
+
+  @extern("vkAllocateMemory")
+  public static extern VkResult allocateMemory(VkDevice device,
+                                               VkMemoryAllocateInfo* info,
+                                               VkAllocationCallbacks* alloc,
+                                               VkDeviceMemory* outMemory);
+
+  @extern("vkFreeMemory")
+  public static extern void freeMemory(VkDevice device,
+                                       VkDeviceMemory memory,
+                                       VkAllocationCallbacks* alloc);
 }
