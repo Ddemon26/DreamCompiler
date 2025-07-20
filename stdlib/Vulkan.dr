@@ -1,0 +1,43 @@
+package stdlib;
+
+// Basic Vulkan handle representation using a 64-bit integer
+public struct VkHandle {
+  long value;
+}
+
+// Opaque handles for common Vulkan objects
+public struct VkInstance { long value; }
+public struct VkPhysicalDevice { long value; }
+public struct VkDevice { long value; }
+public struct VkQueue { long value; }
+public struct VkCommandBuffer { long value; }
+public struct VkSurfaceKHR { long value; }
+public struct VkSwapchainKHR { long value; }
+
+// Primary result codes returned by Vulkan functions
+public enum VkResult {
+  Success = 0,
+  NotReady = 1,
+  Timeout = 2,
+  EventSet = 3,
+  EventReset = 4,
+  Incomplete = 5,
+  ErrorOutOfHostMemory = -1,
+  ErrorOutOfDeviceMemory = -2,
+  ErrorInitializationFailed = -3,
+  ErrorDeviceLost = -4,
+}
+
+// Minimal subset of VkApplicationInfo for instance creation
+public struct VkApplicationInfo {
+  string applicationName;
+  string engineName;
+  uint   apiVersion;
+}
+
+// Minimal subset of VkInstanceCreateInfo referencing application info
+public struct VkInstanceCreateInfo {
+  VkApplicationInfo* appInfo;
+  uint enabledExtensionCount;
+  long ppEnabledExtensionNames; // char*[] pointer
+}
