@@ -212,6 +212,7 @@ build/              # Build artifacts
 .venv/              # Python virtual environment
 .git/               # Git repository data
 .idea/              # IntelliJ IDEA project files
+.vscode/            # VS Code tasks and launch configs
 ```
 
 ### Navigation Commands for CLI Agents

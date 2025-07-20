@@ -30,7 +30,7 @@ tasks.withType<JavaCompile> {
 intellij {
     version.set("2024.1")
     type.set("IC")
-    plugins.set(listOf("com.intellij.java", "com.github.gtache.lsp:1.6.1"))
+    plugins.set(listOf("com.intellij.java"))
 }
 
 tasks {
