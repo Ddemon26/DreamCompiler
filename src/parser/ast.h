@@ -159,6 +159,7 @@ struct Node {
       Node *init;       /**< Initializer expression. */
       size_t array_len; /**< Array length (0 if not an array). */
       int is_static;    /**< 1 if this is a static member field. */
+      int is_pointer;   /**< 1 if this is a pointer type. */
     } var_decl;
     struct {
       Node *cond;    /**< Condition expression for ND_IF nodes. */

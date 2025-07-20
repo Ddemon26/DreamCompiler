@@ -74,6 +74,18 @@ static void emit_type(COut *b, TokenKind k, Slice name) {
   c_out_write(b, "%s", type_to_c(k));
 }
 
+static void emit_type_with_pointer(COut *b, TokenKind k, Slice name, int is_pointer) {
+  if (k == TK_KW_TASK && is_pointer) {
+    // Task* in Dream should map to Task* in C, not Task**
+    c_out_write(b, "Task*");
+  } else {
+    emit_type(b, k, name);
+    if (is_pointer) {
+      c_out_write(b, "*");
+    }
+  }
+}
+
 void emit_type_decl(COut *b, Node *n, const char *src_file) {
   const char *type_kind = (n->kind == ND_CLASS_DECL) ? "class" : "struct";
   c_out_write(b, "/* Dream %s %.*s", type_kind, (int)n->as.type_decl.name.len,
@@ -151,7 +163,7 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
       c_out_indent(b);
       for (size_t i = 0; i < n->as.func.param_len; i++) {
         Node *p = n->as.func.params[i];
-        emit_type(b, p->as.var_decl.type, p->as.var_decl.type_name);
+        emit_type_with_pointer(b, p->as.var_decl.type, p->as.var_decl.type_name, p->as.var_decl.is_pointer);
         c_out_write(b, " %.*s;\n", (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
       }
       c_out_dedent(b);
@@ -174,7 +186,7 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
                   (int)n->as.func.name.len, n->as.func.name.start);
       for (size_t i = 0; i < n->as.func.param_len; i++) {
         Node *p = n->as.func.params[i];
-        emit_type(b, p->as.var_decl.type, p->as.var_decl.type_name);
+        emit_type_with_pointer(b, p->as.var_decl.type, p->as.var_decl.type_name, p->as.var_decl.is_pointer);
         c_out_write(b, " %.*s = params->%.*s;\n", 
                     (int)p->as.var_decl.name.len, p->as.var_decl.name.start,
                     (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
@@ -322,7 +334,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   switch (n->kind) {
   case ND_VAR_DECL:
     if (n->as.var_decl.array_len > 0) {
-      emit_type(b, n->as.var_decl.type, n->as.var_decl.type_name);
+      emit_type_with_pointer(b, n->as.var_decl.type, n->as.var_decl.type_name, n->as.var_decl.is_pointer);
       c_out_write(b, " %.*s[%zu]", (int)n->as.var_decl.name.len,
                   n->as.var_decl.name.start, n->as.var_decl.array_len);
       if (n->as.var_decl.init) {
@@ -330,7 +342,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         cg_emit_expr(ctx, b, n->as.var_decl.init);
       }
     } else {
-      emit_type(b, n->as.var_decl.type, n->as.var_decl.type_name);
+      emit_type_with_pointer(b, n->as.var_decl.type, n->as.var_decl.type_name, n->as.var_decl.is_pointer);
       c_out_write(b, " %.*s", (int)n->as.var_decl.name.len,
                   n->as.var_decl.name.start);
       if (n->as.var_decl.init) {

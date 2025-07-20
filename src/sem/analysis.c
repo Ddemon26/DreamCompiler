@@ -150,6 +150,10 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     for (size_t i = 0; i < n->as.new_expr.arg_len; i++)
       analyze_expr(s, n->as.new_expr.args[i]);
     return TK_IDENT; /* Custom type - actual type name stored in type_name */
+  case ND_AWAIT:
+    /* await expressions return TaskResult type */
+    analyze_expr(s, n->as.await_expr.expr);
+    return TK_KW_TASKRESULT;
   default:
     return TK_KW_INT;
   }
@@ -221,7 +225,8 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
       break;
     }
     Decl *d = decl_new(s, DECL_FUNC);
-    d->as.func.ret_type = n->as.func.ret_type;
+    // For async functions, the semantic return type is Task*
+    d->as.func.ret_type = n->as.func.is_async ? TK_KW_TASK : n->as.func.ret_type;
     d->as.func.param_len = n->as.func.param_len;
     d->as.func.param_types = malloc(sizeof(TokenKind) * d->as.func.param_len);
     for (size_t i = 0; i < d->as.func.param_len; i++) {

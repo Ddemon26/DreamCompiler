@@ -560,6 +560,14 @@ static Node *parse_func(Parser *p) {
       }
       TokenKind pt = p->tok.kind;
       next(p);
+      
+      // Check for pointer syntax in parameters: Type*
+      int param_is_pointer = 0;
+      if (p->tok.kind == TK_STAR) {
+        param_is_pointer = 1;
+        next(p); // consume '*'
+      }
+      
       if (p->tok.kind != TK_IDENT) {
         diag_push(p, p->tok.pos, DIAG_ERROR, "expected parameter name");
         return node_new(p->arena, ND_ERROR);
@@ -570,6 +578,7 @@ static Node *parse_func(Parser *p) {
       vd->as.var_decl.name.len = p->tok.len;
       vd->as.var_decl.init = NULL;
       vd->as.var_decl.array_len = 0;
+      vd->as.var_decl.is_pointer = param_is_pointer;
       next(p);
       nodevec_push(&params, &len, &cap, vd);
       if (p->tok.kind == TK_COMMA) {
@@ -941,6 +950,14 @@ static Node *parse_unary(Parser *p) {
 static Node *parse_var_decl(Parser *p) {
   Token type_tok = p->tok;
   next(p); // consume type
+  
+  // Check for pointer syntax: Type*
+  int is_pointer = 0;
+  if (p->tok.kind == TK_STAR) {
+    is_pointer = 1;
+    next(p); // consume '*'
+  }
+  
   Node **items = NULL;
   size_t len = 0, cap = 0;
   for (;;) {
@@ -956,6 +973,7 @@ static Node *parse_var_decl(Parser *p) {
     n->as.var_decl.name.len = p->tok.len;
     n->as.var_decl.array_len = 0;
     n->as.var_decl.is_static = 0;
+    n->as.var_decl.is_pointer = is_pointer;
     next(p);
     if (p->tok.kind == TK_LBRACKET) {
       next(p);
