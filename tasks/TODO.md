@@ -13,3 +13,7 @@ Keep the grammar and documentation up to date once these features land.
 - tests/advanced/oop/class.dr
 - tests/advanced/oop/type.dr
 - tests/basics/io/readline.dr
+
+## Vulkan Roadmap
+- Support passing arrays and by-ref parameters to extern functions
+- Investigate `out` keyword for returning values from Vulkan calls

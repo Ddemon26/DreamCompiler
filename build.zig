@@ -51,7 +51,10 @@ pub fn build(b: *std.Build) void {
     // Collect runtime sources, adding Vulkan stub if available
     var runtime_sources = std.ArrayList([]const u8).init(b.allocator);
     for (BaseRuntimeSources) |s| runtime_sources.append(s) catch unreachable;
-    if (vk_include != null) runtime_sources.append("src/runtime/vulkan_stub.c") catch unreachable;
+    if (vk_include != null) {
+        runtime_sources.append("src/runtime/vulkan_stub.c") catch unreachable;
+        runtime_sources.append("src/runtime/vulkan_helpers.c") catch unreachable;
+    }
 
     // Add debug mode option for enhanced debugging support
     const debug_mode = b.option(bool, "debug", "Enable enhanced debug information for Dream source debugging") orelse false;
