@@ -54,3 +54,4 @@ vscode/*.vsix
 src/lexer/lexer.c
 .claude/settings.local.json
 CLAUDE.md
+/codex/python/__pycache__
