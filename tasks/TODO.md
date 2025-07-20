@@ -177,3 +177,16 @@ The following tests from the original TODO are now **WORKING**:
 - ~~tests/basics/io/readline.dr~~ ✅
 
 **Result**: Windows test suite transformed from having critical hangs and failures to achieving 100% pass rates in core categories. The compiler is now significantly more stable and reliable for Windows development.
+
+## Linux Test Suite Results (July 20, 2025)
+
+Test run command: `python codex/test_cli.py run`
+The suite aborted at `tests/graphics/vulkan_pipeline.dr` due to a 30s timeout.
+- basics: 35 PASS
+- control_flow: 21 PASS, 1 SKIP (`tests/control_flow/test_loop.dr`)
+- functions: 5 PASS, 1 SKIP (`tests/functions/returns/return.dr`)
+- advanced: 20 PASS, 4 ERROR (await.dr, simple_await.dr, test_async.dr, string_array.dr)
+- semantics: not reached due to timeout
+- debug: ran up to `test_debug.dr` (pass); complex test not run
+- graphics: aborted during `vulkan_pipeline.dr` timeout
+
