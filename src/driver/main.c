@@ -4,6 +4,7 @@
 #include "../opt/pipeline.h"
 #include "../parser/diagnostic.h"
 #include "../parser/parser.h"
+#include "../parser/warnings.h"
 #include "../sem/analysis.h"
 #include "../ssa/ssa.h"
 #include "../util/console_debug.h"
@@ -81,6 +82,10 @@ int main(int argc, char *argv[]) {
   bool emit_obj = false;    /**< Flag for emitting object code. */
   bool dev_mode = false;    /**< Flag for development mode (no compilation). */
   const char *input = NULL; /**< Path to the input file. */
+  
+  // Warning configuration options
+  bool warnings_as_errors = false;
+  bool disable_warnings = false;
 
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-O1") == 0 || strcmp(argv[i], "--O1") == 0) {
@@ -113,6 +118,14 @@ int main(int argc, char *argv[]) {
       dev_mode = true;
       continue;
     }
+    if (strcmp(argv[i], "-Werror") == 0 || strcmp(argv[i], "--warnings-as-errors") == 0) {
+      warnings_as_errors = true;
+      continue;
+    }
+    if (strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--no-warnings") == 0) {
+      disable_warnings = true;
+      continue;
+    }
     input = argv[i];
   }
 
@@ -134,7 +147,16 @@ int main(int argc, char *argv[]) {
   arena_init(&arena);
   Parser p;
   parser_init(&p, &arena, src);
+  
+  // Apply warning configuration from command line
+  p.warn_config.warnings_as_errors = warnings_as_errors;
+  p.warn_config.disable_all_warnings = disable_warnings;
+  
   Node *root = parse_program(&p);
+  
+  // Run warning analysis on the parsed AST
+  analyze_warnings(&p, root);
+  
   print_diagnostics(src, &p.diags);
 
   SemAnalyzer sem;

@@ -34,6 +34,17 @@ typedef struct {
 } DiagnosticVec;
 
 /**
+ * @brief Warning configuration flags.
+ */
+typedef struct {
+    bool warnings_as_errors;    /**< Treat all warnings as errors. */
+    bool disable_all_warnings;  /**< Suppress all warning messages. */
+    bool warn_unused_vars;       /**< Warn about unused variables. */
+    bool warn_unreachable_code;  /**< Warn about unreachable code. */
+    bool warn_suspicious_expr;   /**< Warn about suspicious expressions. */
+} WarningConfig;
+
+/**
  * @brief Represents the parser structure, including lexer, current token, memory arena, and diagnostics.
  */
 typedef struct {
@@ -44,6 +55,7 @@ typedef struct {
     Slice *types;
     size_t type_len;
     size_t type_cap;
+    WarningConfig warn_config;
 } Parser;
 
 /**
@@ -69,5 +81,13 @@ Node *parse_program(Parser *p);
  * @param p Pointer to the parser structure.
  */
 void parser_sync(Parser *p);
+
+/**
+ * @brief Enhanced synchronization for expression parsing.
+ * Finds safe points to resume expression parsing.
+ *
+ * @param p Pointer to the parser structure.
+ */
+void parser_sync_expr(Parser *p);
 
 #endif

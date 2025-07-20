@@ -70,6 +70,30 @@ static void diag_push_with_hint(Parser *p, Pos pos, DiagSeverity sev,
 }
 
 /**
+ * @brief Adds an error with token context and attempts recovery.
+ * This function reports an error and then tries to synchronize the parser.
+ */
+static void diag_error_and_sync(Parser *p, const char *msg, const char *hint) {
+  diag_push_with_hint(p, p->tok.pos, DIAG_ERROR, msg, hint);
+  parser_sync(p);
+}
+
+/**
+ * @brief Creates a formatted error message with token information.
+ */
+static void diag_push_unexpected_token(Parser *p, const char *expected) {
+  char *msg = arena_alloc(p->arena, 256);
+  if (p->tok.kind == TK_EOF) {
+    snprintf(msg, 256, "expected %s but reached end of file", expected);
+  } else if (p->tok.start && p->tok.len > 0) {
+    snprintf(msg, 256, "expected %s but found '%.*s'", expected, (int)p->tok.len, p->tok.start);
+  } else {
+    snprintf(msg, 256, "expected %s but found unexpected token", expected);
+  }
+  diag_push(p, p->tok.pos, DIAG_ERROR, msg);
+}
+
+/**
  * @brief Advances the parser to the next token.
  *
  * @param p Pointer to the parser structure.
@@ -92,6 +116,14 @@ void parser_init(Parser *p, Arena *a, const char *src) {
   p->types = NULL;
   p->type_len = 0;
   p->type_cap = 0;
+  
+  // Initialize warning configuration with sensible defaults
+  p->warn_config.warnings_as_errors = false;
+  p->warn_config.disable_all_warnings = false;
+  p->warn_config.warn_unused_vars = true;
+  p->warn_config.warn_unreachable_code = true;
+  p->warn_config.warn_suspicious_expr = true;
+  
   next(p);
 }
 
@@ -225,25 +257,45 @@ static TokenKind infer_var_type(Node *expr) {
  */
 static Node *parse_if(Parser *p) {
   next(p); // consume 'if'
+  
+  // Handle missing opening parenthesis
   if (p->tok.kind != TK_LPAREN) {
     diag_push_with_hint(p, p->tok.pos, DIAG_ERROR, "expected '(' after 'if'", 
                        "if statements require a condition in parentheses");
-    return node_new(p->arena, ND_ERROR);
-  }
-  next(p);
-  Node *cond = parse_expr_prec(p, 0);
-  if (p->tok.kind != TK_RPAREN) {
-    diag_push_with_hint(p, p->tok.pos, DIAG_ERROR, "expected ')' to close if condition", 
-                       "make sure to close the opening '(' with a matching ')'");
+    // Try to continue parsing anyway - maybe they just forgot the paren
+    parser_sync_expr(p);
   } else {
     next(p);
   }
+  
+  Node *cond = parse_expr_prec(p, 0);
+  if (!cond) {
+    cond = node_new(p->arena, ND_ERROR);
+  }
+  
+  // Handle missing closing parenthesis
+  if (p->tok.kind != TK_RPAREN) {
+    diag_push_with_hint(p, p->tok.pos, DIAG_ERROR, "expected ')' to close if condition", 
+                       "make sure to close the opening '(' with a matching ')'");
+    // Continue without consuming the token - it might be the start of the statement
+  } else {
+    next(p);
+  }
+  
   Node *then_br = parse_stmt(p);
+  if (!then_br) {
+    then_br = node_new(p->arena, ND_ERROR);
+  }
+  
   Node *else_br = NULL;
   if (p->tok.kind == TK_KW_ELSE) {
     next(p);
     else_br = parse_stmt(p);
+    if (!else_br) {
+      else_br = node_new(p->arena, ND_ERROR);
+    }
   }
+  
   Node *n = node_new(p->arena, ND_IF);
   n->as.if_stmt.cond = cond;
   n->as.if_stmt.then_br = then_br;
@@ -882,8 +934,9 @@ static Node *parse_primary(Parser *p) {
     return n;
   }
   default:
-    diag_push(p, t.pos, DIAG_ERROR, "unexpected token in expression");
-    next(p);
+    diag_push_unexpected_token(p, "expression");
+    // Try to recover by skipping to a safe expression boundary
+    parser_sync_expr(p);
     n = node_new(p->arena, ND_ERROR);
     return n;
   }
