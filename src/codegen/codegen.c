@@ -7,10 +7,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <dirent.h>
 #ifdef _WIN32
 #include <io.h>
 #endif
+
+// Check if the AST contains any async functions
+static bool has_async_functions(Node *n) {
+  if (!n) return false;
+  
+  if (n->kind == ND_FUNC && n->as.func.is_async) {
+    return true;
+  }
+  
+  // Check children based on node type
+  switch (n->kind) {
+    case ND_BLOCK:
+      for (size_t i = 0; i < n->as.block.len; i++) {
+        if (has_async_functions(n->as.block.items[i])) {
+          return true;
+        }
+      }
+      break;
+    case ND_CLASS_DECL:
+    case ND_STRUCT_DECL:
+      for (size_t i = 0; i < n->as.type_decl.len; i++) {
+        if (has_async_functions(n->as.type_decl.members[i])) {
+          return true;
+        }
+      }
+      break;
+    case ND_FUNC:
+      if (has_async_functions(n->as.func.body)) {
+        return true;
+      }
+      break;
+    default:
+      break;
+  }
+  
+  return false;
+}
 
 void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   COut builder;
@@ -26,7 +64,11 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include \"../libs/console.h\"\n");
   c_out_write(&builder, "#include \"../libs/custom.h\"\n");
   c_out_write(&builder, "#include \"../libs/memory.h\"\n");
-  c_out_write(&builder, "#include \"../libs/task.h\"\n");
+  
+  // Only include task.h when async functions are used
+  if (has_async_functions(root)) {
+    c_out_write(&builder, "#include \"../libs/task.h\"\n");
+  }
   c_out_newline(&builder);
 
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");

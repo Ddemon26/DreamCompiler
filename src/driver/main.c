@@ -79,6 +79,7 @@ int main(int argc, char *argv[]) {
   int opt_level = 0;        /**< Optimization level (0-3). */
   bool emit_c = true;       /**< Flag for emitting C code. */
   bool emit_obj = false;    /**< Flag for emitting object code. */
+  bool dev_mode = false;    /**< Flag for development mode (no compilation). */
   const char *input = NULL; /**< Path to the input file. */
 
   for (int i = 1; i < argc; i++) {
@@ -106,6 +107,10 @@ int main(int argc, char *argv[]) {
     if (strcmp(argv[i], "--emit-obj") == 0) {
       emit_obj = true;
       emit_c = false;
+      continue;
+    }
+    if (strcmp(argv[i], "--dev") == 0 || strcmp(argv[i], "--no-compile") == 0) {
+      dev_mode = true;
       continue;
     }
     input = argv[i];
@@ -150,7 +155,7 @@ int main(int argc, char *argv[]) {
     dr_mkdir("build/libs");
     
     // Copy runtime headers to build/libs for distribution
-    const char *headers[] = {"console.h", "memory.h", "custom.h"};
+    const char *headers[] = {"console.h", "memory.h", "custom.h", "task.h"};
     for (size_t i = 0; i < sizeof(headers)/sizeof(headers[0]); i++) {
       char src_path[256], dst_path[256];
       snprintf(src_path, sizeof(src_path), "src%cruntime%c%s", DR_PATH_SEP, DR_PATH_SEP, headers[i]);
@@ -180,9 +185,21 @@ int main(int argc, char *argv[]) {
     }
     codegen_emit_c(root, out, input);
     fclose(out);
+    
+    // In dev mode, just generate C code and exit
+    if (dev_mode) {
+      printf("C code generated successfully at build/bin/dream.c\n");
+      return 0;
+    }
+    
     const char *cc = getenv("CC");
-    if (!cc)
+    if (!cc) {
+#ifdef _WIN32
+      cc = "zig cc";  // Use zig cc on Windows to avoid bash issues
+#else
       cc = "gcc";
+#endif
+    }
     char cmd[256];
     int res;
     const char *optflag =
@@ -205,7 +222,14 @@ int main(int argc, char *argv[]) {
         snprintf(cmd, sizeof(cmd),
                  "%s -g %s -c \"src%cruntime%c%s\" -o \"build%clibs%c%s\"",
                  cc, optflag, DR_PATH_SEP, DR_PATH_SEP, ent->d_name, DR_PATH_SEP, DR_PATH_SEP, obj);
+#ifdef _WIN32
+        // On Windows, explicitly use cmd.exe to avoid bash.exe issues
+        char win_cmd[512];
+        snprintf(win_cmd, sizeof(win_cmd), "cmd.exe /C \"%s\"", cmd);
+        res = system(win_cmd);
+#else
         res = system(cmd);
+#endif
         if (res != 0) {
           fprintf(stderr, "failed to run: %s\n", cmd);
           closedir(rt);
@@ -231,7 +255,14 @@ int main(int argc, char *argv[]) {
       strncat(link_cmd, "\"", sizeof(link_cmd) - strlen(link_cmd) - 1);
     }
     strncat(link_cmd, " -o \"" DR_EXE_NAME "\"", sizeof(link_cmd) - strlen(link_cmd) - 1);
+#ifdef _WIN32
+    // On Windows, explicitly use cmd.exe to avoid bash.exe issues
+    char win_link_cmd[1024];
+    snprintf(win_link_cmd, sizeof(win_link_cmd), "cmd.exe /C \"%s\"", link_cmd);
+    res = system(win_link_cmd);
+#else
     res = system(link_cmd);
+#endif
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", link_cmd);
       return 1;
@@ -257,7 +288,14 @@ int main(int argc, char *argv[]) {
     snprintf(cmd, sizeof(cmd),
              "%s -g %s -Isrc/runtime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
              cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
+#ifdef _WIN32
+    // On Windows, explicitly use cmd.exe to avoid bash.exe issues
+    char win_final_cmd[1024];
+    snprintf(win_final_cmd, sizeof(win_final_cmd), "cmd.exe /C \"%s\"", cmd);
+    res = system(win_final_cmd);
+#else
     res = system(cmd);
+#endif
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
       return 1;

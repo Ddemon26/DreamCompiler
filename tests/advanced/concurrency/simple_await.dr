@@ -1,0 +1,10 @@
+// Expected: Simple async test 
+async func int compute() {
+    return 42;
+}
+
+func int main() {
+    compute();
+    Console.WriteLine(42);
+    return 0;
+}
