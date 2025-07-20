@@ -1,0 +1,11 @@
+// Expected: 100
+async func int double_value(int x) {
+    return x * 2;
+}
+
+func int main() {
+    Task task = double_value(50);
+    TaskResult result = await task;
+    Console.WriteLine(result.int_val);
+    return 0;
+}

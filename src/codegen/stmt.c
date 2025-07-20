@@ -55,6 +55,10 @@ static const char *type_to_c(TokenKind k) {
     return "int";
   case TK_KW_VOID:
     return "void";
+  case TK_KW_TASK:
+    return "Task*";
+  case TK_KW_TASKRESULT:
+    return "TaskResult";
   default:
     return "int";
   }
@@ -141,24 +145,52 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
   
   // For async functions, we need to emit a wrapper that returns Task* and a worker function
   if (n->as.func.is_async) {
-    // First emit the worker function that contains the actual logic
+    // If function has parameters, emit a parameter struct
+    if (n->as.func.param_len > 0) {
+      c_out_write(b, "typedef struct {\n");
+      c_out_indent(b);
+      for (size_t i = 0; i < n->as.func.param_len; i++) {
+        Node *p = n->as.func.params[i];
+        emit_type(b, p->as.var_decl.type, p->as.var_decl.type_name);
+        c_out_write(b, " %.*s;\n", (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
+      }
+      c_out_dedent(b);
+      c_out_write(b, "} %.*s_args;\n\n", (int)n->as.func.name.len, n->as.func.name.start);
+    }
+    
+    // Create a global task variable for this worker function
+    c_out_write(b, "static Task* %.*s_current_task = NULL;\n\n", 
+                (int)n->as.func.name.len, n->as.func.name.start);
+    
+    // Emit the worker function that contains the actual logic
     c_out_write(b, "static void* %.*s_worker(void* arg) {\n", 
                 (int)n->as.func.name.len, n->as.func.name.start);
     c_out_indent(b);
     
-    // TODO: Extract parameters from arg structure if needed
-    // For now, emit the function body directly
+    // Extract parameters from arg if any
+    if (n->as.func.param_len > 0) {
+      c_out_write(b, "%.*s_args* params = (%.*s_args*)arg;\n",
+                  (int)n->as.func.name.len, n->as.func.name.start,
+                  (int)n->as.func.name.len, n->as.func.name.start);
+      for (size_t i = 0; i < n->as.func.param_len; i++) {
+        Node *p = n->as.func.params[i];
+        emit_type(b, p->as.var_decl.type, p->as.var_decl.type_name);
+        c_out_write(b, " %.*s = params->%.*s;\n", 
+                    (int)p->as.var_decl.name.len, p->as.var_decl.name.start,
+                    (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
+      }
+    }
+    
+    // Create a context to track return value handling
     CGCtx ctx = {0};
     ctx.ret_type = n->as.func.ret_type;
+    ctx.is_async_worker = 1;
+    ctx.async_func_name = n->as.func.name;
     cgctx_scope_enter(&ctx);
-    for (size_t i = 0; i < n->as.func.param_len; i++) {
-      Node *p = n->as.func.params[i];
-      cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
-                 p->as.var_decl.type,
-                 p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
-                                                 : (Slice){NULL, 0});
-    }
+    
+    // Handle the function body with return value interception
     cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
+    
     cgctx_scope_leave(&ctx);
     free(ctx.vars);
     
@@ -198,11 +230,31 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
   c_out_write(b, ") ");
   
   if (n->as.func.is_async) {
-    // For async functions, just create and return a task
+    // For async functions, create task and return it
     c_out_write(b, "{\n");
     c_out_indent(b);
-    c_out_write(b, "return dr_task_create(%.*s_worker, NULL);\n", 
+    
+    c_out_write(b, "Task* task;\n");
+    if (n->as.func.param_len > 0) {
+      c_out_write(b, "%.*s_args* args = dr_alloc(sizeof(%.*s_args));\n",
+                  (int)n->as.func.name.len, n->as.func.name.start,
+                  (int)n->as.func.name.len, n->as.func.name.start);
+      for (size_t i = 0; i < n->as.func.param_len; i++) {
+        Node *p = n->as.func.params[i];
+        c_out_write(b, "args->%.*s = %.*s;\n",
+                    (int)p->as.var_decl.name.len, p->as.var_decl.name.start,
+                    (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
+      }
+      c_out_write(b, "task = dr_task_create(%.*s_worker, args);\n", 
+                  (int)n->as.func.name.len, n->as.func.name.start);
+    } else {
+      c_out_write(b, "task = dr_task_create(%.*s_worker, NULL);\n", 
+                  (int)n->as.func.name.len, n->as.func.name.start);
+    }
+    c_out_write(b, "%.*s_current_task = task;\n", 
                 (int)n->as.func.name.len, n->as.func.name.start);
+    c_out_write(b, "return task;\n");
+    
     c_out_dedent(b);
     c_out_write(b, "}\n");
   } else {
@@ -390,14 +442,49 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_newline(b);
     break;
   case ND_RETURN:
-    c_out_write(b, "return");
-    if (n->as.ret.expr) {
-      c_out_write(b, " ");
-      cg_emit_expr(ctx, b, n->as.ret.expr);
-    } else if (ctx->ret_type != TK_KW_VOID) {
-      c_out_write(b, " 0");
+    if (ctx->is_async_worker) {
+      // In async worker, set task result instead of returning directly
+      if (n->as.ret.expr) {
+        switch (ctx->ret_type) {
+          case TK_KW_INT:
+          case TK_KW_BOOL:
+            c_out_write(b, "dr_task_set_int_result(%.*s_current_task, ", 
+                        (int)ctx->async_func_name.len, ctx->async_func_name.start);
+            cg_emit_expr(ctx, b, n->as.ret.expr);
+            c_out_write(b, ");");
+            break;
+          case TK_KW_FLOAT:
+            c_out_write(b, "dr_task_set_float_result(%.*s_current_task, ", 
+                        (int)ctx->async_func_name.len, ctx->async_func_name.start);
+            cg_emit_expr(ctx, b, n->as.ret.expr);
+            c_out_write(b, ");");
+            break;
+          case TK_KW_STRING:
+            c_out_write(b, "dr_task_set_string_result(%.*s_current_task, ", 
+                        (int)ctx->async_func_name.len, ctx->async_func_name.start);
+            cg_emit_expr(ctx, b, n->as.ret.expr);
+            c_out_write(b, ");");
+            break;
+          default:
+            c_out_write(b, "dr_task_set_ptr_result(%.*s_current_task, ", 
+                        (int)ctx->async_func_name.len, ctx->async_func_name.start);
+            cg_emit_expr(ctx, b, n->as.ret.expr);
+            c_out_write(b, ");");
+            break;
+        }
+      }
+      c_out_write(b, "\nreturn NULL;");
+    } else {
+      // Regular function return
+      c_out_write(b, "return");
+      if (n->as.ret.expr) {
+        c_out_write(b, " ");
+        cg_emit_expr(ctx, b, n->as.ret.expr);
+      } else if (ctx->ret_type != TK_KW_VOID) {
+        c_out_write(b, " 0");
+      }
+      c_out_write(b, ";");
     }
-    c_out_write(b, ";");
     c_out_newline(b);
     break;
   case ND_THROW:

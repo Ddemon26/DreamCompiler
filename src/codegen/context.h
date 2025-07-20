@@ -22,6 +22,8 @@ typedef struct CGCtx {
   size_t cap;
   int depth;
   TokenKind ret_type;
+  int is_async_worker;
+  Slice async_func_name;
 } CGCtx;
 
 void cgctx_push(CGCtx *ctx, const char *start, size_t len, TokenKind ty,

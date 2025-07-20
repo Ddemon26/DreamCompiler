@@ -1,0 +1,4 @@
+func int main() {
+    Console.WriteLine(42);
+    return 0;
+}
