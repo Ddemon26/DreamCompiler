@@ -1288,6 +1288,82 @@ static bool typevec_contains(Parser *p, Token tok) {
 }
 
 /**
+ * @brief Parses a module directive: module identifier ;
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed module node.
+ */
+static Node *parse_module(Parser *p) {
+  next(p); // consume 'module'
+  
+  if (p->tok.kind != TK_IDENT) {
+    diag_push_unexpected_token(p, "module name");
+    return node_new(p->arena, ND_ERROR);
+  }
+  
+  Node *n = node_new(p->arena, ND_MODULE);
+  n->as.module.name = (Slice){p->tok.start, p->tok.len};
+  next(p); // consume identifier
+  
+  if (p->tok.kind != TK_SEMICOLON) {
+    diag_push_unexpected_token(p, "';'");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p); // consume ';'
+  
+  return n;
+}
+
+/**
+ * @brief Parses an import directive: import module_path ;
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed import node.
+ */
+static Node *parse_import(Parser *p) {
+  next(p); // consume 'import'
+  
+  if (p->tok.kind != TK_IDENT) {
+    diag_push_unexpected_token(p, "module path");
+    return node_new(p->arena, ND_ERROR);
+  }
+  
+  Node *n = node_new(p->arena, ND_IMPORT);
+  n->as.import.path = (Slice){p->tok.start, p->tok.len};
+  next(p); // consume identifier
+  
+  if (p->tok.kind != TK_SEMICOLON) {
+    diag_push_unexpected_token(p, "';'");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p); // consume ';'
+  
+  return n;
+}
+
+/**
+ * @brief Parses an export declaration: export declaration
+ *
+ * @param p Pointer to the parser structure.
+ * @return Pointer to the parsed export node.
+ */
+static Node *parse_export(Parser *p) {
+  next(p); // consume 'export'
+  
+  // Parse the declaration being exported
+  Node *decl = parse_stmt(p);
+  if (!decl) {
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected declaration after 'export'");
+    return node_new(p->arena, ND_ERROR);
+  }
+  
+  Node *n = node_new(p->arena, ND_EXPORT);
+  n->as.export.decl = decl;
+  
+  return n;
+}
+
+/**
  * @brief Parses a statement based on the current token kind.
  *
  * @param p Pointer to the parser structure.
@@ -1316,6 +1392,12 @@ static Node *parse_stmt(Parser *p) {
     n = parse_try(p);
   } else if (p->tok.kind == TK_KW_THROW) {
     n = parse_throw(p);
+  } else if (p->tok.kind == TK_KW_MODULE) {
+    n = parse_module(p);
+  } else if (p->tok.kind == TK_KW_IMPORT) {
+    n = parse_import(p);
+  } else if (p->tok.kind == TK_KW_EXPORT) {
+    n = parse_export(p);
   } else if (p->tok.kind == TK_KW_CLASS) {
     n = parse_type_decl(p, ND_CLASS_DECL);
   } else if (p->tok.kind == TK_KW_STRUCT) {

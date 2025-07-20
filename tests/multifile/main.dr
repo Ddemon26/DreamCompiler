@@ -2,7 +2,7 @@
 import math_utils;
 import string_utils;
 
-int main() {
+func int main() {
     // Test math utilities
     int result1 = math_utils.add(5, 3);
     int result2 = math_utils.multiply(4, 6);

@@ -1,4 +1,5 @@
 #include "../codegen/codegen.h"
+#include "../codegen/module.h"
 #include "../ir/lower.h"
 #include "../lexer/lexer.h"
 #include "../opt/pipeline.h"
@@ -81,6 +82,7 @@ int main(int argc, char *argv[]) {
   bool emit_c = true;       /**< Flag for emitting C code. */
   bool emit_obj = false;    /**< Flag for emitting object code. */
   bool dev_mode = false;    /**< Flag for development mode (no compilation). */
+  bool multi_file = false;  /**< Flag for multi-file compilation mode. */
   const char *input = NULL; /**< Path to the input file. */
   
   // Warning configuration options
@@ -124,6 +126,10 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--no-warnings") == 0) {
       disable_warnings = true;
+      continue;
+    }
+    if (strcmp(argv[i], "--multi-file") == 0) {
+      multi_file = true;
       continue;
     }
     input = argv[i];

@@ -69,6 +69,9 @@ typedef enum {
   ND_TRY,
   ND_THROW,
   ND_AWAIT,
+  ND_MODULE,
+  ND_IMPORT,
+  ND_EXPORT,
   ND_ERROR
 } NodeKind;
 
@@ -238,6 +241,15 @@ struct Node {
     struct {
       Node *expr; /**< Expression to await for ND_AWAIT nodes. */
     } await_expr;
+    struct {
+      Slice name; /**< Module name for ND_MODULE nodes. */
+    } module;
+    struct {
+      Slice path; /**< Module path for ND_IMPORT nodes. */
+    } import;
+    struct {
+      Node *decl; /**< Declaration being exported for ND_EXPORT nodes. */
+    } export;
   } as;
 };
 

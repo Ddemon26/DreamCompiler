@@ -317,18 +317,45 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
                   (int)n->as.field.name.len, n->as.field.name.start);
     } else {
       cg_emit_expr(ctx, b, n->as.field.object);
-      if (cg_is_class_type(ty))
+      if (cg_is_class_type(ty)) {
+        // For class field access, check if this might be an inherited field
+        // that needs to go through the base member
+        // TODO: Implement proper inheritance field resolution
+        // For now, try direct access first, base access will be handled elsewhere
         c_out_write(b, "->%.*s", (int)n->as.field.name.len,
                     n->as.field.name.start);
-      else
+      } else {
         c_out_write(b, ".%.*s", (int)n->as.field.name.len,
                     n->as.field.name.start);
+      }
     }
     break;
   }
   case ND_CALL:
-    if (n->as.call.callee->kind == ND_FIELD) {
+    if (n->as.call.callee && n->as.call.callee->kind == ND_FIELD) {
       Node *fld = n->as.call.callee;
+      
+      // Check if this is a module-qualified call (module.function)
+      if (fld->as.field.object && fld->as.field.object->kind == ND_IDENT) {
+        int is_var = cgctx_has_var(ctx, fld->as.field.object->as.ident.start,
+                                   fld->as.field.object->as.ident.len);
+        if (!is_var) {
+          // This appears to be a module-qualified call like math_utils.add()
+          // Convert to C function call: module_function()
+          c_out_write(b, "%.*s_%.*s(", 
+                      (int)fld->as.field.object->as.ident.len, fld->as.field.object->as.ident.start,
+                      (int)fld->as.field.name.len, fld->as.field.name.start);
+          
+          // Emit arguments
+          for (size_t i = 0; i < n->as.call.len; i++) {
+            if (i) c_out_write(b, ", ");
+            cg_emit_expr(ctx, b, n->as.call.args[i]);
+          }
+          c_out_write(b, ")");
+          break;
+        }
+      }
+      
       Slice ty = expr_type(ctx, fld->as.field.object);
       int is_var = 0;
       if (fld->as.field.object->kind == ND_IDENT)
@@ -388,8 +415,9 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     }
     break;
   case ND_BASE:
-    // Access base class member: this->base.member_name
-    c_out_write(b, "this->base.%.*s", (int)n->as.base.name.len, n->as.base.name.start);
+    // Access base class member: since inheritance is flattened, access directly
+    // Changed from this->base.member_name to this->member_name 
+    c_out_write(b, "this->%.*s", (int)n->as.base.name.len, n->as.base.name.start);
     break;
   case ND_AWAIT:
     // Await expression: dr_task_await(expr)
