@@ -119,6 +119,7 @@ tests/
 │   └── basic.dr     # Basic semantic tests
 ├── debug/           # Debug feature tests
 │   └── line_directives.dr # Line directive handling
+├── graphics/        # Graphics and Vulkan tests
 └── hottests/        # Active development tests
     ├── minimal_struct_test.dr
     ├── struct_only.dr
