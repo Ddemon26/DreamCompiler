@@ -98,10 +98,14 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_cmd.step);
 
     // Create runtime library for linking with generated code
-    const runtime_lib = b.addStaticLibrary(.{
-        .name = "dreamrt",
+    const runtime_mod = b.createModule(.{
         .target = target,
         .optimize = optimize,
+    });
+    const runtime_lib = b.addLibrary(.{
+        .name = "dreamrt",
+        .root_module = runtime_mod,
+        .linkage = .static,
     });
     runtime_lib.addCSourceFiles(.{ .files = &RuntimeSources, .flags = &CFLAGS });
     runtime_lib.linkLibC();
