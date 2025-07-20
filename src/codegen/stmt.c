@@ -684,6 +684,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_write(b, "} else {\n");
     c_out_indent(b);
     
+    // Mark that we're entering a catch block
+    c_out_write(b, "dream_exception_enter_catch();\n");
+    
     // Catch block
     if (n->as.try_stmt.catch_body) {
       // If we have catch parameter, declare it
@@ -704,6 +707,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         cg_emit_stmt(ctx, b, n->as.try_stmt.catch_body, src_file);
       }
     }
+    
+    // Mark that we're exiting the catch block
+    c_out_write(b, "dream_exception_exit_catch();\n");
     
     c_out_dedent(b);
     c_out_write(b, "}\n");

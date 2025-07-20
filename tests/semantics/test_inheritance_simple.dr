@@ -1,3 +1,4 @@
+// Expected: 5
 // Test basic inheritance with integers
 class Animal {
     int age;

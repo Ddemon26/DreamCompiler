@@ -134,6 +134,22 @@ int cg_is_string_expr(CGCtx *ctx, Node *n) {
            TK_KW_STRING;
   case ND_CONSOLE_CALL:
     return n->as.console.read;
+  case ND_CALL:
+    // Handle method calls that might return strings
+    if (n->as.call.callee && n->as.call.callee->kind == ND_FIELD) {
+      Node *fld = n->as.call.callee;
+      // Check if method name suggests it returns a string
+      if (fld->as.field.name.len >= 7 && 
+          strncmp(fld->as.field.name.start, "getName", 7) == 0) {
+        return 1;
+      }
+      // Add other common string-returning method patterns
+      if (fld->as.field.name.len >= 8 && 
+          strncmp(fld->as.field.name.start, "toString", 8) == 0) {
+        return 1;
+      }
+    }
+    return 0;
   default:
     return 0;
   }

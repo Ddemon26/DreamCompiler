@@ -1,5 +1,9 @@
+// Expected: Before throw
+// Expected: Caught exception
+// Expected: Finally block executed  
+// Expected: Program continues
 // Test basic exception handling
-func int test_main() {
+func int main() {
     try {
         Console.WriteLine("Before throw");
         throw "Something went wrong!";

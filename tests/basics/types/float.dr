@@ -1,3 +1,4 @@
+// Expected: 3.500000
 float a = 1.5;
 float b = 2.0;
 float c = a + b;

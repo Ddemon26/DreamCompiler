@@ -39,6 +39,7 @@ typedef struct {
     DreamException exc;     /**< Current exception information */
     int has_finally;        /**< Whether this context has a finally block */
     int finally_executed;   /**< Whether finally block has been executed */
+    int in_catch;           /**< Whether currently executing catch block */
 } DreamExceptionContext;
 
 /**
@@ -109,5 +110,15 @@ void dream_throw_string(const char *message);
  * @brief Create a generic exception (convenience function)
  */
 void dream_throw_generic(void);
+
+/**
+ * @brief Mark that we're currently in a catch block
+ */
+void dream_exception_enter_catch(void);
+
+/**
+ * @brief Mark that we're no longer in a catch block
+ */
+void dream_exception_exit_catch(void);
 
 #endif /* EXCEPTION_H */

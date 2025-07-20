@@ -1,3 +1,12 @@
+// Expected: 0
+// Expected: 1
+// Expected: 2
+// Expected: 3
+// Expected: 4
+// Expected: 5
+// Expected: 6
+// Expected: 7
+// Expected: Result is greater than 5
 func int add(int a, int b) {
     return a + b;
 }
@@ -6,7 +15,7 @@ func int main() {
     int result = add(5, 3);
     
     for (int i = 0; i < result; i = i + 1) {
-        Console.WriteLine("Count: " + i);
+        Console.WriteLine(i);
     }
     
     if (result > 5) {

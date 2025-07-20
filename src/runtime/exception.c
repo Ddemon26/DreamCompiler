@@ -23,6 +23,7 @@ jmp_buf* dream_exception_push(int has_finally) {
     memset(ctx, 0, sizeof(DreamExceptionContext));
     ctx->has_finally = has_finally;
     ctx->finally_executed = 0;
+    ctx->in_catch = 0;
     
     return &ctx->jmp_buffer;
 }
@@ -51,6 +52,49 @@ void dream_exception_throw(DreamExceptionType type, const char *message,
     }
     
     DreamExceptionContext *ctx = &dream_exception_state.stack[dream_exception_state.top];
+    
+    // If we're throwing from within a catch block, we need to pop this context
+    // and throw to the outer context
+    if (ctx->in_catch && dream_exception_state.top > 0) {
+        // Save exception info before popping
+        DreamExceptionType saved_type = type;
+        char *saved_message = message ? strdup(message) : NULL;
+        const char *saved_file = file;
+        int saved_line = line;
+        
+        // Pop current context
+        dream_exception_pop();
+        
+        // Throw to outer context
+        if (dream_exception_state.top >= 0) {
+            DreamExceptionContext *outer_ctx = &dream_exception_state.stack[dream_exception_state.top];
+            
+            // Free previous message if exists
+            if (outer_ctx->exc.message) {
+                free(outer_ctx->exc.message);
+            }
+            
+            // Set exception information in outer context
+            outer_ctx->exc.type = saved_type;
+            outer_ctx->exc.message = saved_message;
+            outer_ctx->exc.file = saved_file;
+            outer_ctx->exc.line = saved_line;
+            
+            // Copy to current exception for easy access
+            dream_exception_state.current = outer_ctx->exc;
+            if (saved_message) {
+                dream_exception_state.current.message = strdup(saved_message);
+            }
+            
+            longjmp(outer_ctx->jmp_buffer, 1);
+        }
+        
+        // If no outer context, cleanup and exit
+        if (saved_message) free(saved_message);
+        fprintf(stderr, "Unhandled Dream exception: %s at %s:%d\n", 
+                message ? message : "Unknown error", file ? file : "unknown", line);
+        exit(1);
+    }
     
     // Free previous message if exists
     if (ctx->exc.message) {
@@ -100,4 +144,16 @@ void dream_throw_string(const char *message) {
 
 void dream_throw_generic(void) {
     dream_exception_throw(DREAM_EXC_GENERIC, "An exception occurred", __FILE__, __LINE__);
+}
+
+void dream_exception_enter_catch(void) {
+    if (dream_exception_state.top >= 0) {
+        dream_exception_state.stack[dream_exception_state.top].in_catch = 1;
+    }
+}
+
+void dream_exception_exit_catch(void) {
+    if (dream_exception_state.top >= 0) {
+        dream_exception_state.stack[dream_exception_state.top].in_catch = 0;
+    }
 }
