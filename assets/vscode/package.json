@@ -36,6 +36,33 @@
         "scopeName": "source.dream",
         "path": "./syntaxes/dream.tmLanguage.json"
       }
+    ],
+    "problemMatchers": [
+      {
+        "name": "dreamcompiler",
+        "owner": "dreamcompiler",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^(\\d+):(\\d+):\\s+(error|warning):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "dream",
+        "required": ["file"],
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "The Dream file to compile"
+          }
+        }
+      }
     ]
   },
   "scripts": {

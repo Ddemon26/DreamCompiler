@@ -54,14 +54,37 @@ void print_diagnostics(const char *src, DiagnosticVec *vec) {
         Diagnostic d = vec->data[i];
         const char *color = d.sev == DIAG_ERROR ? RED : YELLOW;
         const char *label = d.sev == DIAG_ERROR ? "error" : "warning";
+        
+        // Print main diagnostic message
         fprintf(stderr, "%s%zu:%zu: %s:%s %s\n", color, d.pos.line, d.pos.column, label, RESET, d.msg);
-        if (diag_verbose) {
-            const char *line_start = find_line_start(src, d.pos);
-            const char *line_end = find_line_end(line_start);
-            fwrite(line_start, 1, line_end - line_start, stderr);
-            fputc('\n', stderr);
-            for (size_t c = 1; c < d.pos.column; ++c) fputc(' ', stderr);
-            fprintf(stderr, "%s^%s\n", color, RESET);
+        
+        // Always show context line and caret (not just in verbose mode)
+        const char *line_start = find_line_start(src, d.pos);
+        const char *line_end = find_line_end(line_start);
+        
+        // Print the source line
+        fwrite(line_start, 1, line_end - line_start, stderr);
+        fputc('\n', stderr);
+        
+        // Print caret/underline indicator
+        for (size_t c = 1; c < d.pos.column; ++c) fputc(' ', stderr);
+        fprintf(stderr, "%s", color);
+        
+        // If we have span info, underline the whole token
+        if (d.len > 1 && d.end_pos.column > d.pos.column) {
+            for (size_t c = d.pos.column; c < d.end_pos.column && c <= d.pos.column + d.len; ++c) {
+                fputc('~', stderr);
+            }
+        } else {
+            fputc('^', stderr);
         }
+        fprintf(stderr, "%s\n", RESET);
+        
+        // Print hint if available
+        if (d.hint) {
+            fprintf(stderr, "%shelp:%s %s\n", YELLOW, RESET, d.hint);
+        }
+        
+        fputc('\n', stderr); // Extra line for readability
     }
 }

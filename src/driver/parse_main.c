@@ -1,6 +1,7 @@
 #include "../lexer/lexer.h"
 #include "../parser/parser.h"
 #include "../parser/diagnostic.h"
+#include "../parser/warnings.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -158,6 +159,12 @@ int main(int argc, char **argv) {
     Parser p;
     parser_init(&p, &arena, src);
     Node *root = parse_program(&p);
+    
+    // Analyze for warnings after parsing
+    if (root) {
+        analyze_warnings(&p, root);
+    }
+    
     if (dump_symbols) {
         int first = 1;
         printf("[");

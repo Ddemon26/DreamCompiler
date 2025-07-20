@@ -16,7 +16,11 @@ typedef enum {
  */
 typedef struct {
     Pos pos;
+    Pos end_pos;        // End position for better range highlighting
+    const char *start;  // Start of token/span for context
+    size_t len;         // Length of token/span 
     const char *msg;
+    const char *hint;   // Optional hint for fixing the issue
     DiagSeverity sev;
 } Diagnostic;
 

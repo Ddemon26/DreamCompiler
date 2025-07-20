@@ -62,20 +62,50 @@ function analyzeDocument(doc: TextDocument): void {
   const res2 = spawnSync(parseExe, [doc.uri.replace('file://', '')]);
   const diagnostics: Diagnostic[] = [];
   if (res2.stderr) {
+    const lines = res2.stderr.toString().split(/\r?\n/);
     const pattern = /(\d+):(\d+): (error|warning): (.*)/;
-    res2.stderr.toString().split(/\r?\n/).forEach(line => {
-      const m = pattern.exec(line.trim());
+    const hintPattern = /help: (.*)/;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      const m = pattern.exec(line);
+      
       if (m) {
+        let message = m[4];
+        
+        // Look for hint on subsequent lines
+        if (i + 3 < lines.length) {
+          const hintMatch = hintPattern.exec(lines[i + 3]);
+          if (hintMatch) {
+            message += `\n💡 ${hintMatch[1]}`;
+          }
+        }
+        
+        // Try to determine end position for better range highlighting
+        let endLine = parseInt(m[1]) - 1;
+        let endChar = parseInt(m[2]);
+        
+        // Look for token span indicators (~) in the output
+        if (i + 2 < lines.length && lines[i + 2].includes('~')) {
+          const spanLine = lines[i + 2];
+          const startCol = spanLine.indexOf('~');
+          const endCol = spanLine.lastIndexOf('~');
+          if (startCol >= 0 && endCol > startCol) {
+            endChar = parseInt(m[2]) - 1 + (endCol - startCol) + 1;
+          }
+        }
+        
         diagnostics.push({
           range: {
             start: { line: parseInt(m[1]) - 1, character: parseInt(m[2]) - 1 },
-            end: { line: parseInt(m[1]) - 1, character: parseInt(m[2]) }
+            end: { line: endLine, character: endChar }
           },
           severity: m[3] === 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
-          message: m[4]
+          message: message,
+          source: 'DreamCompiler'
         });
       }
-    });
+    }
   }
   connection.sendDiagnostics({ uri: doc.uri, diagnostics });
 }

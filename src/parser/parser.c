@@ -16,7 +16,20 @@ static void diag_push(Parser *p, Pos pos, DiagSeverity sev, const char *msg) {
     p->diags.cap = p->diags.cap ? p->diags.cap * 2 : 4;
     p->diags.data = realloc(p->diags.data, p->diags.cap * sizeof(Diagnostic));
   }
-  p->diags.data[p->diags.len++] = (Diagnostic){pos, msg, sev};
+  // Use current token for better span info
+  Pos end_pos = pos;
+  if (p->tok.len > 0) {
+    end_pos.column = pos.column + p->tok.len;
+  }
+  p->diags.data[p->diags.len++] = (Diagnostic){
+    .pos = pos, 
+    .end_pos = end_pos,
+    .start = p->tok.start,
+    .len = p->tok.len,
+    .msg = msg, 
+    .hint = NULL,
+    .sev = sev
+  };
 }
 
 static void diag_pushf(Parser *p, Pos pos, DiagSeverity sev, const char *fmt,
@@ -30,6 +43,30 @@ static void diag_pushf(Parser *p, Pos pos, DiagSeverity sev, const char *fmt,
   vsnprintf(buf, n + 1, fmt, ap);
   va_end(ap);
   diag_push(p, pos, sev, buf);
+}
+
+/**
+ * @brief Adds a diagnostic with a hint for fixing the issue.
+ */
+static void diag_push_with_hint(Parser *p, Pos pos, DiagSeverity sev, 
+                               const char *msg, const char *hint) {
+  if (p->diags.len + 1 > p->diags.cap) {
+    p->diags.cap = p->diags.cap ? p->diags.cap * 2 : 4;
+    p->diags.data = realloc(p->diags.data, p->diags.cap * sizeof(Diagnostic));
+  }
+  Pos end_pos = pos;
+  if (p->tok.len > 0) {
+    end_pos.column = pos.column + p->tok.len;
+  }
+  p->diags.data[p->diags.len++] = (Diagnostic){
+    .pos = pos, 
+    .end_pos = end_pos,
+    .start = p->tok.start,
+    .len = p->tok.len,
+    .msg = msg, 
+    .hint = hint,
+    .sev = sev
+  };
 }
 
 /**
@@ -187,13 +224,15 @@ static TokenKind infer_var_type(Node *expr) {
 static Node *parse_if(Parser *p) {
   next(p); // consume 'if'
   if (p->tok.kind != TK_LPAREN) {
-    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '('");
+    diag_push_with_hint(p, p->tok.pos, DIAG_ERROR, "expected '(' after 'if'", 
+                       "if statements require a condition in parentheses");
     return node_new(p->arena, ND_ERROR);
   }
   next(p);
   Node *cond = parse_expr_prec(p, 0);
   if (p->tok.kind != TK_RPAREN) {
-    diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
+    diag_push_with_hint(p, p->tok.pos, DIAG_ERROR, "expected ')' to close if condition", 
+                       "make sure to close the opening '(' with a matching ')'");
   } else {
     next(p);
   }

@@ -11,7 +11,15 @@ static void diag_push(SemAnalyzer *s, Pos pos, DiagSeverity sev,
     s->diags.cap = s->diags.cap ? s->diags.cap * 2 : 4;
     s->diags.data = realloc(s->diags.data, s->diags.cap * sizeof(Diagnostic));
   }
-  s->diags.data[s->diags.len++] = (Diagnostic){pos, msg, sev};
+  s->diags.data[s->diags.len++] = (Diagnostic){
+    .pos = pos, 
+    .end_pos = pos,
+    .start = NULL,
+    .len = 0,
+    .msg = msg, 
+    .hint = NULL,
+    .sev = sev
+  };
 }
 
 static void diag_pushf(SemAnalyzer *s, Pos pos, DiagSeverity sev,
