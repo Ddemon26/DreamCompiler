@@ -145,6 +145,11 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
   case ND_COND:
     analyze_expr(s, n->as.cond.cond);
     return analyze_expr(s, n->as.cond.then_expr);
+  case ND_NEW:
+    /* new expressions return a pointer to the type being constructed */
+    for (size_t i = 0; i < n->as.new_expr.arg_len; i++)
+      analyze_expr(s, n->as.new_expr.args[i]);
+    return TK_IDENT; /* Custom type - actual type name stored in type_name */
   default:
     return TK_KW_INT;
   }
