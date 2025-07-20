@@ -19,6 +19,7 @@ const RuntimeSources = [_][]const u8{
     "src/runtime/memory.c",
     "src/runtime/console.c", 
     "src/runtime/custom.c",
+    "src/runtime/task.c",
 };
 
 const CFLAGS = [_][]const u8{

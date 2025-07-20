@@ -590,6 +590,7 @@ static Node *parse_func(Parser *p) {
   fn->as.func.param_len = len;
   fn->as.func.body = body;
   fn->as.func.is_static = 0;
+  fn->as.func.is_async = 0;
   return fn;
 }
 
@@ -827,6 +828,13 @@ static Node *parse_primary(Parser *p) {
       next(p);
     else
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
+    return n;
+  }
+  case TK_KW_AWAIT: {
+    next(p); /* consume 'await' */
+    Node *expr = parse_expr_prec(p, 0);
+    n = node_new(p->arena, ND_AWAIT);
+    n->as.await_expr.expr = expr;
     return n;
   }
   default:
@@ -1198,6 +1206,19 @@ static Node *parse_stmt(Parser *p) {
     n = parse_type_decl(p, ND_STRUCT_DECL);
   } else if (p->tok.kind == TK_KW_FUNC) {
     n = parse_func(p);
+  } else if (p->tok.kind == TK_KW_ASYNC) {
+    // Look ahead to see if this is an async function
+    Token la = lexer_peek(&p->lx);
+    if (la.kind == TK_KW_FUNC) {
+      next(p); // consume 'async'
+      n = parse_func(p);
+      n->as.func.is_async = 1;
+    } else {
+      // This should be an error - async without func
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected 'func' after 'async'");
+      next(p);
+      n = node_new(p->arena, ND_ERROR);
+    }
   } else if (is_type_token(p->tok.kind)) {
     n = parse_var_decl(p);
   } else if (p->tok.kind == TK_IDENT && typevec_contains(p, p->tok)) {

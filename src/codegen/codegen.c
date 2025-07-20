@@ -26,6 +26,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include \"../libs/console.h\"\n");
   c_out_write(&builder, "#include \"../libs/custom.h\"\n");
   c_out_write(&builder, "#include \"../libs/memory.h\"\n");
+  c_out_write(&builder, "#include \"../libs/task.h\"\n");
   c_out_newline(&builder);
 
   c_out_write(&builder, "static jmp_buf dream_jmp_buf[16];\n");

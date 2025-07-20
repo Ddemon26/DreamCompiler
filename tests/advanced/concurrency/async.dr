@@ -1,2 +1,9 @@
-// Expected: 1
-Console.WriteLine(1);
+// Expected: 42
+async func int compute() {
+    return 42;
+}
+
+func int main() {
+    Console.WriteLine(42);
+    return 0;
+}

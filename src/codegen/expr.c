@@ -291,6 +291,12 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     // Access base class member: this->base.member_name
     c_out_write(b, "this->base.%.*s", (int)n->as.base.name.len, n->as.base.name.start);
     break;
+  case ND_AWAIT:
+    // Await expression: dr_task_await(expr)
+    c_out_write(b, "dr_task_await(");
+    cg_emit_expr(ctx, b, n->as.await_expr.expr);
+    c_out_write(b, ")");
+    break;
   default:
     c_out_write(b, "0");
     break;

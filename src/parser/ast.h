@@ -68,6 +68,7 @@ typedef enum {
   ND_CLASS_DECL,
   ND_TRY,
   ND_THROW,
+  ND_AWAIT,
   ND_ERROR
 } NodeKind;
 
@@ -215,6 +216,7 @@ struct Node {
       size_t param_len;   /**< Number of parameters. */
       Node *body;         /**< Function body. */
       int is_static;      /**< 1 if this is a static method. */
+      int is_async;       /**< 1 if this is an async function. */
     } func;
     struct {
       Slice name;     /**< Name of the struct or class. */
@@ -230,6 +232,9 @@ struct Node {
     struct {
       Node *expr; /**< Expression to throw (may be NULL). */
     } throw_stmt;
+    struct {
+      Node *expr; /**< Expression to await for ND_AWAIT nodes. */
+    } await_expr;
   } as;
 };
 

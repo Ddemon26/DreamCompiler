@@ -138,17 +138,56 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
     c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
   c_out_write(b, "/* Dream function %.*s */\n", (int)n->as.func.name.len,
               n->as.func.name.start);
-  if (prefix.len)
-    c_out_write(b, "static %s %.*s_%.*s(", type_to_c(n->as.func.ret_type),
-                (int)prefix.len, prefix.start, (int)n->as.func.name.len,
-                n->as.func.name.start);
-  else if (n->as.func.name.len == 4 &&
-           strncmp(n->as.func.name.start, "main", 4) == 0)
-    c_out_write(b, "%s %.*s(", type_to_c(n->as.func.ret_type),
+  
+  // For async functions, we need to emit a wrapper that returns Task* and a worker function
+  if (n->as.func.is_async) {
+    // First emit the worker function that contains the actual logic
+    c_out_write(b, "static void* %.*s_worker(void* arg) {\n", 
                 (int)n->as.func.name.len, n->as.func.name.start);
-  else
-    c_out_write(b, "static %s %.*s(", type_to_c(n->as.func.ret_type),
-                (int)n->as.func.name.len, n->as.func.name.start);
+    c_out_indent(b);
+    
+    // TODO: Extract parameters from arg structure if needed
+    // For now, emit the function body directly
+    CGCtx ctx = {0};
+    ctx.ret_type = n->as.func.ret_type;
+    cgctx_scope_enter(&ctx);
+    for (size_t i = 0; i < n->as.func.param_len; i++) {
+      Node *p = n->as.func.params[i];
+      cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
+                 p->as.var_decl.type,
+                 p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
+                                                 : (Slice){NULL, 0});
+    }
+    cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
+    cgctx_scope_leave(&ctx);
+    free(ctx.vars);
+    
+    c_out_write(b, "return NULL;\n");
+    c_out_dedent(b);
+    c_out_write(b, "}\n\n");
+    
+    // Now emit the wrapper function that creates and returns a Task
+    if (prefix.len)
+      c_out_write(b, "static Task* %.*s_%.*s(", 
+                  (int)prefix.len, prefix.start, (int)n->as.func.name.len,
+                  n->as.func.name.start);
+    else
+      c_out_write(b, "static Task* %.*s(", 
+                  (int)n->as.func.name.len, n->as.func.name.start);
+  } else {
+    // Regular synchronous function
+    if (prefix.len)
+      c_out_write(b, "static %s %.*s_%.*s(", type_to_c(n->as.func.ret_type),
+                  (int)prefix.len, prefix.start, (int)n->as.func.name.len,
+                  n->as.func.name.start);
+    else if (n->as.func.name.len == 4 &&
+             strncmp(n->as.func.name.start, "main", 4) == 0)
+      c_out_write(b, "%s %.*s(", type_to_c(n->as.func.ret_type),
+                  (int)n->as.func.name.len, n->as.func.name.start);
+    else
+      c_out_write(b, "static %s %.*s(", type_to_c(n->as.func.ret_type),
+                  (int)n->as.func.name.len, n->as.func.name.start);
+  }
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
     if (i)
@@ -157,19 +196,31 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
                 (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
   }
   c_out_write(b, ") ");
-  CGCtx ctx = {0};
-  ctx.ret_type = n->as.func.ret_type;
-  cgctx_scope_enter(&ctx);
-  for (size_t i = 0; i < n->as.func.param_len; i++) {
-    Node *p = n->as.func.params[i];
-    cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
-               p->as.var_decl.type,
-               p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
-                                               : (Slice){NULL, 0});
+  
+  if (n->as.func.is_async) {
+    // For async functions, just create and return a task
+    c_out_write(b, "{\n");
+    c_out_indent(b);
+    c_out_write(b, "return dr_task_create(%.*s_worker, NULL);\n", 
+                (int)n->as.func.name.len, n->as.func.name.start);
+    c_out_dedent(b);
+    c_out_write(b, "}\n");
+  } else {
+    // Regular function - emit the function body
+    CGCtx ctx = {0};
+    ctx.ret_type = n->as.func.ret_type;
+    cgctx_scope_enter(&ctx);
+    for (size_t i = 0; i < n->as.func.param_len; i++) {
+      Node *p = n->as.func.params[i];
+      cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
+                 p->as.var_decl.type,
+                 p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
+                                                 : (Slice){NULL, 0});
+    }
+    cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
+    cgctx_scope_leave(&ctx);
+    free(ctx.vars);
   }
-  cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
-  cgctx_scope_leave(&ctx);
-  free(ctx.vars);
   c_out_newline(b);
 }
 
