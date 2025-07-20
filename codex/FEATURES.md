@@ -40,6 +40,7 @@
 - Runtime stubs `dr_vkCreateInstance` and `dr_vkDestroyInstance` call through to Vulkan
 - Vulkan module exposes `createInstance`, `destroyInstance`, device creation and buffer/memory management functions
 - Cross-platform surface creation via `dr_vkCreateSurface` and `dr_vkDestroySurface`
+- Pipeline building helpers: shader modules, descriptor set layouts and pipeline layouts
 
 ## Missing Features
 

@@ -110,3 +110,8 @@ Version 1.1.17 (2025-09-05)
 Version 1.1.18 (2025-09-12)
 - Added `dr_vkCreateSimpleSwapchain` runtime helper and Dream wrappers `createDefaultSwapchain` and `destroySwapchain`.
 - New `pickFirstPhysicalDevice` helper simplifies choosing a GPU.
+
+Version 1.1.19 (2025-09-28)
+- Expanded Vulkan module with shader module, descriptor set layout and pipeline
+  layout bindings.
+- Documentation updated with examples for building pipelines.
