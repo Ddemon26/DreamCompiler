@@ -29,8 +29,8 @@ Dream provides five core primitive types that form the foundation of the type sy
 Build complex data structures using composite types:
 
 - **[Arrays](v1.1/arrays.md)** - Fixed-size collections of elements
-- **[Structs](v1.1/classes.md#structs)** - Value types for grouping related data
-- **[Classes](v1.1/classes.md#classes)** - Reference types for object-oriented programming
+- **[Structs](v1.1/examples/classes.md#structs)** - Value types for grouping related data
+- **[Classes](v1.1/examples/classes.md#classes)** - Reference types for object-oriented programming
 
 ## Core Concepts
 
@@ -127,7 +127,7 @@ employee.name = "Alice";
 employee.age = 30;
 ```
 
-**📖 [Complete Classes & Structs Guide](v1.1/classes.md)**
+**📖 [Complete Classes & Structs Guide](v1.1/examples/classes.md)**
 
 ## Type Operations
 
@@ -424,6 +424,6 @@ After mastering the type system, explore these related topics:
 2. **[Functions](functions-overview.md)** - Organize your code with type-safe functions
 3. **[Control Flow](control-flow.md)** - Control program execution based on data values
 4. **[Arrays](v1.1/arrays.md)** - Work with collections of typed data
-5. **[Classes & Structs](v1.1/classes.md)** - Build complex object-oriented systems
+5. **[Classes & Structs](v1.1/examples/classes.md)** - Build complex object-oriented systems
 
 The type system is the foundation of Dream programming. Understanding these concepts will make you more productive and help you write safer, more maintainable code.

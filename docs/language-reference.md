@@ -31,7 +31,7 @@ Learn about Dream's comprehensive type system and how to work with different dat
 - **[Variables & Types](type-system.md)** - Core type system, declarations, and type inference
 - **[Arrays](v1.1/arrays.md)** - Fixed-size arrays and multi-dimensional arrays
 - **[Strings](v1.1/strings.md)** - String literals, operations, and manipulation
-- **[Classes & Structs](v1.1/classes.md)** - Object-oriented programming and value types
+- **[Classes & Structs](v1.1/examples/classes.md)** - Object-oriented programming and value types
 
 ### ⚡ Operators
 Master all operators available in Dream for different types of operations.
@@ -56,7 +56,7 @@ Understand how to control program execution flow with various statements.
 Learn how to define, call, and organize code using functions.
 
 - **[Functions Overview](functions-overview.md)** - Function concepts and organization
-- **[Function Definitions](v1.1/functions.md)** - Creating and using functions
+- **[Function Definitions](v1.1/examples/functions.md)** - Creating and using functions
 - **[Return Values](v1.1/return.md)** - Returning data from functions
 - **[Parameters](parameters.md)** - Function parameters and argument passing
 
@@ -91,7 +91,7 @@ Handle user interaction and data exchange with the console and external systems.
 4. **[Console I/O](v1.1/console.md)** - Handle user interaction
 
 ### 🏗️ Building Applications
-1. **[Classes & Structs](v1.1/classes.md)** - Object-oriented design
+1. **[Classes & Structs](v1.1/examples/classes.md)** - Object-oriented design
 2. **[Exception Handling](exceptions.md)** - Robust error management
 3. **[Multi-file Projects](modules.md)** - Organize larger codebases
 4. **[Memory Management](memory.md)** - Optimize performance

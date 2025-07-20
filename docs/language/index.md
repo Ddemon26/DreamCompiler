@@ -19,8 +19,8 @@ Here you will find the syntax guide, examples and references for the Dream.dr pr
 - [Console Output](../v1.1/console.md)
 - [String Literals](../v1.1/strings.md)
 - [Comments](../v1.1/comments.md)
-- [Functions](../v1.1/functions.md)
-- [Classes](../v1.1/classes.md)
+- [Functions](../v1.1/examples/functions.md)
+- [Classes](../v1.1/examples/classes.md)
 
 ### Control Flow *(planned)*
 

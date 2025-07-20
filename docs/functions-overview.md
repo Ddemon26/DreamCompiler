@@ -645,7 +645,7 @@ func void registerNewUser(string name, string email, string password) {
 
 Each function section provides:
 
-1. **[Function Definitions](v1.1/functions.md)** - Complete syntax and examples
+1. **[Function Definitions](v1.1/examples/functions.md)** - Complete syntax and examples
 2. **[Return Values](v1.1/return.md)** - Return statement usage and patterns
 3. **[Parameters](parameters.md)** - Parameter passing and validation
 4. **[Scope and Lifetime](scope.md)** - Variable scope in functions
@@ -666,11 +666,11 @@ Each function section provides:
 
 After understanding function concepts, explore these topics:
 
-1. **[Function Definitions](v1.1/functions.md)** - Detailed syntax and examples
+1. **[Function Definitions](v1.1/examples/functions.md)** - Detailed syntax and examples
 2. **[Return Values](v1.1/return.md)** - Master return statements
 3. **[Parameters](parameters.md)** - Advanced parameter techniques
 4. **[Control Flow](control-flow.md)** - Use functions with control structures
-5. **[Classes](v1.1/classes.md)** - Object-oriented function organization
+5. **[Classes](v1.1/examples/classes.md)** - Object-oriented function organization
 6. **[Modules](modules.md)** - Organize functions across files
 
 Functions are the cornerstone of well-structured Dream programs. Understanding how to design, implement, and organize functions effectively is essential for building maintainable, scalable applications.

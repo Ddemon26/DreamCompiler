@@ -843,6 +843,6 @@ After mastering control flow, explore these related topics:
 2. **[Exception Handling](exceptions.md)** - Advanced error handling patterns
 3. **[Operators](operators.md)** - Use operators effectively in control conditions
 4. **[Arrays](v1.1/arrays.md)** - Control iteration over data collections
-5. **[Classes](v1.1/classes.md)** - Object-oriented control flow patterns
+5. **[Classes](v1.1/examples/classes.md)** - Object-oriented control flow patterns
 
 Control flow is essential for creating dynamic, responsive programs. Understanding these concepts allows you to build complex logic while maintaining clear, readable code structure.
