@@ -39,6 +39,7 @@
 - Vulkan helper `dr_vk_enumerate_physical_devices` returns available devices
 - Runtime stubs `dr_vkCreateInstance` and `dr_vkDestroyInstance` call through to Vulkan
 - Vulkan module exposes `createInstance`, `destroyInstance`, device creation and buffer/memory management functions
+- Cross-platform surface creation via `dr_vkCreateSurface` and `dr_vkDestroySurface`
 
 ## Missing Features
 

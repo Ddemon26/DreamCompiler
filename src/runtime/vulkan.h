@@ -20,9 +20,26 @@ typedef struct DrVkInstanceCreateInfo {
   char **ppEnabledExtensionNames;
 } DrVkInstanceCreateInfo;
 
+typedef struct DrVkSurfaceCreateInfo {
+#ifdef _WIN32
+  void *hinstance;
+  void *hwnd;
+#elif defined(__linux__)
+  void *connection;
+  uint32_t window;
+#else
+  void *unused1;
+  void *unused2;
+#endif
+} DrVkSurfaceCreateInfo;
+
 VkResult dr_vkCreateInstance(const DrVkInstanceCreateInfo *info,
                              VkInstance *outInstance);
 void dr_vkDestroyInstance(VkInstance instance);
+VkResult dr_vkCreateSurface(VkInstance instance,
+                            const DrVkSurfaceCreateInfo *info,
+                            VkSurfaceKHR *outSurface);
+void dr_vkDestroySurface(VkInstance instance, VkSurfaceKHR surface);
 
 #ifdef __cplusplus
 }

@@ -73,6 +73,14 @@ public struct VkMemoryAllocateInfo {
   uint memoryTypeIndex;
 }
 
+// Platform surface creation info
+// Windows: hinstance & hwnd
+// Linux:  xcb_connection_t* & window id
+public struct VkSurfaceCreateInfo {
+  long handle1;
+  long handle2;
+}
+
 public struct VkAllocationCallbacks {
   long userData;
 }
@@ -125,4 +133,13 @@ public class Vulkan {
   public static extern void freeMemory(VkDevice device,
                                        VkDeviceMemory memory,
                                        VkAllocationCallbacks* alloc);
+
+  @extern("dr_vkCreateSurface")
+  public static extern VkResult createSurface(VkInstance instance,
+                                              VkSurfaceCreateInfo* info,
+                                              VkSurfaceKHR* outSurface);
+
+  @extern("dr_vkDestroySurface")
+  public static extern void destroySurface(VkInstance instance,
+                                           VkSurfaceKHR surface);
 }

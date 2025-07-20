@@ -151,6 +151,11 @@ pub fn build(b: *std.Build) void {
         runtime_lib.addIncludePath(.{ .cwd_relative = p });
         if (vk_lib) |lib| runtime_lib.addLibraryPath(.{ .cwd_relative = lib });
         runtime_lib.linkSystemLibrary(if (target.result.os.tag == .windows) "vulkan-1" else "vulkan");
+        if (target.result.os.tag == .windows) {
+            runtime_lib.linkSystemLibrary("user32");
+        } else if (target.result.os.tag == .linux) {
+            runtime_lib.linkSystemLibrary("xcb");
+        }
     }
     runtime_lib.linkLibC();
     b.installArtifact(runtime_lib);

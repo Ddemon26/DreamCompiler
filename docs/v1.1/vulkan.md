@@ -55,3 +55,22 @@ Vulkan.destroyDevice(dev, null);
 ```
 
 These APIs retain Vulkan's low-level behaviour, requiring callers to manage memory and error codes just like the native C interface.
+
+## Creating Window Surfaces
+
+To present to a window you must create a `VkSurfaceKHR` for your platform. `Vulkan.createSurface` wraps the platform-specific calls and accepts a `VkSurfaceCreateInfo` structure with native handles:
+
+```dream
+VkSurfaceCreateInfo surfInfo = new VkSurfaceCreateInfo();
+surfInfo.handle1 = getPlatformInstance(); // HINSTANCE or xcb_connection_t*
+surfInfo.handle2 = getPlatformWindow();   // HWND or xcb_window_t
+
+VkSurfaceKHR surface;
+VkResult res = Vulkan.createSurface(inst, &surfInfo, &surface);
+```
+
+Destroy a surface when finished:
+
+```dream
+Vulkan.destroySurface(inst, surface);
+```

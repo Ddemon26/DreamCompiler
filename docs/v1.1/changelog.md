@@ -102,3 +102,7 @@ Version 1.1.15 (2025-08-22)
 
 Version 1.1.16 (2025-08-30)
 - Published `Vulkan` standard module exposing instance creation, device enumeration and basic device/buffer management functions.
+
+Version 1.1.17 (2025-09-05)
+- Added cross-platform surface creation wrappers `dr_vkCreateSurface` and `dr_vkDestroySurface`.
+- Runtime library now links against `user32` on Windows or `xcb` on Linux for WSI.
