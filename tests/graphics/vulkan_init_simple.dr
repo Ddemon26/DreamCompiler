@@ -1,0 +1,27 @@
+func int main() {
+    if (Vulkan.available() == 0) {
+        Console.WriteLine("no Vulkan");
+        return 0;
+    }
+
+    VkApplicationInfo app = new VkApplicationInfo();
+    app.applicationName = "DreamVulkanTest";
+    app.engineName = "Dream";
+    app.apiVersion = Vulkan.version();
+
+    VkInstanceCreateInfo ci = new VkInstanceCreateInfo();
+    ci.appInfo = &app;
+    ci.enabledExtensionCount = 0;
+    ci.ppEnabledExtensionNames = 0;
+
+    VkInstance instance;
+    VkResult res = Vulkan.createInstance(&ci, &instance);
+    if (res != VkResult.Success) {
+        Console.WriteLine("instance fail");
+        return 0;
+    }
+
+    Vulkan.destroyInstance(instance);
+    Console.WriteLine("ok"); // Expected: C code generated successfully
+    return 0;
+}

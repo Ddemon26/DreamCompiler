@@ -1,0 +1,65 @@
+func int main() {
+    if (Vulkan.available() == 0) {
+        Console.WriteLine("no Vulkan");
+        return 0;
+    }
+
+    VkApplicationInfo app = new VkApplicationInfo();
+    app.applicationName = "DreamVulkanTest";
+    app.engineName = "Dream";
+    app.apiVersion = Vulkan.version();
+
+    VkInstanceCreateInfo ci = new VkInstanceCreateInfo();
+    ci.appInfo = &app;
+    ci.enabledExtensionCount = 0;
+    ci.ppEnabledExtensionNames = 0;
+
+    VkInstance instance;
+    VkResult res = Vulkan.createInstance(&ci, &instance);
+    if (res != VkResult.Success) {
+        Console.WriteLine("instance fail");
+        return 0;
+    }
+
+    VkPhysicalDeviceList list = Vulkan.enumeratePhysicalDevices(instance);
+    if (list.count == 0) {
+        Console.WriteLine("no device");
+        Vulkan.destroyInstance(instance);
+        return 0;
+    }
+
+    VkDeviceQueueCreateInfo qci = new VkDeviceQueueCreateInfo();
+    qci.queueFamilyIndex = 0;
+    qci.queueCount = 1;
+    qci.pQueuePriorities = 0;
+
+    VkDeviceCreateInfo dci = new VkDeviceCreateInfo();
+    dci.queueCreateInfoCount = 1;
+    dci.pQueueCreateInfos = &qci;
+
+    VkDevice device;
+    res = Vulkan.createDevice(list.devices[0], &dci, null, &device);
+    if (res != VkResult.Success) {
+        Console.WriteLine("device fail");
+        Vulkan.destroyInstance(instance);
+        return 0;
+    }
+
+    VkBufferCreateInfo bi = new VkBufferCreateInfo();
+    bi.size = 64;
+    bi.usage = 0;
+    bi.sharingMode = 0;
+
+    VkBuffer buffer;
+    res = Vulkan.createBuffer(device, &bi, null, &buffer);
+    if (res != VkResult.Success) {
+        Console.WriteLine("buffer fail");
+    } else {
+        Vulkan.destroyBuffer(device, buffer, null);
+    }
+
+    Vulkan.destroyDevice(device, null);
+    Vulkan.destroyInstance(instance);
+    Console.WriteLine("ok"); // Expected: C code generated successfully
+    return 0;
+}
