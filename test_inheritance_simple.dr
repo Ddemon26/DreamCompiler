@@ -1,0 +1,12 @@
+// Test basic inheritance with integers
+class Animal {
+    int age;
+}
+
+class Dog : Animal {
+    int size;
+}
+
+Dog dog = new Dog();
+dog.size = 5;
+Console.WriteLine(dog.size);

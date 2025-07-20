@@ -1,0 +1,17 @@
+// Expected: 123
+// Test multiple levels of inheritance
+class Animal {
+    int age;
+}
+
+class Mammal : Animal {
+    string furColor;
+}
+
+class Dog : Mammal {
+    string breed;
+}
+
+Dog dog = new Dog();
+dog.age = 123;
+Console.WriteLine(dog.age);

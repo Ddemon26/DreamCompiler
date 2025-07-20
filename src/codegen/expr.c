@@ -287,6 +287,10 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
                   n->as.new_expr.type_name.start);
     }
     break;
+  case ND_BASE:
+    // Access base class member: this->base.member_name
+    c_out_write(b, "this->base.%.*s", (int)n->as.base.name.len, n->as.base.name.start);
+    break;
   default:
     c_out_write(b, "0");
     break;

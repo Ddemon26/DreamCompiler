@@ -1,0 +1,16 @@
+// Expected: 99
+// Test assignment compatibility (subclass to base)
+class Vehicle {
+    int wheels;
+}
+
+class Car : Vehicle {
+    string model;
+}
+
+Car car = new Car();
+car.wheels = 99;
+
+// Assignment compatibility - car should be usable as Vehicle
+Vehicle vehicle = car;
+Console.WriteLine(vehicle.wheels);

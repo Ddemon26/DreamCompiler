@@ -71,12 +71,28 @@ static void emit_type(COut *b, TokenKind k, Slice name) {
 }
 
 void emit_type_decl(COut *b, Node *n, const char *src_file) {
-  c_out_write(b, "/* Dream struct %.*s */\n", (int)n->as.type_decl.name.len,
+  const char *type_kind = (n->kind == ND_CLASS_DECL) ? "class" : "struct";
+  c_out_write(b, "/* Dream %s %.*s", type_kind, (int)n->as.type_decl.name.len,
               n->as.type_decl.name.start);
+  if (n->kind == ND_CLASS_DECL && n->as.type_decl.base_name.len > 0) {
+    c_out_write(b, " : %.*s", (int)n->as.type_decl.base_name.len,
+                n->as.type_decl.base_name.start);
+  }
+  c_out_write(b, " */\n");
+  
   c_out_write(b, "struct %.*s {", (int)n->as.type_decl.name.len,
               n->as.type_decl.name.start);
   c_out_newline(b);
   c_out_indent(b);
+  
+  // If this is a class with inheritance, embed the base struct first
+  if (n->kind == ND_CLASS_DECL && n->as.type_decl.base_name.len > 0) {
+    c_out_write(b, "struct %.*s base; /* inherited from %.*s */",
+                (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start,
+                (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start);
+    c_out_newline(b);
+  }
+  
   for (size_t i = 0; i < n->as.type_decl.len; i++) {
     Node *m = n->as.type_decl.members[i];
     if (m->kind == ND_VAR_DECL && !m->as.var_decl.is_static) {

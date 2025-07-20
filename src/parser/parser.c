@@ -602,6 +602,19 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
   }
   Slice name = {p->tok.start, p->tok.len};
   next(p);
+  
+  // Check for optional inheritance (only for classes, not structs)
+  Slice base_name = {NULL, 0};
+  if (kind == ND_CLASS_DECL && p->tok.kind == TK_COLON) {
+    next(p); // consume ':'
+    if (p->tok.kind != TK_IDENT) {
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected base class identifier");
+      return node_new(p->arena, ND_ERROR);
+    }
+    base_name = (Slice){p->tok.start, p->tok.len};
+    next(p);
+  }
+  
   if (p->tok.kind != TK_LBRACE) {
     diag_push(p, p->tok.pos, DIAG_ERROR, "expected '{'");
     return node_new(p->arena, ND_ERROR);
@@ -644,6 +657,7 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
   Node *n = node_new(p->arena, kind);
   n->pos = start_pos;
   n->as.type_decl.name = name;
+  n->as.type_decl.base_name = base_name;
   n->as.type_decl.members = members;
   n->as.type_decl.len = len;
   typevec_push(p, name);
@@ -757,6 +771,22 @@ static Node *parse_primary(Parser *p) {
     n->as.new_expr.type_name = type_name;
     n->as.new_expr.args = args;
     n->as.new_expr.arg_len = alen;
+    return n;
+  }
+  case TK_KW_BASE: {
+    next(p); /* consume 'base' */
+    if (p->tok.kind != TK_DOT) {
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected '.' after 'base'");
+      return node_new(p->arena, ND_ERROR);
+    }
+    next(p); /* consume '.' */
+    if (p->tok.kind != TK_IDENT) {
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected identifier after 'base.'");
+      return node_new(p->arena, ND_ERROR);
+    }
+    n = node_new(p->arena, ND_BASE);
+    n->as.base.name = (Slice){p->tok.start, p->tok.len};
+    next(p);
     return n;
   }
   case TK_KW_TRUE:

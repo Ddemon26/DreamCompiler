@@ -48,6 +48,7 @@ typedef enum {
   ND_COND,
   ND_INDEX,
   ND_FIELD,
+  ND_BASE,
   ND_VAR_DECL,
   ND_IF,
   ND_WHILE,
@@ -148,6 +149,9 @@ struct Node {
       Slice name;   /**< Field name. */
     } field;
     struct {
+      Slice name;   /**< Base member name for ND_BASE nodes. */
+    } base;
+    struct {
       TokenKind type;   /**< Variable type for ND_VAR_DECL nodes. */
       Slice type_name;  /**< Identifier for custom types. */
       Slice name;       /**< Variable name. */
@@ -214,6 +218,7 @@ struct Node {
     } func;
     struct {
       Slice name;     /**< Name of the struct or class. */
+      Slice base_name; /**< Name of the base class (empty if no inheritance). */
       Node **members; /**< Array of member declarations. */
       size_t len;     /**< Number of members. */
     } type_decl;

@@ -1,0 +1,21 @@
+// Expected: Hello
+// Test base keyword access
+class Animal {
+    string name;
+}
+
+class Dog : Animal {
+    string breed;
+    
+    func void setName(string n) {
+        base.name = n;
+    }
+    
+    func string getName() {
+        return base.name;
+    }
+}
+
+Dog dog = new Dog();
+dog.setName("Hello");
+Console.WriteLine(dog.getName());

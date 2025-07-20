@@ -99,7 +99,7 @@ PredefinedType      ::= "int" | "bool" | "string" | "float" | "char"            
 #### 2.3.1 Class and Struct
 
 ```ebnf
-ClassDeclaration    ::= "class" Identifier "{" { ClassMemberDeclaration } "}"         // Implemented
+ClassDeclaration    ::= "class" Identifier [ ":" Identifier ] "{" { ClassMemberDeclaration } "}"         // Implemented (inheritance added)
 StructDeclaration   ::= "struct" Identifier "{" { ClassMemberDeclaration } "}"        // Implemented
 ClassMemberDeclaration ::= FunctionDeclaration | VariableDeclaration | ";"            // Implemented
 ```

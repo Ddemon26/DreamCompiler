@@ -1,0 +1,14 @@
+// Expected: 42
+// Test basic single inheritance
+class Animal {
+    int age;
+    string name;
+}
+
+class Dog : Animal {
+    string breed;
+}
+
+Dog dog = new Dog();
+dog.age = 42;
+Console.WriteLine(dog.age);
