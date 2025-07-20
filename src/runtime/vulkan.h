@@ -41,6 +41,13 @@ VkResult dr_vkCreateSurface(VkInstance instance,
                             VkSurfaceKHR *outSurface);
 void dr_vkDestroySurface(VkInstance instance, VkSurfaceKHR surface);
 
+VkResult dr_vkCreateSimpleSwapchain(VkDevice device,
+                                    VkSurfaceKHR surface,
+                                    uint32_t width,
+                                    uint32_t height,
+                                    VkSwapchainKHR *outSwapchain);
+void dr_vkDestroySwapchain(VkDevice device, VkSwapchainKHR swapchain);
+
 #ifdef __cplusplus
 }
 #endif

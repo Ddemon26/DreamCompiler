@@ -142,4 +142,36 @@ public class Vulkan {
   @extern("dr_vkDestroySurface")
   public static extern void destroySurface(VkInstance instance,
                                            VkSurfaceKHR surface);
+
+  @extern("dr_vkCreateSimpleSwapchain")
+  public static extern VkResult createSimpleSwapchain(VkDevice device,
+                                                      VkSurfaceKHR surface,
+                                                      uint width,
+                                                      uint height,
+                                                      VkSwapchainKHR* outSwap);
+
+  @extern("dr_vkDestroySwapchain")
+  public static extern void destroySwapchain(VkDevice device,
+                                             VkSwapchainKHR swapchain);
+
+  @extern("dr_release")
+  static extern void release(long ptr);
+
+  public static VkPhysicalDevice pickFirstPhysicalDevice(VkInstance instance) {
+    VkPhysicalDeviceList list = enumeratePhysicalDevices(instance);
+    if (list.count == 0) {
+      return new VkPhysicalDevice();
+    }
+    VkPhysicalDevice dev = list.devices[0];
+    release(list.devices);
+    return dev;
+  }
+
+  public static VkResult createDefaultSwapchain(VkDevice device,
+                                                VkSurfaceKHR surface,
+                                                uint width,
+                                                uint height,
+                                                VkSwapchainKHR* outSwap) {
+    return createSimpleSwapchain(device, surface, width, height, outSwap);
+  }
 }
