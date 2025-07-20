@@ -1170,8 +1170,7 @@ static Node *parse_stmt(Parser *p) {
     n = parse_func(p);
   } else if (is_type_token(p->tok.kind)) {
     n = parse_var_decl(p);
-  }
-  if (p->tok.kind == TK_IDENT && typevec_contains(p, p->tok)) {
+  } else if (p->tok.kind == TK_IDENT && typevec_contains(p, p->tok)) {
     Token la = lexer_peek(&p->lx);
     if (la.kind == TK_IDENT)
       n = parse_var_decl(p);
