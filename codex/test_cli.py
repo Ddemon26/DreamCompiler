@@ -35,13 +35,24 @@ class UniversalTestCLI:
         
     def run_command(self, cmd: str, shell: bool = True) -> int:
         """Execute platform-appropriate command"""
-        if self.is_windows:
-            # Use PowerShell for Windows
-            if shell and not cmd.startswith("powershell"):
-                cmd = f"powershell -Command \"{cmd}\""
-        
         print(f"Executing: {cmd}")
-        return os.system(cmd)
+        
+        if self.is_windows:
+            # On Windows, use PowerShell for better PATH support
+            try:
+                ps_cmd = ["powershell", "-Command", cmd]
+                result = subprocess.run(ps_cmd, text=True, capture_output=True)
+                if result.stdout:
+                    print(result.stdout)
+                if result.stderr:
+                    print(result.stderr, file=sys.stderr)
+                return result.returncode
+            except Exception as e:
+                print(f"Command failed: {e}")
+                return 1
+        else:
+            # Linux/Unix - use os.system
+            return os.system(cmd)
         
     def build_compiler(self) -> bool:
         """Build the DreamCompiler"""
@@ -186,17 +197,29 @@ class UniversalTestCLI:
             tools.extend(["make", "gcc"])
             
         print("\nTool Availability:")
+        # Use ASCII characters for Windows compatibility  
+        check_mark = "+" if self.is_windows else "✓"
+        cross_mark = "-" if self.is_windows else "✗"
+        
         for tool in tools:
             try:
-                result = subprocess.run([tool, "--version"], 
+                # Special handling for different tools
+                if tool == "zig":
+                    version_args = ["zig", "version"]
+                elif tool == "powershell":
+                    version_args = ["powershell", "-Command", "$PSVersionTable.PSVersion.ToString()"]
+                else:
+                    version_args = [tool, "--version"]
+                    
+                result = subprocess.run(version_args, 
                                       capture_output=True, text=True, timeout=5)
                 if result.returncode == 0:
-                    version = result.stdout.split('\n')[0]
-                    print(f"  ✓ {tool}: {version}")
+                    version = result.stdout.strip().split('\n')[0]
+                    print(f"  {check_mark} {tool}: {version}")
                 else:
-                    print(f"  ✗ {tool}: Not available")
+                    print(f"  {cross_mark} {tool}: Not available")
             except:
-                print(f"  ✗ {tool}: Not available")
+                print(f"  {cross_mark} {tool}: Not available")
                 
         # Check test directories
         test_dir = self.root / "tests"

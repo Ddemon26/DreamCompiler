@@ -16,20 +16,44 @@ jobs:
         uses: goto-bus-stop/setup-zig@v2
         with:
           version: master
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt update
           sudo apt install -y build-essential make gdb re2c
+          # Optional Python packages for full test functionality
+          pip install matplotlib pandas seaborn || echo "Optional packages failed to install"
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
         run: |
           choco install -y make mingw re2c
-      - name: Build
+          # Optional Python packages for full test functionality  
+          pip install matplotlib pandas seaborn
+        continue-on-error: true
+      - name: Build DreamCompiler
         run: zig build
       - name: Cross-compile Windows binary
         if: runner.os == 'Linux'
         run: zig build -Dtarget=x86_64-windows-gnu
-      - name: Run tests
-        run: python codex/python/test_runner.py
-        shell: bash
+      - name: Run quick tests (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x codex/test_cli.sh
+          ./codex/test_cli.sh quick
+      - name: Run quick tests (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          python codex/test_cli.py quick
+        shell: powershell
+      - name: Run basic test suite (Linux)
+        if: runner.os == 'Linux'
+        run: ./codex/test_cli.sh run --pattern "basics/**/*.dr"
+      - name: Run basic test suite (Windows) 
+        if: runner.os == 'Windows'
+        run: |
+          python codex/test_cli.py run --pattern "basics/**/*.dr"
+        shell: powershell

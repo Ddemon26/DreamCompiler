@@ -6,9 +6,17 @@ Provides detailed analysis of test results across platforms and time
 
 import argparse
 import json
-import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
+# Optional dependencies for advanced analysis - gracefully handle missing packages
+try:
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import seaborn as sns
+    HAS_PLOTTING = True
+except ImportError:
+    HAS_PLOTTING = False
+    plt = None
+    pd = None
+    sns = None
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -278,61 +286,88 @@ class TestAnalyzer:
         
     def compare_platforms(self, results: List[Dict]):
         """Generate platform comparison charts"""
-        try:
-            import matplotlib.pyplot as plt
-            import seaborn as sns
+        if not HAS_PLOTTING:
+            print("Platform comparison charts require matplotlib, pandas, and seaborn")
+            print("Install with: pip install matplotlib pandas seaborn")
+            print("Falling back to text-based comparison...")
+            self._text_platform_comparison(results)
+            return
             
-            # Prepare data for visualization
-            platform_data = []
-            for result in results:
-                platform_data.append({
-                    'platform': result['platform'],
-                    'timestamp': result['timestamp'],
-                    'pass_rate': self._calculate_pass_rate(result),
-                    'total_tests': len(result['results']),
-                    'duration': result['total_duration']
-                })
-                
-            df = pd.DataFrame(platform_data)
+        # Prepare data for visualization
+        platform_data = []
+        for result in results:
+            platform_data.append({
+                'platform': result['platform'],
+                'timestamp': result['timestamp'],
+                'pass_rate': self._calculate_pass_rate(result),
+                'total_tests': len(result['results']),
+                'duration': result['total_duration']
+            })
             
-            # Create subplots
-            fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-            fig.suptitle('DreamCompiler Test Analysis', fontsize=16)
+        df = pd.DataFrame(platform_data)
+        
+        # Create subplots
+        fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+        fig.suptitle('DreamCompiler Test Analysis', fontsize=16)
+        
+        # Pass rate comparison
+        sns.boxplot(data=df, x='platform', y='pass_rate', ax=axes[0, 0])
+        axes[0, 0].set_title('Pass Rate by Platform')
+        axes[0, 0].set_ylabel('Pass Rate (%)')
+        
+        # Test duration comparison
+        sns.boxplot(data=df, x='platform', y='duration', ax=axes[0, 1])
+        axes[0, 1].set_title('Test Suite Duration by Platform')
+        axes[0, 1].set_ylabel('Duration (seconds)')
+        
+        # Pass rate over time
+        for platform in df['platform'].unique():
+            platform_df = df[df['platform'] == platform]
+            axes[1, 0].plot(platform_df['timestamp'], platform_df['pass_rate'], 
+                          marker='o', label=platform)
+        axes[1, 0].set_title('Pass Rate Trend Over Time')
+        axes[1, 0].set_ylabel('Pass Rate (%)')
+        axes[1, 0].legend()
+        
+        # Test count comparison
+        sns.barplot(data=df, x='platform', y='total_tests', ax=axes[1, 1])
+        axes[1, 1].set_title('Total Tests by Platform')
+        axes[1, 1].set_ylabel('Number of Tests')
             
-            # Pass rate comparison
-            sns.boxplot(data=df, x='platform', y='pass_rate', ax=axes[0, 0])
-            axes[0, 0].set_title('Pass Rate by Platform')
-            axes[0, 0].set_ylabel('Pass Rate (%)')
-            
-            # Test duration comparison
-            sns.boxplot(data=df, x='platform', y='duration', ax=axes[0, 1])
-            axes[0, 1].set_title('Test Suite Duration by Platform')
-            axes[0, 1].set_ylabel('Duration (seconds)')
-            
-            # Pass rate over time
-            for platform in df['platform'].unique():
-                platform_df = df[df['platform'] == platform]
-                axes[1, 0].plot(platform_df['timestamp'], platform_df['pass_rate'], 
-                              marker='o', label=platform)
-            axes[1, 0].set_title('Pass Rate Trend Over Time')
-            axes[1, 0].set_ylabel('Pass Rate (%)')
-            axes[1, 0].legend()
-            
-            # Test count comparison
-            sns.barplot(data=df, x='platform', y='total_tests', ax=axes[1, 1])
-            axes[1, 1].set_title('Total Tests by Platform')
-            axes[1, 1].set_ylabel('Number of Tests')
-            
-            plt.tight_layout()
-            
-            # Save chart
-            chart_path = self.results_dir / "test_analysis_charts.png"
-            plt.savefig(chart_path, dpi=300, bbox_inches='tight')
-            print(f"Charts saved to {chart_path}")
-            
-        except ImportError:
-            print("matplotlib and seaborn required for chart generation")
-            print("Install with: pip install matplotlib seaborn pandas")
+        plt.tight_layout()
+        
+        # Save chart
+        chart_path = self.results_dir / "test_analysis_charts.png"
+        plt.savefig(chart_path, dpi=300, bbox_inches='tight')
+        print(f"Charts saved to {chart_path}")
+    
+    def _text_platform_comparison(self, results: List[Dict]):
+        """Text-based platform comparison when plotting libraries aren't available"""
+        print("\nPLATFORM COMPARISON")
+        print("=" * 20)
+        
+        platforms = {}
+        for result in results:
+            platform = result['platform']
+            if platform not in platforms:
+                platforms[platform] = []
+            platforms[platform].append({
+                'pass_rate': self._calculate_pass_rate(result),
+                'total_tests': len(result['results']),
+                'duration': result['total_duration']
+            })
+        
+        for platform, data in platforms.items():
+            if data:
+                avg_pass_rate = sum(d['pass_rate'] for d in data) / len(data)
+                avg_duration = sum(d['duration'] for d in data) / len(data)
+                total_runs = len(data)
+                print(f"\n{platform}:")
+                print(f"  Average Pass Rate: {avg_pass_rate:.1f}%")
+                print(f"  Average Duration: {avg_duration:.2f}s")
+                print(f"  Total Test Runs: {total_runs}")
+        
+        print(f"\nFor visual charts, install: pip install matplotlib pandas seaborn")
 
 def main():
     parser = argparse.ArgumentParser(description="DreamCompiler Test Analyzer")
