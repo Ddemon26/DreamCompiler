@@ -1,0 +1,34 @@
+func int main() {
+    VkShaderModuleCreateInfo smi = new VkShaderModuleCreateInfo();
+    smi.codeSize = 0;
+    smi.pCode = 0;
+    VkShaderModule mod;
+    Vulkan.createShaderModule(new VkDevice(), &smi, null, &mod);
+
+    VkDescriptorSetLayoutBinding bind = new VkDescriptorSetLayoutBinding();
+    bind.binding = 0;
+    bind.descriptorType = 0;
+    bind.descriptorCount = 1;
+    bind.stageFlags = 0;
+    bind.pImmutableSamplers = 0;
+
+    VkDescriptorSetLayoutCreateInfo dl = new VkDescriptorSetLayoutCreateInfo();
+    dl.bindingCount = 1;
+    dl.pBindings = &bind;
+    VkDescriptorSetLayout setLayout;
+    Vulkan.createDescriptorSetLayout(new VkDevice(), &dl, null, &setLayout);
+
+    VkPipelineLayoutCreateInfo pl = new VkPipelineLayoutCreateInfo();
+    pl.setLayoutCount = 1;
+    pl.pSetLayouts = &setLayout;
+    pl.pushConstantRangeCount = 0;
+    pl.pPushConstantRanges = 0;
+    VkPipelineLayout layout;
+    Vulkan.createPipelineLayout(new VkDevice(), &pl, null, &layout);
+
+    Vulkan.destroyPipelineLayout(new VkDevice(), layout, null);
+    Vulkan.destroyDescriptorSetLayout(new VkDevice(), setLayout, null);
+    Vulkan.destroyShaderModule(new VkDevice(), mod, null);
+    Console.WriteLine("ok"); // Expected: C code generated successfully
+    return 0;
+}

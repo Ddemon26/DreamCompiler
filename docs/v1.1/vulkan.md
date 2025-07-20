@@ -96,3 +96,44 @@ Vulkan.createDefaultSwapchain(device, surface, 800, 600, &swap);
 // ... use the swapchain ...
 Vulkan.destroySwapchain(device, swap);
 ```
+
+## Shader Modules and Pipeline Layouts
+
+The module also exposes low-level entry points for building graphics pipelines.
+Shader modules are created directly from SPIR-V bytecode using
+`Vulkan.createShaderModule`:
+
+```dream
+VkShaderModuleCreateInfo smInfo = new VkShaderModuleCreateInfo();
+smInfo.codeSize = spirvSize;
+smInfo.pCode = spirvPtr;
+VkShaderModule shader;
+VkResult res = Vulkan.createShaderModule(device, &smInfo, null, &shader);
+```
+
+Descriptor set layouts and pipeline layouts mirror the C API closely:
+
+```dream
+VkDescriptorSetLayoutBinding bind = new VkDescriptorSetLayoutBinding();
+bind.binding = 0;
+bind.descriptorType = 0; // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+bind.descriptorCount = 1;
+bind.stageFlags = 1;     // VK_SHADER_STAGE_VERTEX_BIT
+
+VkDescriptorSetLayoutCreateInfo dl = new VkDescriptorSetLayoutCreateInfo();
+dl.bindingCount = 1;
+dl.pBindings = &bind;
+VkDescriptorSetLayout setLayout;
+Vulkan.createDescriptorSetLayout(device, &dl, null, &setLayout);
+
+VkPipelineLayoutCreateInfo pl = new VkPipelineLayoutCreateInfo();
+pl.setLayoutCount = 1;
+pl.pSetLayouts = &setLayout;
+pl.pushConstantRangeCount = 0;
+pl.pPushConstantRanges = 0;
+VkPipelineLayout layout;
+Vulkan.createPipelineLayout(device, &pl, null, &layout);
+```
+
+Destroy these objects with `destroyShaderModule`, `destroyDescriptorSetLayout`
+and `destroyPipelineLayout` when no longer needed.

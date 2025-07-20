@@ -15,6 +15,11 @@ public struct VkSurfaceKHR { long value; }
 public struct VkSwapchainKHR { long value; }
 public struct VkBuffer { long value; }
 public struct VkDeviceMemory { long value; }
+public struct VkShaderModule { long value; }
+public struct VkPipelineLayout { long value; }
+public struct VkDescriptorSetLayout { long value; }
+public struct VkDescriptorPool { long value; }
+public struct VkDescriptorSet { long value; }
 
 // Helper structure returned by Vulkan.enumeratePhysicalDevices
 public struct VkPhysicalDeviceList {
@@ -71,6 +76,31 @@ public struct VkBufferCreateInfo {
 public struct VkMemoryAllocateInfo {
   ulong allocationSize;
   uint memoryTypeIndex;
+}
+
+public struct VkShaderModuleCreateInfo {
+  ulong codeSize;
+  long  pCode; // uint32_t* pointer
+}
+
+public struct VkDescriptorSetLayoutBinding {
+  uint binding;
+  uint descriptorType;
+  uint descriptorCount;
+  uint stageFlags;
+  long pImmutableSamplers; // VkSampler* pointer
+}
+
+public struct VkDescriptorSetLayoutCreateInfo {
+  uint bindingCount;
+  VkDescriptorSetLayoutBinding* pBindings;
+}
+
+public struct VkPipelineLayoutCreateInfo {
+  uint setLayoutCount;
+  VkDescriptorSetLayout* pSetLayouts;
+  uint pushConstantRangeCount;
+  long pPushConstantRanges; // VkPushConstantRange* pointer
 }
 
 // Platform surface creation info
@@ -133,6 +163,39 @@ public class Vulkan {
   public static extern void freeMemory(VkDevice device,
                                        VkDeviceMemory memory,
                                        VkAllocationCallbacks* alloc);
+
+  @extern("vkCreateShaderModule")
+  public static extern VkResult createShaderModule(VkDevice device,
+                                                   VkShaderModuleCreateInfo* info,
+                                                   VkAllocationCallbacks* alloc,
+                                                   VkShaderModule* outModule);
+
+  @extern("vkDestroyShaderModule")
+  public static extern void destroyShaderModule(VkDevice device,
+                                                VkShaderModule module,
+                                                VkAllocationCallbacks* alloc);
+
+  @extern("vkCreateDescriptorSetLayout")
+  public static extern VkResult createDescriptorSetLayout(VkDevice device,
+                                                          VkDescriptorSetLayoutCreateInfo* info,
+                                                          VkAllocationCallbacks* alloc,
+                                                          VkDescriptorSetLayout* outLayout);
+
+  @extern("vkDestroyDescriptorSetLayout")
+  public static extern void destroyDescriptorSetLayout(VkDevice device,
+                                                       VkDescriptorSetLayout layout,
+                                                       VkAllocationCallbacks* alloc);
+
+  @extern("vkCreatePipelineLayout")
+  public static extern VkResult createPipelineLayout(VkDevice device,
+                                                     VkPipelineLayoutCreateInfo* info,
+                                                     VkAllocationCallbacks* alloc,
+                                                     VkPipelineLayout* outLayout);
+
+  @extern("vkDestroyPipelineLayout")
+  public static extern void destroyPipelineLayout(VkDevice device,
+                                                  VkPipelineLayout layout,
+                                                  VkAllocationCallbacks* alloc);
 
   @extern("dr_vkCreateSurface")
   public static extern VkResult createSurface(VkInstance instance,
