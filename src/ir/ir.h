@@ -42,7 +42,7 @@ typedef struct {
 } IRValue;
 
 /**
- * @brief Forward declaration of the IR instruction structure.
+ * @brief Forward declarations.
  */
 typedef struct IRInstr IRInstr;
 
