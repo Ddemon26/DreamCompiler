@@ -213,8 +213,6 @@ static bool is_type_token(TokenKind k) {
   case TK_KW_TASK:
   case TK_KW_TASKRESULT:
   case TK_KW_VAR:
-  case TK_KW_STRUCT:
-  case TK_KW_CLASS:
     return true;
   default:
     return false;
@@ -456,6 +454,7 @@ static Node *parse_switch(Parser *p) {
   SwitchCase *cases = NULL;
   size_t len = 0, cap = 0;
   while (p->tok.kind != TK_RBRACE && p->tok.kind != TK_EOF) {
+    Token start_tok = p->tok;
     int is_default = 0;
     Node *val = NULL;
     if (p->tok.kind == TK_KW_CASE) {
@@ -466,13 +465,18 @@ static Node *parse_switch(Parser *p) {
       is_default = 1;
     } else {
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected 'case' or 'default'");
-      break;
+      next(p);
+      continue;
     }
     if (p->tok.kind == TK_COLON)
       next(p);
     else
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected ':'");
     Node *body = parse_stmt(p);
+    // Safeguard: ensure we advanced past the starting token
+    if (p->tok.kind == start_tok.kind && p->tok.start == start_tok.start) {
+      next(p);
+    }
     if (len + 1 > cap) {
       cap = cap ? cap * 2 : 4;
       cases = realloc(cases, cap * sizeof(SwitchCase));
@@ -720,6 +724,7 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
   Node **members = NULL;
   size_t len = 0, cap = 0;
   while (p->tok.kind != TK_RBRACE && p->tok.kind != TK_EOF) {
+    Token start_tok = p->tok;
     if (p->tok.kind == TK_SEMICOLON) {
       next(p);
       continue;
@@ -734,13 +739,18 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
       m = parse_func(p);
       if (m->kind == ND_FUNC)
         m->as.func.is_static = is_static;
-    } else if (is_type_token(p->tok.kind)) {
+    } else if (is_type_token(p->tok.kind) || (p->tok.kind == TK_IDENT && typevec_contains(p, p->tok))) {
       m = parse_var_decl(p);
       if (m->kind == ND_VAR_DECL)
         m->as.var_decl.is_static = is_static;
     } else {
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected member declaration");
-      m = parse_stmt(p);
+      next(p);
+      continue;
+    }
+    // Safeguard: ensure we advanced past the starting token
+    if (p->tok.kind == start_tok.kind && p->tok.start == start_tok.start) {
+      next(p);
     }
     nodevec_push(&members, &len, &cap, m);
   }
