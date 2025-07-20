@@ -1,3 +1,11 @@
+// Expected: Area: 200
+// Expected: Loop iteration: 0
+// Expected: First iteration
+// Expected: Loop iteration: 1
+// Expected: Second iteration
+// Expected: Loop iteration: 2
+// Expected: Default case
+// Expected: Area is positive
 struct Point {
     int x;
     int y;
@@ -41,6 +49,8 @@ func int main() {
             throw;
         }
         Console.WriteLine("Area is positive");
+    } catch {
+        Console.WriteLine("Exception caught");
     }
     
     return 0;

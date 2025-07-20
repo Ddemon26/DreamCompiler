@@ -10,6 +10,8 @@ extern "C" {
 
 void cg_emit_expr(CGCtx *ctx, COut *b, Node *n);
 int cg_is_string_expr(CGCtx *ctx, Node *n);
+int cg_is_int_expr(CGCtx *ctx, Node *n);
+int cg_is_float_expr(CGCtx *ctx, Node *n);
 const char *cg_fmt_for_arg(CGCtx *ctx, Node *arg);
 
 #ifdef __cplusplus

@@ -150,6 +150,46 @@ int cg_is_string_expr(CGCtx *ctx, Node *n) {
       }
     }
     return 0;
+  case ND_BINOP:
+    // Handle string concatenation operations (+ operator with strings)
+    if (n->as.bin.op == TK_PLUS) {
+      int lhs_is_string = cg_is_string_expr(ctx, n->as.bin.lhs);
+      int rhs_is_string = cg_is_string_expr(ctx, n->as.bin.rhs);
+      int lhs_is_int = cg_is_int_expr(ctx, n->as.bin.lhs);
+      int rhs_is_int = cg_is_int_expr(ctx, n->as.bin.rhs);
+      int lhs_is_float = cg_is_float_expr(ctx, n->as.bin.lhs);
+      int rhs_is_float = cg_is_float_expr(ctx, n->as.bin.rhs);
+      
+      // Any concatenation with at least one string results in a string
+      return (lhs_is_string && rhs_is_string) ||
+             (lhs_is_string && rhs_is_int) ||
+             (lhs_is_int && rhs_is_string) ||
+             (lhs_is_string && rhs_is_float) ||
+             (lhs_is_float && rhs_is_string);
+    }
+    return 0;
+  default:
+    return 0;
+  }
+}
+
+int cg_is_int_expr(CGCtx *ctx, Node *n) {
+  switch (n->kind) {
+  case ND_INT:
+    return 1;
+  case ND_IDENT:
+    return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) == TK_KW_INT;
+  default:
+    return 0;
+  }
+}
+
+int cg_is_float_expr(CGCtx *ctx, Node *n) {
+  switch (n->kind) {
+  case ND_FLOAT:
+    return 1;
+  case ND_IDENT:
+    return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) == TK_KW_FLOAT;
   default:
     return 0;
   }
@@ -192,14 +232,58 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     break;
   case ND_BINOP:
     c_out_write(b, "(");
-    if (n->as.bin.op == TK_PLUS && (cg_is_string_expr(ctx, n->as.bin.lhs) ||
-                                    cg_is_string_expr(ctx, n->as.bin.rhs))) {
-      c_out_write(b, "dream_concat(");
-      cg_emit_expr(ctx, b, n->as.bin.lhs);
-      c_out_write(b, ", ");
-      cg_emit_expr(ctx, b, n->as.bin.rhs);
-      c_out_write(b, ")");
+    if (n->as.bin.op == TK_PLUS) {
+      int lhs_is_string = cg_is_string_expr(ctx, n->as.bin.lhs);
+      int rhs_is_string = cg_is_string_expr(ctx, n->as.bin.rhs);
+      int lhs_is_int = cg_is_int_expr(ctx, n->as.bin.lhs);
+      int rhs_is_int = cg_is_int_expr(ctx, n->as.bin.rhs);
+      int lhs_is_float = cg_is_float_expr(ctx, n->as.bin.lhs);
+      int rhs_is_float = cg_is_float_expr(ctx, n->as.bin.rhs);
+      
+      // Handle string concatenation with mixed types
+      if (lhs_is_string && rhs_is_string) {
+        // String + String - use existing dream_concat
+        c_out_write(b, "dream_concat(");
+        cg_emit_expr(ctx, b, n->as.bin.lhs);
+        c_out_write(b, ", ");
+        cg_emit_expr(ctx, b, n->as.bin.rhs);
+        c_out_write(b, ")");
+      } else if (lhs_is_string && rhs_is_int) {
+        // String + Int
+        c_out_write(b, "dream_concat_string_int(");
+        cg_emit_expr(ctx, b, n->as.bin.lhs);
+        c_out_write(b, ", ");
+        cg_emit_expr(ctx, b, n->as.bin.rhs);
+        c_out_write(b, ")");
+      } else if (lhs_is_int && rhs_is_string) {
+        // Int + String
+        c_out_write(b, "dream_concat_int_string(");
+        cg_emit_expr(ctx, b, n->as.bin.lhs);
+        c_out_write(b, ", ");
+        cg_emit_expr(ctx, b, n->as.bin.rhs);
+        c_out_write(b, ")");
+      } else if (lhs_is_string && rhs_is_float) {
+        // String + Float
+        c_out_write(b, "dream_concat_string_float(");
+        cg_emit_expr(ctx, b, n->as.bin.lhs);
+        c_out_write(b, ", ");
+        cg_emit_expr(ctx, b, n->as.bin.rhs);
+        c_out_write(b, ")");
+      } else if (lhs_is_float && rhs_is_string) {
+        // Float + String
+        c_out_write(b, "dream_concat_float_string(");
+        cg_emit_expr(ctx, b, n->as.bin.lhs);
+        c_out_write(b, ", ");
+        cg_emit_expr(ctx, b, n->as.bin.rhs);
+        c_out_write(b, ")");
+      } else {
+        // Regular arithmetic addition
+        cg_emit_expr(ctx, b, n->as.bin.lhs);
+        c_out_write(b, " %s ", op_text(n->as.bin.op));
+        cg_emit_expr(ctx, b, n->as.bin.rhs);
+      }
     } else {
+      // Non-plus operations
       cg_emit_expr(ctx, b, n->as.bin.lhs);
       c_out_write(b, " %s ", op_text(n->as.bin.op));
       cg_emit_expr(ctx, b, n->as.bin.rhs);

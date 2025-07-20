@@ -1,3 +1,12 @@
+// Expected: Hello Debug World!
+// Expected: X is greater than 40
+// Expected: Counting: 43
+// Expected: Counting: 44
+// Expected: Counting: 45
+// Expected: Counting: 46
+// Expected: Counting: 47
+// Expected: Counting: 48
+// Expected: Counting: 49
 func int main() {
     int x = 42;
     Console.WriteLine("Hello Debug World!");
