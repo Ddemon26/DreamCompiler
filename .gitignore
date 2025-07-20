@@ -56,3 +56,4 @@ src/lexer/lexer.c
 CLAUDE.md
 /codex/python/__pycache__
 /test_results
+/assets/vscode/node_modules

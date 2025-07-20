@@ -7,7 +7,9 @@
   "engines": {
     "vscode": "^1.90.0"
   },
-  "activationEvents": ["onLanguage:dream"],
+  "activationEvents": [
+    "onLanguage:dream"
+  ],
   "main": "./dist/extension.js",
   "bin": {
     "dream-language-server": "./dist/server.js"
@@ -21,7 +23,7 @@
           "dream"
         ],
         "extensions": [
-        ".dr"
+          ".dr"
         ],
         "configuration": "./language-configuration.json",
         "icon": {
@@ -55,7 +57,9 @@
     "taskDefinitions": [
       {
         "type": "dream",
-        "required": ["file"],
+        "required": [
+          "file"
+        ],
         "properties": {
           "file": {
             "type": "string",
@@ -71,9 +75,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
     "typescript": "~5.4.0",
-    "vsce": "^2.15.0",
-    "vscode": "^1.90.0"
+    "vsce": "^2.15.0"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1",
