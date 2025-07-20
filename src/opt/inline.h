@@ -15,6 +15,21 @@
 #include <stdbool.h>
 
 /**
+ * @brief Information about a function for inlining analysis.
+ */
+typedef struct {
+    int id;                 /**< Function identifier. */
+    char *name;             /**< Function name. */
+    CFG *cfg;               /**< Control flow graph of the function. */
+    IRValue *params;        /**< Function parameters. */
+    size_t nparam;          /**< Number of parameters. */
+    IRValue return_val;     /**< Return value (for testing compatibility). */
+    int inline_cost;        /**< Cached inline cost. */
+    int call_count;         /**< Number of times this function is called. */
+    bool is_recursive;      /**< True if function is recursive. */
+} FunctionInfo;
+
+/**
  * @brief Function table for interprocedural analysis and inlining.
  */
 typedef struct {

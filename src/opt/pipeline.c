@@ -6,6 +6,7 @@
 #include "copy_prop.h"
 #include "cse.h"
 #include "peephole.h"
+#include "inline.h"
 #include <stdbool.h>
 #include <stdlib.h>
 /**
@@ -62,5 +63,41 @@ void run_pipeline(CFG *cfg, int opt_level) {
         changed |= cse(cfg);
         changed |= licm(cfg);
         changed |= peephole(cfg);
+    } while (opt_level >= 2 && changed);
+}
+
+void run_pipeline_with_inlining(CFG *cfg, FunctionTable *func_table, int opt_level) {
+    if (!cfg || opt_level <= 0) return;
+    bool changed;
+    
+    // Run initial optimization passes to clean up the IR before inlining
+    sccp(cfg);
+    remove_unreachable(cfg);
+    dce(cfg);
+    
+    do {
+        changed = false;
+        
+        // Run inlining pass early, after basic optimizations but before aggressive ones
+        if (func_table && opt_level >= 1) {
+            InlineConfig config = {
+                .max_inline_cost = opt_level >= 3 ? 150 : 100,
+                .max_inline_depth = opt_level >= 3 ? 5 : 3,
+                .inline_hot_only = opt_level <= 1,
+                .hot_threshold = 3
+            };
+            changed |= inline_functions(cfg, func_table, &config);
+        }
+        
+        // Standard optimization passes
+        changed |= sccp(cfg);
+        changed |= remove_unreachable(cfg);
+        changed |= dce(cfg);
+        changed |= copy_propagation(cfg);
+        changed |= value_numbering(cfg);
+        changed |= cse(cfg);
+        changed |= licm(cfg);
+        changed |= peephole(cfg);
+        
     } while (opt_level >= 2 && changed);
 }

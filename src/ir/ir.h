@@ -31,6 +31,7 @@ typedef enum {
   /* control flow */
   IR_JUMP,  /**< Unconditional jump. */
   IR_CJUMP, /**< Conditional jump. */
+  IR_CALL,  /**< Function call. */
   IR_RETURN /**< Return operation. */
 } IROp;
 
@@ -47,6 +48,15 @@ typedef struct {
 typedef struct IRInstr IRInstr;
 
 /**
+ * @brief Extra information for call instructions.
+ */
+typedef struct {
+  int func_id;        /**< Function ID being called. */
+  IRValue *args;      /**< Arguments to the function. */
+  size_t nargs;       /**< Number of arguments. */
+} CallInfo;
+
+/**
  * @brief Structure representing an IR instruction.
  */
 struct IRInstr {
@@ -54,6 +64,9 @@ struct IRInstr {
   IRValue dst; /**< Destination value of the instruction. */
   IRValue a;   /**< First operand of the instruction. */
   IRValue b;   /**< Second operand of the instruction. */
+  union {
+    CallInfo call;    /**< Extra information for call instructions. */
+  } extra;
 };
 
 /**
