@@ -5,40 +5,40 @@
 CC = zig cc
 CFLAGS = -std=c11 -Wall -Wextra -D_GNU_SOURCE -fPIC -O2
 LDFLAGS = -shared
-INCLUDES = -I. -I../src -I../src/lexer
+INCLUDES = -I. -I../../src -I../../src/lexer
 
 # Source files (relative to codex directory)
 C_SOURCES = \
-	../src/parser/ast.c \
-	../src/parser/parser.c \
-	../src/parser/error.c \
-	../src/parser/diagnostic.c \
-	../src/sem/scope.c \
-	../src/sem/symbol.c \
-	../src/sem/type.c \
-	../src/sem/infer.c \
-	../src/sem/analysis.c \
-	../src/ir/ir.c \
-	../src/ir/lower.c \
-	../src/cfg/cfg.c \
-	../src/ssa/ssa.c \
-	../src/opt/pipeline.c \
-	../src/opt/sccp.c \
-	../src/opt/dce.c \
-	../src/opt/value_numbering.c \
-	../src/opt/licm.c \
-	../src/opt/copy_prop.c \
-	../src/opt/cse.c \
-	../src/opt/peephole.c \
-	../src/codegen/c_emit.c \
-	../src/codegen/context.c \
-	../src/codegen/expr.c \
-	../src/codegen/stmt.c \
-	../src/codegen/codegen.c \
+	../../src/parser/ast.c \
+	../../src/parser/parser.c \
+	../../src/parser/error.c \
+	../../src/parser/diagnostic.c \
+	../../src/sem/scope.c \
+	../../src/sem/symbol.c \
+	../../src/sem/type.c \
+	../../src/sem/infer.c \
+	../../src/sem/analysis.c \
+	../../src/ir/ir.c \
+	../../src/ir/lower.c \
+	../../src/cfg/cfg.c \
+	../../src/ssa/ssa.c \
+	../../src/opt/pipeline.c \
+	../../src/opt/sccp.c \
+	../../src/opt/dce.c \
+	../../src/opt/value_numbering.c \
+	../../src/opt/licm.c \
+	../../src/opt/copy_prop.c \
+	../../src/opt/cse.c \
+	../../src/opt/peephole.c \
+	../../src/codegen/c_emit.c \
+	../../src/codegen/context.c \
+	../../src/codegen/expr.c \
+	../../src/codegen/stmt.c \
+	../../src/codegen/codegen.c \
 	dream_api.c
 
 # Generated lexer source
-LEXER_SOURCE = ../src/lexer/lexer.c
+LEXER_SOURCE = ../../src/lexer/lexer.c
 
 # Output library
 LIBRARY = libdream.so
@@ -61,9 +61,9 @@ $(LIBRARY): $(C_SOURCES) $(LEXER_SOURCE) dream_api.c
 	@echo "Library built: $(LIBRARY)"
 
 # Generate lexer if needed
-$(LEXER_SOURCE): ../src/lexer/lexer.re ../src/lexer/tokens.def
+$(LEXER_SOURCE): ../../src/lexer/lexer.re ../../src/lexer/tokens.def
 	@echo "Generating lexer..."
-	cd ../src/lexer && re2c -c -o lexer.c lexer.re
+	cd ../../src/lexer && re2c -c -o lexer.c lexer.re
 
 # Run Go tests
 .PHONY: test
