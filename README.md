@@ -31,6 +31,7 @@ The steps below show how to build and use Dream on Linux **or Windows**.
      ```
    - On Windows run `codex\_startup.ps1` from an elevated PowerShell (requires Chocolatey). The script installs MinGW (with `gdb`) and other tools automatically.
    - Install [Zig 0.15.0 or newer](https://ziglang.org/download/) and add `zig` to your `PATH`.
+   - Install the [Vulkan SDK](https://vulkan.lunarg.com/) and set the `VULKAN_SDK` environment variable to its install path so the build can locate the headers and loader.
 2. **Clone the repository**
    ```bash
    git clone https://github.com/Ddemon26/DreamCompiler.git
