@@ -29,12 +29,19 @@ const CFLAGS = [_][]const u8{
     "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE", "-Isrc/lexer",
 };
 
+const DEBUG_CFLAGS = [_][]const u8{
+    "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE", "-Isrc/lexer", "-g", "-O0", "-DDREAM_DEBUG",
+};
+
 /// Builds the project by defining targets, modules, and build steps.
 ///
 /// @param b The build context.
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    
+    // Add debug mode option for enhanced debugging support
+    const debug_mode = b.option(bool, "debug", "Enable enhanced debug information for Dream source debugging") orelse false;
 
     const exe_mod = b.createModule(.{ .target = target, .optimize = optimize });
     const bootstrap_mod =
@@ -49,8 +56,9 @@ pub fn build(b: *std.Build) void {
 
     const bootstrap = b.addExecutable(.{ .name = "dreamc-bootstrap", .root_module = bootstrap_mod });
     bootstrap.step.dependOn(&re2c_step.step);
-    bootstrap.addCSourceFiles(.{ .files = &AllCSources, .flags = &CFLAGS });
-    bootstrap.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
+    const cflags = if (debug_mode) &DEBUG_CFLAGS else &CFLAGS;
+    bootstrap.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
+    bootstrap.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
 
     const lexexe = b.addExecutable(.{ .name = "lexdump", .root_module = lex_mod });
     lexexe.addCSourceFiles(.{ .files = &.{"src/driver/lex_main.c"}, .flags = &CFLAGS });
@@ -83,10 +91,10 @@ pub fn build(b: *std.Build) void {
     const exe =
         b.addExecutable(.{ .name = "DreamCompiler", .root_module = exe_mod });
     exe.step.dependOn(compile_step.step);
-    exe.addCSourceFiles(.{ .files = &AllCSources, .flags = &CFLAGS });
-    exe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
+    exe.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
+    exe.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
     for (compile_step.files) |gen| {
-        exe.addCSourceFile(.{ .file = gen, .flags = &CFLAGS });
+        exe.addCSourceFile(.{ .file = gen, .flags = cflags });
     }
     exe.linkLibC();
     b.installArtifact(exe);
@@ -101,6 +109,10 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Build and run DreamCompiler");
     run_step.dependOn(&run_cmd.step);
 
+    // Debug build step
+    const debug_step = b.step("debug", "Build DreamCompiler with enhanced debug information");
+    debug_step.dependOn(&exe.step);
+
     // Create runtime library for linking with generated code
     const runtime_mod = b.createModule(.{
         .target = target,
@@ -111,7 +123,7 @@ pub fn build(b: *std.Build) void {
         .root_module = runtime_mod,
         .linkage = .static,
     });
-    runtime_lib.addCSourceFiles(.{ .files = &RuntimeSources, .flags = &CFLAGS });
+    runtime_lib.addCSourceFiles(.{ .files = &RuntimeSources, .flags = cflags });
     runtime_lib.linkLibC();
     b.installArtifact(runtime_lib);
 

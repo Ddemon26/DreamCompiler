@@ -55,3 +55,4 @@ src/lexer/lexer.c
 .claude/settings.local.json
 CLAUDE.md
 /codex/python/__pycache__
+/test_results

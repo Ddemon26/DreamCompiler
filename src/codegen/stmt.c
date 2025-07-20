@@ -9,6 +9,26 @@ static size_t g_type_len = 0;
 static void emit_func_impl(COut *b, Slice prefix, Node *n,
                            const char *src_file);
 
+/**
+ * Emits a #line directive for enhanced debugging if the node has position info.
+ * This provides more granular source mapping for debugging.
+ *
+ * @param b Output builder
+ * @param n AST node with position information
+ * @param src_file Source file name
+ * @param prefix Optional comment prefix describing the Dream construct
+ */
+static void emit_debug_line(COut *b, Node *n, const char *src_file, const char *prefix) {
+  if (n->pos.line) {
+    if (!b->at_line_start)
+      c_out_newline(b);
+    c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
+    if (prefix) {
+      c_out_write(b, "/* Debug: %s at line %zu */\n", prefix, n->pos.line);
+    }
+  }
+}
+
 void cg_register_types(CGTypeInfo *types, size_t n) {
   g_types = types;
   g_type_len = n;
@@ -94,7 +114,8 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
     c_out_write(b, " : %.*s", (int)n->as.type_decl.base_name.len,
                 n->as.type_decl.base_name.start);
   }
-  c_out_write(b, " */\n");
+  c_out_write(b, " with %zu member%s at line %zu */\n", n->as.type_decl.len,
+              n->as.type_decl.len == 1 ? "" : "s", n->pos.line);
   
   c_out_write(b, "struct %.*s {", (int)n->as.type_decl.name.len,
               n->as.type_decl.name.start);
@@ -152,8 +173,16 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
                            const char *src_file) {
   if (n->pos.line)
     c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
-  c_out_write(b, "/* Dream function %.*s */\n", (int)n->as.func.name.len,
+  c_out_write(b, "/* Dream function %.*s", (int)n->as.func.name.len,
               n->as.func.name.start);
+  if (n->as.func.param_len > 0) {
+    c_out_write(b, " with %zu parameter%s", n->as.func.param_len, 
+                n->as.func.param_len == 1 ? "" : "s");
+  }
+  if (n->as.func.is_async) {
+    c_out_write(b, " (async)");
+  }
+  c_out_write(b, " at line %zu */\n", n->pos.line);
   
   // For async functions, we need to emit a wrapper that returns Task* and a worker function
   if (n->as.func.is_async) {
@@ -295,9 +324,17 @@ void emit_func(COut *b, Node *n, const char *src_file) {
 void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
   // implicit this parameter
   // copy params with extra first param
-  c_out_write(b, "/* Dream method %.*s.%.*s */\n", (int)class_name.len,
+  c_out_write(b, "/* Dream method %.*s.%.*s", (int)class_name.len,
               class_name.start, (int)n->as.func.name.len,
               n->as.func.name.start);
+  if (n->as.func.param_len > 0) {
+    c_out_write(b, " with %zu parameter%s", n->as.func.param_len, 
+                n->as.func.param_len == 1 ? "" : "s");
+  }
+  if (n->as.func.is_async) {
+    c_out_write(b, " (async)");
+  }
+  c_out_write(b, " at line %zu */\n", n->pos.line);
   c_out_write(b, "static %s %.*s_%.*s(struct %.*s *this",
               type_to_c(n->as.func.ret_type), (int)class_name.len,
               class_name.start, (int)n->as.func.name.len, n->as.func.name.start,
@@ -326,11 +363,57 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
 }
 
 void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
-  if (n->pos.line) {
-    if (!b->at_line_start)
-      c_out_newline(b);
-    c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
+  // Emit debug line directive for this statement
+  switch (n->kind) {
+  case ND_VAR_DECL:
+    emit_debug_line(b, n, src_file, "variable declaration");
+    break;
+  case ND_IF:
+    emit_debug_line(b, n, src_file, "if statement");
+    break;
+  case ND_WHILE:
+    emit_debug_line(b, n, src_file, "while loop");
+    break;
+  case ND_DO_WHILE:
+    emit_debug_line(b, n, src_file, "do-while loop");
+    break;
+  case ND_FOR:
+    emit_debug_line(b, n, src_file, "for loop");
+    break;
+  case ND_SWITCH:
+    emit_debug_line(b, n, src_file, "switch statement");
+    break;
+  case ND_BLOCK:
+    emit_debug_line(b, n, src_file, "block statement");
+    break;
+  case ND_RETURN:
+    emit_debug_line(b, n, src_file, "return statement");
+    break;
+  case ND_BREAK:
+    emit_debug_line(b, n, src_file, "break statement");
+    break;
+  case ND_CONTINUE:
+    emit_debug_line(b, n, src_file, "continue statement");
+    break;
+  case ND_EXPR_STMT:
+    emit_debug_line(b, n, src_file, "expression statement");
+    break;
+  case ND_TRY:
+    emit_debug_line(b, n, src_file, "try statement");
+    break;
+  case ND_THROW:
+    emit_debug_line(b, n, src_file, "throw statement");
+    break;
+  default:
+    // For other statements, still emit basic line directive
+    if (n->pos.line) {
+      if (!b->at_line_start)
+        c_out_newline(b);
+      c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
+    }
+    break;
   }
+  
   switch (n->kind) {
   case ND_VAR_DECL:
     if (n->as.var_decl.array_len > 0) {

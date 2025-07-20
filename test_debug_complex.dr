@@ -1,0 +1,47 @@
+struct Point {
+    int x;
+    int y;
+}
+
+class Rectangle {
+    Point topLeft;
+    Point bottomRight;
+}
+
+func int calculateArea(int width, int height) {
+    return width * height;
+}
+
+func int main() {
+    Point p;
+    p.x = 10;
+    p.y = 20;
+    
+    int area = calculateArea(p.x, p.y);
+    Console.WriteLine("Area: " + area);
+    
+    for (int i = 0; i < 3; i = i + 1) {
+        Console.WriteLine("Loop iteration: " + i);
+        
+        switch (i) {
+            case 0:
+                Console.WriteLine("First iteration");
+                break;
+            case 1:
+                Console.WriteLine("Second iteration"); 
+                break;
+            default:
+                Console.WriteLine("Default case");
+                break;
+        }
+    }
+    
+    try {
+        if (area < 0) {
+            throw;
+        }
+        Console.WriteLine("Area is positive");
+    }
+    
+    return 0;
+}

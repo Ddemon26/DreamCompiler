@@ -1,0 +1,16 @@
+func int main() {
+    int x = 42;
+    Console.WriteLine("Hello Debug World!");
+    
+    if (x > 40) {
+        Console.WriteLine("X is greater than 40");
+        x = x + 1;
+    }
+    
+    while (x < 50) {
+        Console.WriteLine("Counting: " + x);
+        x = x + 1;
+    }
+    
+    return 0;
+}
