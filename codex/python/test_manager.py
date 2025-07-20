@@ -281,13 +281,21 @@ class TestManager:
 
         exe = "dream.exe" if is_windows else "dream"
         exe_path = ROOT / exe
-        lib = ROOT / "zig-out" / "lib" / "libdreamrt.a"
+        
+        # Link with individual runtime source files for better compatibility
+        runtime_files = [
+            "src/runtime/memory.c",
+            "src/runtime/console.c", 
+            "src/runtime/custom.c",
+            "src/runtime/exception.c"
+        ]
+        
         cc_cmd = [
             "zig",
             "cc",
             "-Isrc/runtime",
-            "build/bin/dream.c",
-            str(lib),
+            "build/bin/dream.c"
+        ] + runtime_files + [
             "-o",
             str(exe_path),
         ]
@@ -337,9 +345,19 @@ class TestManager:
         # Skip if no expected output
         if not expected_output_lines:
             duration = time.time() - start_time
+            # Safe path conversion for skip result
+            try:
+                if test_path.is_absolute():
+                    skip_path = str(test_path.relative_to(ROOT))
+                else:
+                    abs_path = ROOT / test_path
+                    skip_path = str(abs_path.relative_to(ROOT))
+            except ValueError:
+                skip_path = str(test_path)
+                
             return TestResult(
                 name=test_path.name,
-                path=str(test_path.relative_to(ROOT)),
+                path=skip_path,
                 status=TestStatus.SKIP,
                 category=category,
                 duration=duration,
@@ -358,9 +376,19 @@ class TestManager:
         
         if not compile_success:
             duration = time.time() - start_time
+            # Safe path conversion for error result
+            try:
+                if test_path.is_absolute():
+                    error_path = str(test_path.relative_to(ROOT))
+                else:
+                    abs_path = ROOT / test_path
+                    error_path = str(abs_path.relative_to(ROOT))
+            except ValueError:
+                error_path = str(test_path)
+                
             return TestResult(
                 name=test_path.name,
-                path=str(test_path.relative_to(ROOT)),
+                path=error_path,
                 status=TestStatus.ERROR,
                 category=category,
                 duration=duration,
@@ -376,9 +404,19 @@ class TestManager:
         
         if not exec_success:
             duration = time.time() - start_time
+            # Safe path conversion for runtime error result
+            try:
+                if test_path.is_absolute():
+                    runtime_error_path = str(test_path.relative_to(ROOT))
+                else:
+                    abs_path = ROOT / test_path
+                    runtime_error_path = str(abs_path.relative_to(ROOT))
+            except ValueError:
+                runtime_error_path = str(test_path)
+                
             return TestResult(
                 name=test_path.name,
-                path=str(test_path.relative_to(ROOT)),
+                path=runtime_error_path,
                 status=TestStatus.ERROR,
                 category=category,
                 duration=duration,
@@ -398,7 +436,9 @@ class TestManager:
             if test_path.is_absolute():
                 result_path = str(test_path.relative_to(ROOT))
             else:
-                result_path = str(test_path)
+                # Convert relative path to absolute and then back to relative to ROOT
+                abs_path = ROOT / test_path
+                result_path = str(abs_path.relative_to(ROOT))
         except ValueError:
             result_path = str(test_path)
             
