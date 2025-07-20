@@ -17,11 +17,8 @@ const AllCSources = [_][]const u8{
 
 /// Baseline runtime sources always compiled
 const BaseRuntimeSources = [_][]const u8{
-    "src/runtime/memory.c",
-    "src/runtime/console.c",
-    "src/runtime/custom.c",
-    "src/runtime/task.c",
-    "src/runtime/exception.c",
+    "src/runtime/memory.c", "src/runtime/console.c",   "src/runtime/custom.c",
+    "src/runtime/task.c",   "src/runtime/exception.c",
 };
 
 const CFLAGS = [_][]const u8{
@@ -29,7 +26,8 @@ const CFLAGS = [_][]const u8{
 };
 
 const DEBUG_CFLAGS = [_][]const u8{
-    "-std=c11", "-Wall", "-Wextra", "-D_GNU_SOURCE", "-Isrc/lexer", "-g", "-O0", "-DDREAM_DEBUG",
+    "-std=c11",      "-Wall", "-Wextra", "-D_GNU_SOURCE", "-Isrc/lexer", "-g", "-O0",
+    "-DDREAM_DEBUG",
 };
 
 /// Builds the project by defining targets, modules, and build steps.
@@ -40,12 +38,17 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // Detect Vulkan SDK paths from environment
-    const vulkan_sdk = std.process.getEnvVarOwned(b.allocator, "VULKAN_SDK") catch null;
+    const vulkan_sdk =
+        std.process.getEnvVarOwned(b.allocator, "VULKAN_SDK") catch null;
     var vk_include: ?[]const u8 = null;
     var vk_lib: ?[]const u8 = null;
     if (vulkan_sdk) |sdk| {
-        vk_include = b.pathJoin(&.{ sdk, if (target.result.os.tag == .windows) "Include" else "include" });
-        vk_lib = b.pathJoin(&.{ sdk, if (target.result.os.tag == .windows) "Lib" else "lib" });
+        vk_include = b.pathJoin(&.{
+            sdk,
+            if (target.result.os.tag == .windows) "Include" else "include",
+        });
+        vk_lib =
+            b.pathJoin(&.{ sdk, if (target.result.os.tag == .windows) "Lib" else "lib" });
     }
 
     // Collect runtime sources, adding Vulkan stub if available
@@ -54,10 +57,12 @@ pub fn build(b: *std.Build) void {
     if (vk_include != null) {
         runtime_sources.append("src/runtime/vulkan_stub.c") catch unreachable;
         runtime_sources.append("src/runtime/vulkan_helpers.c") catch unreachable;
+        runtime_sources.append("src/runtime/vulkan.c") catch unreachable;
     }
 
     // Add debug mode option for enhanced debugging support
-    const debug_mode = b.option(bool, "debug", "Enable enhanced debug information for Dream source debugging") orelse false;
+    const debug_mode =
+        b.option(bool, "debug", "Enable enhanced debug information for Dream source debugging") orelse false;
 
     const exe_mod = b.createModule(.{ .target = target, .optimize = optimize });
     const bootstrap_mod =
@@ -126,7 +131,8 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_cmd.step);
 
     // Debug build step
-    const debug_step = b.step("debug", "Build DreamCompiler with enhanced debug information");
+    const debug_step =
+        b.step("debug", "Build DreamCompiler with enhanced debug information");
     debug_step.dependOn(&exe.step);
 
     // Create runtime library for linking with generated code
@@ -150,8 +156,10 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(runtime_lib);
 
     // Multi-file compilation step
-    const multifile_step = b.step("compile-multi", "Compile multiple .dr files with linking");
-    const multifile_cmd = addMultiFileCompileStep(b, exe, runtime_lib, target, optimize);
+    const multifile_step =
+        b.step("compile-multi", "Compile multiple .dr files with linking");
+    const multifile_cmd =
+        addMultiFileCompileStep(b, exe, runtime_lib, target, optimize);
     multifile_step.dependOn(multifile_cmd);
 
     const test_step = b.step("test", "Run compiler tests");
@@ -230,8 +238,8 @@ fn addCompileDrStep(
 
 /// Adds a multi-file compilation and linking step
 ///
-/// This function supports compiling multiple .dr files and linking them together
-/// with the runtime library to create a final executable.
+/// This function supports compiling multiple .dr files and linking them
+/// together with the runtime library to create a final executable.
 ///
 /// @param b The build context
 /// @param compiler The DreamCompiler executable
@@ -249,7 +257,8 @@ fn addMultiFileCompileStep(
     _ = target; // Suppress unused parameter warning
     _ = optimize; // Suppress unused parameter warning
 
-    const step = b.step("multifile-compile", "Compile and link multiple .dr files");
+    const step =
+        b.step("multifile-compile", "Compile and link multiple .dr files");
 
     // This step will be enhanced to accept command-line arguments for input files
     // For now, it demonstrates the framework for multi-file compilation
@@ -273,7 +282,8 @@ fn collectDrSourcesFromDir(b: *std.Build, dir_path: []const u8) []const []const 
     defer arena.deinit();
     var list = std.ArrayList([]const u8).init(arena.allocator());
 
-    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return &.{};
+    var dir =
+        std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return &.{};
     defer dir.close();
 
     var walker = dir.walk(arena.allocator()) catch return &.{};
