@@ -2,24 +2,23 @@ const std = @import("std");
 
 /// A list of all C source files used in the project.
 const AllCSources = [_][]const u8{
-    "src/driver/main.c",  "src/parser/ast.c",        "src/parser/parser.c",
-    "src/parser/error.c", "src/parser/diagnostic.c", "src/parser/warnings.c",
-    "src/sem/scope.c",    "src/sem/symbol.c",        "src/sem/type.c",
-    "src/sem/infer.c",    "src/sem/analysis.c",      "src/ir/ir.c",
-    "src/ir/lower.c",     "src/cfg/cfg.c",           "src/ssa/ssa.c",
-    "src/opt/pipeline.c", "src/opt/sccp.c",          "src/opt/dce.c",
-    "src/opt/value_numbering.c", "src/opt/licm.c",   "src/opt/copy_prop.c",
-    "src/opt/cse.c",      "src/opt/peephole.c",      "src/opt/inline.c",
-    "src/opt/loop_opt.c",
-    "src/codegen/c_emit.c", "src/codegen/context.c", "src/codegen/expr.c",
-    "src/codegen/stmt.c", "src/codegen/codegen.c", "src/codegen/backend.c", 
-    "src/codegen/module.c",
+    "src/driver/main.c",         "src/parser/ast.c",        "src/parser/parser.c",
+    "src/parser/error.c",        "src/parser/diagnostic.c", "src/parser/warnings.c",
+    "src/sem/scope.c",           "src/sem/symbol.c",        "src/sem/type.c",
+    "src/sem/infer.c",           "src/sem/analysis.c",      "src/ir/ir.c",
+    "src/ir/lower.c",            "src/cfg/cfg.c",           "src/ssa/ssa.c",
+    "src/opt/pipeline.c",        "src/opt/sccp.c",          "src/opt/dce.c",
+    "src/opt/value_numbering.c", "src/opt/licm.c",          "src/opt/copy_prop.c",
+    "src/opt/cse.c",             "src/opt/peephole.c",      "src/opt/inline.c",
+    "src/opt/loop_opt.c",        "src/codegen/c_emit.c",    "src/codegen/context.c",
+    "src/codegen/expr.c",        "src/codegen/stmt.c",      "src/codegen/codegen.c",
+    "src/codegen/backend.c",     "src/codegen/module.c",
 };
 
-/// Runtime library sources
-const RuntimeSources = [_][]const u8{
+/// Baseline runtime sources always compiled
+const BaseRuntimeSources = [_][]const u8{
     "src/runtime/memory.c",
-    "src/runtime/console.c", 
+    "src/runtime/console.c",
     "src/runtime/custom.c",
     "src/runtime/task.c",
     "src/runtime/exception.c",
@@ -39,7 +38,21 @@ const DEBUG_CFLAGS = [_][]const u8{
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    
+
+    // Detect Vulkan SDK paths from environment
+    const vulkan_sdk = std.process.getEnvVarOwned(b.allocator, "VULKAN_SDK") catch null;
+    var vk_include: ?[]const u8 = null;
+    var vk_lib: ?[]const u8 = null;
+    if (vulkan_sdk) |sdk| {
+        vk_include = b.pathJoin(&.{ sdk, if (target.result.os.tag == .windows) "Include" else "include" });
+        vk_lib = b.pathJoin(&.{ sdk, if (target.result.os.tag == .windows) "Lib" else "lib" });
+    }
+
+    // Collect runtime sources, adding Vulkan stub if available
+    var runtime_sources = std.ArrayList([]const u8).init(b.allocator);
+    for (BaseRuntimeSources) |s| runtime_sources.append(s) catch unreachable;
+    if (vk_include != null) runtime_sources.append("src/runtime/vulkan_stub.c") catch unreachable;
+
     // Add debug mode option for enhanced debugging support
     const debug_mode = b.option(bool, "debug", "Enable enhanced debug information for Dream source debugging") orelse false;
 
@@ -123,7 +136,13 @@ pub fn build(b: *std.Build) void {
         .root_module = runtime_mod,
         .linkage = .static,
     });
-    runtime_lib.addCSourceFiles(.{ .files = &RuntimeSources, .flags = cflags });
+    const runtime_files = runtime_sources.toOwnedSlice() catch unreachable;
+    runtime_lib.addCSourceFiles(.{ .files = runtime_files, .flags = cflags });
+    if (vk_include) |p| {
+        runtime_lib.addIncludePath(.{ .cwd_relative = p });
+        if (vk_lib) |lib| runtime_lib.addLibraryPath(.{ .cwd_relative = lib });
+        runtime_lib.linkSystemLibrary(if (target.result.os.tag == .windows) "vulkan-1" else "vulkan");
+    }
     runtime_lib.linkLibC();
     b.installArtifact(runtime_lib);
 
@@ -207,10 +226,10 @@ fn addCompileDrStep(
 }
 
 /// Adds a multi-file compilation and linking step
-/// 
+///
 /// This function supports compiling multiple .dr files and linking them together
 /// with the runtime library to create a final executable.
-/// 
+///
 /// @param b The build context
 /// @param compiler The DreamCompiler executable
 /// @param runtime_lib The runtime library to link against
@@ -226,23 +245,23 @@ fn addMultiFileCompileStep(
 ) *std.Build.Step {
     _ = target; // Suppress unused parameter warning
     _ = optimize; // Suppress unused parameter warning
-    
+
     const step = b.step("multifile-compile", "Compile and link multiple .dr files");
-    
+
     // This step will be enhanced to accept command-line arguments for input files
     // For now, it demonstrates the framework for multi-file compilation
     const run_cmd = b.addRunArtifact(compiler);
-    run_cmd.addArgs(&.{ "--multi-file" });
-    
+    run_cmd.addArgs(&.{"--multi-file"});
+
     // Add runtime library dependency
     run_cmd.step.dependOn(&runtime_lib.step);
-    
+
     step.dependOn(&run_cmd.step);
     return step;
 }
 
 /// Collects Dream source files from a specified directory
-/// 
+///
 /// @param b The build context
 /// @param dir_path Directory to search for .dr files
 /// @return List of .dr file paths
@@ -250,19 +269,19 @@ fn collectDrSourcesFromDir(b: *std.Build, dir_path: []const u8) []const []const 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     var list = std.ArrayList([]const u8).init(arena.allocator());
-    
+
     var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return &.{};
     defer dir.close();
-    
+
     var walker = dir.walk(arena.allocator()) catch return &.{};
     defer walker.deinit();
-    
+
     while (walker.next() catch null) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".dr")) {
             const full_path = b.pathJoin(&.{ dir_path, entry.path });
             list.append(full_path) catch {};
         }
     }
-    
+
     return b.dupeStrings(list.items);
 }
