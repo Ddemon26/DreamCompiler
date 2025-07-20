@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build Dream",
+      "type": "shell",
+      "command": "zig",
+      "args": ["build"],
+      "problemMatcher": ["$dreamcompiler"],
+      "group": "build"
+    },
+    {
+      "label": "run Dream",
+      "type": "shell",
+      "command": "zig",
+      "args": ["build", "run", "--", "${file}"],
+      "problemMatcher": ["$dreamcompiler"],
+      "group": "test"
+    }
+  ]
+}

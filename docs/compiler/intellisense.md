@@ -109,6 +109,22 @@ Upload the zip to the JetBrains Plugin Repository or install locally via *Settin
    ```
 3. Typing `Console.` should show method suggestions. Hovering an identifier reveals documentation from the language server.
 
+## 8. Debugging Programs
+
+The repository ships with VS Code launch and task configurations under `.vscode/`.
+To debug the current Dream file:
+
+1. Select **Debug Dream program** from the Run panel.
+2. Press `F5` to build the compiler and launch your program under `gdb`.
+
+The build step uses `zig build` and the launch configuration runs `DreamCompiler` on
+the active file. Breakpoints and stepping work thanks to the debug symbols emitted
+by the compiler.
+
+JetBrains IDEs expose a **Dream Run** configuration once the plugin is built. Create
+a new run configuration of this type and specify the Dream source file to execute.
+Launching it will compile and run the program similarly to VS Code.
+
 ## 8. Troubleshooting
 
 * If the server fails to start, check the console for port conflicts or missing executables.
