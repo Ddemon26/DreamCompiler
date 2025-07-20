@@ -97,3 +97,5 @@ Version 1.1.13 (2025-08-10)
 Version 1.1.14 (2025-08-15)
 - Added `dr_vk_enumerate_physical_devices` runtime helper returning a list of
   available devices.
+Version 1.1.15 (2025-08-22)
+- Added `dr_vkCreateInstance` and `dr_vkDestroyInstance` runtime stubs for simple Vulkan setup.
