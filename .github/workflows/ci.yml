@@ -31,5 +31,5 @@ jobs:
         if: runner.os == 'Linux'
         run: zig build -Dtarget=x86_64-windows-gnu
       - name: Run tests
-        run: python codex/python/test_runner
+        run: python codex/python/test_runner.py
         shell: bash

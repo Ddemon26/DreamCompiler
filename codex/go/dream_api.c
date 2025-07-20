@@ -4,10 +4,10 @@
  */
 
 #include "dream.h"
-#include "../src/lexer/lexer.h"
-#include "../src/parser/parser.h"
-#include "../src/parser/ast.h"
-#include "../src/sem/type.h"
+#include "../../src/lexer/lexer.h"
+#include "../../src/parser/parser.h"
+#include "../../src/parser/ast.h"
+#include "../../src/sem/type.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -45,9 +45,6 @@ Token lexer_peek_token(Lexer* lexer) {
     return lexer_peek(lexer);
 }
 
-const char* token_kind_name(TokenKind kind) {
-    return token_kind_name(kind);
-}
 
 // Parser API Implementation
 Parser* parser_create(const char* source) {
