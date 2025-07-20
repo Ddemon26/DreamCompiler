@@ -74,3 +74,25 @@ Destroy a surface when finished:
 ```dream
 Vulkan.destroySurface(inst, surface);
 ```
+
+## Convenience Helpers
+
+To reduce boilerplate the standard module offers small helper functions.
+
+### Picking the First Device
+
+```dream
+VkPhysicalDevice dev = Vulkan.pickFirstPhysicalDevice(inst);
+if (dev.value == 0) {
+  Console.WriteLine("No GPU available");
+}
+```
+
+### Creating a Default Swapchain
+
+```dream
+VkSwapchainKHR swap;
+Vulkan.createDefaultSwapchain(device, surface, 800, 600, &swap);
+// ... use the swapchain ...
+Vulkan.destroySwapchain(device, swap);
+```

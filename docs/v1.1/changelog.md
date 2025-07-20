@@ -106,3 +106,7 @@ Version 1.1.16 (2025-08-30)
 Version 1.1.17 (2025-09-05)
 - Added cross-platform surface creation wrappers `dr_vkCreateSurface` and `dr_vkDestroySurface`.
 - Runtime library now links against `user32` on Windows or `xcb` on Linux for WSI.
+
+Version 1.1.18 (2025-09-12)
+- Added `dr_vkCreateSimpleSwapchain` runtime helper and Dream wrappers `createDefaultSwapchain` and `destroySwapchain`.
+- New `pickFirstPhysicalDevice` helper simplifies choosing a GPU.
