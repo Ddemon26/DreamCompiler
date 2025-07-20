@@ -7,6 +7,7 @@
 #include "cse.h"
 #include "peephole.h"
 #include "inline.h"
+#include "loop_opt.h"
 #include <stdbool.h>
 #include <stdlib.h>
 /**
@@ -61,6 +62,19 @@ void run_pipeline(CFG *cfg, int opt_level) {
         changed |= copy_propagation(cfg);
         changed |= value_numbering(cfg);
         changed |= cse(cfg);
+        
+        // Advanced loop optimizations (unrolling, strength reduction, fusion)
+        if (opt_level >= 2) {
+            LoopOptConfig loop_config = {
+                .max_unroll_count = opt_level >= 3 ? 8 : 4,
+                .max_unroll_size = opt_level >= 3 ? 200 : 100,
+                .enable_strength_reduction = true,
+                .enable_loop_fusion = opt_level >= 3,
+                .enable_vectorization = false
+            };
+            changed |= optimize_loops(cfg, &loop_config);
+        }
+        
         changed |= licm(cfg);
         changed |= peephole(cfg);
     } while (opt_level >= 2 && changed);
@@ -96,6 +110,19 @@ void run_pipeline_with_inlining(CFG *cfg, FunctionTable *func_table, int opt_lev
         changed |= copy_propagation(cfg);
         changed |= value_numbering(cfg);
         changed |= cse(cfg);
+        
+        // Advanced loop optimizations (unrolling, strength reduction, fusion)
+        if (opt_level >= 2) {
+            LoopOptConfig loop_config = {
+                .max_unroll_count = opt_level >= 3 ? 8 : 4,
+                .max_unroll_size = opt_level >= 3 ? 200 : 100,
+                .enable_strength_reduction = true,
+                .enable_loop_fusion = opt_level >= 3,
+                .enable_vectorization = false
+            };
+            changed |= optimize_loops(cfg, &loop_config);
+        }
+        
         changed |= licm(cfg);
         changed |= peephole(cfg);
         

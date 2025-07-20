@@ -1,0 +1,17 @@
+// Test file for loop optimizations
+// This should trigger multiple optimization opportunities
+
+// Test 1: Simple loop with strength reduction opportunity
+int sum = 0;
+for (int i = 0; i < 8; i = i + 1) {
+    sum = sum + (i * 4);  // Should convert to shift operation
+}
+
+// Test 2: Small loop that should be unrolled
+int product = 1;
+for (int j = 0; j < 3; j = j + 1) {
+    product = product * 2;  // Small loop with few iterations
+}
+
+Console.WriteLine(sum);
+Console.WriteLine(product);
