@@ -99,7 +99,8 @@ Handle user interaction and data exchange with the console and external systems.
 ### 🔧 Advanced Topics
 1. **[Bitwise Operations](v1.1/bitwise.md)** - Low-level programming
 2. **[C Interoperability](interop.md)** - System integration
-3. **[Grammar Specification](grammar/Grammar.md)** - Language internals
+3. **[Vulkan Types](v1.1/vulkan.md)** - Vulkan handle representations
+4. **[Grammar Specification](grammar/Grammar.md)** - Language internals
 
 ## Code Examples
 

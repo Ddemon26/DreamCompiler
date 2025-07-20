@@ -35,6 +35,7 @@
 - Object construction for classes and structs
 - Instance methods on classes (emitted as C functions with a `this` pointer)
 - Exception handling with `try`/`catch` statements and `throw`
+- Vulkan handle and struct definitions for interop with the Vulkan API
 
 ## Missing Features
 

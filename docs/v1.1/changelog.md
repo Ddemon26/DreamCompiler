@@ -90,3 +90,6 @@ Version 1.1.12 (2025-08-05)
 - `#line` directives now appear before every statement for improved debugger
   mapping.
 - Compiled binaries include debug symbols by passing `-g` to `zig cc`.
+
+Version 1.1.13 (2025-08-10)
+- Introduced Vulkan handle and struct definitions in the standard library.
