@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
     dr_mkdir("build/libs");
     
     // Copy runtime headers to build/libs for distribution
-    const char *headers[] = {"console.h", "memory.h", "custom.h", "task.h"};
+    const char *headers[] = {"console.h", "memory.h", "custom.h", "task.h", "exception.h"};
     for (size_t i = 0; i < sizeof(headers)/sizeof(headers[0]); i++) {
       char src_path[256], dst_path[256];
       snprintf(src_path, sizeof(src_path), "src%cruntime%c%s", DR_PATH_SEP, DR_PATH_SEP, headers[i]);
