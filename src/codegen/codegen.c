@@ -80,15 +80,6 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "    dream_exception_init();\n");
   c_out_write(&builder, "}\n\n");
 
-  c_out_write(&builder,
-              "static char *dream_concat(const char *a,const char *b){\n");
-  c_out_write(&builder, "    const size_t la=strlen(a);\n");
-  c_out_write(&builder, "    const size_t lb=strlen(b);\n");
-  c_out_write(&builder, "    char *r=dr_alloc(la+lb+1);\n");
-  c_out_write(&builder, "    memcpy(r,a,la);\n");
-  c_out_write(&builder, "    memcpy(r+la,b,lb);\n");
-  c_out_write(&builder, "    r[la+lb]=0;\n    return r;\n}\n\n");
-
   c_out_write(&builder, "static char *dream_readline(void){\n");
   c_out_write(&builder, "    char buf[256];\n");
   c_out_write(&builder, "    if(!fgets(buf,sizeof buf,stdin)) return NULL;\n");
