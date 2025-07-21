@@ -135,6 +135,8 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     return TK_KW_CHAR;
   case ND_STRING:
     return TK_KW_STRING;
+  case ND_NULL:
+    return TK_KW_VOID; // null is compatible with pointer types
   case ND_IDENT:
     return analyze_ident(s, n);
   case ND_BINOP:

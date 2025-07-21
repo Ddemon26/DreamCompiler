@@ -130,6 +130,12 @@ static Node *parse_primary(Parser *p) {
     n->as.lit.len = t.len;
     next(p);
     return n;
+  case TK_KW_NULL:
+    n = node_new(p->arena, ND_NULL);
+    n->as.lit.start = t.start;
+    n->as.lit.len = t.len;
+    next(p);
+    return n;
   case TK_ERROR:
     if (t.len == 1 && t.start[0] == '\'') {
       next(p);

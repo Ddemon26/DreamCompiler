@@ -15,7 +15,7 @@ package com.dream;
   "int"|"string"|"bool"|"float"|"char"|"void" { return DreamTokenTypes.KEYWORDTYPE; }
   "class"|"struct"|"enum" { return DreamTokenTypes.KEYWORDCLASS; }
   "public"|"private"|"static"|"const"|"new"|"func"|"var"|"let"|"base"|"using"|"import"|"module"|"export"|"async"|"await"|"Task"|"TaskResult" { return DreamTokenTypes.KEYWORDOTHER; }
-  "true"|"false" { return DreamTokenTypes.KEYWORDLITERAL; }
+  "true"|"false"|"null" { return DreamTokenTypes.KEYWORDLITERAL; }
   [0-9]+\.[0-9]+|[0-9]+ { return DreamTokenTypes.NUMBER; }
   \"([^\\\"\n]|\\.)*\" { return DreamTokenTypes.STRING; }
   '([^'\n]|\\.)' { return DreamTokenTypes.CHAR; }

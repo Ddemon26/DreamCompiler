@@ -210,7 +210,10 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
   case ND_CHAR:
   case ND_STRING:
   case ND_BOOL:
-    if (n->kind == ND_BOOL) {
+  case ND_NULL:
+    if (n->kind == ND_NULL) {
+      c_out_write(b, "((void*)0)");
+    } else if (n->kind == ND_BOOL) {
       if (n->as.lit.len == 4 && strncmp(n->as.lit.start, "true", 4) == 0)
         c_out_write(b, "1");
       else

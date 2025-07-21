@@ -27,7 +27,7 @@
         },
         {
           "name": "constant.language",
-          "match": "\\b(true|false)\\b"
+          "match": "\\b(true|false|null)\\b"
         },
         {
           "name": "constant.numeric",

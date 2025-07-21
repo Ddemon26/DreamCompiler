@@ -41,6 +41,7 @@ typedef enum {
   ND_CHAR,
   ND_STRING,
   ND_BOOL,
+  ND_NULL,
   ND_IDENT,
   ND_UNARY,
   ND_POST_UNARY,

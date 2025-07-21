@@ -61,7 +61,7 @@ const classKwRegex = classKeywords.join('|');
 const modifierKeywords = ['public', 'private', 'static', 'const', 'new', 'func', 'var', 'let', 'base', 'using', 'import', 'module', 'export', 'async', 'await', 'Task', 'TaskResult'];
 const modifierKwRegex = modifierKeywords.join('|');
 
-const literalKeywords = ['true', 'false'];
+const literalKeywords = ['true', 'false', 'null'];
 const literalKwRegex = literalKeywords.join('|');
 
 const tokens = [
