@@ -10,6 +10,7 @@ import "C"
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"unsafe"
 )
@@ -604,6 +605,88 @@ func BenchmarkMemoryProfile_ParserLifecycle(b *testing.B) {
 			}
 		}
 		
+		C.parser_destroy(parser)
+	}
+}
+
+// =============================================================================
+// NEW COMPILER FEATURES BENCHMARKS - Performance testing for recent additions  
+// =============================================================================
+
+// BenchmarkParser_StringConcatenation benchmarks string concatenation parsing
+func BenchmarkParser_StringConcatenation(b *testing.B) {
+	source := `string result = "Hello" + " " + "World" + "!";`
+	cSource := C.CString(source)
+	defer C.free(unsafe.Pointer(cSource))
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		parser := C.parser_create(cSource)
+		if parser == nil {
+			b.Fatal("Failed to create parser")
+		}
+
+		program := C.parser_parse_program(parser)
+		if program == nil {
+			b.Fatal("Failed to parse program")
+		}
+
+		C.parser_destroy(parser)
+	}
+}
+
+// BenchmarkParser_SwitchStatement benchmarks switch statement parsing
+func BenchmarkParser_SwitchStatement(b *testing.B) {
+	source := `
+		switch (value) {
+			case 1: Console.WriteLine("One"); break;
+			case 2: Console.WriteLine("Two"); break;
+			default: Console.WriteLine("Other");
+		}
+	`
+	cSource := C.CString(source)
+	defer C.free(unsafe.Pointer(cSource))
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		parser := C.parser_create(cSource)
+		if parser == nil {
+			b.Fatal("Failed to create parser")
+		}
+
+		program := C.parser_parse_program(parser)
+		if program == nil {
+			b.Fatal("Failed to parse program")
+		}
+
+		C.parser_destroy(parser)
+	}
+}
+
+// BenchmarkParser_EnumDeclaration benchmarks enum declaration parsing
+func BenchmarkParser_EnumDeclaration(b *testing.B) {
+	source := `enum Color { Red, Green, Blue, Yellow, Orange, Purple }`
+	cSource := C.CString(source)
+	defer C.free(unsafe.Pointer(cSource))
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		parser := C.parser_create(cSource)
+		if parser == nil {
+			b.Fatal("Failed to create parser")
+		}
+
+		program := C.parser_parse_program(parser)
+		if program == nil {
+			b.Fatal("Failed to parse program")
+		}
+
 		C.parser_destroy(parser)
 	}
 }

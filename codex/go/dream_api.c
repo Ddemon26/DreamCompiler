@@ -4,13 +4,15 @@
  */
 
 #include "dream.h"
-#include "../../src/lexer/lexer.h"
-#include "../../src/parser/parser.h"
-#include "../../src/parser/ast.h"
-#include "../../src/sem/type.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
+// Include actual compiler headers
+#include "../../src/lexer/lexer.h"
+#include "../../src/parser/ast.h"
+#include "../../src/parser/parser.h"
+#include "../../src/sem/type.h"
 
 // Lexer API Implementation
 Lexer* lexer_create(const char* source) {
@@ -43,6 +45,45 @@ Token lexer_peek_token(Lexer* lexer) {
         return error_token;
     }
     return lexer_peek(lexer);
+}
+
+const char* token_kind_name(int kind) {
+    // Map token kinds to names
+    switch (kind) {
+        case TK_KW_IF: return "if";
+        case TK_KW_ELSE: return "else";
+        case TK_KW_WHILE: return "while";
+        case TK_KW_FOR: return "for";
+        case TK_KW_RETURN: return "return";
+        case TK_KW_BREAK: return "break";
+        case TK_KW_CONTINUE: return "continue";
+        case TK_IDENT: return "identifier";
+        case TK_INT_LITERAL: return "integer";
+        case TK_FLOAT_LITERAL: return "float";
+        case TK_STRING_LITERAL: return "string";
+        case TK_PLUS: return "+";
+        case TK_MINUS: return "-";
+        case TK_STAR: return "*";
+        case TK_SLASH: return "/";
+        case TK_EQ: return "=";
+        case TK_EQEQ: return "==";
+        case TK_NEQ: return "!=";
+        case TK_LT: return "<";
+        case TK_GT: return ">";
+        case TK_LTEQ: return "<=";
+        case TK_GTEQ: return ">=";
+        case TK_LPAREN: return "(";
+        case TK_RPAREN: return ")";
+        case TK_LBRACE: return "{";
+        case TK_RBRACE: return "}";
+        case TK_SEMICOLON: return ";";
+        case TK_DOT: return ".";
+        case TK_KW_CONSOLE: return "Console";
+        case TK_KW_WRITELINE: return "WriteLine";
+        case TK_EOF: return "EOF";
+        case TK_ERROR: return "ERROR";
+        default: return "UNKNOWN";
+    }
 }
 
 
@@ -105,9 +146,9 @@ const char* parser_get_error(Parser* parser, size_t index) {
 }
 
 // AST API Implementation
-NodeKind node_get_kind(Node* node) {
+int node_get_kind(Node* node) {
     if (!node) return ND_ERROR;
-    return node->kind;
+    return (int)node->kind;
 }
 
 size_t node_count_children(Node* node) {
@@ -201,8 +242,8 @@ Pos node_get_position(Node* node) {
 }
 
 // Type API Implementation
-Type* type_create(TypeKind kind) {
-    return type_new(kind);
+Type* type_create(int kind) {
+    return type_new((TypeKind)kind);
 }
 
 void type_destroy(Type* type) {
@@ -211,9 +252,9 @@ void type_destroy(Type* type) {
     }
 }
 
-TypeKind type_get_kind(Type* type) {
+int type_get_kind(Type* type) {
     if (!type) return TY_ERROR;
-    return type->kind;
+    return (int)type->kind;
 }
 
 bool type_equals(Type* a, Type* b) {

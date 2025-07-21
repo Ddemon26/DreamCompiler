@@ -612,3 +612,46 @@ func FuzzMemoryOperations(f *testing.F) {
 		}
 	})
 }
+
+// =============================================================================
+// NEW COMPILER FEATURES FUZZ TESTS - Testing recent language additions
+// =============================================================================
+
+// FuzzStringConcatenation tests string concatenation with random inputs
+func FuzzStringConcatenation(f *testing.F) {
+	seeds := []string{
+		`"hello" + "world"`,
+		`"Count: " + 42`, 
+		`"Active: " + true`,
+	}
+
+	for _, seed := range seeds {
+		f.Add(seed)
+	}
+
+	f.Fuzz(func(t *testing.T, input string) {
+		if len(input) > 200 {
+			t.Skip("Input too long")
+		}
+
+		testInput := `Console.WriteLine(` + input + `);`
+		cInput := C.CString(testInput)
+		defer C.free(unsafe.Pointer(cInput))
+
+		parser := C.parser_create(cInput)
+		if parser == nil {
+			return
+		}
+		defer C.parser_destroy(parser)
+
+		program := C.parser_parse_program(parser)
+		hasErrors := bool(C.parser_has_errors(parser))
+
+		if hasErrors {
+			errorCount := int(C.parser_error_count(parser))
+			if errorCount > 20 {
+				t.Errorf("Too many errors: %d", errorCount)
+			}
+		}
+	})
+}
