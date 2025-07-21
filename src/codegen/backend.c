@@ -126,10 +126,10 @@ static int c_backend_begin_module(Backend *backend, const char *module_name) {
     c_out_write(c_out, "#include <setjmp.h>\n");
     
     // Include runtime headers
-    c_out_write(c_out, "#include \"../runtime/console.h\"\n");
-    c_out_write(c_out, "#include \"../runtime/custom.h\"\n");
-    c_out_write(c_out, "#include \"../runtime/memory.h\"\n");
-    c_out_write(c_out, "#include \"../runtime/task.h\"\n");
+    c_out_write(c_out, "#include \"../runtime/io/console.h\"\n");
+    c_out_write(c_out, "#include \"../runtime/extensions/custom.h\"\n");
+    c_out_write(c_out, "#include \"../runtime/memory/memory.h\"\n");
+    c_out_write(c_out, "#include \"../runtime/system/task.h\"\n");
     c_out_newline(c_out);
     
     // Module comment

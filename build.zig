@@ -17,8 +17,8 @@ const AllCSources = [_][]const u8{
 
 /// Baseline runtime sources always compiled
 const BaseRuntimeSources = [_][]const u8{
-    "src/runtime/memory.c", "src/runtime/console.c",   "src/runtime/custom.c",
-    "src/runtime/task.c",   "src/runtime/exception.c",
+    "src/runtime/memory/memory.c", "src/runtime/io/console.c",   "src/runtime/extensions/custom.c",
+    "src/runtime/system/task.c",   "src/runtime/exceptions/exception.c",
 };
 
 const CFLAGS = [_][]const u8{
@@ -55,9 +55,9 @@ pub fn build(b: *std.Build) void {
     var runtime_sources = std.ArrayList([]const u8).init(b.allocator);
     for (BaseRuntimeSources) |s| runtime_sources.append(s) catch unreachable;
     if (vk_include != null) {
-        runtime_sources.append("src/runtime/vulkan_stub.c") catch unreachable;
-        runtime_sources.append("src/runtime/vulkan_helpers.c") catch unreachable;
-        runtime_sources.append("src/runtime/vulkan.c") catch unreachable;
+        runtime_sources.append("src/runtime/graphics/vulkan/vulkan_stub.c") catch unreachable;
+        runtime_sources.append("src/runtime/graphics/vulkan/vulkan_helpers.c") catch unreachable;
+        runtime_sources.append("src/runtime/graphics/vulkan/vulkan.c") catch unreachable;
     }
 
     // Add debug mode option for enhanced debugging support

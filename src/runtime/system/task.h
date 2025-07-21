@@ -1,7 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include "../util/platform.h"
+#include "../../util/platform.h"
 #include <stddef.h>
 
 #ifdef _WIN32

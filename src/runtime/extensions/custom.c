@@ -1,4 +1,5 @@
 #include "custom.h"
+#include "../memory/memory.h"
 
 int dr_custom_value(void) { return 42; }
 

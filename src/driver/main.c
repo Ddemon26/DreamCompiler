@@ -16,6 +16,7 @@
 #include <dirent.h>
 
 #ifdef _WIN32
+#include <windows.h>
 #define DR_EXE_NAME "dream.exe"
 #else
 #define DR_EXE_NAME "dream"
@@ -183,11 +184,17 @@ int main(int argc, char *argv[]) {
     dr_mkdir("build/libs");
     
     // Copy runtime headers to build/libs for distribution
-    const char *headers[] = {"console.h", "memory.h", "custom.h", "task.h", "exception.h"};
+    const char *headers[][2] = {
+      {"io/console.h", "console.h"},
+      {"memory/memory.h", "memory.h"},
+      {"extensions/custom.h", "custom.h"},
+      {"system/task.h", "task.h"},
+      {"exceptions/exception.h", "exception.h"}
+    };
     for (size_t i = 0; i < sizeof(headers)/sizeof(headers[0]); i++) {
       char src_path[256], dst_path[256];
-      snprintf(src_path, sizeof(src_path), "src%cruntime%c%s", DR_PATH_SEP, DR_PATH_SEP, headers[i]);
-      snprintf(dst_path, sizeof(dst_path), "build%clibs%c%s", DR_PATH_SEP, DR_PATH_SEP, headers[i]);
+      snprintf(src_path, sizeof(src_path), "src%cruntime%c%s", DR_PATH_SEP, DR_PATH_SEP, headers[i][0]);
+      snprintf(dst_path, sizeof(dst_path), "build%clibs%c%s", DR_PATH_SEP, DR_PATH_SEP, headers[i][1]);
       
       FILE *src = fopen(src_path, "r");
       FILE *dst = fopen(dst_path, "w");
@@ -233,102 +240,18 @@ int main(int argc, char *argv[]) {
     const char *optflag =
         opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
 
-    DIR *rt = opendir("src/runtime");
-    if (!rt) {
-      perror("opendir src/runtime");
-      return 1;
-    }
+    // Use pre-built runtime library instead of compiling individual files
+    // The zig build system already creates zig-out/lib/dreamrt.lib
 
-    char objs[16][64];
-    size_t obj_count = 0;
-    struct dirent *ent;
-    while ((ent = readdir(rt))) {
-      size_t len = strlen(ent->d_name);
-      if (len > 2 && strcmp(ent->d_name + len - 2, ".c") == 0) {
-        char obj[64];
-        snprintf(obj, sizeof(obj), "%.*s.o", (int)len - 2, ent->d_name);
-        snprintf(cmd, sizeof(cmd),
-                 "%s -g %s -c \"src%cruntime%c%s\" -o \"build%clibs%c%s\"",
-                 cc, optflag, DR_PATH_SEP, DR_PATH_SEP, ent->d_name, DR_PATH_SEP, DR_PATH_SEP, obj);
-#ifdef _WIN32
-        // On Windows, explicitly use cmd.exe to avoid bash.exe issues
-        char win_cmd[512];
-        snprintf(win_cmd, sizeof(win_cmd), "cmd.exe /C \"%s\"", cmd);
-        res = system(win_cmd);
-#else
-        res = system(cmd);
-#endif
-        if (res != 0) {
-          fprintf(stderr, "failed to run: %s\n", cmd);
-          closedir(rt);
-          return 1;
-        }
-        strncpy(objs[obj_count++], obj, sizeof(objs[0]) - 1);
-      }
-    }
-    closedir(rt);
-
-#ifdef _WIN32
-    char link_cmd[512];
-    snprintf(link_cmd, sizeof(link_cmd),
-             "%s -g %s -Isrc/runtime \"build%cbin%cdream.c\"",
-             cc, optflag, DR_PATH_SEP, DR_PATH_SEP);
-    for (size_t i = 0; i < obj_count; i++) {
-      strncat(link_cmd, " \"build", sizeof(link_cmd) - strlen(link_cmd) - 1);
-      char sep[2] = {DR_PATH_SEP, 0};
-      strncat(link_cmd, sep, sizeof(link_cmd) - strlen(link_cmd) - 1);
-      strncat(link_cmd, "libs", sizeof(link_cmd) - strlen(link_cmd) - 1);
-      strncat(link_cmd, sep, sizeof(link_cmd) - strlen(link_cmd) - 1);
-      strncat(link_cmd, objs[i], sizeof(link_cmd) - strlen(link_cmd) - 1);
-      strncat(link_cmd, "\"", sizeof(link_cmd) - strlen(link_cmd) - 1);
-    }
-    strncat(link_cmd, " -o \"" DR_EXE_NAME "\"", sizeof(link_cmd) - strlen(link_cmd) - 1);
-#ifdef _WIN32
-    // On Windows, explicitly use cmd.exe to avoid bash.exe issues
-    char win_link_cmd[1024];
-    snprintf(win_link_cmd, sizeof(win_link_cmd), "cmd.exe /C \"%s\"", link_cmd);
-    res = system(win_link_cmd);
-#else
-    res = system(link_cmd);
-#endif
-    if (res != 0) {
-      fprintf(stderr, "failed to run: %s\n", link_cmd);
-      return 1;
-    }
-#else
-    char archive_cmd[512] = "ar rcs build";
-    size_t pos = strlen(archive_cmd);
-    archive_cmd[pos++] = DR_PATH_SEP;
-    strcpy(archive_cmd + pos, "libdruntime.a");
-    for (size_t i = 0; i < obj_count; i++) {
-      strncat(archive_cmd, " build", sizeof(archive_cmd) - strlen(archive_cmd) - 1);
-      char sep[2] = {DR_PATH_SEP, 0};
-      strncat(archive_cmd, sep, sizeof(archive_cmd) - strlen(archive_cmd) - 1);
-      strncat(archive_cmd, "libs", sizeof(archive_cmd) - strlen(archive_cmd) - 1);
-      strncat(archive_cmd, sep, sizeof(archive_cmd) - strlen(archive_cmd) - 1);
-      strncat(archive_cmd, objs[i], sizeof(archive_cmd) - strlen(archive_cmd) - 1);
-    }
-    res = system(archive_cmd);
-    if (res != 0) {
-      fprintf(stderr, "failed to run: %s\n", archive_cmd);
-      return 1;
-    }
+    // Link with pre-built runtime library  
     snprintf(cmd, sizeof(cmd),
-             "%s -g %s -Isrc/runtime \"build%cbin%cdream.c\" -Lbuild -ldruntime -o \"%s\"",
-             cc, optflag, DR_PATH_SEP, DR_PATH_SEP, DR_EXE_NAME);
-#ifdef _WIN32
-    // On Windows, explicitly use cmd.exe to avoid bash.exe issues
-    char win_final_cmd[1024];
-    snprintf(win_final_cmd, sizeof(win_final_cmd), "cmd.exe /C \"%s\"", cmd);
-    res = system(win_final_cmd);
-#else
+             "%s -g %s -Isrc/runtime -Isrc/runtime/memory -Isrc/runtime/io -Isrc/runtime/extensions -Isrc/runtime/system -Isrc/runtime/exceptions build/bin/dream.c -Lzig-out/lib -ldreamrt -o %s",
+             cc, optflag, DR_EXE_NAME);
     res = system(cmd);
-#endif
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
       return 1;
     }
-#endif
   } else if (emit_obj) {
     codegen_emit_obj(root, "a.o", input);
   }

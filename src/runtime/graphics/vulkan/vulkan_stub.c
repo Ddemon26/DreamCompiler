@@ -7,7 +7,7 @@
 #endif
 
 #include <vulkan/vulkan.h>
-#include "vulkan_stub.h"
+#include "../vulkan_stub.h"
 
 int dr_vulkan_available(void) {
     return vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkGetInstanceProcAddr") != NULL;
