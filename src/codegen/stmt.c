@@ -811,6 +811,11 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_write(b, "}\n");
     break;
   }
+  case ND_ENUM_DECL:
+    // Add enum name to context so VkResult.Success works
+    cgctx_push(ctx, n->as.enum_decl.name.start, n->as.enum_decl.name.len, 
+               TK_KW_ENUM, (Slice){NULL, 0});
+    break;
   default:
     break;
   }
