@@ -75,7 +75,9 @@ test: $(LIBRARY)
 .PHONY: test-coverage
 test-coverage: $(LIBRARY)
 	@echo "Running Go tests with coverage..."
-	go test -v -cover ./...
+	go test -v -cover -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
 
 # Run benchmarks
 .PHONY: bench
@@ -113,6 +115,8 @@ deps:
 	@echo "Installing Go dependencies..."
 	go mod tidy
 	go mod download
+	@echo "Checking testify version..."
+	go list -m github.com/stretchr/testify
 
 # Verify the build works
 .PHONY: verify
@@ -130,16 +134,51 @@ verify: build
 .PHONY: dev
 dev: clean build test
 
+# Feature validation protocol for new compiler features
+.PHONY: validate-feature
+validate-feature: $(LIBRARY)
+	@echo "=== FEATURE VALIDATION PROTOCOL ==="
+	@echo "1. Running unit tests..."
+	go test -v -run Test ./...
+	@echo "2. Running benchmarks..."
+	go test -v -bench=. -benchtime=5s ./...
+	@echo "3. Running fuzz tests..."
+	go test -fuzz=. -fuzztime=30s ./...
+	@echo "4. Generating coverage report..."
+	go test -v -cover -coverprofile=feature_coverage.out ./...
+	go tool cover -html=feature_coverage.out -o feature_coverage.html
+	@echo "✅ Feature validation complete!"
+
 # CI workflow
 .PHONY: ci
 ci: deps verify test bench
+
+# Quick validation for agents (< 30 seconds)
+.PHONY: quick-validate
+quick-validate: $(LIBRARY)
+	@echo "=== QUICK VALIDATION ==="
+	go test -v -run "TestLexer_BasicTokens|TestParser_BasicExpressions|TestTypes_BasicOperations" ./...
+	@echo "✅ Quick validation passed!"
+
+# Comprehensive validation for new features
+.PHONY: comprehensive-validate
+comprehensive-validate: $(LIBRARY)
+	@echo "=== COMPREHENSIVE VALIDATION ==="
+	@echo "Running all test categories..."
+	go test -v ./...
+	go test -v -bench=. -benchtime=10s ./...
+	go test -fuzz=FuzzLexer -fuzztime=60s ./...
+	go test -fuzz=FuzzParser -fuzztime=60s ./...
+	go test -v -cover -coverprofile=comprehensive_coverage.out ./...
+	go tool cover -html=comprehensive_coverage.out -o comprehensive_coverage.html
+	@echo "✅ Comprehensive validation complete!"
 
 # Help target
 .PHONY: help
 help:
 	@echo "DreamCompiler Go Tests Makefile"
 	@echo ""
-	@echo "Targets:"
+	@echo "Standard Targets:"
 	@echo "  all          - Build library and run tests (default)"
 	@echo "  build        - Build the C library"
 	@echo "  test         - Run Go unit tests"
@@ -152,6 +191,12 @@ help:
 	@echo "  verify       - Verify the build"
 	@echo "  dev          - Development workflow (clean + build + test)"
 	@echo "  ci           - CI workflow (deps + verify + test + bench)"
+	@echo ""
+	@echo "Agent Validation Protocols:"
+	@echo "  quick-validate        - Fast validation (< 30s)"
+	@echo "  validate-feature      - Complete feature validation"
+	@echo "  comprehensive-validate- Full test suite with coverage"
+	@echo ""
 	@echo "  help         - Show this help"
 	@echo ""
 	@echo "Environment Variables:"
@@ -173,3 +218,13 @@ debug:
 	@echo "Sources:"
 	@echo "  C_SOURCES = $(C_SOURCES)"
 	@echo "  LEXER_SOURCE = $(LEXER_SOURCE)"
+	@echo ""
+	@echo "Go Environment:"
+	go version 2>/dev/null || echo "  Go not installed"
+	go env GOOS GOARCH 2>/dev/null || echo "  Go environment unavailable"
+	@echo ""
+	@echo "Test Categories:"
+	@echo "  Unit Tests: Lexer, Parser, Types, Memory"
+	@echo "  Integration Tests: End-to-end compilation"
+	@echo "  Benchmarks: Performance analysis"
+	@echo "  Fuzz Tests: Robustness validation"

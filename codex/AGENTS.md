@@ -640,8 +640,84 @@ The DreamCompiler includes a comprehensive Go testing suite that provides direct
 * **Fuzz Testing** - Robustness testing with random inputs to detect crashes
 * **Memory Management Testing** - Arena allocation and resource cleanup validation
 * **Cross-Platform Support** - Works on Linux, Windows, and macOS
+* **Agent-Friendly Protocols** - Fast validation workflows for CLI agents
 
-### Quick Commands for CLI Agents
+### Critical Testing Protocol for CLI Agents
+
+**MANDATORY: All compiler changes MUST be validated through Go test protocols before proceeding**
+
+### Prerequisites Check
+
+**Before running any Go tests:**
+```bash
+# Verify Go installation
+go version  # Should show Go 1.21+
+
+# If Go not installed:
+# Windows: choco install golang (run as Administrator)
+# Linux: Download from https://golang.org/dl/
+# Ensure 'go' command is in PATH
+```
+
+### Agent Testing Workflows
+
+**1. RAPID DEVELOPMENT FEEDBACK (< 30 seconds):**
+```bash
+cd codex/go
+
+# Linux/Unix
+make quick-validate
+
+# Windows
+.\build_and_test.ps1 quick
+
+# What it validates: Core lexer/parser/type functionality
+# Use for: Frequent validation during development
+```
+
+**2. NEW FEATURE VALIDATION (< 2 minutes):**
+```bash
+cd codex/go
+
+# Linux/Unix
+make validate-feature
+
+# Windows  
+.\build_and_test.ps1 feature
+
+# What it validates: Unit tests + benchmarks + fuzz tests + coverage
+# Use for: Validating new language features or major changes
+```
+
+**3. COMPREHENSIVE VALIDATION (< 5 minutes):**
+```bash
+cd codex/go
+
+# Linux/Unix
+make comprehensive-validate
+
+# Windows
+.\build_and_test.ps1 comprehensive
+
+# What it validates: Full test suite with extended fuzz testing
+# Use for: Pre-commit validation and release preparation
+```
+
+**4. PERFORMANCE ANALYSIS:**
+```bash
+cd codex/go
+
+# Linux/Unix
+make bench
+
+# Windows
+.\build_and_test.ps1 bench
+
+# What it provides: Performance metrics and regression detection
+# Use for: Optimization work and performance monitoring
+```
+
+### Standard Testing Commands
 
 **Build and test:**
 ```bash
@@ -661,17 +737,17 @@ cd codex/go && make test-all
 **Individual test categories:**
 ```bash
 # Unit tests only
-go test -v ./codex/go/...
+go test -v ./...
 
 # Specific test patterns
-go test -run TestLexer ./codex/go/...
-go test -run TestParser ./codex/go/...
+go test -run TestLexer ./...
+go test -run TestParser ./...
 
 # Benchmarks with memory profiling
-go test -bench=. -benchmem ./codex/go/...
+go test -bench=. -benchmem ./...
 
 # Fuzz testing for specific components
-go test -fuzz=FuzzLexer -fuzztime=30s ./codex/go/...
+go test -fuzz=FuzzLexer -fuzztime=30s ./...
 ```
 
 ### Test Categories
@@ -699,12 +775,52 @@ go test -fuzz=FuzzLexer -fuzztime=30s ./codex/go/...
 
 ### Integration with Development Workflow
 
-The Go tests integrate with the main development workflow:
+**CRITICAL: Go tests must be integrated into ALL development workflows**
 
-1. **Pre-commit validation** - `cd codex/go && make test` for quick C API validation
-2. **Performance monitoring** - `cd codex/go && make bench` to track performance regressions
-3. **Robustness testing** - `cd codex/go && make fuzz` to detect potential crashes
-4. **CI/CD integration** - `cd codex/go && make ci` for comprehensive automated testing
+### Complete Validation Workflow for Agents
+
+**When implementing new compiler features:**
+```bash
+# Step 1: Build verification
+zig build                              # Ensure compiler builds
+
+# Step 2: Quick Go validation (< 30s)
+cd codex/go && make quick-validate     # Linux
+cd codex/go && .\build_and_test.ps1 quick  # Windows
+
+# Step 3: Dream file validation (< 30s)  
+cd .. && python test_cli.py quick     # Test .dr file compilation
+
+# Step 4: If basic tests pass, run feature validation
+cd codex/go && make validate-feature  # Linux
+cd codex/go && .\build_and_test.ps1 feature  # Windows
+
+# Step 5: Full Dream file validation
+cd .. && python test_cli.py bulk      # Complete .dr file test suite
+```
+
+**Development Workflow Integration:**
+1. **During development** - Use `quick-validate` for rapid feedback
+2. **Feature completion** - Use `validate-feature` for comprehensive validation  
+3. **Pre-commit** - Use `comprehensive-validate` + full Python test suite
+4. **Performance monitoring** - Use bench protocol for optimization work
+5. **CI/CD integration** - Automated testing with full protocols
+
+**Expected Timeline:**
+- Quick validation: < 30 seconds
+- Feature validation: < 2 minutes  
+- Comprehensive validation: < 5 minutes
+- Full workflow: < 10 minutes total
+
+**Protocol Failure Response:**
+- If Go tests fail: Fix C API issues before proceeding
+- If Dream file tests fail: Check code generation and runtime
+- If both fail: Likely parser/semantic analysis issues
+
+**Coverage Requirements:**
+- Go unit tests: 100% pass for core features
+- Go benchmarks: No significant performance regressions
+- Dream file tests: Platform-specific pass rates (95% Linux, 90% Windows)
 
 ### Performance Expectations
 
@@ -861,7 +977,24 @@ When the command `go` is issued the agent should:
     # Build
     zig build
     
-    # Test (NO zig test - compiler is C-based)
+    # MANDATORY: Go test validation (C API testing)
+    cd codex/go
+    
+    # Quick validation (< 30 seconds)
+    # Linux
+    make quick-validate
+    # Windows
+    .\build_and_test.ps1 quick
+    
+    # Feature validation for new features (< 2 minutes)  
+    # Linux
+    make validate-feature
+    # Windows
+    .\build_and_test.ps1 feature
+    
+    # Dream file testing (NO zig test - compiler is C-based)
+    cd ..
+    
     # Linux
     ./codex/test_cli.sh quick
     
