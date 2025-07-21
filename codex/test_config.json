@@ -34,6 +34,9 @@
       "compiler_flags": []
     }
   },
+  "exclude_patterns": [
+    "not_implemented/**/*.dr"
+  ],
   "test_patterns": {
     "quick": "basics/arithmetic/*.dr",
     "basic": "basics/**/*.dr",
