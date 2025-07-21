@@ -1,0 +1,206 @@
+// Main application demonstrating multi-file Dream project
+module main;
+
+import math_utils;
+import string_utils;
+import console_lib;
+
+/// Main application class
+class Application {
+    string appName = "Dream Multi-File Demo";
+    string version = "1.0.0";
+    
+    func void run() {
+        Console.WriteLine("=== " + appName + " v" + version + " ===");
+        Console.WriteLine("");
+        
+        demonstrateMathUtils();
+        Console.WriteLine("");
+        
+        demonstrateStringUtils();
+        Console.WriteLine("");
+        
+        demonstrateVectorOperations();
+        Console.WriteLine("");
+        
+        interactiveCalculator();
+        Console.WriteLine("");
+        
+        Console.WriteLine("=== Demo Complete ===");
+    }
+    
+    /// Demonstrate math utility functions
+    func void demonstrateMathUtils() {
+        Console.WriteLine("--- Math Utils Demo ---");
+        
+        float number = 25.0f;
+        Console.WriteLine("Number: " + number);
+        Console.WriteLine("Square: " + MathUtils.square(number));
+        Console.WriteLine("Cube: " + MathUtils.cube(number));
+        Console.WriteLine("Square root: " + MathUtils.sqrt(number));
+        Console.WriteLine("Absolute value of -15: " + MathUtils.abs(-15.0f));
+        
+        float a = 10.5f;
+        float b = 7.2f;
+        Console.WriteLine("Max of " + a + " and " + b + ": " + MathUtils.max(a, b));
+        Console.WriteLine("Min of " + a + " and " + b + ": " + MathUtils.min(a, b));
+        
+        Console.WriteLine("2^8 = " + MathUtils.pow(2.0f, 8));
+        Console.WriteLine("PI = " + PI);
+        Console.WriteLine("E = " + E);
+    }
+    
+    /// Demonstrate string utility functions
+    func void demonstrateStringUtils() {
+        Console.WriteLine("--- String Utils Demo ---");
+        
+        string testString = "  Hello World  ";
+        Console.WriteLine("Original: '" + testString + "'");
+        Console.WriteLine("Trimmed: '" + StringUtils.trim(testString) + "'");
+        Console.WriteLine("Uppercase: '" + StringUtils.toUpper(testString) + "'");
+        Console.WriteLine("Lowercase: '" + StringUtils.toLower(testString) + "'");
+        
+        string sentence = "The quick brown fox jumps over the lazy dog";
+        Console.WriteLine("Original sentence: " + sentence);
+        Console.WriteLine("Contains 'fox': " + StringUtils.contains(sentence, "fox"));
+        Console.WriteLine("Contains 'cat': " + StringUtils.contains(sentence, "cat"));
+        Console.WriteLine("Index of 'brown': " + StringUtils.indexOf(sentence, "brown"));
+        
+        string[] words = StringUtils.split(sentence, ' ');
+        Console.WriteLine("Word count: " + words.length);
+        Console.Write("Words: ");
+        for (int i = 0; i < words.length; i++) {
+            Console.Write(words[i]);
+            if (i < words.length - 1) {
+                Console.Write(", ");
+            }
+        }
+        Console.WriteLine("");
+        
+        string joined = StringUtils.join(words, " | ");
+        Console.WriteLine("Joined with ' | ': " + joined);
+        
+        string replaced = StringUtils.replace(sentence, "fox", "cat");
+        Console.WriteLine("Replaced 'fox' with 'cat': " + replaced);
+        
+        // StringBuilder demo
+        StringBuilder sb = new StringBuilder();
+        sb.append("Building a string: ");
+        for (int i = 1; i <= 5; i++) {
+            sb.append(i).append(" ");
+        }
+        Console.WriteLine(sb.toString());
+    }
+    
+    /// Demonstrate vector operations
+    func void demonstrateVectorOperations() {
+        Console.WriteLine("--- Vector Operations Demo ---");
+        
+        Vector2D v1 = new Vector2D(3.0f, 4.0f);
+        Vector2D v2 = new Vector2D(1.0f, 2.0f);
+        
+        Console.WriteLine("Vector 1: (" + v1.x + ", " + v1.y + ")");
+        Console.WriteLine("Vector 2: (" + v2.x + ", " + v2.y + ")");
+        Console.WriteLine("V1 magnitude: " + v1.magnitude());
+        Console.WriteLine("V2 magnitude: " + v2.magnitude());
+        
+        Vector2D sum = v1.add(v2);
+        Console.WriteLine("V1 + V2: (" + sum.x + ", " + sum.y + ")");
+        
+        Vector2D diff = v1.subtract(v2);
+        Console.WriteLine("V1 - V2: (" + diff.x + ", " + diff.y + ")");
+        
+        Vector2D scaled = v1.scale(2.0f);
+        Console.WriteLine("V1 * 2: (" + scaled.x + ", " + scaled.y + ")");
+        
+        float dotProduct = v1.dot(v2);
+        Console.WriteLine("V1 · V2: " + dotProduct);
+        
+        Vector2D normalized = v1.normalize();
+        Console.WriteLine("V1 normalized: (" + normalized.x + ", " + normalized.y + ")");
+        Console.WriteLine("Normalized magnitude: " + normalized.magnitude());
+    }
+    
+    /// Interactive calculator using imported utilities
+    func void interactiveCalculator() {
+        Console.WriteLine("--- Interactive Calculator ---");
+        Console.WriteLine("Enter 'quit' to exit");
+        
+        while (true) {
+            Console.Write("Enter first number (or 'quit'): ");
+            string input1 = Console.ReadLine();
+            
+            if (StringUtils.toLower(StringUtils.trim(input1)) == "quit") {
+                break;
+            }
+            
+            Console.Write("Enter operation (+, -, *, /, ^): ");
+            string operation = StringUtils.trim(Console.ReadLine());
+            
+            Console.Write("Enter second number: ");
+            string input2 = Console.ReadLine();
+            
+            try {
+                float num1 = parseFloat(input1);
+                float num2 = parseFloat(input2);
+                float result = 0.0f;
+                bool validOperation = true;
+                
+                switch (operation) {
+                    case "+":
+                        result = num1 + num2;
+                        break;
+                    case "-":
+                        result = num1 - num2;
+                        break;
+                    case "*":
+                        result = num1 * num2;
+                        break;
+                    case "/":
+                        if (num2 == 0.0f) {
+                            Console.WriteLine("Error: Division by zero!");
+                            validOperation = false;
+                        } else {
+                            result = num1 / num2;
+                        }
+                        break;
+                    case "^":
+                        result = MathUtils.pow(num1, (int)num2);
+                        break;
+                    default:
+                        Console.WriteLine("Error: Unknown operation '" + operation + "'");
+                        validOperation = false;
+                        break;
+                }
+                
+                if (validOperation) {
+                    Console.WriteLine("Result: " + result);
+                    
+                    // Format result nicely
+                    string formattedResult = NumberFormatter.format(result, 2);
+                    Console.WriteLine("Formatted: " + formattedResult);
+                }
+                
+            } catch {
+                Console.WriteLine("Error: Invalid number format");
+            }
+            
+            Console.WriteLine("");
+        }
+        
+        Console.WriteLine("Calculator closed.");
+    }
+    
+    /// Parse float from string (simplified implementation)
+    func float parseFloat(string str) {
+        // This would be implemented properly in a real scenario
+        // For now, assume valid conversion
+        return 0.0f; // Placeholder
+    }
+}
+
+/// Application entry point
+func void main() {
+    Application app = new Application();
+    app.run();
+}

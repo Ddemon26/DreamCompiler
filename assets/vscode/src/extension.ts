@@ -22,7 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
   };
 
   client = new LanguageClient('dream', 'Dream Language Server', serverOptions, clientOptions);
-  context.subscriptions.push(client.start());
+  context.subscriptions.push({ dispose: () => client?.stop() });
+  client.start();
 }
 
 export function deactivate(): Thenable<void> | undefined {

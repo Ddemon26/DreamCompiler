@@ -377,13 +377,14 @@ connection.onCompletion((params: TextDocumentPositionParams): CompletionItem[] =
     }
   ];
   
-  // Language keywords and constructs
+  // Language keywords and constructs based on current token set
   const keywords = [
     'func', 'int', 'float', 'bool', 'char', 'string', 'void',
     'if', 'else', 'while', 'do', 'for', 'switch', 'case', 'default',
     'break', 'continue', 'return', 'try', 'catch', 'throw', 'finally',
     'class', 'struct', 'new', 'this', 'base', 'static', 'async', 'await',
-    'true', 'false', 'null'
+    'var', 'let', 'using', 'import', 'module', 'export',
+    'Task', 'TaskResult', 'true', 'false', 'null'
   ];
   
   // Add keyword completions based on context
@@ -547,7 +548,19 @@ function getBuiltinInfo(word: string): string | null {
     'void': '**type** `void`\n\nRepresents no return value.',
     'true': '**literal** `true`\n\nBoolean true value.',
     'false': '**literal** `false`\n\nBoolean false value.',
-    'null': '**literal** `null`\n\nNull reference value.'
+    'null': '**literal** `null`\n\nNull reference value.',
+    'func': '**keyword** `func`\n\nFunction declaration keyword.',
+    'class': '**keyword** `class`\n\nClass declaration keyword.',
+    'struct': '**keyword** `struct`\n\nStruct declaration keyword.',
+    'module': '**keyword** `module`\n\nModule declaration keyword.',
+    'import': '**keyword** `import`\n\nImport statement for modules.',
+    'export': '**keyword** `export`\n\nExport declaration for multi-file compilation.',
+    'var': '**keyword** `var`\n\nVariable declaration with type inference.',
+    'let': '**keyword** `let`\n\nImmutable variable declaration.',
+    'async': '**keyword** `async`\n\nAsynchronous function modifier.',
+    'await': '**keyword** `await`\n\nAwaits an asynchronous operation.',
+    'Task': '**type** `Task`\n\nRepresents an asynchronous task.',
+    'TaskResult': '**type** `TaskResult`\n\nRepresents a task with a result value.'
   };
   
   return builtins[word] || null;

@@ -1,0 +1,180 @@
+// Advanced Dream language features test
+module advanced_features;
+
+import task_utils;
+import memory_management;
+
+export class Calculator {
+    // Class fields with different access levels
+    float lastResult = 0.0f;
+    static int instanceCount = 0;
+    
+    /// Constructor
+    func Calculator() {
+        instanceCount++;
+        Console.WriteLine("Calculator instance created");
+    }
+    
+    /// Add two numbers and store result
+    func float add(float a, float b) {
+        lastResult = a + b;
+        return lastResult;
+    }
+    
+    /// Subtract with method chaining
+    func Calculator subtract(float value) {
+        lastResult -= value;
+        return this;
+    }
+    
+    /// Get the current result
+    func float getResult() {
+        return lastResult;
+    }
+    
+    /// Static method
+    static func int getInstanceCount() {
+        return instanceCount;
+    }
+}
+
+export struct Point {
+    float x;
+    float y;
+    
+    func Point(float newX, float newY) {
+        x = newX;
+        y = newY;
+    }
+    
+    func float distance(Point other) {
+        float dx = x - other.x;
+        float dy = y - other.y;
+        return sqrt(dx * dx + dy * dy);
+    }
+}
+
+// Generic-like template (future feature)
+export class Container<T> {
+    T[] items;
+    int count = 0;
+    
+    func void add(T item) {
+        items[count] = item;
+        count++;
+    }
+    
+    func T get(int index) {
+        if (index >= 0 && index < count) {
+            return items[index];
+        }
+        throw "Index out of bounds";
+    }
+}
+
+// Async function example
+export async func Task<bool> validateDataAsync(string data) {
+    Console.WriteLine("Starting async validation...");
+    
+    // Simulate async work
+    await Task.Delay(1000);
+    
+    bool isValid = data != null && data.length > 0;
+    
+    if (isValid) {
+        Console.WriteLine("Data is valid");
+    } else {
+        Console.WriteLine("Data validation failed");
+    }
+    
+    return isValid;
+}
+
+// Function with complex operators
+func void demonstrateOperators() {
+    int a = 10;
+    int b = 3;
+    
+    // Arithmetic operators
+    Console.WriteLine("Addition: " + (a + b));
+    Console.WriteLine("Subtraction: " + (a - b));
+    Console.WriteLine("Multiplication: " + (a * b));
+    Console.WriteLine("Division: " + (a / b));
+    Console.WriteLine("Modulus: " + (a % b));
+    
+    // Bitwise operators
+    int x = 12; // 1100 in binary
+    int y = 7;  // 0111 in binary
+    
+    Console.WriteLine("Bitwise AND: " + (x & y));
+    Console.WriteLine("Bitwise OR: " + (x | y));
+    Console.WriteLine("Bitwise XOR: " + (x ^ y));
+    Console.WriteLine("Bitwise NOT: " + (~x));
+    Console.WriteLine("Left shift: " + (x << 1));
+    Console.WriteLine("Right shift: " + (x >> 1));
+    
+    // Comparison operators
+    bool result1 = a > b;
+    bool result2 = a <= b;
+    bool result3 = a == b;
+    bool result4 = a != b;
+    
+    // Logical operators
+    bool condition1 = true;
+    bool condition2 = false;
+    
+    bool andResult = condition1 && condition2;
+    bool orResult = condition1 || condition2;
+    bool notResult = !condition1;
+    
+    // Conditional (ternary) operator
+    string message = (a > b) ? "a is greater" : "b is greater or equal";
+    Console.WriteLine(message);
+    
+    // Null coalescing (future feature)
+    string? nullable = null;
+    string result = nullable ?? "default value";
+    Console.WriteLine(result);
+}
+
+// Main function demonstrating advanced features
+func void main() {
+    Console.WriteLine("=== Advanced Dream Features Demo ===");
+    
+    // Class instantiation and usage
+    Calculator calc = new Calculator();
+    float result = calc.add(10.5f, 5.25f);
+    calc.subtract(2.0f);
+    
+    Console.WriteLine("Calculator result: " + calc.getResult());
+    Console.WriteLine("Instance count: " + Calculator.getInstanceCount());
+    
+    // Struct usage
+    Point p1 = new Point(0.0f, 0.0f);
+    Point p2 = new Point(3.0f, 4.0f);
+    float distance = p1.distance(p2);
+    Console.WriteLine("Distance: " + distance);
+    
+    // Operator demonstration
+    demonstrateOperators();
+    
+    // Async function usage
+    Task<bool> validationTask = validateDataAsync("test data");
+    bool isValid = await validationTask;
+    Console.WriteLine("Validation result: " + isValid);
+    
+    // Array and collection usage
+    int[] numbers = {1, 2, 3, 4, 5};
+    for (int i = 0; i < numbers.length; i++) {
+        Console.WriteLine("Number: " + numbers[i]);
+    }
+    
+    // Enhanced for loop (foreach equivalent)
+    foreach (int num in numbers) {
+        if (num % 2 == 0) {
+            Console.WriteLine("Even: " + num);
+        }
+    }
+    
+    Console.WriteLine("=== Demo Complete ===");
+}

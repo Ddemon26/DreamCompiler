@@ -1,8 +1,8 @@
 {
   "name": "dream-intellisense",
   "displayName": "Dream IntelliSense",
-  "version": "0.1.0",
-  "description": "Language support and IntelliSense for Dream",
+  "version": "0.3.0",
+  "description": "Language support and IntelliSense for Dream - A C#-style language that compiles to C",
   "publisher": "dream",
   "engines": {
     "vscode": "^1.90.0"

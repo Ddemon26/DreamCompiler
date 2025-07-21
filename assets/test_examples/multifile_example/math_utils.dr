@@ -1,0 +1,162 @@
+// Math utilities module
+module math_utils;
+
+import console_lib;
+
+/// Mathematical constants
+export const float PI = 3.14159265359f;
+export const float E = 2.71828182846f;
+
+/// Basic mathematical operations
+export class MathUtils {
+    
+    /// Calculate the square of a number
+    static func float square(float x) {
+        return x * x;
+    }
+    
+    /// Calculate the cube of a number
+    static func float cube(float x) {
+        return x * x * x;
+    }
+    
+    /// Calculate the absolute value
+    static func float abs(float x) {
+        return (x < 0.0f) ? -x : x;
+    }
+    
+    /// Find the maximum of two numbers
+    static func float max(float a, float b) {
+        return (a > b) ? a : b;
+    }
+    
+    /// Find the minimum of two numbers
+    static func float min(float a, float b) {
+        return (a < b) ? a : b;
+    }
+    
+    /// Calculate power (basic implementation)
+    static func float pow(float base, int exponent) {
+        if (exponent == 0) {
+            return 1.0f;
+        }
+        
+        float result = 1.0f;
+        bool isNegative = exponent < 0;
+        int absExponent = isNegative ? -exponent : exponent;
+        
+        for (int i = 0; i < absExponent; i++) {
+            result *= base;
+        }
+        
+        return isNegative ? (1.0f / result) : result;
+    }
+    
+    /// Calculate square root using Newton's method
+    static func float sqrt(float x) {
+        if (x < 0.0f) {
+            throw "Cannot calculate square root of negative number";
+        }
+        
+        if (x == 0.0f) {
+            return 0.0f;
+        }
+        
+        float guess = x / 2.0f;
+        float epsilon = 0.000001f;
+        
+        while (true) {
+            float newGuess = 0.5f * (guess + x / guess);
+            if (abs(newGuess - guess) < epsilon) {
+                break;
+            }
+            guess = newGuess;
+        }
+        
+        return guess;
+    }
+}
+
+/// Vector operations
+export struct Vector2D {
+    float x;
+    float y;
+    
+    func Vector2D(float newX, float newY) {
+        x = newX;
+        y = newY;
+    }
+    
+    /// Calculate the magnitude of the vector
+    func float magnitude() {
+        return MathUtils.sqrt(x * x + y * y);
+    }
+    
+    /// Normalize the vector
+    func Vector2D normalize() {
+        float mag = magnitude();
+        if (mag == 0.0f) {
+            return new Vector2D(0.0f, 0.0f);
+        }
+        return new Vector2D(x / mag, y / mag);
+    }
+    
+    /// Add two vectors
+    func Vector2D add(Vector2D other) {
+        return new Vector2D(x + other.x, y + other.y);
+    }
+    
+    /// Subtract two vectors
+    func Vector2D subtract(Vector2D other) {
+        return new Vector2D(x - other.x, y - other.y);
+    }
+    
+    /// Scale the vector
+    func Vector2D scale(float factor) {
+        return new Vector2D(x * factor, y * factor);
+    }
+    
+    /// Calculate dot product
+    func float dot(Vector2D other) {
+        return x * other.x + y * other.y;
+    }
+    
+    /// Calculate angle between vectors in radians
+    func float angleTo(Vector2D other) {
+        float dot = this.dot(other);
+        float mag1 = magnitude();
+        float mag2 = other.magnitude();
+        
+        if (mag1 == 0.0f || mag2 == 0.0f) {
+            return 0.0f;
+        }
+        
+        float cosAngle = dot / (mag1 * mag2);
+        // acos implementation would be needed here
+        return cosAngle; // Simplified for now
+    }
+}
+
+/// Utility functions for number formatting
+export class NumberFormatter {
+    
+    /// Format a float to specified decimal places
+    static func string format(float value, int decimalPlaces) {
+        // Simplified implementation - would need proper formatting
+        string result = value.toString();
+        return result;
+    }
+    
+    /// Convert number to string with thousand separators
+    static func string formatWithSeparators(int value) {
+        string str = value.toString();
+        // Would implement thousand separator logic here
+        return str;
+    }
+    
+    /// Format as percentage
+    static func string formatAsPercentage(float value) {
+        float percentage = value * 100.0f;
+        return format(percentage, 2) + "%";
+    }
+}

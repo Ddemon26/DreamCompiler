@@ -1,0 +1,70 @@
+// Basic Dream syntax test file
+module basic_syntax;
+
+import console_lib;
+import string_utils;
+
+/// Documentation comment for the main function
+/// This demonstrates basic language features
+func void main() {
+    // Variable declarations with different types
+    int number = 42;
+    float decimal = 3.14f;
+    bool isValid = true;
+    char letter = 'A';
+    string message = "Hello Dream!";
+    
+    // Console output
+    Console.WriteLine("Starting basic syntax test...");
+    Console.Write("Number: ");
+    Console.WriteLine(number);
+    
+    // Control flow
+    if (isValid && number > 0) {
+        Console.WriteLine("Condition is true");
+    } else {
+        Console.WriteLine("Condition is false");
+    }
+    
+    // Loop examples
+    for (int i = 0; i < 5; i++) {
+        Console.Write("Loop iteration: ");
+        Console.WriteLine(i);
+    }
+    
+    int counter = 0;
+    while (counter < 3) {
+        Console.WriteLine("While loop: " + counter);
+        counter++;
+    }
+    
+    // Switch statement
+    switch (number) {
+        case 42:
+            Console.WriteLine("The answer to everything!");
+            break;
+        case 0:
+            Console.WriteLine("Zero");
+            break;
+        default:
+            Console.WriteLine("Unknown number");
+            break;
+    }
+}
+
+/// Function with parameters and return value
+func int calculateSum(int a, int b) {
+    return a + b;
+}
+
+/// Function demonstrating exception handling
+func void testExceptions() {
+    try {
+        int result = 10 / 0; // This should cause an error
+        Console.WriteLine("Result: " + result);
+    } catch {
+        Console.WriteLine("Caught an exception!");
+    } finally {
+        Console.WriteLine("Cleanup complete");
+    }
+}

@@ -19,10 +19,21 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     }
 
     public static final TextAttributesKey KEYWORD = TextAttributesKey.createTextAttributesKey("DREAM_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
+    public static final TextAttributesKey KEYWORDTYPE = TextAttributesKey.createTextAttributesKey("DREAM_KEYWORDTYPE", DefaultLanguageHighlighterColors.KEYWORD);
+    public static final TextAttributesKey KEYWORDOTHER = TextAttributesKey.createTextAttributesKey("DREAM_KEYWORDOTHER", DefaultLanguageHighlighterColors.KEYWORD);
+    public static final TextAttributesKey KEYWORDLITERAL = TextAttributesKey.createTextAttributesKey("DREAM_KEYWORDLITERAL", DefaultLanguageHighlighterColors.KEYWORD);
     public static final TextAttributesKey NUMBER = TextAttributesKey.createTextAttributesKey("DREAM_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
     public static final TextAttributesKey STRING = TextAttributesKey.createTextAttributesKey("DREAM_STRING", DefaultLanguageHighlighterColors.STRING);
+    public static final TextAttributesKey CHAR = TextAttributesKey.createTextAttributesKey("DREAM_CHAR", DefaultLanguageHighlighterColors.STRING);
     public static final TextAttributesKey COMMENT = TextAttributesKey.createTextAttributesKey("DREAM_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
-    public static final TextAttributesKey OPERATOR = TextAttributesKey.createTextAttributesKey("DREAM_OPERATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey CONSOLEFUNCTION = TextAttributesKey.createTextAttributesKey("DREAM_CONSOLEFUNCTION", DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL);
+    public static final TextAttributesKey OPERATORARITHMETIC = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORARITHMETIC", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey OPERATORBITWISE = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORBITWISE", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey OPERATORCOMPARISON = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORCOMPARISON", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey OPERATORLOGICAL = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORLOGICAL", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey OPERATORASSIGNMENT = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORASSIGNMENT", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey OPERATORCONDITIONAL = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORCONDITIONAL", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey OPERATORARROW = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORARROW", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey SEMICOLON = TextAttributesKey.createTextAttributesKey("DREAM_SEMICOLON", DefaultLanguageHighlighterColors.SEMICOLON);
     public static final TextAttributesKey COMMA = TextAttributesKey.createTextAttributesKey("DREAM_COMMA", DefaultLanguageHighlighterColors.COMMA);
     public static final TextAttributesKey DOT = TextAttributesKey.createTextAttributesKey("DREAM_DOT", DefaultLanguageHighlighterColors.DOT);
@@ -31,10 +42,21 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey BRACKET = TextAttributesKey.createTextAttributesKey("DREAM_BRACKET", DefaultLanguageHighlighterColors.BRACKETS);
 
     private static final TextAttributesKey[] KEYWORD_KEYS = pack(KEYWORD);
+    private static final TextAttributesKey[] KEYWORDTYPE_KEYS = pack(KEYWORDTYPE);
+    private static final TextAttributesKey[] KEYWORDOTHER_KEYS = pack(KEYWORDOTHER);
+    private static final TextAttributesKey[] KEYWORDLITERAL_KEYS = pack(KEYWORDLITERAL);
     private static final TextAttributesKey[] NUMBER_KEYS = pack(NUMBER);
     private static final TextAttributesKey[] STRING_KEYS = pack(STRING);
+    private static final TextAttributesKey[] CHAR_KEYS = pack(CHAR);
     private static final TextAttributesKey[] COMMENT_KEYS = pack(COMMENT);
-    private static final TextAttributesKey[] OPERATOR_KEYS = pack(OPERATOR);
+    private static final TextAttributesKey[] CONSOLEFUNCTION_KEYS = pack(CONSOLEFUNCTION);
+    private static final TextAttributesKey[] OPERATORARITHMETIC_KEYS = pack(OPERATORARITHMETIC);
+    private static final TextAttributesKey[] OPERATORBITWISE_KEYS = pack(OPERATORBITWISE);
+    private static final TextAttributesKey[] OPERATORCOMPARISON_KEYS = pack(OPERATORCOMPARISON);
+    private static final TextAttributesKey[] OPERATORLOGICAL_KEYS = pack(OPERATORLOGICAL);
+    private static final TextAttributesKey[] OPERATORASSIGNMENT_KEYS = pack(OPERATORASSIGNMENT);
+    private static final TextAttributesKey[] OPERATORCONDITIONAL_KEYS = pack(OPERATORCONDITIONAL);
+    private static final TextAttributesKey[] OPERATORARROW_KEYS = pack(OPERATORARROW);
     private static final TextAttributesKey[] SEMICOLON_KEYS = pack(SEMICOLON);
     private static final TextAttributesKey[] COMMA_KEYS = pack(COMMA);
     private static final TextAttributesKey[] DOT_KEYS = pack(DOT);
@@ -46,12 +68,23 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     @Override
     public TextAttributesKey[] getTokenHighlights(IElementType tokenType) {
         if (tokenType == DreamTokenTypes.KEYWORD) return KEYWORD_KEYS;
+        if (tokenType == DreamTokenTypes.KEYWORDTYPE) return KEYWORDTYPE_KEYS;
+        if (tokenType == DreamTokenTypes.KEYWORDOTHER) return KEYWORDOTHER_KEYS;
+        if (tokenType == DreamTokenTypes.KEYWORDLITERAL) return KEYWORDLITERAL_KEYS;
         if (tokenType == DreamTokenTypes.NUMBER) return NUMBER_KEYS;
         if (tokenType == DreamTokenTypes.STRING) return STRING_KEYS;
+        if (tokenType == DreamTokenTypes.CHAR) return CHAR_KEYS;
         if (tokenType == DreamTokenTypes.COMMENT ||
             tokenType == DreamTokenTypes.COMMENTBLOCK ||
             tokenType == DreamTokenTypes.COMMENTDOC) return COMMENT_KEYS;
-        if (tokenType == DreamTokenTypes.OPERATOR) return OPERATOR_KEYS;
+        if (tokenType == DreamTokenTypes.CONSOLEFUNCTION) return CONSOLEFUNCTION_KEYS;
+        if (tokenType == DreamTokenTypes.OPERATORARITHMETIC) return OPERATORARITHMETIC_KEYS;
+        if (tokenType == DreamTokenTypes.OPERATORBITWISE) return OPERATORBITWISE_KEYS;
+        if (tokenType == DreamTokenTypes.OPERATORCOMPARISON) return OPERATORCOMPARISON_KEYS;
+        if (tokenType == DreamTokenTypes.OPERATORLOGICAL) return OPERATORLOGICAL_KEYS;
+        if (tokenType == DreamTokenTypes.OPERATORASSIGNMENT) return OPERATORASSIGNMENT_KEYS;
+        if (tokenType == DreamTokenTypes.OPERATORCONDITIONAL) return OPERATORCONDITIONAL_KEYS;
+        if (tokenType == DreamTokenTypes.OPERATORARROW) return OPERATORARROW_KEYS;
         if (tokenType == DreamTokenTypes.SEMICOLON) return SEMICOLON_KEYS;
         if (tokenType == DreamTokenTypes.COMMA) return COMMA_KEYS;
         if (tokenType == DreamTokenTypes.DOT) return DOT_KEYS;

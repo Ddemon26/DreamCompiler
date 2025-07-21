@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.0.0"
-    id("org.jetbrains.intellij") version "1.17.3"
+    id("org.jetbrains.kotlin.jvm") version "1.9.24"
+    id("org.jetbrains.intellij") version "1.17.2"
     id("org.jetbrains.grammarkit") version "2022.3.2"
 }
 
@@ -28,7 +28,7 @@ tasks.withType<JavaCompile> {
 }
 
 intellij {
-    version.set("2024.1")
+    version.set("2023.3.7")
     type.set("IC")
     plugins.set(listOf("com.intellij.java"))
 }

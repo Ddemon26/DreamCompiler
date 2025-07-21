@@ -1,0 +1,324 @@
+// String utilities module
+module string_utils;
+
+import console_lib;
+
+/// String manipulation utilities
+export class StringUtils {
+    
+    /// Check if string is null or empty
+    static func bool isNullOrEmpty(string str) {
+        return str == null || str.length == 0;
+    }
+    
+    /// Check if string is null, empty, or whitespace
+    static func bool isNullOrWhitespace(string str) {
+        if (isNullOrEmpty(str)) {
+            return true;
+        }
+        
+        for (int i = 0; i < str.length; i++) {
+            char c = str[i];
+            if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /// Trim whitespace from both ends
+    static func string trim(string str) {
+        if (isNullOrEmpty(str)) {
+            return str;
+        }
+        
+        int start = 0;
+        int end = str.length - 1;
+        
+        // Find first non-whitespace character
+        while (start <= end && isWhitespace(str[start])) {
+            start++;
+        }
+        
+        // Find last non-whitespace character
+        while (end >= start && isWhitespace(str[end])) {
+            end--;
+        }
+        
+        return str.substring(start, end - start + 1);
+    }
+    
+    /// Check if character is whitespace
+    static func bool isWhitespace(char c) {
+        return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+    }
+    
+    /// Convert string to uppercase
+    static func string toUpper(string str) {
+        if (isNullOrEmpty(str)) {
+            return str;
+        }
+        
+        char[] chars = new char[str.length];
+        for (int i = 0; i < str.length; i++) {
+            char c = str[i];
+            if (c >= 'a' && c <= 'z') {
+                chars[i] = (char)(c - 32); // Convert to uppercase
+            } else {
+                chars[i] = c;
+            }
+        }
+        
+        return new string(chars);
+    }
+    
+    /// Convert string to lowercase
+    static func string toLower(string str) {
+        if (isNullOrEmpty(str)) {
+            return str;
+        }
+        
+        char[] chars = new char[str.length];
+        for (int i = 0; i < str.length; i++) {
+            char c = str[i];
+            if (c >= 'A' && c <= 'Z') {
+                chars[i] = (char)(c + 32); // Convert to lowercase
+            } else {
+                chars[i] = c;
+            }
+        }
+        
+        return new string(chars);
+    }
+    
+    /// Split string by delimiter
+    static func string[] split(string str, char delimiter) {
+        if (isNullOrEmpty(str)) {
+            return new string[0];
+        }
+        
+        // Count occurrences of delimiter
+        int count = 1;
+        for (int i = 0; i < str.length; i++) {
+            if (str[i] == delimiter) {
+                count++;
+            }
+        }
+        
+        string[] parts = new string[count];
+        int partIndex = 0;
+        int start = 0;
+        
+        for (int i = 0; i < str.length; i++) {
+            if (str[i] == delimiter) {
+                parts[partIndex] = str.substring(start, i - start);
+                partIndex++;
+                start = i + 1;
+            }
+        }
+        
+        // Add the last part
+        parts[partIndex] = str.substring(start, str.length - start);
+        
+        return parts;
+    }
+    
+    /// Join string array with separator
+    static func string join(string[] strings, string separator) {
+        if (strings == null || strings.length == 0) {
+            return "";
+        }
+        
+        if (strings.length == 1) {
+            return strings[0];
+        }
+        
+        int totalLength = 0;
+        for (int i = 0; i < strings.length; i++) {
+            totalLength += strings[i].length;
+            if (i < strings.length - 1) {
+                totalLength += separator.length;
+            }
+        }
+        
+        char[] result = new char[totalLength];
+        int pos = 0;
+        
+        for (int i = 0; i < strings.length; i++) {
+            // Copy string characters
+            for (int j = 0; j < strings[i].length; j++) {
+                result[pos] = strings[i][j];
+                pos++;
+            }
+            
+            // Add separator if not last string
+            if (i < strings.length - 1) {
+                for (int j = 0; j < separator.length; j++) {
+                    result[pos] = separator[j];
+                    pos++;
+                }
+            }
+        }
+        
+        return new string(result);
+    }
+    
+    /// Check if string contains substring
+    static func bool contains(string str, string substring) {
+        if (isNullOrEmpty(str) || isNullOrEmpty(substring)) {
+            return false;
+        }
+        
+        if (substring.length > str.length) {
+            return false;
+        }
+        
+        for (int i = 0; i <= str.length - substring.length; i++) {
+            bool found = true;
+            for (int j = 0; j < substring.length; j++) {
+                if (str[i + j] != substring[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /// Find index of substring
+    static func int indexOf(string str, string substring) {
+        if (isNullOrEmpty(str) || isNullOrEmpty(substring)) {
+            return -1;
+        }
+        
+        if (substring.length > str.length) {
+            return -1;
+        }
+        
+        for (int i = 0; i <= str.length - substring.length; i++) {
+            bool found = true;
+            for (int j = 0; j < substring.length; j++) {
+                if (str[i + j] != substring[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+    
+    /// Replace all occurrences of substring
+    static func string replace(string str, string oldValue, string newValue) {
+        if (isNullOrEmpty(str) || isNullOrEmpty(oldValue)) {
+            return str;
+        }
+        
+        if (newValue == null) {
+            newValue = "";
+        }
+        
+        // Simple implementation - would be optimized in real scenario
+        string result = str;
+        int index = indexOf(result, oldValue);
+        
+        while (index >= 0) {
+            string before = result.substring(0, index);
+            string after = result.substring(index + oldValue.length);
+            result = before + newValue + after;
+            index = indexOf(result, oldValue);
+        }
+        
+        return result;
+    }
+}
+
+/// StringBuilder-like functionality for efficient string building
+export class StringBuilder {
+    char[] buffer;
+    int capacity;
+    int length;
+    
+    func StringBuilder() {
+        capacity = 16;
+        buffer = new char[capacity];
+        length = 0;
+    }
+    
+    func StringBuilder(int initialCapacity) {
+        capacity = initialCapacity;
+        buffer = new char[capacity];
+        length = 0;
+    }
+    
+    /// Append a string
+    func StringBuilder append(string str) {
+        if (str == null) {
+            return this;
+        }
+        
+        ensureCapacity(length + str.length);
+        
+        for (int i = 0; i < str.length; i++) {
+            buffer[length + i] = str[i];
+        }
+        
+        length += str.length;
+        return this;
+    }
+    
+    /// Append a character
+    func StringBuilder append(char c) {
+        ensureCapacity(length + 1);
+        buffer[length] = c;
+        length++;
+        return this;
+    }
+    
+    /// Append a number
+    func StringBuilder append(int number) {
+        return append(number.toString());
+    }
+    
+    /// Ensure buffer has enough capacity
+    func void ensureCapacity(int requiredCapacity) {
+        if (requiredCapacity > capacity) {
+            int newCapacity = capacity * 2;
+            while (newCapacity < requiredCapacity) {
+                newCapacity *= 2;
+            }
+            
+            char[] newBuffer = new char[newCapacity];
+            for (int i = 0; i < length; i++) {
+                newBuffer[i] = buffer[i];
+            }
+            
+            buffer = newBuffer;
+            capacity = newCapacity;
+        }
+    }
+    
+    /// Convert to string
+    func string toString() {
+        return new string(buffer, 0, length);
+    }
+    
+    /// Clear the builder
+    func StringBuilder clear() {
+        length = 0;
+        return this;
+    }
+    
+    /// Get current length
+    func int getLength() {
+        return length;
+    }
+}
