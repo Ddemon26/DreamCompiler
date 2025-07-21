@@ -442,6 +442,7 @@ static Node *parse_func(Parser *p) {
   fn->as.func.body = body;
   fn->as.func.is_static = 0;
   fn->as.func.is_async = 0;
+  fn->as.func.is_public = 0; // Default to private
   return fn;
 }
 
@@ -480,6 +481,14 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
       next(p);
       continue;
     }
+    int is_public = 0; // Default to private
+    if (p->tok.kind == TK_KW_PUBLIC) {
+      is_public = 1;
+      next(p);
+    } else if (p->tok.kind == TK_KW_PRIVATE) {
+      is_public = 0; // Explicitly private (same as default)
+      next(p);
+    }
     int is_static = 0;
     if (p->tok.kind == TK_KW_STATIC) {
       is_static = 1;
@@ -488,12 +497,16 @@ static Node *parse_type_decl(Parser *p, NodeKind kind) {
     Node *m = NULL;
     if (p->tok.kind == TK_KW_FUNC) {
       m = parse_func(p);
-      if (m->kind == ND_FUNC)
+      if (m->kind == ND_FUNC) {
         m->as.func.is_static = is_static;
+        m->as.func.is_public = is_public;
+      }
     } else if (is_type_token(p->tok.kind) || (p->tok.kind == TK_IDENT && typevec_contains(p, p->tok))) {
       m = parse_var_decl(p);
-      if (m->kind == ND_VAR_DECL)
+      if (m->kind == ND_VAR_DECL) {
         m->as.var_decl.is_static = is_static;
+        m->as.var_decl.is_public = is_public;
+      }
     } else {
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected member declaration");
       next(p);

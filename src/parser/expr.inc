@@ -297,6 +297,7 @@ static Node *parse_var_decl(Parser *p) {
     n->as.var_decl.array_len = 0;
     n->as.var_decl.is_static = 0;
     n->as.var_decl.is_pointer = is_pointer;
+    n->as.var_decl.is_public = 0; // Default to private
     next(p);
     if (p->tok.kind == TK_LBRACKET) {
       next(p);

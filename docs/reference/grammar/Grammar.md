@@ -101,7 +101,8 @@ PredefinedType      ::= "int" | "bool" | "string" | "float" | "char"            
 ```ebnf
 ClassDeclaration    ::= "class" Identifier [ ":" Identifier ] "{" { ClassMemberDeclaration } "}"         // Implemented (inheritance added)
 StructDeclaration   ::= "struct" Identifier "{" { ClassMemberDeclaration } "}"        // Implemented
-ClassMemberDeclaration ::= FunctionDeclaration | VariableDeclaration | ";"            // Implemented
+ClassMemberDeclaration ::= [ AccessModifier ] ( FunctionDeclaration | VariableDeclaration ) | ";"  // Implemented
+AccessModifier      ::= "public" | "private"                                          // Implemented (default is private)
 ```
 
 #### 2.3.2 Function
@@ -227,7 +228,7 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write" | "ReadLine") Invoc
 ## 4 Future work (non‑normative)
 
 * Generics.
-* Access modifiers (`public`, `private`, …).
+* Additional access modifiers (`protected`, `internal`).
 * Attributes and annotations.
 * Modular compilation & namespaces.
 * Lambdas / delegates / events.

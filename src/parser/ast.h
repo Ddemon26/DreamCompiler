@@ -163,6 +163,7 @@ struct Node {
       size_t array_len; /**< Array length (0 if not an array). */
       int is_static;    /**< 1 if this is a static member field. */
       int is_pointer;   /**< 1 if this is a pointer type. */
+      int is_public;    /**< 1 if this is a public member (0 = private). */
     } var_decl;
     struct {
       Node *cond;    /**< Condition expression for ND_IF nodes. */
@@ -221,6 +222,7 @@ struct Node {
       Node *body;         /**< Function body. */
       int is_static;      /**< 1 if this is a static method. */
       int is_async;       /**< 1 if this is an async function. */
+      int is_public;      /**< 1 if this is a public method (0 = private). */
     } func;
     struct {
       Slice name;     /**< Name of the struct or class. */
