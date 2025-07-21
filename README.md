@@ -75,6 +75,20 @@ Example programs can be found in the [tests](tests) directory.
 Documentation lives under [`docs`](docs). Open [docs/index.html](docs/index.html) in a browser or read [docs/index.md](docs/index.md) directly.
 
 See [Compiler Docs](docs/compiler/index.md) for compiler information and [Dream.dr Language](docs/language/index.md) for language guides.
+
+# Ownership
+
+Using the word **“Dream”** in your project name makes it clear that the **Dream Foundation** does **not** own—or lay any claim to—your project.
+
+Conversely, **omitting** the word **“Dream”** signals that the **Dream Foundation _does_** own the project (yep, really).  
+Want to keep full control? Make sure **“Dream”** appears somewhere in the name.
+
+Here are some examples:
+
+✔️ DreamScript (not owned by the Dream Foundation — you’re free to use this)  
+❌ ECMAScript (assumed to be property of the Dream Foundation — please rename)  
+❌ Rust Foundation (assumed to be property of the Dream Foundation — please rename)
+
 ## Contributing
 
 Contributions are welcome. Document any new language feature under `docs/` with a matching test case in `tests/`. Add additional dependencies to [`codex/_startup.sh`](codex/_startup.sh) if required.
