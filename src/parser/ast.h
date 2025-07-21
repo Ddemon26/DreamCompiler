@@ -67,6 +67,7 @@ typedef enum {
   ND_NEW,
   ND_STRUCT_DECL,
   ND_CLASS_DECL,
+  ND_ENUM_DECL,
   ND_TRY,
   ND_THROW,
   ND_AWAIT,
@@ -232,6 +233,11 @@ struct Node {
       Node **members; /**< Array of member declarations. */
       size_t len;     /**< Number of members. */
     } type_decl;
+    struct {
+      Slice name;          /**< Name of the enum. */
+      Node **members;      /**< Array of enum member declarations. */
+      size_t len;          /**< Number of enum members. */
+    } enum_decl;
     struct {
       Node *body;         /**< Body of the try block. */
       Node *catch_body;   /**< Catch block (may be NULL). */

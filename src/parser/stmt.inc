@@ -468,6 +468,73 @@ static Node *parse_func(Parser *p) {
   return fn;
 }
 
+static Node *parse_enum_decl(Parser *p) {
+  Pos start_pos = p->tok.pos;
+  next(p); // consume 'enum'
+  if (p->tok.kind != TK_IDENT) {
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected enum name");
+    return node_new(p->arena, ND_ERROR);
+  }
+  Slice name = {p->tok.start, p->tok.len};
+  next(p);
+  
+  if (p->tok.kind != TK_LBRACE) {
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '{'");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p);
+  
+  Node **members = NULL;
+  size_t len = 0, cap = 0;
+  while (p->tok.kind != TK_RBRACE && p->tok.kind != TK_EOF) {
+    if (p->tok.kind == TK_COMMA) {
+      next(p);
+      continue;
+    }
+    if (p->tok.kind != TK_IDENT) {
+      diag_push(p, p->tok.pos, DIAG_ERROR, "expected enum member name");
+      break;
+    }
+    
+    // Create enum member as variable declaration
+    Node *member = node_new(p->arena, ND_VAR_DECL);
+    member->as.var_decl.name = (Slice){p->tok.start, p->tok.len};
+    member->as.var_decl.type = TK_KW_INT; // enum members are integers
+    next(p);
+    
+    // Optional value assignment
+    if (p->tok.kind == TK_EQ) {
+      next(p);
+      member->as.var_decl.init = parse_expr(p);
+    }
+    
+    if (len == cap) {
+      cap = cap ? cap * 2 : 4;
+      Node **new_members = arena_alloc(p->arena, cap * sizeof(Node*));
+      for (size_t i = 0; i < len; i++) new_members[i] = members[i];
+      members = new_members;
+    }
+    members[len++] = member;
+    
+    if (p->tok.kind == TK_COMMA) {
+      next(p);
+    }
+  }
+  
+  if (p->tok.kind != TK_RBRACE) {
+    diag_push(p, p->tok.pos, DIAG_ERROR, "expected '}'");
+    return node_new(p->arena, ND_ERROR);
+  }
+  next(p);
+  
+  Node *n = node_new(p->arena, ND_ENUM_DECL);
+  n->pos = start_pos;
+  n->as.enum_decl.name = name;
+  n->as.enum_decl.members = members;
+  n->as.enum_decl.len = len;
+  return n;
+}
+
 static Node *parse_type_decl(Parser *p, NodeKind kind) {
   Pos start_pos = p->tok.pos;
   next(p); // consume 'class' or 'struct'
@@ -706,6 +773,8 @@ static Node *parse_stmt(Parser *p) {
     n = parse_type_decl(p, ND_CLASS_DECL);
   } else if (p->tok.kind == TK_KW_STRUCT) {
     n = parse_type_decl(p, ND_STRUCT_DECL);
+  } else if (p->tok.kind == TK_KW_ENUM) {
+    n = parse_enum_decl(p);
   } else if (p->tok.kind == TK_KW_FUNC) {
     n = parse_func(p);
   } else if (p->tok.kind == TK_KW_ASYNC) {

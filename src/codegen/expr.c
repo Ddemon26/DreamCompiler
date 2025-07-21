@@ -318,6 +318,18 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     c_out_write(b, "])");
     break;
   case ND_FIELD: {
+    // Check for enum member access like VkResult.Success
+    if (n->as.field.object->kind == ND_IDENT) {
+      // Look up the object type to see if it's an enum
+      TokenKind obj_type = cgctx_lookup(ctx, n->as.field.object->as.ident.start,
+                                       n->as.field.object->as.ident.len);
+      if (obj_type == TK_KW_ENUM) {
+        // This is enum member access - just emit the member name
+        c_out_write(b, "%.*s", (int)n->as.field.name.len, n->as.field.name.start);
+        break;
+      }
+    }
+    
     Slice ty = expr_type(ctx, n->as.field.object);
     int is_var = 0;
     if (n->as.field.object->kind == ND_IDENT)

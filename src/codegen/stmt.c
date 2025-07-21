@@ -209,6 +209,37 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
   c_out_newline(b);
 }
 
+void emit_enum_decl(COut *b, Node *n, const char *src_file) {
+  c_out_write(b, "/* Dream enum %.*s with %zu member%s at line %zu */\n", 
+              (int)n->as.enum_decl.name.len, n->as.enum_decl.name.start,
+              n->as.enum_decl.len, n->as.enum_decl.len == 1 ? "" : "s", n->pos.line);
+  
+  c_out_write(b, "enum %.*s {", (int)n->as.enum_decl.name.len, n->as.enum_decl.name.start);
+  c_out_newline(b);
+  c_out_indent(b);
+  
+  for (size_t i = 0; i < n->as.enum_decl.len; i++) {
+    Node *member = n->as.enum_decl.members[i];
+    c_out_write(b, "%.*s", (int)member->as.var_decl.name.len, member->as.var_decl.name.start);
+    
+    if (member->as.var_decl.init) {
+      c_out_write(b, " = ");
+      CGCtx ctx = {0};
+      cg_emit_expr(&ctx, b, member->as.var_decl.init);
+    }
+    
+    if (i < n->as.enum_decl.len - 1) {
+      c_out_write(b, ",");
+    }
+    c_out_newline(b);
+  }
+  
+  c_out_dedent(b);
+  c_out_write(b, "};");
+  c_out_newline(b);
+  c_out_newline(b);
+}
+
 static void emit_func_impl(COut *b, Slice prefix, Node *n,
                            const char *src_file) {
   if (n->pos.line)

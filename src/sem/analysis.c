@@ -139,6 +139,15 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     return TK_KW_VOID; // null is compatible with pointer types
   case ND_IDENT:
     return analyze_ident(s, n);
+  case ND_FIELD:
+    // Handle field access, including enum member access
+    TokenKind object_type = analyze_expr(s, n->as.field.object);
+    if (object_type == TK_KW_ENUM) {
+      // This is enum member access like VkResult.Success
+      return TK_KW_INT; // enum members are integers
+    }
+    // Regular field access on objects
+    return TK_KW_INT; // Default for now
   case ND_BINOP:
     // Check for assignment to const variable
     if (n->as.bin.op == TK_EQ && n->as.bin.lhs->kind == ND_IDENT) {
@@ -271,6 +280,47 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
     analyze_stmt(s, n->as.func.body);
     s->current_ret = prev;
     s->scope = scope_pop(s->scope);
+    break;
+  }
+  case ND_ENUM_DECL: {
+    // Add enum type to symbol table
+    char *enum_name = slice_to_cstr(s, n->as.enum_decl.name);
+    Symbol *enum_sym = sym_intern(enum_name);
+    if (scope_lookup(s->scope, enum_sym)) {
+      diag_pushf(s, n->pos, DIAG_ERROR, "redefinition of enum '%s'", enum_name);
+      break;
+    }
+    
+    // Create enum type declaration
+    Decl *enum_decl = decl_new(s, DECL_VAR); // Use DECL_VAR for now
+    enum_decl->as.var.type = TK_KW_ENUM;
+    scope_bind(s->scope, enum_sym, enum_decl);
+    
+    // Add enum members to symbol table
+    int current_value = 0;
+    for (size_t i = 0; i < n->as.enum_decl.len; i++) {
+      Node *member = n->as.enum_decl.members[i];
+      char *member_name = slice_to_cstr(s, member->as.var_decl.name);
+      Symbol *member_sym = sym_intern(member_name);
+      
+      if (scope_lookup(s->scope, member_sym)) {
+        diag_pushf(s, member->pos, DIAG_ERROR, "redefinition of '%s'", member_name);
+        continue;
+      }
+      
+      // If member has explicit value, analyze it
+      if (member->as.var_decl.init) {
+        analyze_expr(s, member->as.var_decl.init);
+        // TODO: Extract constant value for current_value
+      }
+      
+      // Create member declaration
+      Decl *member_decl = decl_new(s, DECL_VAR);
+      member_decl->as.var.type = TK_KW_INT; // enum members are integers
+      scope_bind(s->scope, member_sym, member_decl);
+      
+      current_value++;
+    }
     break;
   }
   default:

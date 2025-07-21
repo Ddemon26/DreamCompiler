@@ -38,6 +38,9 @@ static bool has_async_functions(Node *n) {
         }
       }
       break;
+    case ND_ENUM_DECL:
+      // Enums don't have async functions
+      break;
     case ND_FUNC:
       if (has_async_functions(n->as.func.body)) {
         return true;
@@ -130,6 +133,8 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_STRUCT_DECL || it->kind == ND_CLASS_DECL)
       emit_type_decl(&builder, it, src_norm);
+    else if (it->kind == ND_ENUM_DECL)
+      emit_enum_decl(&builder, it, src_norm);
   }
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];

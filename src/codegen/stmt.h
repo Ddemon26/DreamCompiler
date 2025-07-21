@@ -12,6 +12,7 @@ extern "C" {
 
 void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file);
 void emit_type_decl(COut *b, Node *n, const char *src_file);
+void emit_enum_decl(COut *b, Node *n, const char *src_file);
 void emit_func(COut *b, Node *n, const char *src_file);
 void emit_method(COut *b, Slice class_name, Node *n, const char *src_file);
 
