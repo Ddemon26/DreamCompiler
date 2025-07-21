@@ -27,6 +27,9 @@ func int main() {
     return 0;
 }
 
+func something() {
+    // This is a placeholder function
+}
 // Function with no parameters
 func void printBanner() {
     Console.WriteLine("===================");

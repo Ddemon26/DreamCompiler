@@ -29,6 +29,11 @@ char *dream_concat_string_float(const char *str, float value);
 char *dream_concat_float_string(float value, const char *str);
 
 /**
+ * Concatenate two strings
+ */
+char *dream_concat(const char *str1, const char *str2);
+
+/**
  * Convert integer to string for concatenation
  */
 char *dream_int_to_string(int value);

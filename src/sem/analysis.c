@@ -154,6 +154,15 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     /* await expressions return TaskResult type */
     analyze_expr(s, n->as.await_expr.expr);
     return TK_KW_TASKRESULT;
+  case ND_INDEX:
+    /* Array access - return element type */
+    analyze_expr(s, n->as.index.index); /* Analyze index expression */
+    if (n->as.index.array->kind == ND_IDENT) {
+      TokenKind array_type = analyze_ident(s, n->as.index.array);
+      /* Array element has the same type as the array for primitive types */
+      return array_type;
+    }
+    return TK_KW_INT; /* Default fallback */
   default:
     return TK_KW_INT;
   }

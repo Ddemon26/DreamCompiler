@@ -1,0 +1,1 @@
+int x = 1; switch(x) { case 1: Console.WriteLine("one"); break; default: Console.WriteLine("other"); break; }

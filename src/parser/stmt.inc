@@ -223,7 +223,27 @@ static Node *parse_switch(Parser *p) {
       next(p);
     else
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected ':'");
-    Node *body = parse_stmt(p);
+    
+    // Parse multiple statements until next case/default/end
+    Node **stmts = NULL;
+    size_t stmt_len = 0, stmt_cap = 0;
+    while (p->tok.kind != TK_KW_CASE && 
+           p->tok.kind != TK_KW_DEFAULT && 
+           p->tok.kind != TK_RBRACE && 
+           p->tok.kind != TK_EOF) {
+      Node *stmt = parse_stmt(p);
+      if (stmt_len + 1 > stmt_cap) {
+        stmt_cap = stmt_cap ? stmt_cap * 2 : 4;
+        stmts = realloc(stmts, stmt_cap * sizeof(Node*));
+      }
+      stmts[stmt_len++] = stmt;
+    }
+    
+    // Create a block node containing all the statements
+    Node *body = node_new(p->arena, ND_BLOCK);
+    body->as.block.items = stmts;
+    body->as.block.len = stmt_len;
+    
     // Safeguard: ensure we advanced past the starting token
     if (p->tok.kind == start_tok.kind && p->tok.start == start_tok.start) {
       next(p);

@@ -55,7 +55,10 @@ const controlKwRegex = controlKeywords.join('|');
 const typeKeywords = ['int', 'string', 'bool', 'float', 'char', 'void'];
 const typeKwRegex = typeKeywords.join('|');
 
-const modifierKeywords = ['class', 'struct', 'static', 'new', 'func', 'var', 'let', 'base', 'using', 'import', 'module', 'export', 'async', 'await', 'Task', 'TaskResult'];
+const classKeywords = ['class', 'struct', 'enum'];  // JetBrains default class highlighting
+const classKwRegex = classKeywords.join('|');
+
+const modifierKeywords = ['public', 'private', 'static', 'new', 'func', 'var', 'let', 'base', 'using', 'import', 'module', 'export', 'async', 'await', 'Task', 'TaskResult'];
 const modifierKwRegex = modifierKeywords.join('|');
 
 const literalKeywords = ['true', 'false'];
@@ -73,6 +76,12 @@ const tokens = [
     regex: `\\b(${typeKwRegex})\\b`,
     flex: `\b(${typeKwRegex})\b`,
     scope: 'storage.type',
+  },
+  {
+    name: 'keywordClass',
+    regex: `\\b(${classKwRegex})\\b`,
+    flex: `\b(${classKwRegex})\b`,
+    scope: 'storage.type.class',
   },
   {
     name: 'keywordOther',
@@ -100,12 +109,12 @@ const tokens = [
   { name: 'commentBlock', regex: '/\\*[\\s\\S]*?\\*/', scope: 'comment.block' },
   // Special highlighting for Console methods
   { name: 'consoleFunction', regex: '\\b(Console)\\.(WriteLine|Write|ReadLine)\\b', scope: 'support.function' },
-  // Function declarations: func keyword followed by identifier
-  { name: 'functionName', regex: '\\bfunc\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b', scope: 'entity.name.function' },
-  // Function calls: identifier followed by parentheses
-  { name: 'functionCall', regex: '\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(', scope: 'entity.name.function.call' },
-  // Parameters in function definitions: type followed by identifier in parentheses
-  { name: 'parameter', regex: '\\b(int|string|bool|float|char|void)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b', scope: 'variable.parameter' },
+  // Function declarations: func [returnType] functionName - match function name properly
+  { name: 'functionDeclaration', regex: '\\bfunc\\s+(?:(?:int|string|bool|float|char|void)\\s+)?([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*\\()', scope: 'entity.name.function' },
+  // Function calls: identifier followed by parentheses (excluding func declarations)
+  { name: 'functionCall', regex: '(?<!\\bfunc\\s+)(?<!\\bfunc\\s+(?:int|string|bool|float|char|void)\\s+)\\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*\\()', scope: 'entity.name.function.call' },
+  // Parameter names: capture the identifier after type keywords in parameter context
+  { name: 'parameterName', regex: '\\b(?:int|string|bool|float|char|void)\\s+([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*[,)])', scope: 'variable.parameter' },
   {
     name: 'identifier',
     regex: `\\b${defs.IDENT}\\b`,
@@ -150,6 +159,8 @@ for(const t of tokens){
     pattern = `"${controlKeywords.join('"|"')}"`;
   } else if (t.name === 'keywordType') {
     pattern = `"${typeKeywords.join('"|"')}"`;
+  } else if (t.name === 'keywordClass') {
+    pattern = `"${classKeywords.join('"|"')}"`;
   } else if (t.name === 'keywordOther') {
     pattern = `"${modifierKeywords.join('"|"')}"`;
   } else if (t.name === 'keywordLiteral') {
@@ -168,11 +179,13 @@ for(const t of tokens){
     pattern = '"/*"[^]*?"*/"';
   } else if (t.name === 'consoleFunction') {
     pattern = 'Console.WriteLine|Console.Write|Console.ReadLine';
-  } else if (t.name === 'functionName') {
-    pattern = 'func[ \\t]+[a-zA-Z_][a-zA-Z0-9_]*';
+  } else if (t.name === 'functionDeclaration') {
+    // JFlex doesn't support complex lookbehinds, so use simpler pattern
+    pattern = '"func"[ \\t]+((int|string|bool|float|char|void)[ \\t]+)?[a-zA-Z_][a-zA-Z0-9_]*[ \\t]*/"("';
   } else if (t.name === 'functionCall') {
-    pattern = '[a-zA-Z_][a-zA-Z0-9_]*[ \\t]*"("';
-  } else if (t.name === 'parameter') {
+    // Simple function call pattern for JFlex
+    pattern = '[a-zA-Z_][a-zA-Z0-9_]*[ \\t]*/"("';
+  } else if (t.name === 'parameterName') {
     pattern = '(int|string|bool|float|char|void)[ \\t]+[a-zA-Z_][a-zA-Z0-9_]*';
   } else if (t.name === 'identifier') {
     pattern = '[a-zA-Z_][a-zA-Z0-9_]*';

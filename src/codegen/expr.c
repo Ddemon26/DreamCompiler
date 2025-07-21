@@ -168,6 +168,14 @@ int cg_is_string_expr(CGCtx *ctx, Node *n) {
              (lhs_is_float && rhs_is_string);
     }
     return 0;
+  case ND_INDEX:
+    // Array access - check if the array is a string array
+    if (n->as.index.array->kind == ND_IDENT) {
+      TokenKind array_type = cgctx_lookup(ctx, n->as.index.array->as.ident.start, 
+                                          n->as.index.array->as.ident.len);
+      return array_type == TK_KW_STRING;
+    }
+    return 0;
   default:
     return 0;
   }

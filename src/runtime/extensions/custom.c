@@ -3,6 +3,17 @@
 
 int dr_custom_value(void) { return 42; }
 
+char *dream_concat(const char *str1, const char *str2) {
+    size_t len1 = strlen(str1);
+    size_t len2 = strlen(str2);
+    char *result = dr_alloc(len1 + len2 + 1);
+    
+    strcpy(result, str1);
+    strcat(result, str2);
+    
+    return result;
+}
+
 char *dream_int_to_string(int value) {
     // Allocate enough space for largest int + null terminator
     char *result = dr_alloc(32);
