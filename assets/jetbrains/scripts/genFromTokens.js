@@ -155,13 +155,13 @@ for(const t of tokens){
   } else if (t.name === 'char') {
     pattern = "'([^'\\n]|\\\\.)'"
   } else if (t.name === 'commentDoc') {
-    pattern = '"/**"[^]*?"*/"\\n"///"[^\\r\\n]*';
+    pattern = '"/**"[^]*?"*/"|"///"[^\\r\\n]*';
   } else if (t.name === 'comment') {
     pattern = '"//"[^\\r\\n]*';
   } else if (t.name === 'commentBlock') {
     pattern = '"/*"[^]*?"*/"';
   } else if (t.name === 'consoleFunction') {
-    pattern = '"Console"."WriteLine"|"Console"."Write"|"Console"."ReadLine"';
+    pattern = 'Console.WriteLine|Console.Write|Console.ReadLine';
   } else if (t.name === 'identifier') {
     pattern = '[a-zA-Z_][a-zA-Z0-9_]*';
   } else if (t.name.startsWith('operator')) {

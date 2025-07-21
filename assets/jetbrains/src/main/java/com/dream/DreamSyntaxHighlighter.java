@@ -41,6 +41,10 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey PAREN = TextAttributesKey.createTextAttributesKey("DREAM_PAREN", DefaultLanguageHighlighterColors.PARENTHESES);
     public static final TextAttributesKey BRACE = TextAttributesKey.createTextAttributesKey("DREAM_BRACE", DefaultLanguageHighlighterColors.BRACES);
     public static final TextAttributesKey BRACKET = TextAttributesKey.createTextAttributesKey("DREAM_BRACKET", DefaultLanguageHighlighterColors.BRACKETS);
+    public static final TextAttributesKey IDENTIFIER = TextAttributesKey.createTextAttributesKey("DREAM_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER);
+    public static final TextAttributesKey FUNCTION_DECLARATION = TextAttributesKey.createTextAttributesKey("DREAM_FUNCTION_DECLARATION", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION);
+    public static final TextAttributesKey CLASS_NAME = TextAttributesKey.createTextAttributesKey("DREAM_CLASS_NAME", DefaultLanguageHighlighterColors.CLASS_NAME);
+    public static final TextAttributesKey LOCAL_VARIABLE = TextAttributesKey.createTextAttributesKey("DREAM_LOCAL_VARIABLE", DefaultLanguageHighlighterColors.LOCAL_VARIABLE);
 
     private static final TextAttributesKey[] KEYWORD_KEYS = pack(KEYWORD);
     private static final TextAttributesKey[] KEYWORDTYPE_KEYS = pack(KEYWORDTYPE);
@@ -64,6 +68,10 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TextAttributesKey[] PAREN_KEYS = pack(PAREN);
     private static final TextAttributesKey[] BRACE_KEYS = pack(BRACE);
     private static final TextAttributesKey[] BRACKET_KEYS = pack(BRACKET);
+    private static final TextAttributesKey[] IDENTIFIER_KEYS = pack(IDENTIFIER);
+    private static final TextAttributesKey[] FUNCTION_DECLARATION_KEYS = pack(FUNCTION_DECLARATION);
+    private static final TextAttributesKey[] CLASS_NAME_KEYS = pack(CLASS_NAME);
+    private static final TextAttributesKey[] LOCAL_VARIABLE_KEYS = pack(LOCAL_VARIABLE);
 
     @NotNull
     @Override
@@ -92,6 +100,7 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
         if (tokenType == DreamTokenTypes.PAREN) return PAREN_KEYS;
         if (tokenType == DreamTokenTypes.BRACE) return BRACE_KEYS;
         if (tokenType == DreamTokenTypes.BRACKET) return BRACKET_KEYS;
+        if (tokenType == DreamTokenTypes.IDENTIFIER) return IDENTIFIER_KEYS;
         return TextAttributesKey.EMPTY_ARRAY;
     }
 }

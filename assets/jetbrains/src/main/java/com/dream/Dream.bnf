@@ -1,0 +1,217 @@
+{
+  parserClass="com.dream.parser.DreamParser"
+  
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+  
+  psiClassPrefix="Dream"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.dream.psi"
+  psiImplPackage="com.dream.psi.impl"
+  
+  elementTypeHolderClass="com.dream.psi.DreamTypes"
+  elementTypeClass="com.dream.psi.DreamElementType"
+  tokenTypeClass="com.dream.psi.DreamTokenType"
+  
+  psiImplUtilClass="com.dream.psi.impl.DreamPsiImplUtil"
+  
+  tokens = [
+    // Keywords
+    BREAK='break'
+    BOOL='bool'
+    CASE='case'
+    CHAR='char'
+    CLASS='class'
+    STRUCT='struct'
+    CONTINUE='continue'
+    DEFAULT='default'
+    DO='do'
+    ELSE='else'
+    FALSE='false'
+    FLOAT='float'
+    FOR='for'
+    FUNC='func'
+    IF='if'
+    INT='int'
+    RETURN='return'
+    STRING='string'
+    SWITCH='switch'
+    TRUE='true'
+    WHILE='while'
+    MODULE='module'
+    IMPORT='import'
+    USING='using'
+    EXPORT='export'
+    VOID='void'
+    TRY='try'
+    CATCH='catch'
+    THROW='throw'
+    
+    // Console functions
+    CONSOLE='Console'
+    
+    // Operators
+    PLUS='+'
+    MINUS='-'
+    MULTIPLY='*'
+    DIVIDE='/'
+    MODULO='%'
+    ASSIGN='='
+    EQUAL='=='
+    NOT_EQUAL='!='
+    LESS_THAN='<'
+    LESS_EQUAL='<='
+    GREATER_THAN='>'
+    GREATER_EQUAL='>='
+    LOGICAL_AND='&&'
+    LOGICAL_OR='||'
+    LOGICAL_NOT='!'
+    BITWISE_AND='&'
+    BITWISE_OR='|'
+    BITWISE_XOR='^'
+    BITWISE_NOT='~'
+    LEFT_SHIFT='<<'
+    RIGHT_SHIFT='>>'
+    INCREMENT='++'
+    DECREMENT='--'
+    PLUS_ASSIGN='+='
+    MINUS_ASSIGN='-='
+    MULTIPLY_ASSIGN='*='
+    DIVIDE_ASSIGN='/='
+    MODULO_ASSIGN='%='
+    QUESTION='?'
+    COLON=':'
+    
+    // Punctuation
+    SEMICOLON=';'
+    COMMA=','
+    DOT='.'
+    LEFT_PAREN='('
+    RIGHT_PAREN=')'
+    LEFT_BRACE='{'
+    RIGHT_BRACE='}'
+    LEFT_BRACKET='['
+    RIGHT_BRACKET=']'
+    
+    // Literals
+    NUMBER='regexp:\d+(\.\d+)?([eE][+-]?\d+)?[fFdD]?'
+    STRING_LITERAL='regexp:"([^"\\]|\\.)*"'
+    CHAR_LITERAL="regexp:'([^'\\]|\\.)?'"
+    IDENTIFIER='regexp:[a-zA-Z_][a-zA-Z0-9_]*'
+    
+    // Comments
+    LINE_COMMENT='regexp://.*'
+    BLOCK_COMMENT='regexp:/\*.*?\*/'
+    
+    // Whitespace
+    WHITE_SPACE='regexp:\s+'
+  ]
+}
+
+// Grammar rules start here
+compilationUnit ::= moduleDirective* importDirective* topLevelDeclaration*
+
+moduleDirective ::= MODULE IDENTIFIER SEMICOLON
+importDirective ::= (IMPORT | USING) modulePath SEMICOLON
+modulePath ::= IDENTIFIER (DOT IDENTIFIER)*
+
+topLevelDeclaration ::= classDeclaration | functionDeclaration | globalVariableDeclaration | exportDeclaration
+
+exportDeclaration ::= EXPORT (functionDeclaration | classDeclaration | globalVariableDeclaration)
+
+// Types
+type ::= predefinedType | IDENTIFIER
+predefinedType ::= INT | BOOL | STRING | FLOAT | CHAR | VOID
+
+// Class and Struct declarations
+classDeclaration ::= CLASS IDENTIFIER (COLON IDENTIFIER)? LEFT_BRACE classMemberDeclaration* RIGHT_BRACE
+structDeclaration ::= STRUCT IDENTIFIER LEFT_BRACE classMemberDeclaration* RIGHT_BRACE
+classMemberDeclaration ::= functionDeclaration | variableDeclaration | SEMICOLON
+
+// Function declarations
+functionDeclaration ::= FUNC type? IDENTIFIER LEFT_PAREN parameterList? RIGHT_PAREN block
+parameterList ::= parameter (COMMA parameter)*
+parameter ::= type IDENTIFIER
+
+// Variable declarations
+globalVariableDeclaration ::= variableDeclaration
+variableDeclaration ::= type variableDeclarator (COMMA variableDeclarator)* SEMICOLON
+variableDeclarator ::= IDENTIFIER (LEFT_BRACKET NUMBER RIGHT_BRACKET)? (ASSIGN expression)?
+
+// Statements
+statement ::= block
+           | variableDeclaration
+           | ifStatement
+           | whileStatement
+           | doStatement
+           | forStatement
+           | switchStatement
+           | tryStatement
+           | breakStatement
+           | continueStatement
+           | returnStatement
+           | throwStatement
+           | expressionStatement
+
+block ::= LEFT_BRACE statement* RIGHT_BRACE
+
+ifStatement ::= IF LEFT_PAREN expression RIGHT_PAREN statement (ELSE statement)?
+whileStatement ::= WHILE LEFT_PAREN expression RIGHT_PAREN statement
+doStatement ::= DO statement WHILE LEFT_PAREN expression RIGHT_PAREN SEMICOLON
+forStatement ::= FOR LEFT_PAREN forInit? SEMICOLON expression? SEMICOLON forUpdate? RIGHT_PAREN statement
+forInit ::= variableDeclaration | expressionList
+forUpdate ::= expressionList
+expressionList ::= expression (COMMA expression)*
+
+switchStatement ::= SWITCH LEFT_PAREN expression RIGHT_PAREN LEFT_BRACE switchSection* RIGHT_BRACE
+switchSection ::= (CASE constantExpression COLON | DEFAULT COLON) statement*
+
+tryStatement ::= TRY block catchClause*
+catchClause ::= CATCH LEFT_PAREN type? IDENTIFIER? RIGHT_PAREN block
+
+breakStatement ::= BREAK SEMICOLON
+continueStatement ::= CONTINUE SEMICOLON
+returnStatement ::= RETURN expression? SEMICOLON
+throwStatement ::= THROW expression SEMICOLON
+expressionStatement ::= expression SEMICOLON
+
+// Expressions (operator precedence)
+expression ::= assignmentExpression
+
+assignmentExpression ::= conditionalExpression (assignmentOperator assignmentExpression)?
+assignmentOperator ::= ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN
+
+conditionalExpression ::= logicalOrExpression (QUESTION expression COLON conditionalExpression)?
+
+logicalOrExpression ::= logicalAndExpression (LOGICAL_OR logicalAndExpression)*
+logicalAndExpression ::= bitwiseOrExpression (LOGICAL_AND bitwiseOrExpression)*
+bitwiseOrExpression ::= bitwiseXorExpression (BITWISE_OR bitwiseXorExpression)*
+bitwiseXorExpression ::= bitwiseAndExpression (BITWISE_XOR bitwiseAndExpression)*
+bitwiseAndExpression ::= equalityExpression (BITWISE_AND equalityExpression)*
+equalityExpression ::= relationalExpression ((EQUAL | NOT_EQUAL) relationalExpression)*
+relationalExpression ::= shiftExpression ((LESS_THAN | LESS_EQUAL | GREATER_THAN | GREATER_EQUAL) shiftExpression)*
+shiftExpression ::= additiveExpression ((LEFT_SHIFT | RIGHT_SHIFT) additiveExpression)*
+additiveExpression ::= multiplicativeExpression ((PLUS | MINUS) multiplicativeExpression)*
+multiplicativeExpression ::= unaryExpression ((MULTIPLY | DIVIDE | MODULO) unaryExpression)*
+
+unaryExpression ::= (PLUS | MINUS | LOGICAL_NOT | BITWISE_NOT | INCREMENT | DECREMENT) unaryExpression
+                 | postfixExpression
+
+postfixExpression ::= primaryExpression postfixPart*
+postfixPart ::= INCREMENT | DECREMENT | memberAccess | invocation | arrayAccess
+
+memberAccess ::= DOT IDENTIFIER
+invocation ::= LEFT_PAREN argumentList? RIGHT_PAREN
+arrayAccess ::= LEFT_BRACKET expression RIGHT_BRACKET
+argumentList ::= expression (COMMA expression)*
+
+primaryExpression ::= literal
+                   | IDENTIFIER
+                   | LEFT_PAREN expression RIGHT_PAREN
+                   | consoleCall
+
+consoleCall ::= CONSOLE DOT (IDENTIFIER) invocation
+
+// Literals
+literal ::= NUMBER | STRING_LITERAL | CHAR_LITERAL | booleanLiteral
+booleanLiteral ::= TRUE | FALSE
+constantExpression ::= expression

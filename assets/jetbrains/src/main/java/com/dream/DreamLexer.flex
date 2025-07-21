@@ -18,10 +18,10 @@ package com.dream;
   [0-9]+\.[0-9]+|[0-9]+ { return DreamTokenTypes.NUMBER; }
   \"([^\\\"\n]|\\.)*\" { return DreamTokenTypes.STRING; }
   '([^'\n]|\\.)' { return DreamTokenTypes.CHAR; }
-  "/**"[^]*?"*/"\n"///"[^\r\n]* { return DreamTokenTypes.COMMENTDOC; }
+  "/**"[^]*?"*/"|"///"[^\r\n]* { return DreamTokenTypes.COMMENTDOC; }
   "//"[^\r\n]* { return DreamTokenTypes.COMMENT; }
   "/*"[^]*?"*/" { return DreamTokenTypes.COMMENTBLOCK; }
-  "Console"."WriteLine"|"Console"."Write"|"Console"."ReadLine" { return DreamTokenTypes.CONSOLEFUNCTION; }
+  Console.WriteLine|Console.Write|Console.ReadLine { return DreamTokenTypes.CONSOLEFUNCTION; }
   [a-zA-Z_][a-zA-Z0-9_]* { return DreamTokenTypes.IDENTIFIER; }
   "\+\+"|"--"|"\+="|"-="|"\*="|"/="|"%="|"\+"|"-"|"\*"|"/"|"%" { return DreamTokenTypes.OPERATORARITHMETIC; }
   "&="|"\|="|"\^="|"<<="|">>="|"&"|"\|"|"\^"|"<<"|">>"|"~" { return DreamTokenTypes.OPERATORBITWISE; }

@@ -11,12 +11,14 @@
               implementationClass="com.dream.DreamFileType"
               fieldName="INSTANCE"
               language="dream"
-              extensions="dr"
-              icon="/icons/DreamScriptLogo.svg"/>
+              extensions="dr"/>
+    <lang.parserDefinition language="dream" implementationClass="com.dream.DreamParserDefinition"/>
     <lang.syntaxHighlighterFactory language="dream" implementationClass="com.dream.DreamSyntaxHighlighterFactory"/>
+    <completion.contributor language="dream" implementationClass="com.dream.DreamCompletionContributor"/>
+    <lang.documentationProvider language="dream" implementationClass="com.dream.DreamDocumentationProvider"/>
     <colorSettingsPage implementation="com.dream.DreamColorSettingsPage"/>
     <codeStyleSettingsProvider implementation="com.dream.DreamCodeStyleSettingsProvider"/>
     <langCodeStyleSettingsProvider implementation="com.dream.DreamLanguageCodeStyleSettingsProvider"/>
-  <runConfigurationType implementation="com.dream.DreamRunConfigurationType"/>
+    <runConfigurationType implementation="com.dream.DreamRunConfigurationType"/>
   </extensions>
 </idea-plugin>

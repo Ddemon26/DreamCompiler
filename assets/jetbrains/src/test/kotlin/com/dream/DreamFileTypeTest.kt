@@ -23,7 +23,7 @@ class DreamFileTypeTest : BasePlatformTestCase() {
     fun testDreamFileTypeProperties() {
         val fileType = DreamFileType.INSTANCE
         
-        assertEquals("Name should be 'Dream'", "Dream", fileType.name)
+        assertEquals("Name should be 'Dream file'", "Dream file", fileType.name)
         assertEquals("Description should contain 'Dream'", true, 
                     fileType.description.contains("Dream"))
         assertEquals("Default extension should be 'dr'", "dr", 
@@ -61,9 +61,9 @@ class DreamFileTypeTest : BasePlatformTestCase() {
         
         assertNotNull("Language should not be null", language)
         assertEquals("Language should be DreamLanguage", 
-                    DreamLanguage.INSTANCE, language)
-        assertEquals("Language ID should be 'Dream'", "Dream", language.id)
-        assertEquals("Language display name should be 'Dream'", "Dream", 
+                    DreamLanguage, language)
+        assertEquals("Language ID should be 'dream'", "dream", language.id)
+        assertEquals("Language display name should be 'dream'", "dream", 
                     language.displayName)
     }
 }

@@ -4,7 +4,13 @@ import com.intellij.openapi.fileTypes.LanguageFileType
 import icons.MyIcons
 import javax.swing.Icon
 
-object DreamFileType : LanguageFileType(DreamLanguage) {
+class DreamFileType : LanguageFileType(DreamLanguage) {
+    
+    companion object {
+        @JvmField
+        val INSTANCE = DreamFileType()
+    }
+    
     override fun getName() = "Dream file"
     override fun getDescription() = "Dream language file"
     override fun getDefaultExtension() = "dr"

@@ -4,7 +4,6 @@ plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.24"
     id("org.jetbrains.intellij") version "1.17.2"
-    id("org.jetbrains.grammarkit") version "2022.3.2"
 }
 
 repositories {
@@ -48,16 +47,14 @@ tasks {
         untilBuild.set("251.*")
     }
 
-    withType<org.jetbrains.grammarkit.tasks.GenerateLexerTask> {
-        sourceFile.set(file("src/main/java/com/dream/DreamLexer.flex"))
-        targetDir.set("src/main/java/com/dream")
-        targetClass.set("DreamLexer")
-        purgeOldFiles.set(true)
-        dependsOn(generateTokens)
-    }
+    // Note: Manual lexer is used, no generation needed for now
 }
 
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    dependsOn("generateLexer")
+    dependsOn("generateTokens")
+}
+
+tasks.withType<JavaCompile> {
+    dependsOn("generateTokens")
 }
