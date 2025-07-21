@@ -138,6 +138,7 @@ static Node *parse_for(Parser *p) {
       init->as.var_decl.type = type_tok;
       init->as.var_decl.name.start = p->tok.start;
       init->as.var_decl.name.len = p->tok.len;
+      init->as.var_decl.is_const = 0; // For loop variables are not const by default
       next(p);
       if (p->tok.kind == TK_EQ) {
         next(p);
@@ -439,6 +440,7 @@ static Node *parse_func(Parser *p) {
       vd->as.var_decl.init = NULL;
       vd->as.var_decl.array_len = 0;
       vd->as.var_decl.is_pointer = param_is_pointer;
+      vd->as.var_decl.is_const = 0; // Function parameters are not const by default
       next(p);
       nodevec_push(&params, &len, &cap, vd);
       if (p->tok.kind == TK_COMMA) {
@@ -719,6 +721,8 @@ static Node *parse_stmt(Parser *p) {
       next(p);
       n = node_new(p->arena, ND_ERROR);
     }
+  } else if (p->tok.kind == TK_KW_CONST) {
+    n = parse_var_decl(p);
   } else if (is_type_token(p->tok.kind)) {
     n = parse_var_decl(p);
   } else if (p->tok.kind == TK_IDENT && typevec_contains(p, p->tok)) {

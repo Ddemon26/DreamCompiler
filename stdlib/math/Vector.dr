@@ -1,0 +1,57 @@
+package Math;
+
+public class Vector {
+    public float x;
+    public float y;
+    public float z;
+
+    public Vector(float x, float y, float z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public float Magnitude() {
+        return sqrt(x * x + y * y + z * z);
+    }
+
+    public Vector Normalize() {
+        float magnitude = Magnitude();
+        if (magnitude == 0) {
+            throw "Cannot normalize a zero vector.";
+        }
+        return new Vector(x / magnitude, y / magnitude, z / magnitude);
+    }
+
+    public float Dot(Vector other) {
+        return x * other.x + y * other.y + z * other.z;
+    }
+
+    public Vector Cross(Vector other) {
+        return new Vector(
+            y * other.z - z * other.y,
+            z * other.x - x * other.z,
+            x * other.y - y * other.x
+        );
+    }
+
+    public Vector Add(Vector other) {
+        return new Vector(x + other.x, y + other.y, z + other.z);
+    }
+
+    public Vector Subtract(Vector other) {
+        return new Vector(x - other.x, y - other.y, z - other.z);
+    }
+
+    public Vector Scale(float scalar) {
+        return new Vector(x * scalar, y * scalar, z * scalar);
+    }
+
+    public float Distance(Vector other) {
+        return sqrt((x - other.x) * (x - other.x) + (y - other.y) * (y - other.y) + (z - other.z) * (z - other.z));
+    }
+
+    public bool Equals(Vector other) {
+        return x == other.x && y == other.y && z == other.z;
+    }
+}

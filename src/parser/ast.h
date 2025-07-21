@@ -164,6 +164,7 @@ struct Node {
       int is_static;    /**< 1 if this is a static member field. */
       int is_pointer;   /**< 1 if this is a pointer type. */
       int is_public;    /**< 1 if this is a public member (0 = private). */
+      int is_const;     /**< 1 if this is a const variable. */
     } var_decl;
     struct {
       Node *cond;    /**< Condition expression for ND_IF nodes. */

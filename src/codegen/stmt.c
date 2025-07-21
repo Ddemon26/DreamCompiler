@@ -457,6 +457,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   switch (n->kind) {
   case ND_VAR_DECL:
     if (n->as.var_decl.array_len > 0) {
+      if (n->as.var_decl.is_const) {
+        c_out_write(b, "const ");
+      }
       emit_type_with_pointer(b, n->as.var_decl.type, n->as.var_decl.type_name, n->as.var_decl.is_pointer);
       c_out_write(b, " %.*s[%zu]", (int)n->as.var_decl.name.len,
                   n->as.var_decl.name.start, n->as.var_decl.array_len);
@@ -465,6 +468,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         cg_emit_expr(ctx, b, n->as.var_decl.init);
       }
     } else {
+      if (n->as.var_decl.is_const) {
+        c_out_write(b, "const ");
+      }
       emit_type_with_pointer(b, n->as.var_decl.type, n->as.var_decl.type_name, n->as.var_decl.is_pointer);
       c_out_write(b, " %.*s", (int)n->as.var_decl.name.len,
                   n->as.var_decl.name.start);
@@ -513,6 +519,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       if (n->as.for_stmt.init->kind == ND_VAR_DECL) {
         Node *vd = n->as.for_stmt.init;
         if (vd->as.var_decl.array_len > 0) {
+          if (vd->as.var_decl.is_const) {
+            c_out_write(b, "const ");
+          }
           emit_type(b, vd->as.var_decl.type, vd->as.var_decl.type_name);
           c_out_write(b, " %.*s[%zu]", (int)vd->as.var_decl.name.len,
                       vd->as.var_decl.name.start, vd->as.var_decl.array_len);
@@ -521,6 +530,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
             cg_emit_expr(ctx, b, vd->as.var_decl.init);
           }
         } else {
+          if (vd->as.var_decl.is_const) {
+            c_out_write(b, "const ");
+          }
           emit_type(b, vd->as.var_decl.type, vd->as.var_decl.type_name);
           c_out_write(b, " %.*s", (int)vd->as.var_decl.name.len,
                       vd->as.var_decl.name.start);

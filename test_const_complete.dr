@@ -1,0 +1,9 @@
+const int MAX_SIZE = 100;
+const string GREETING = "Hello, World!";
+
+func void testConst() {
+    const float PI = 3.14159;
+    Console.WriteLine("MAX_SIZE: ");
+}
+
+testConst();

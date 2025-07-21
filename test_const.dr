@@ -1,0 +1,29 @@
+// Test const feature
+const int MAX_SIZE = 100;
+const string GREETING = "Hello, World!";
+
+func void testConst() {
+    const float PI = 3.14159;
+    
+    Console.WriteLine("MAX_SIZE: " + MAX_SIZE);
+    Console.WriteLine("GREETING: " + GREETING);
+    Console.WriteLine("PI: " + PI);
+    
+    // This should cause a compilation error in semantic analysis
+    // PI = 2.71; // Error: cannot assign to const variable 'PI'
+}
+
+func void testClass() {
+    class TestClass {
+        public int value;
+        public const string name = "TestClass";
+    }
+    
+    struct Point {
+        int x;
+        int y;
+    }
+}
+
+testConst();
+testClass();

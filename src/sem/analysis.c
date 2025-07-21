@@ -66,6 +66,7 @@ struct Decl {
   union {
     struct {
       TokenKind type;
+      int is_const;
     } var;
     struct {
       TokenKind ret_type;
@@ -137,6 +138,15 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
   case ND_IDENT:
     return analyze_ident(s, n);
   case ND_BINOP:
+    // Check for assignment to const variable
+    if (n->as.bin.op == TK_EQ && n->as.bin.lhs->kind == ND_IDENT) {
+      char *name = slice_to_cstr(s, n->as.bin.lhs->as.ident);
+      Symbol *sym = sym_intern(name);
+      Decl *d = scope_lookup(s->scope, sym);
+      if (d && d->kind == DECL_VAR && d->as.var.is_const) {
+        diag_pushf(s, n->pos, DIAG_ERROR, "cannot assign to const variable '%s'", name);
+      }
+    }
     analyze_expr(s, n->as.bin.lhs);
     analyze_expr(s, n->as.bin.rhs);
     return TK_KW_INT;
@@ -188,6 +198,7 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
     }
     Decl *d = decl_new(s, DECL_VAR);
     d->as.var.type = n->as.var_decl.type;
+    d->as.var.is_const = n->as.var_decl.is_const;
     scope_bind(s->scope, sym, d);
     if (n->as.var_decl.init) {
       TokenKind it = analyze_expr(s, n->as.var_decl.init);
@@ -250,6 +261,7 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
       Symbol *ps = sym_intern(pname);
       Decl *pd = decl_new(s, DECL_VAR);
       pd->as.var.type = param->as.var_decl.type;
+      pd->as.var.is_const = param->as.var_decl.is_const;
       scope_bind(s->scope, ps, pd);
     }
     TokenKind prev = s->current_ret;

@@ -58,7 +58,7 @@ const typeKwRegex = typeKeywords.join('|');
 const classKeywords = ['class', 'struct', 'enum'];  // JetBrains default class highlighting
 const classKwRegex = classKeywords.join('|');
 
-const modifierKeywords = ['public', 'private', 'static', 'new', 'func', 'var', 'let', 'base', 'using', 'import', 'module', 'export', 'async', 'await', 'Task', 'TaskResult'];
+const modifierKeywords = ['public', 'private', 'static', 'const', 'new', 'func', 'var', 'let', 'base', 'using', 'import', 'module', 'export', 'async', 'await', 'Task', 'TaskResult'];
 const modifierKwRegex = modifierKeywords.join('|');
 
 const literalKeywords = ['true', 'false'];
@@ -109,12 +109,14 @@ const tokens = [
   { name: 'commentBlock', regex: '/\\*[\\s\\S]*?\\*/', scope: 'comment.block' },
   // Special highlighting for Console methods
   { name: 'consoleFunction', regex: '\\b(Console)\\.(WriteLine|Write|ReadLine)\\b', scope: 'support.function' },
+  // Class/struct declarations: class|struct ClassName
+  { name: 'classDeclaration', regex: '\\b(?:class|struct)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b', scope: 'entity.name.type.class' },
   // Function declarations: func [returnType] functionName - match function name properly
-  { name: 'functionDeclaration', regex: '\\bfunc\\s+(?:(?:int|string|bool|float|char|void)\\s+)?([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*\\()', scope: 'entity.name.function' },
+  { name: 'functionDeclaration', regex: '\\bfunc\\s+(?:(?:int|string|bool|float|char|void|const)\\s+)?([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*\\()', scope: 'entity.name.function' },
   // Function calls: identifier followed by parentheses (excluding func declarations)
-  { name: 'functionCall', regex: '(?<!\\bfunc\\s+)(?<!\\bfunc\\s+(?:int|string|bool|float|char|void)\\s+)\\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*\\()', scope: 'entity.name.function.call' },
+  { name: 'functionCall', regex: '(?<!\\bfunc\\s+)(?<!\\bfunc\\s+(?:int|string|bool|float|char|void|const)\\s+)\\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*\\()', scope: 'entity.name.function.call' },
   // Parameter names: capture the identifier after type keywords in parameter context
-  { name: 'parameterName', regex: '\\b(?:int|string|bool|float|char|void)\\s+([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*[,)])', scope: 'variable.parameter' },
+  { name: 'parameterName', regex: '\\b(?:const\\s+)?(?:int|string|bool|float|char|void)\\s+([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*[,)])', scope: 'variable.parameter' },
   {
     name: 'identifier',
     regex: `\\b${defs.IDENT}\\b`,
@@ -179,14 +181,17 @@ for(const t of tokens){
     pattern = '"/*"[^]*?"*/"';
   } else if (t.name === 'consoleFunction') {
     pattern = 'Console.WriteLine|Console.Write|Console.ReadLine';
+  } else if (t.name === 'classDeclaration') {
+    // Class/struct declaration pattern for JFlex
+    pattern = '(class|struct)[ \\t]+[a-zA-Z_][a-zA-Z0-9_]*';
   } else if (t.name === 'functionDeclaration') {
     // JFlex doesn't support complex lookbehinds, so use simpler pattern
-    pattern = '"func"[ \\t]+((int|string|bool|float|char|void)[ \\t]+)?[a-zA-Z_][a-zA-Z0-9_]*[ \\t]*/"("';
+    pattern = '"func"[ \\t]+((int|string|bool|float|char|void|const)[ \\t]+)?[a-zA-Z_][a-zA-Z0-9_]*[ \\t]*/"("';
   } else if (t.name === 'functionCall') {
     // Simple function call pattern for JFlex
     pattern = '[a-zA-Z_][a-zA-Z0-9_]*[ \\t]*/"("';
   } else if (t.name === 'parameterName') {
-    pattern = '(int|string|bool|float|char|void)[ \\t]+[a-zA-Z_][a-zA-Z0-9_]*';
+    pattern = '(const[ \\t]+)?(int|string|bool|float|char|void)[ \\t]+[a-zA-Z_][a-zA-Z0-9_]*';
   } else if (t.name === 'identifier') {
     pattern = '[a-zA-Z_][a-zA-Z0-9_]*';
   } else if (t.name.startsWith('operator')) {

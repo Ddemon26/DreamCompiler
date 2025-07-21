@@ -1,0 +1,400 @@
+package Math;
+
+// Constants
+public const float PI = 3.14159265358979323846;
+public const float E = 2.71828182845904523536;
+public const float TAU = 6.28318530717958647692;
+public const float SQRT2 = 1.41421356237309504880;
+public const float LN2 = 0.69314718055994530941;
+public const float LN10 = 2.30258509299404568402;
+public const float LOG2E = 1.44269504088896340736;
+public const float LOG10E = 0.43429448190325182765;
+
+// Basic Operations
+public float Add(float a, float b) {
+    return a + b;
+}
+
+public float Subtract(float a, float b) {
+    return a - b;
+}
+
+public float Multiply(float a, float b) {
+    return a * b;
+}
+
+public float Divide(float a, float b) {
+    if (b == 0) {
+        throw "Division by zero is not allowed.";
+    }
+    return a / b;
+}
+
+public float Modulus(float a, float b) {
+    if (b == 0) {
+        throw "Division by zero is not allowed.";
+    }
+    return a % b;
+}
+
+// Power and Root Functions
+public float Power(float base, float exponent) {
+    return pow(base, exponent);
+}
+
+public float SquareRoot(float value) {
+    if (value < 0) {
+        throw "Cannot compute square root of a negative number.";
+    }
+    return sqrt(value);
+}
+
+public float CubeRoot(float value) {
+    return cbrt(value);
+}
+
+public float Hypotenuse(float a, float b) {
+    return hypot(a, b);
+}
+
+// Exponential and Logarithmic Functions
+public float Exp(float value) {
+    return exp(value);
+}
+
+public float Exp2(float value) {
+    return exp2(value);
+}
+
+public float ExpM1(float value) {
+    return expm1(value);
+}
+
+public float Log(float value) {
+    if (value <= 0) {
+        throw "Logarithm argument must be positive.";
+    }
+    return log(value);
+}
+
+public float Log10(float value) {
+    if (value <= 0) {
+        throw "Logarithm argument must be positive.";
+    }
+    return log10(value);
+}
+
+public float Log2(float value) {
+    if (value <= 0) {
+        throw "Logarithm argument must be positive.";
+    }
+    return log2(value);
+}
+
+public float Log1p(float value) {
+    if (value <= -1) {
+        throw "Argument must be greater than -1.";
+    }
+    return log1p(value);
+}
+
+public float Sin(float angle) {
+    return sin(angle);
+}
+
+public float Cos(float angle) {
+    return cos(angle);
+}
+
+public float Tan(float angle) {
+    return tan(angle);
+}
+
+public float Asin(float value) {
+    if (value < -1 || value > 1) {
+        throw "Arc sine argument must be between -1 and 1.";
+    }
+    return asin(value);
+}
+
+public float Acos(float value) {
+    if (value < -1 || value > 1) {
+        throw "Arc cosine argument must be between -1 and 1.";
+    }
+    return acos(value);
+}
+
+public float Atan(float value) {
+    return atan(value);
+}
+
+public float Atan2(float y, float x) {
+    return atan2(y, x);
+}
+
+public float Sinh(float value) {
+    return sinh(value);
+}
+
+public float Cosh(float value) {
+    return cosh(value);
+}
+
+public float Tanh(float value) {
+    return tanh(value);
+}
+
+public float Asinh(float value) {
+    return asinh(value);
+}
+
+public float Acosh(float value) {
+    if (value < 1) {
+        throw "Arc hyperbolic cosine argument must be at least 1.";
+    }
+    return acosh(value);
+}
+
+public float Atanh(float value) {
+    if (value <= -1 || value >= 1) {
+        throw "Arc hyperbolic tangent argument must be between -1 and 1.";
+    }
+    return atanh(value);
+}
+
+// Rounding and Remainder Functions
+public float Ceiling(float value) {
+    return ceil(value);
+}
+
+public float Floor(float value) {
+    return floor(value);
+}
+
+public float Round(float value) {
+    return round(value);
+}
+
+public float Truncate(float value) {
+    return trunc(value);
+}
+
+public float Fmod(float x, float y) {
+    return fmod(x, y);
+}
+
+public float Remainder(float x, float y) {
+    return remainder(x, y);
+}
+
+// Min/Max and Absolute Value
+public float Absolute(float value) {
+    return abs(value);
+}
+
+public float Min(float a, float b) {
+    return a < b ? a : b;
+}
+
+public float Max(float a, float b) {
+    return a > b ? a : b;
+}
+
+public float Fdim(float x, float y) {
+    return fdim(x, y);
+}
+
+public float Fmax(float x, float y) {
+    return fmax(x, y);
+}
+
+public float Fmin(float x, float y) {
+    return fmin(x, y);
+}
+
+// Floating-point manipulation
+public float CopySign(float x, float y) {
+    return copysign(x, y);
+}
+
+public float Ldexp(float x, int exp) {
+    return ldexp(x, exp);
+}
+
+public float NextAfter(float from, float to) {
+    return nextafter(from, to);
+}
+
+// Gamma and Error Functions
+public float Gamma(float value) {
+    return tgamma(value);
+}
+
+public float Lgamma(float value) {
+    return lgamma(value);
+}
+
+public float Erf(float value) {
+    return erf(value);
+}
+
+public float Erfc(float value) {
+    return erfc(value);
+}
+
+// Classification and Sign
+public bool IsNaN(float value) {
+    return isnan(value);
+}
+
+public bool IsInf(float value) {
+    return isinf(value);
+}
+
+public bool IsFinite(float value) {
+    return isfinite(value);
+}
+
+public bool IsNormal(float value) {
+    return isnormal(value);
+}
+
+public int SignBit(float value) {
+    return signbit(value);
+}
+
+// Integer specific functions
+public int AbsInt(int value) {
+    return value < 0 ? -value : value;
+}
+
+public int MinInt(int a, int b) {
+    return a < b ? a : b;
+}
+
+public int MaxInt(int a, int b) {
+    return a > b ? a : b;
+}
+
+public int Clamp(int value, int low, int high) {
+    if (value < low) { return low; }
+    if (value > high) { return high; }
+    return value;
+}
+
+public float ClampFloat(float value, float low, float high) {
+    if (value < low) { return low; }
+    if (value > high) { return high; }
+    return value;
+}
+
+// Conversion
+public float DegreesToRadians(float degrees) {
+    return degrees * (PI / 180.0);
+}
+
+public float RadiansToDegrees(float radians) {
+    return radians * (180.0 / PI);
+}
+
+// Interpolation
+public float Lerp(float a, float b, float t) {
+    return a + t * (b - a);
+}
+
+public float LerpUnclamped(float a, float b, float t) {
+    return a + t * (b - a);
+}
+
+public float InverseLerp(float a, float b, float value) {
+    if (a == b) {
+        return 0.0;
+    }
+    return (value - a) / (b - a);
+}
+
+// Additional utility
+public float Sign(float value) {
+    if (value > 0) { return 1.0; }
+    if (value < 0) { return -1.0; }
+    return 0.0;
+}
+
+public float SmoothStep(float from, float to, float t) {
+    t = ClampFloat((t - from) / (to - from), 0.0, 1.0);
+    return t * t * (3.0 - 2.0 * t);
+}
+
+public float MoveTowards(float current, float target, float maxDelta) {
+    if (Absolute(target - current) <= maxDelta) {
+        return target;
+    }
+    return current + Sign(target - current) * maxDelta;
+}
+
+public float GammaToLinearSpace(float value) {
+    return pow(value, 2.2);
+}
+
+public float LinearToGammaSpace(float value) {
+    return pow(value, 1.0 / 2.2);
+}
+
+public bool Approximately(float a, float b) {
+    return Absolute(b - a) < Max(0.000001 * Max(Absolute(a), Absolute(b)), 0.00000001);
+}
+
+// Additional classification
+public bool IsGreater(float x, float y) {
+    return isgreater(x, y);
+}
+
+public bool IsGreaterEqual(float x, float y) {
+    return isgreaterequal(x, y);
+}
+
+public bool IsLess(float x, float y) {
+    return isless(x, y);
+}
+
+public bool IsLessEqual(float x, float y) {
+    return islessequal(x, y);
+}
+
+public bool IsLessGreater(float x, float y) {
+    return islessgreater(x, y);
+}
+
+public bool IsUnordered(float x, float y) {
+    return isunordered(x, y);
+}
+
+// More rounding
+public float RoundToInteger(float value) {
+    return rint(value);
+}
+
+public float RoundNearbyInteger(float value) {
+    return nearbyint(value);
+}
+
+// More FP manipulation
+public float Frexp(float value, int* exp) {
+    return frexp(value, exp);
+}
+
+public float Modf(float value, float* iptr) {
+    return modf(value, iptr);
+}
+
+public float Scalbn(float value, int exp) {
+    return scalbn(value, exp);
+}
+
+public float RemQuo(float x, float y, int* quo) {
+    return remquo(x, y, quo);
+}
+
+public float NaN(string tagp) {
+    return nan(tagp);
+}

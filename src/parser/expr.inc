@@ -271,6 +271,13 @@ static Node *parse_unary(Parser *p) {
 }
 
 static Node *parse_var_decl(Parser *p) {
+  // Handle const modifier
+  int is_const = 0;
+  if (p->tok.kind == TK_KW_CONST) {
+    is_const = 1;
+    next(p); // consume 'const'
+  }
+  
   Token type_tok = p->tok;
   next(p); // consume type
   
@@ -298,6 +305,7 @@ static Node *parse_var_decl(Parser *p) {
     n->as.var_decl.is_static = 0;
     n->as.var_decl.is_pointer = is_pointer;
     n->as.var_decl.is_public = 0; // Default to private
+    n->as.var_decl.is_const = is_const;
     next(p);
     if (p->tok.kind == TK_LBRACKET) {
       next(p);
@@ -327,6 +335,11 @@ static Node *parse_var_decl(Parser *p) {
       } else {
         n->as.var_decl.type = infer_var_type(n->as.var_decl.init);
       }
+    }
+    // Check for const without initializer
+    if (is_const && !n->as.var_decl.init) {
+      diag_push(p, p->tok.pos, DIAG_ERROR,
+                "const declaration requires initializer");
     }
     nodevec_push(&items, &len, &cap, n);
     if (p->tok.kind == TK_COMMA) {
