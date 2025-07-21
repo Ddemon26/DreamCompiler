@@ -1,4 +1,4 @@
-module stdlib;
+import stdlib;
 
 // Basic Vulkan handle representation using a 64-bit integer
 struct VkHandle {

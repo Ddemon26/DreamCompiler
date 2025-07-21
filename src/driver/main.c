@@ -243,9 +243,9 @@ int main(int argc, char *argv[]) {
     // Use pre-built runtime library instead of compiling individual files
     // The zig build system already creates zig-out/lib/dreamrt.lib
 
-    // Link with pre-built runtime library  
+    // Link with pre-built runtime library and sanitizer runtime
     snprintf(cmd, sizeof(cmd),
-             "%s -g %s -Isrc/runtime -Isrc/runtime/memory -Isrc/runtime/io -Isrc/runtime/extensions -Isrc/runtime/system -Isrc/runtime/exceptions build/bin/dream.c -Lzig-out/lib -ldreamrt -o %s",
+             "%s -g %s -Isrc/runtime -Isrc/runtime/memory -Isrc/runtime/io -Isrc/runtime/extensions -Isrc/runtime/system -Isrc/runtime/exceptions build/bin/dream.c -Lzig-out/lib -ldreamrt -fsanitize=undefined -o %s",
              cc, optflag, DR_EXE_NAME);
     res = system(cmd);
     if (res != 0) {

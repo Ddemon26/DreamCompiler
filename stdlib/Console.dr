@@ -1,6 +1,6 @@
 // stdlib/Console.dr
 // Basic console helpers implemented using Dream built-ins.
-module stdlib;
+import stdlib;
 
 class Console {
   // Wrapper around the built-in Console.Write
