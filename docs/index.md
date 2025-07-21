@@ -89,8 +89,8 @@ cd build/bin && ./hello
 ## Documentation Sections
 
 ### Getting Started
-- **[Quick Start](intro.md)** - Install and compile your first program
-- **[Installation & Usage](usage.md)** - Detailed setup instructions
+- **[Quick Start](getting-started/intro.md)** - Install and compile your first program
+- **[Installation & Usage](getting-started/usage.md)** - Detailed setup instructions
 
 ### Compiler Documentation  
 - **[Architecture](compiler/index.md)** - Compiler internals and design
@@ -99,10 +99,10 @@ cd build/bin && ./hello
 
 ### Language Reference
 - **[Type System](variables.md)** - Variables, types, and declarations
-- **[Operators](arithmetic.md)** - Arithmetic, logical, and comparison operators
-- **[Control Flow](if.md)** - Conditionals, loops, and exception handling
+- **[Operators](operators.md)** - Arithmetic, logical, and comparison operators
+- **[Control Flow](language-guide/control-flow.md)** - Conditionals, loops, and exception handling
 - **[Functions](functions.md)** - Function definitions and calls
-- **[Classes & Objects](classes.md)** - Object-oriented programming
+- **[Classes & Objects](v1.1/examples/classes.md)** - Object-oriented programming
 
 ### Advanced Features
 - **[Multi-file Compilation](modules.md)** - Module system and project organization
