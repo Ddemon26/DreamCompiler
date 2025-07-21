@@ -33,7 +33,18 @@ The memory subsystem provides automatic memory management through reference coun
 char* dr_alloc_string(const char* content);
 char* dr_retain_string(char* str);
 void dr_release_string(char* str);
-char* dr_string_concat(const char* a, const char* b);
+
+// String concatenation functions (NEW - 2025-07-21)
+char* dream_concat(const char* str1, const char* str2);
+char* dream_concat_string_int(const char* str, int value);
+char* dream_concat_int_string(int value, const char* str);
+char* dream_concat_string_float(const char* str, float value);
+char* dream_concat_float_string(float value, const char* str);
+char* dream_int_to_string(int value);
+char* dream_float_to_string(float value);
+
+// Legacy functions
+char* dr_string_concat(const char* a, const char* b);  // Deprecated - use dream_concat
 int dr_string_length(const char* str);
 bool dr_string_equals(const char* a, const char* b);
 
@@ -94,7 +105,112 @@ dr_release_string(message);
 dr_release_array(numbers);
 ```
 
-### 2. Console I/O (`console.h/.c`)
+### 2. String Concatenation API (`custom.h/.c`) - *New in 2025-07-21*
+
+The string concatenation API provides efficient string operations with automatic memory management and type conversion.
+
+#### Core Concatenation Functions
+
+```c
+/**
+ * Concatenate two strings
+ * @param str1 First string (null-terminated)
+ * @param str2 Second string (null-terminated) 
+ * @return New string containing str1 + str2 (caller owns memory)
+ */
+char* dream_concat(const char* str1, const char* str2);
+
+/**
+ * Concatenate string with integer
+ * @param str String part
+ * @param value Integer value to append
+ * @return New string containing str + string representation of value
+ */
+char* dream_concat_string_int(const char* str, int value);
+
+/**
+ * Concatenate integer with string
+ * @param value Integer value to prepend
+ * @param str String part
+ * @return New string containing string representation of value + str
+ */
+char* dream_concat_int_string(int value, const char* str);
+
+/**
+ * Concatenate string with float
+ * @param str String part
+ * @param value Float value to append  
+ * @return New string containing str + string representation of value
+ */
+char* dream_concat_string_float(const char* str, float value);
+
+/**
+ * Concatenate float with string
+ * @param value Float value to prepend
+ * @param str String part
+ * @return New string containing string representation of value + str
+ */
+char* dream_concat_float_string(float value, const char* str);
+```
+
+#### Helper Functions
+
+```c
+/**
+ * Convert integer to string representation
+ * @param value Integer value
+ * @return String representation (caller owns memory)
+ */
+char* dream_int_to_string(int value);
+
+/**
+ * Convert float to string representation  
+ * @param value Float value
+ * @return String representation (caller owns memory)
+ */
+char* dream_float_to_string(float value);
+```
+
+**Usage Examples in Dream Code:**
+
+```dream
+// Basic string concatenation
+string greeting = "Hello" + " " + "World";  // Uses dream_concat()
+
+// Mixed-type concatenation  
+string message = "Count: " + 42;            // Uses dream_concat_string_int()
+string price = 19.99 + " dollars";          // Uses dream_concat_float_string()
+
+// Complex expressions
+int items = 5;
+float total = 99.50;
+string summary = "Items: " + items + ", Total: $" + total;
+// Generates multiple concatenation calls with proper precedence
+```
+
+**Generated C Code:**
+
+```c
+// Dream: "Hello" + " World"
+char* greeting = dream_concat("Hello", " World");
+
+// Dream: "Count: " + 42
+char* message = dream_concat_string_int("Count: ", 42);
+
+// Dream: "Items: " + items + ", Total: $" + total  
+char* temp1 = dream_concat_string_int("Items: ", items);
+char* temp2 = dream_concat(temp1, ", Total: $");
+char* summary = dream_concat_float_string(temp2, total);
+```
+
+#### Memory Management
+
+- All concatenation functions return newly allocated strings using `dr_alloc()`
+- Memory is automatically freed by `dr_release_all()` at program termination
+- Intermediate temporary strings in complex expressions are properly managed
+- No manual memory management required in Dream code
+
+### 3. Console I/O (`console.h/.c`)
 
 The console subsystem provides all standard input/output operations.
 

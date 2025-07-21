@@ -153,8 +153,8 @@ ForInit             ::= VariableDeclaration | ExpressionList                    
 ForUpdate           ::= ExpressionList                                                // Implemented (single expression only)
 ExpressionList      ::= Expression { "," Expression }                                 // Implemented (single expression only)
 
-SwitchStatement     ::= "switch" "(" Expression ")" "{" { SwitchSection } "}"         // Partial
-SwitchSection       ::= [ "case" ConstantExpression ":" | "default" ":" ] { Statement }// Planned
+SwitchStatement     ::= "switch" "(" Expression ")" "{" { SwitchSection } "}"         // Implemented
+SwitchSection       ::= [ "case" ConstantExpression ":" | "default" ":" ] { Statement }// Implemented
 
 BreakStatement      ::= "break" ";"                                                   // Implemented
 ContinueStatement   ::= "continue" ";"                                                // Implemented
@@ -220,8 +220,9 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write" | "ReadLine") Invoc
 4. All data is passed **by value**; no references/pointers yet (unsafe grammar reserved).
 5. `Console.Write`/`WriteLine`/`ReadLine` are built‑ins; they do not require namespace qualification.
 6. Target C code‑gen uses 32‑bit signed integers and zero‑terminated UTF‑8 strings.
-7. Control‑flow semantics follow C# where implemented; `switch` currently supports only constant integral cases without pattern guards.
-8. Basic exception handling with `try`/`catch` statements and `throw` uses a simple longjmp mechanism.
+7. Control‑flow semantics follow C# where implemented; `switch` supports constant integral cases with full `break` statement functionality and multiple statements per case.
+8. **String concatenation** using `+` operator with automatic type conversion for mixed-type operations (`string + int/float`).
+9. Basic exception handling with `try`/`catch` statements and `throw` uses a simple longjmp mechanism.
 
 ---
 

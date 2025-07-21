@@ -13,12 +13,14 @@ Operators in Dream are symbols or keywords that perform operations on operands (
 
 ## Operator Categories
 
-### 🔢 Arithmetic Operators
-Perform mathematical calculations on numeric types.
+### 🔢 Arithmetic & String Operators
+Perform mathematical calculations on numeric types and string concatenation.
 
 | Operator | Name | Example | Result |
 |----------|------|---------|--------|
 | `+` | Addition | `5 + 3` | `8` |
+| `+` | String Concatenation | `"Hello" + " World"` | `"Hello World"` |
+| `+` | Mixed Concatenation | `"Count: " + 42` | `"Count: 42"` |
 | `-` | Subtraction | `5 - 3` | `2` |
 | `*` | Multiplication | `5 * 3` | `15` |
 | `/` | Division | `10 / 3` | `3` (integer), `3.333...` (float) |
@@ -26,6 +28,7 @@ Perform mathematical calculations on numeric types.
 | `-` | Unary Minus | `-5` | `-5` |
 | `+` | Unary Plus | `+5` | `5` |
 
+#### Numeric Operations
 ```dream
 int a = 10, b = 3;
 int sum = a + b;        // 13
@@ -38,7 +41,30 @@ float x = 10.0, y = 3.0;
 float result = x / y;   // 3.333...
 ```
 
-**📖 [Complete Arithmetic Guide](v1.1/arithmetic.md)**
+#### String Concatenation
+The `+` operator provides powerful string concatenation with automatic type conversion:
+
+```dream
+// String + String
+string greeting = "Hello" + " " + "World";  // "Hello World"
+
+// String + Numbers
+string message = "Count: " + 42;            // "Count: 42"
+string price = "Cost: $" + 29.99;          // "Cost: $29.99"
+
+// Mixed expressions
+int items = 5;
+float total = 99.50;
+string summary = "Items: " + items + ", Total: $" + total;
+// Result: "Items: 5, Total: $99.50"
+
+// Array elements
+string words[2];
+words[0] = "Dream";
+words[1] = words[0] + " Language";          // "Dream Language"
+```
+
+**📖 [Complete Arithmetic Guide](v1.1/arithmetic.md) | [String Operations](v1.1/strings.md)**
 
 ### 📊 Comparison Operators
 Compare values and return boolean results.
