@@ -1,11 +1,15 @@
 // stdlib/Console.dr
-package stdlib;
+// Basic console helpers implemented using Dream built-ins.
+module stdlib;
 
-public class Console {
-  // Marked as external: implementations provided by the C runtime
-  @extern("dr_console_write")
-  public static extern void write(String s);
+class Console {
+  // Wrapper around the built-in Console.Write
+  static func write(string s) {
+    Console.Write(s);
+  }
 
-  @extern("dr_console_writeln")
-  public static extern void writeln(String s);
+  // Wrapper around the built-in Console.WriteLine
+  static func writeln(string s) {
+    Console.WriteLine(s);
+  }
 }

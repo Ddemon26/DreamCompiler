@@ -1,34 +1,34 @@
-package stdlib;
+module stdlib;
 
 // Basic Vulkan handle representation using a 64-bit integer
-public struct VkHandle {
-  long value;
+struct VkHandle {
+  int value;
 }
 
 // Opaque handles for common Vulkan objects
-public struct VkInstance { long value; }
-public struct VkPhysicalDevice { long value; }
-public struct VkDevice { long value; }
-public struct VkQueue { long value; }
-public struct VkCommandBuffer { long value; }
-public struct VkSurfaceKHR { long value; }
-public struct VkSwapchainKHR { long value; }
-public struct VkBuffer { long value; }
-public struct VkDeviceMemory { long value; }
-public struct VkShaderModule { long value; }
-public struct VkPipelineLayout { long value; }
-public struct VkDescriptorSetLayout { long value; }
-public struct VkDescriptorPool { long value; }
-public struct VkDescriptorSet { long value; }
+struct VkInstance { int value; }
+struct VkPhysicalDevice { int value; }
+struct VkDevice { int value; }
+struct VkQueue { int value; }
+struct VkCommandBuffer { int value; }
+struct VkSurfaceKHR { int value; }
+struct VkSwapchainKHR { int value; }
+struct VkBuffer { int value; }
+struct VkDeviceMemory { int value; }
+struct VkShaderModule { int value; }
+struct VkPipelineLayout { int value; }
+struct VkDescriptorSetLayout { int value; }
+struct VkDescriptorPool { int value; }
+struct VkDescriptorSet { int value; }
 
 // Helper structure returned by Vulkan.enumeratePhysicalDevices
-public struct VkPhysicalDeviceList {
+struct VkPhysicalDeviceList {
   VkPhysicalDevice* devices;
-  uint count;
+  int count;
 }
 
 // Primary result codes returned by Vulkan functions
-public enum VkResult {
+enum VkResult {
   Success = 0,
   NotReady = 1,
   Timeout = 2,
@@ -42,199 +42,75 @@ public enum VkResult {
 }
 
 // Minimal subset of VkApplicationInfo for instance creation
-public struct VkApplicationInfo {
+struct VkApplicationInfo {
   string applicationName;
   string engineName;
-  uint   apiVersion;
+  int   apiVersion;
 }
 
 // Minimal subset of VkInstanceCreateInfo referencing application info
-public struct VkInstanceCreateInfo {
+struct VkInstanceCreateInfo {
   VkApplicationInfo* appInfo;
-  uint enabledExtensionCount;
-  long ppEnabledExtensionNames; // char*[] pointer
+  int enabledExtensionCount;
+  int ppEnabledExtensionNames; // char*[] pointer
 }
 
 // Minimal device creation structures
-public struct VkDeviceQueueCreateInfo {
-  uint queueFamilyIndex;
-  uint queueCount;
-  long pQueuePriorities; // float* pointer
+struct VkDeviceQueueCreateInfo {
+  int queueFamilyIndex;
+  int queueCount;
+  int pQueuePriorities; // float* pointer
 }
 
-public struct VkDeviceCreateInfo {
-  uint queueCreateInfoCount;
+struct VkDeviceCreateInfo {
+  int queueCreateInfoCount;
   VkDeviceQueueCreateInfo* pQueueCreateInfos;
 }
 
-public struct VkBufferCreateInfo {
-  ulong size;
-  uint usage;
-  uint sharingMode;
+struct VkBufferCreateInfo {
+  int size;
+  int usage;
+  int sharingMode;
 }
 
-public struct VkMemoryAllocateInfo {
-  ulong allocationSize;
-  uint memoryTypeIndex;
+struct VkMemoryAllocateInfo {
+  int allocationSize;
+  int memoryTypeIndex;
 }
 
-public struct VkShaderModuleCreateInfo {
-  ulong codeSize;
-  long  pCode; // uint32_t* pointer
+struct VkShaderModuleCreateInfo {
+  int codeSize;
+  int  pCode; // uint32_t* pointer
 }
 
-public struct VkDescriptorSetLayoutBinding {
-  uint binding;
-  uint descriptorType;
-  uint descriptorCount;
-  uint stageFlags;
-  long pImmutableSamplers; // VkSampler* pointer
+struct VkDescriptorSetLayoutBinding {
+  int binding;
+  int descriptorType;
+  int descriptorCount;
+  int stageFlags;
+  int pImmutableSamplers; // VkSampler* pointer
 }
 
-public struct VkDescriptorSetLayoutCreateInfo {
-  uint bindingCount;
+struct VkDescriptorSetLayoutCreateInfo {
+  int bindingCount;
   VkDescriptorSetLayoutBinding* pBindings;
 }
 
-public struct VkPipelineLayoutCreateInfo {
-  uint setLayoutCount;
+struct VkPipelineLayoutCreateInfo {
+  int setLayoutCount;
   VkDescriptorSetLayout* pSetLayouts;
-  uint pushConstantRangeCount;
-  long pPushConstantRanges; // VkPushConstantRange* pointer
+  int pushConstantRangeCount;
+  int pPushConstantRanges; // VkPushConstantRange* pointer
 }
 
 // Platform surface creation info
 // Windows: hinstance & hwnd
 // Linux:  xcb_connection_t* & window id
-public struct VkSurfaceCreateInfo {
-  long handle1;
-  long handle2;
+struct VkSurfaceCreateInfo {
+  int handle1;
+  int handle2;
 }
 
-public struct VkAllocationCallbacks {
-  long userData;
-}
-
-public class Vulkan {
-  @extern("dr_vulkan_available")
-  public static extern int available();
-
-  @extern("dr_vulkan_version")
-  public static extern uint version();
-
-  @extern("dr_vkCreateInstance")
-  public static extern VkResult createInstance(VkInstanceCreateInfo* info,
-                                               VkInstance* outInstance);
-
-  @extern("dr_vkDestroyInstance")
-  public static extern void destroyInstance(VkInstance instance);
-
-  @extern("dr_vk_enumerate_physical_devices")
-  public static extern VkPhysicalDeviceList enumeratePhysicalDevices(VkInstance instance);
-
-  @extern("vkCreateDevice")
-  public static extern VkResult createDevice(VkPhysicalDevice physicalDevice,
-                                             VkDeviceCreateInfo* info,
-                                             VkAllocationCallbacks* alloc,
-                                             VkDevice* outDevice);
-
-  @extern("vkDestroyDevice")
-  public static extern void destroyDevice(VkDevice device,
-                                          VkAllocationCallbacks* alloc);
-
-  @extern("vkCreateBuffer")
-  public static extern VkResult createBuffer(VkDevice device,
-                                             VkBufferCreateInfo* info,
-                                             VkAllocationCallbacks* alloc,
-                                             VkBuffer* outBuffer);
-
-  @extern("vkDestroyBuffer")
-  public static extern void destroyBuffer(VkDevice device,
-                                          VkBuffer buffer,
-                                          VkAllocationCallbacks* alloc);
-
-  @extern("vkAllocateMemory")
-  public static extern VkResult allocateMemory(VkDevice device,
-                                               VkMemoryAllocateInfo* info,
-                                               VkAllocationCallbacks* alloc,
-                                               VkDeviceMemory* outMemory);
-
-  @extern("vkFreeMemory")
-  public static extern void freeMemory(VkDevice device,
-                                       VkDeviceMemory memory,
-                                       VkAllocationCallbacks* alloc);
-
-  @extern("vkCreateShaderModule")
-  public static extern VkResult createShaderModule(VkDevice device,
-                                                   VkShaderModuleCreateInfo* info,
-                                                   VkAllocationCallbacks* alloc,
-                                                   VkShaderModule* outModule);
-
-  @extern("vkDestroyShaderModule")
-  public static extern void destroyShaderModule(VkDevice device,
-                                                VkShaderModule module,
-                                                VkAllocationCallbacks* alloc);
-
-  @extern("vkCreateDescriptorSetLayout")
-  public static extern VkResult createDescriptorSetLayout(VkDevice device,
-                                                          VkDescriptorSetLayoutCreateInfo* info,
-                                                          VkAllocationCallbacks* alloc,
-                                                          VkDescriptorSetLayout* outLayout);
-
-  @extern("vkDestroyDescriptorSetLayout")
-  public static extern void destroyDescriptorSetLayout(VkDevice device,
-                                                       VkDescriptorSetLayout layout,
-                                                       VkAllocationCallbacks* alloc);
-
-  @extern("vkCreatePipelineLayout")
-  public static extern VkResult createPipelineLayout(VkDevice device,
-                                                     VkPipelineLayoutCreateInfo* info,
-                                                     VkAllocationCallbacks* alloc,
-                                                     VkPipelineLayout* outLayout);
-
-  @extern("vkDestroyPipelineLayout")
-  public static extern void destroyPipelineLayout(VkDevice device,
-                                                  VkPipelineLayout layout,
-                                                  VkAllocationCallbacks* alloc);
-
-  @extern("dr_vkCreateSurface")
-  public static extern VkResult createSurface(VkInstance instance,
-                                              VkSurfaceCreateInfo* info,
-                                              VkSurfaceKHR* outSurface);
-
-  @extern("dr_vkDestroySurface")
-  public static extern void destroySurface(VkInstance instance,
-                                           VkSurfaceKHR surface);
-
-  @extern("dr_vkCreateSimpleSwapchain")
-  public static extern VkResult createSimpleSwapchain(VkDevice device,
-                                                      VkSurfaceKHR surface,
-                                                      uint width,
-                                                      uint height,
-                                                      VkSwapchainKHR* outSwap);
-
-  @extern("dr_vkDestroySwapchain")
-  public static extern void destroySwapchain(VkDevice device,
-                                             VkSwapchainKHR swapchain);
-
-  @extern("dr_release")
-  static extern void release(long ptr);
-
-  public static VkPhysicalDevice pickFirstPhysicalDevice(VkInstance instance) {
-    VkPhysicalDeviceList list = enumeratePhysicalDevices(instance);
-    if (list.count == 0) {
-      return new VkPhysicalDevice();
-    }
-    VkPhysicalDevice dev = list.devices[0];
-    release(list.devices);
-    return dev;
-  }
-
-  public static VkResult createDefaultSwapchain(VkDevice device,
-                                                VkSurfaceKHR surface,
-                                                uint width,
-                                                uint height,
-                                                VkSwapchainKHR* outSwap) {
-    return createSimpleSwapchain(device, surface, width, height, outSwap);
-  }
+struct VkAllocationCallbacks {
+  int userData;
 }
