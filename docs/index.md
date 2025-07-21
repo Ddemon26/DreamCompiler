@@ -88,31 +88,50 @@ cd build/bin && ./hello
 
 ## Documentation Sections
 
-### Getting Started
+### 🚀 Getting Started
+New to Dream? Start here to get up and running quickly.
 - **[Quick Start](getting-started/intro.md)** - Install and compile your first program
 - **[Installation & Usage](getting-started/usage.md)** - Detailed setup instructions
+- **[Examples & Tutorials](getting-started/examples/)** - Hands-on examples and code samples
 
-### Compiler Documentation  
-- **[Architecture](compiler/index.md)** - Compiler internals and design
-- **[Build System](compiler/build.md)** - Zig build configuration
-- **[Testing Framework](compiler/testing.md)** - Test organization and execution
+### 🔧 Fundamentals
+Learn the core concepts and building blocks of the Dream language.
+- **[Type System](fundamentals/type-system.md)** - Variables, types, and type inference
+- **[Variables & Declarations](fundamentals/variables.md)** - Variable declarations and scoping
 
-### Language Reference
-- **[Type System](variables.md)** - Variables, types, and declarations
-- **[Operators](operators.md)** - Arithmetic, logical, and comparison operators
-- **[Control Flow](language-guide/control-flow.md)** - Conditionals, loops, and exception handling
-- **[Functions](functions.md)** - Function definitions and calls
-- **[Classes & Objects](v1.1/examples/classes.md)** - Object-oriented programming
+### ⚡ Language Features
+Master the syntax and features that make Dream powerful and expressive.
+- **[Operators](language-features/operators.md)** - Arithmetic, logical, and comparison operators
+- **[Control Flow](language-features/language-guide/control-flow.md)** - Conditionals, loops, and branching
+- **[Functions](language-features/functions.md)** - Function definitions, parameters, and returns
+- **[Function Overview](language-features/functions-overview.md)** - Complete guide to functions
+- **[Exception Handling](language-features/exceptions.md)** - Error handling with try/catch/throw
+- **[Input/Output](language-features/io/)** - Console and file I/O operations
 
-### Advanced Features
-- **[Multi-file Compilation](modules.md)** - Module system and project organization
-- **[Memory Management](memory.md)** - Reference counting and resource management
-- **[C Interoperability](interop.md)** - Calling C code from Dream
+### 🏗️ Advanced Topics
+Deep dive into sophisticated features for complex applications.
+- **[Multi-file Compilation](advanced-topics/modules.md)** - Module system and project organization
+- **[Memory Management](advanced-topics/memory.md)** - Reference counting and resource management
+- **[C Interoperability](advanced-topics/interop.md)** - Calling C libraries from Dream code
 
-### Reference
-- **[Grammar Specification](grammar/Grammar.md)** - Formal language specification
-- **[Runtime Library](runtime.md)** - Built-in functions and APIs
-- **[Changelog](changelog.md)** - Version history and updates
+### 📚 API Documentation
+Complete reference for all built-in classes, functions, and runtime features.
+- **[API Reference](api/api-reference.md)** - Comprehensive API documentation with examples
+- **[Runtime Library](api/runtime.md)** - Built-in functions and system interfaces
+
+### 🔨 Development
+Resources for compiler development, contribution, and advanced usage.
+- **[Developer Guide](development/developer-guide.md)** - Complete guide for contributors and advanced developers
+- **[Compiler Architecture](development/compiler/index.md)** - Internal compiler design and structure
+- **[Build System](development/compiler/build.md)** - Zig build configuration and customization
+- **[Testing Framework](development/compiler/testing.md)** - Test organization, execution, and contribution
+
+### 📖 Reference Materials
+Specifications, version history, and complete language documentation.
+- **[Language Reference](reference/language-reference.md)** - Complete language specification and guide
+- **[Grammar Specification](reference/grammar/Grammar.md)** - Formal language grammar (BNF)
+- **[Changelog](reference/changelog.md)** - Version history, updates, and migration guides
+- **[Version Archives](reference/)** - Historical documentation for v1.0, v1.1, and earlier releases
 
 ## Community & Support
 
