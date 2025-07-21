@@ -17,7 +17,10 @@ src/
 │   ├── lexer.h      # Lexer interface
 │   └── tokens.def   # Token definitions
 ├── parser/          # Syntax analysis & AST construction
-│   ├── parser.c     # Pratt parser implementation
+│   ├── parser.c     # Parser entry point (includes submodules)
+│   ├── diag.inc     # Diagnostic helpers
+│   ├── expr.inc     # Expression parsing logic
+│   ├── stmt.inc     # Statement parsing logic
 │   ├── parser.h     # Parser interface
 │   ├── ast.c        # AST node construction/manipulation
 │   ├── ast.h        # AST data structures
@@ -222,7 +225,9 @@ build/              # Build artifacts
 ```bash
 # Core compiler components
 src/lexer/lexer.re          # Lexer specification
-src/parser/parser.c         # Main parser
+src/parser/parser.c         # Parser entry point
+src/parser/expr.inc         # Expression parsing
+src/parser/stmt.inc         # Statement parsing
 src/sem/type.c             # Type system
 src/codegen/c_emit.c       # C code generation
 docs/grammar/Grammar.md    # Language grammar
