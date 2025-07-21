@@ -165,9 +165,11 @@ for(const t of tokens){
   } else if (t.name === 'identifier') {
     pattern = '[a-zA-Z_][a-zA-Z0-9_]*';
   } else if (t.name.startsWith('operator')) {
-    // Handle operators specially - quote each one
+    // Handle operators specially - quote each one, but be careful with escaped pipes
     const opRegex = t.regex;
-    pattern = opRegex.split('|').map(op => `"${op}"`).join('|');
+    // Split on unescaped | characters
+    const ops = opRegex.split(/(?<!\\)\|/).filter(op => op.length > 0);
+    pattern = ops.map(op => `"${op}"`).join('|');
   } else if (t.name === 'semicolon') {
     pattern = '";"';
   } else if (t.name === 'comma') {
@@ -175,7 +177,7 @@ for(const t of tokens){
   } else if (t.name === 'dot') {
     pattern = '"."';
   } else if (t.name === 'paren') {
-    pattern = '"|"("')';
+    pattern = '"("|")"';
   } else if (t.name === 'brace') {
     pattern = '"{"|"}"';
   } else if (t.name === 'bracket') {
@@ -185,9 +187,9 @@ for(const t of tokens){
     pattern = `"${t.regex.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   }
   
-  flex += `  ${pattern} { return DreamTokenTypes.${t.name.toUpperCase()}; }\\n`;
+  flex += `  ${pattern} { return DreamTokenTypes.${t.name.toUpperCase()}; }\n`;
 }
-flex += '  [\\t\\r\\n ]+ { return com.intellij.psi.TokenType.WHITE_SPACE; }\\n  . { return com.intellij.psi.TokenType.BAD_CHARACTER; }\\n}\\n';
+flex += '  [\\t\\r\\n ]+ { return com.intellij.psi.TokenType.WHITE_SPACE; }\n  . { return com.intellij.psi.TokenType.BAD_CHARACTER; }\n}\n';
 fs.mkdirSync(path.join(pluginDir, 'src', 'main', 'java', 'com', 'dream'), { recursive: true });
 fs.writeFileSync(path.join(pluginDir, 'src', 'main', 'java', 'com', 'dream', 'DreamLexer.flex'), flex);
 

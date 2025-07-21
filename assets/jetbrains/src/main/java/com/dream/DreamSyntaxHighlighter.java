@@ -34,6 +34,7 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey OPERATORASSIGNMENT = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORASSIGNMENT", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey OPERATORCONDITIONAL = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORCONDITIONAL", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey OPERATORARROW = TextAttributesKey.createTextAttributesKey("DREAM_OPERATORARROW", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey OPERATOR = TextAttributesKey.createTextAttributesKey("DREAM_OPERATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey SEMICOLON = TextAttributesKey.createTextAttributesKey("DREAM_SEMICOLON", DefaultLanguageHighlighterColors.SEMICOLON);
     public static final TextAttributesKey COMMA = TextAttributesKey.createTextAttributesKey("DREAM_COMMA", DefaultLanguageHighlighterColors.COMMA);
     public static final TextAttributesKey DOT = TextAttributesKey.createTextAttributesKey("DREAM_DOT", DefaultLanguageHighlighterColors.DOT);
