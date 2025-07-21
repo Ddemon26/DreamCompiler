@@ -283,11 +283,13 @@ class TestManager:
         exe_path = ROOT / exe
         
         # Link with individual runtime source files for better compatibility
+        # Runtime sources moved into subdirectories; use new paths
         runtime_files = [
-            "src/runtime/memory.c",
-            "src/runtime/console.c", 
-            "src/runtime/custom.c",
-            "src/runtime/exception.c"
+            "src/runtime/memory/memory.c",
+            "src/runtime/io/console.c",
+            "src/runtime/extensions/custom.c",
+            "src/runtime/exceptions/exception.c",
+            "src/runtime/system/task.c",
         ]
         
         cc_cmd = [
