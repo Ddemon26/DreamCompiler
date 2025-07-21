@@ -45,6 +45,9 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey FUNCTION_DECLARATION = TextAttributesKey.createTextAttributesKey("DREAM_FUNCTION_DECLARATION", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION);
     public static final TextAttributesKey CLASS_NAME = TextAttributesKey.createTextAttributesKey("DREAM_CLASS_NAME", DefaultLanguageHighlighterColors.CLASS_NAME);
     public static final TextAttributesKey LOCAL_VARIABLE = TextAttributesKey.createTextAttributesKey("DREAM_LOCAL_VARIABLE", DefaultLanguageHighlighterColors.LOCAL_VARIABLE);
+    public static final TextAttributesKey FUNCTION_NAME = TextAttributesKey.createTextAttributesKey("DREAM_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION);
+    public static final TextAttributesKey FUNCTION_CALL = TextAttributesKey.createTextAttributesKey("DREAM_FUNCTION_CALL", DefaultLanguageHighlighterColors.FUNCTION_CALL);
+    public static final TextAttributesKey PARAMETER = TextAttributesKey.createTextAttributesKey("DREAM_PARAMETER", DefaultLanguageHighlighterColors.PARAMETER);
 
     private static final TextAttributesKey[] KEYWORD_KEYS = pack(KEYWORD);
     private static final TextAttributesKey[] KEYWORDTYPE_KEYS = pack(KEYWORDTYPE);
@@ -72,6 +75,9 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TextAttributesKey[] FUNCTION_DECLARATION_KEYS = pack(FUNCTION_DECLARATION);
     private static final TextAttributesKey[] CLASS_NAME_KEYS = pack(CLASS_NAME);
     private static final TextAttributesKey[] LOCAL_VARIABLE_KEYS = pack(LOCAL_VARIABLE);
+    private static final TextAttributesKey[] FUNCTION_NAME_KEYS = pack(FUNCTION_NAME);
+    private static final TextAttributesKey[] FUNCTION_CALL_KEYS = pack(FUNCTION_CALL);
+    private static final TextAttributesKey[] PARAMETER_KEYS = pack(PARAMETER);
 
     @NotNull
     @Override
@@ -101,6 +107,9 @@ public class DreamSyntaxHighlighter extends SyntaxHighlighterBase {
         if (tokenType == DreamTokenTypes.BRACE) return BRACE_KEYS;
         if (tokenType == DreamTokenTypes.BRACKET) return BRACKET_KEYS;
         if (tokenType == DreamTokenTypes.IDENTIFIER) return IDENTIFIER_KEYS;
+        if (tokenType == DreamTokenTypes.FUNCTION_NAME) return FUNCTION_NAME_KEYS;
+        if (tokenType == DreamTokenTypes.FUNCTION_CALL) return FUNCTION_CALL_KEYS;
+        if (tokenType == DreamTokenTypes.PARAMETER) return PARAMETER_KEYS;
         return TextAttributesKey.EMPTY_ARRAY;
     }
 }

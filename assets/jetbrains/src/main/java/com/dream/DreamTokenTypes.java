@@ -30,4 +30,7 @@ public final class DreamTokenTypes {
     public static final IElementType IDENTIFIER = new DreamElementType("IDENTIFIER");
     public static final IElementType BRACKET = new DreamElementType("BRACKET");
     public static final IElementType COMMENTDOC = new DreamElementType("COMMENTDOC");
+    public static final IElementType FUNCTION_NAME = new DreamElementType("FUNCTION_NAME");
+    public static final IElementType FUNCTION_CALL = new DreamElementType("FUNCTION_CALL");
+    public static final IElementType PARAMETER = new DreamElementType("PARAMETER");
 }

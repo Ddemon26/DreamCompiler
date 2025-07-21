@@ -100,6 +100,12 @@ const tokens = [
   { name: 'commentBlock', regex: '/\\*[\\s\\S]*?\\*/', scope: 'comment.block' },
   // Special highlighting for Console methods
   { name: 'consoleFunction', regex: '\\b(Console)\\.(WriteLine|Write|ReadLine)\\b', scope: 'support.function' },
+  // Function declarations: func keyword followed by identifier
+  { name: 'functionName', regex: '\\bfunc\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b', scope: 'entity.name.function' },
+  // Function calls: identifier followed by parentheses
+  { name: 'functionCall', regex: '\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(', scope: 'entity.name.function.call' },
+  // Parameters in function definitions: type followed by identifier in parentheses
+  { name: 'parameter', regex: '\\b(int|string|bool|float|char|void)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b', scope: 'variable.parameter' },
   {
     name: 'identifier',
     regex: `\\b${defs.IDENT}\\b`,
@@ -162,6 +168,12 @@ for(const t of tokens){
     pattern = '"/*"[^]*?"*/"';
   } else if (t.name === 'consoleFunction') {
     pattern = 'Console.WriteLine|Console.Write|Console.ReadLine';
+  } else if (t.name === 'functionName') {
+    pattern = 'func[ \\t]+[a-zA-Z_][a-zA-Z0-9_]*';
+  } else if (t.name === 'functionCall') {
+    pattern = '[a-zA-Z_][a-zA-Z0-9_]*[ \\t]*"("';
+  } else if (t.name === 'parameter') {
+    pattern = '(int|string|bool|float|char|void)[ \\t]+[a-zA-Z_][a-zA-Z0-9_]*';
   } else if (t.name === 'identifier') {
     pattern = '[a-zA-Z_][a-zA-Z0-9_]*';
   } else if (t.name.startsWith('operator')) {

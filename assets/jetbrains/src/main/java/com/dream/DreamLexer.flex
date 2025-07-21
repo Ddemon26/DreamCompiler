@@ -22,6 +22,9 @@ package com.dream;
   "//"[^\r\n]* { return DreamTokenTypes.COMMENT; }
   "/*"[^]*?"*/" { return DreamTokenTypes.COMMENTBLOCK; }
   Console.WriteLine|Console.Write|Console.ReadLine { return DreamTokenTypes.CONSOLEFUNCTION; }
+  func[ \t]+[a-zA-Z_][a-zA-Z0-9_]* { return DreamTokenTypes.FUNCTIONNAME; }
+  [a-zA-Z_][a-zA-Z0-9_]*[ \t]*"(" { return DreamTokenTypes.FUNCTIONCALL; }
+  (int|string|bool|float|char|void)[ \t]+[a-zA-Z_][a-zA-Z0-9_]* { return DreamTokenTypes.PARAMETER; }
   [a-zA-Z_][a-zA-Z0-9_]* { return DreamTokenTypes.IDENTIFIER; }
   "\+\+"|"--"|"\+="|"-="|"\*="|"/="|"%="|"\+"|"-"|"\*"|"/"|"%" { return DreamTokenTypes.OPERATORARITHMETIC; }
   "&="|"\|="|"\^="|"<<="|">>="|"&"|"\|"|"\^"|"<<"|">>"|"~" { return DreamTokenTypes.OPERATORBITWISE; }

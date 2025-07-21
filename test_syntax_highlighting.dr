@@ -1,0 +1,43 @@
+// Test file for function call and declaration syntax highlighting
+
+// Function declaration with parameters
+func int calculateSum(int a, int b) {
+    return a + b;
+}
+
+// Function declaration with multiple parameters
+func string formatMessage(string name, int age, bool isActive) {
+    string result = "User: ";
+    return result;
+}
+
+// Function calls
+func int main() {
+    int result = calculateSum(5, 3);
+    string message = formatMessage("Alice", 30, true);
+    
+    // Console function calls (special highlighting)
+    Console.WriteLine(message);
+    Console.Write("Result: ");
+    Console.WriteLine(result);
+    
+    // Function call with nested function calls  
+    int final = calculateSum(result, calculateSum(10, 20));
+    
+    return 0;
+}
+
+// Function with no parameters
+func void printBanner() {
+    Console.WriteLine("===================");
+    Console.WriteLine("  Dream Compiler   ");
+    Console.WriteLine("===================");
+}
+
+// Function with different parameter types
+func bool validateUser(string username, char status, float score) {
+    if (username.length > 0 && score > 0.5) {
+        return true;
+    }
+    return false;
+}

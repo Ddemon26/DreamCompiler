@@ -23,7 +23,10 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
             new AttributesDescriptor("Dot", DreamSyntaxHighlighter.DOT),
             new AttributesDescriptor("Parentheses", DreamSyntaxHighlighter.PAREN),
             new AttributesDescriptor("Braces", DreamSyntaxHighlighter.BRACE),
-            new AttributesDescriptor("Brackets", DreamSyntaxHighlighter.BRACKET)
+            new AttributesDescriptor("Brackets", DreamSyntaxHighlighter.BRACKET),
+            new AttributesDescriptor("Function Name", DreamSyntaxHighlighter.FUNCTION_NAME),
+            new AttributesDescriptor("Function Call", DreamSyntaxHighlighter.FUNCTION_CALL),
+            new AttributesDescriptor("Parameter", DreamSyntaxHighlighter.PARAMETER)
     };
 
     @Override
@@ -46,18 +49,23 @@ public class DreamColorSettingsPage implements ColorSettingsPage {
   This is a
   multi-line block comment.
 */
-func calculateSum(a, b) {
+func int calculateSum(int a, int b) {
     // Using keywords, numbers, and operators
-    let result = a + b;
-    let pi = 3.14;
-    let arr = [1, 2, 3];
-    let message = "The result is: ";
-    Console.WriteLine(message + arr[0] + result);
+    int result = a + b;
+    float pi = 3.14;
+    int arr = [1, 2, 3];
+    string message = "The result is: ";
+    Console.WriteLine(message);
     return result;
 }
 
-// Calling the function with parentheses and a semicolon
-let sum = calculateSum(10, 20);
+func void printMessage(string msg, int count) {
+    Console.WriteLine(msg);
+}
+
+// Function calls with different parameter types
+int sum = calculateSum(10, 20);
+printMessage("Hello World", 5);
 """;
     }
 
