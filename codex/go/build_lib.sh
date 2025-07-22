@@ -5,7 +5,7 @@
 set -e
 
 # Configuration
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 GO_TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC_DIR="$ROOT_DIR/src"
 LEXER_DIR="$SRC_DIR/lexer"
@@ -112,6 +112,7 @@ build_library() {
         "$SRC_DIR/parser/parser.c"
         "$SRC_DIR/parser/error.c"
         "$SRC_DIR/parser/diagnostic.c"
+        "$SRC_DIR/parser/warnings.c"
         "$SRC_DIR/sem/scope.c"
         "$SRC_DIR/sem/symbol.c"
         "$SRC_DIR/sem/type.c"
@@ -129,11 +130,15 @@ build_library() {
         "$SRC_DIR/opt/copy_prop.c"
         "$SRC_DIR/opt/cse.c"
         "$SRC_DIR/opt/peephole.c"
+        "$SRC_DIR/opt/inline.c"
+        "$SRC_DIR/opt/loop_opt.c"
         "$SRC_DIR/codegen/c_emit.c"
         "$SRC_DIR/codegen/context.c"
         "$SRC_DIR/codegen/expr.c"
         "$SRC_DIR/codegen/stmt.c"
         "$SRC_DIR/codegen/codegen.c"
+        "$SRC_DIR/codegen/backend.c"
+        "$SRC_DIR/codegen/module.c"
         "$LEXER_DIR/lexer.c"
         "dream_api.c"
     )
