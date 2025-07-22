@@ -30,6 +30,8 @@ C_SOURCES = \
 	../../src/opt/copy_prop.c \
 	../../src/opt/cse.c \
 	../../src/opt/peephole.c \
+	../../src/opt/loop_opt.c \
+	../../src/opt/inline.c \
 	../../src/codegen/c_emit.c \
 	../../src/codegen/context.c \
 	../../src/codegen/expr.c \

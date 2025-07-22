@@ -1,0 +1,77 @@
+// Complex function scenarios and parameter handling
+
+// Function overloading simulation with different parameter types
+func int calculate(int a, int b) {
+    Console.WriteLine("Integer calculation: " + a + " + " + b);
+    return a + b;
+}
+
+func float calculateFloat(float a, float b) {
+    Console.WriteLine("Float calculation");
+    return a + b;
+}
+
+// Recursive function
+func int factorial(int n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+// Function with array parameters
+func int sumArray(int[] numbers) {
+    int sum = 0;
+    for (int i = 0; i < 5; i++) {  // Assuming fixed size for demo
+        sum = sum + numbers[i];
+    }
+    return sum;
+}
+
+// Function with struct parameters
+struct Rectangle {
+    public int width;
+    public int height;
+}
+
+func int calculateArea(Rectangle rect) {
+    return rect.width * rect.height;
+}
+
+// Higher-order function simulation
+func int applyOperation(int a, int b, bool isAdd) {
+    if (isAdd) {
+        return a + b;
+    } else {
+        return a * b;
+    }
+}
+
+// Main execution
+Console.WriteLine("Testing complex functions:");
+
+// Test basic functions
+int result1 = calculate(5, 3);
+float result2 = calculateFloat(3.14, 2.86);
+Console.WriteLine("Results: " + result1 + ", " + result2);
+
+// Test recursive function
+int fact5 = factorial(5);
+Console.WriteLine("5! = " + fact5);
+
+// Test array parameter
+int[] numbers = {1, 2, 3, 4, 5};
+int sum = sumArray(numbers);
+Console.WriteLine("Array sum: " + sum);
+
+// Test struct parameter
+Rectangle rect = new Rectangle();
+rect.width = 10;
+rect.height = 5;
+int area = calculateArea(rect);
+Console.WriteLine("Rectangle area: " + area);
+
+// Test operation function
+int add_result = applyOperation(8, 4, true);
+int mult_result = applyOperation(8, 4, false);
+Console.WriteLine("Operations: " + add_result + ", " + mult_result);

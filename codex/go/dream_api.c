@@ -8,363 +8,185 @@
 #include <string.h>
 #include <stdio.h>
 
-// Include actual compiler headers
+// Include compiler headers after defining our API
 #include "../../src/lexer/lexer.h"
 #include "../../src/parser/ast.h"
 #include "../../src/parser/parser.h"
 #include "../../src/sem/type.h"
 
-// Lexer API Implementation
-Lexer* lexer_create(const char* source) {
-    if (!source) return NULL;
+// Include Arena functions
+extern void arena_init(Arena* arena);
+
+// Wrapper structures that map to compiler types
+struct DreamLexer {
+    Lexer lexer;
+};
+
+struct DreamParser {
+    Parser parser;
+    Arena arena;
+    DreamLexer* dream_lexer;
+    const char* source;
+};
+
+struct DreamNode {
+    Node* node;
+};
+
+// Lexer API implementation
+DreamLexer* dream_lexer_new(const char* input) {
+    if (!input) return NULL;
     
-    Lexer* lexer = malloc(sizeof(Lexer));
-    if (!lexer) return NULL;
+    DreamLexer* dream_lexer = malloc(sizeof(DreamLexer));
+    if (!dream_lexer) return NULL;
     
-    lexer_init(lexer, source);
-    return lexer;
+    lexer_init(&dream_lexer->lexer, input);
+    return dream_lexer;
 }
 
-void lexer_destroy(Lexer* lexer) {
+void dream_lexer_free(DreamLexer* lexer) {
     if (lexer) {
         free(lexer);
     }
 }
 
-Token lexer_next_token(Lexer* lexer) {
-    if (!lexer) {
-        Token error_token = {TK_ERROR, NULL, 0, {0, 0}};
-        return error_token;
-    }
-    return lexer_next(lexer);
-}
-
-Token lexer_peek_token(Lexer* lexer) {
-    if (!lexer) {
-        Token error_token = {TK_ERROR, NULL, 0, {0, 0}};
-        return error_token;
-    }
-    return lexer_peek(lexer);
-}
-
-const char* token_kind_name(int kind) {
-    // Map token kinds to names
-    switch (kind) {
-        case TK_KW_IF: return "if";
-        case TK_KW_ELSE: return "else";
-        case TK_KW_WHILE: return "while";
-        case TK_KW_FOR: return "for";
-        case TK_KW_RETURN: return "return";
-        case TK_KW_BREAK: return "break";
-        case TK_KW_CONTINUE: return "continue";
-        case TK_IDENT: return "identifier";
-        case TK_INT_LITERAL: return "integer";
-        case TK_FLOAT_LITERAL: return "float";
-        case TK_STRING_LITERAL: return "string";
-        case TK_PLUS: return "+";
-        case TK_MINUS: return "-";
-        case TK_STAR: return "*";
-        case TK_SLASH: return "/";
-        case TK_EQ: return "=";
-        case TK_EQEQ: return "==";
-        case TK_NEQ: return "!=";
-        case TK_LT: return "<";
-        case TK_GT: return ">";
-        case TK_LTEQ: return "<=";
-        case TK_GTEQ: return ">=";
-        case TK_LPAREN: return "(";
-        case TK_RPAREN: return ")";
-        case TK_LBRACE: return "{";
-        case TK_RBRACE: return "}";
-        case TK_SEMICOLON: return ";";
-        case TK_DOT: return ".";
-        case TK_KW_CONSOLE: return "Console";
-        case TK_KW_WRITELINE: return "WriteLine";
-        case TK_EOF: return "EOF";
-        case TK_ERROR: return "ERROR";
-        default: return "UNKNOWN";
-    }
-}
-
-
-// Parser API Implementation
-Parser* parser_create(const char* source) {
-    if (!source) return NULL;
-    
-    Parser* parser = malloc(sizeof(Parser));
-    if (!parser) return NULL;
-    
-    Arena* arena = malloc(sizeof(Arena));
-    if (!arena) {
-        free(parser);
-        return NULL;
+DreamResult dream_lexer_next_token(DreamLexer* lexer, int* token_kind, const char** token_text, size_t* token_len) {
+    if (!lexer || !token_kind || !token_text || !token_len) {
+        return DREAM_ERROR_LEX;
     }
     
-    arena_init(arena);
-    parser_init(parser, arena, source);
-    return parser;
+    Token token = lexer_next(&lexer->lexer);
+    *token_kind = token.kind;
+    *token_text = token.start;
+    *token_len = token.len;
+    
+    return DREAM_OK;
 }
 
-void parser_destroy(Parser* parser) {
+// Parser API implementation
+DreamParser* dream_parser_new(DreamLexer* lexer) {
+    if (!lexer) return NULL;
+    
+    DreamParser* dream_parser = malloc(sizeof(DreamParser));
+    if (!dream_parser) return NULL;
+    
+    dream_parser->dream_lexer = lexer;
+    dream_parser->source = lexer->lexer.src;
+    
+    arena_init(&dream_parser->arena);
+    parser_init(&dream_parser->parser, &dream_parser->arena, dream_parser->source);
+    
+    return dream_parser;
+}
+
+void dream_parser_free(DreamParser* parser) {
     if (parser) {
-        // Note: In a real implementation, we'd need to properly clean up
-        // the arena and diagnostics. For testing purposes, this is simplified.
+        // Note: Arena memory may be cleaned up automatically or managed by compiler
+        // For now, just free the wrapper structure
         free(parser);
     }
 }
 
-Node* parser_parse_program(Parser* parser) {
-    if (!parser) return NULL;
-    return parse_program(parser);
-}
-
-Node* parser_parse_expression(Parser* parser) {
-    // This would need to be implemented in the actual parser
-    // For now, return NULL as a placeholder
-    return NULL;
-}
-
-Node* parser_parse_statement(Parser* parser) {
-    // This would need to be implemented in the actual parser
-    // For now, return NULL as a placeholder
-    return NULL;
-}
-
-bool parser_has_errors(Parser* parser) {
-    if (!parser) return true;
-    return parser->diags.len > 0;
-}
-
-size_t parser_error_count(Parser* parser) {
-    if (!parser) return 0;
-    return parser->diags.len;
-}
-
-const char* parser_get_error(Parser* parser, size_t index) {
-    if (!parser || index >= parser->diags.len) return NULL;
-    return parser->diags.data[index].msg;
-}
-
-// AST API Implementation
-int node_get_kind(Node* node) {
-    if (!node) return ND_ERROR;
-    return (int)node->kind;
-}
-
-size_t node_count_children(Node* node) {
-    if (!node) return 0;
-    
-    switch (node->kind) {
-        case ND_BLOCK:
-            return node->as.block.len;
-        case ND_CALL:
-            return node->as.call.len;
-        case ND_FUNC:
-            return node->as.func.param_len;
-        case ND_STRUCT_DECL:
-        case ND_CLASS_DECL:
-            return node->as.type_decl.len;
-        case ND_SWITCH:
-            return node->as.switch_stmt.len;
-        case ND_BINOP:
-            return 2; // lhs and rhs
-        case ND_UNARY:
-        case ND_POST_UNARY:
-            return 1; // expr
-        case ND_IF:
-            return node->as.if_stmt.else_br ? 3 : 2; // cond, then, [else]
-        case ND_WHILE:
-            return 2; // cond, body
-        case ND_FOR:
-            return 4; // init, cond, update, body
-        default:
-            return 0;
-    }
-}
-
-Node* node_get_child(Node* node, size_t index) {
-    if (!node) return NULL;
-    
-    switch (node->kind) {
-        case ND_BLOCK:
-            if (index < node->as.block.len) {
-                return node->as.block.items[index];
-            }
-            break;
-        case ND_CALL:
-            if (index < node->as.call.len) {
-                return node->as.call.args[index];
-            }
-            break;
-        case ND_BINOP:
-            if (index == 0) return node->as.bin.lhs;
-            if (index == 1) return node->as.bin.rhs;
-            break;
-        case ND_UNARY:
-        case ND_POST_UNARY:
-            if (index == 0) return node->as.unary.expr;
-            break;
-        case ND_IF:
-            if (index == 0) return node->as.if_stmt.cond;
-            if (index == 1) return node->as.if_stmt.then_br;
-            if (index == 2) return node->as.if_stmt.else_br;
-            break;
-        default:
-            break;
+DreamResult dream_parser_parse(DreamParser* parser, DreamNode** root) {
+    if (!parser || !root) {
+        return DREAM_ERROR_PARSE;
     }
     
-    return NULL;
-}
-
-const char* node_get_text(Node* node) {
-    if (!node) return NULL;
-    
-    switch (node->kind) {
-        case ND_IDENT:
-            return node->as.ident.start;
-        case ND_INT:
-        case ND_FLOAT:
-        case ND_CHAR:
-        case ND_STRING:
-        case ND_BOOL:
-            return node->as.lit.start;
-        default:
-            return NULL;
-    }
-}
-
-Pos node_get_position(Node* node) {
+    Node* node = parse_program(&parser->parser);
     if (!node) {
-        Pos pos = {0, 0};
-        return pos;
+        return DREAM_ERROR_PARSE;
     }
-    return node->pos;
-}
-
-// Type API Implementation
-Type* type_create(int kind) {
-    return type_new((TypeKind)kind);
-}
-
-void type_destroy(Type* type) {
-    if (type) {
-        type_free(type);
+    
+    DreamNode* dream_node = malloc(sizeof(DreamNode));
+    if (!dream_node) {
+        return DREAM_ERROR_PARSE;
     }
+    
+    dream_node->node = node;
+    *root = dream_node;
+    
+    return DREAM_OK;
 }
 
-int type_get_kind(Type* type) {
-    if (!type) return TY_ERROR;
-    return (int)type->kind;
-}
-
-bool type_equals(Type* a, Type* b) {
-    if (!a || !b) return false;
-    if (a == b) return true;
-    
-    if (a->kind != b->kind) return false;
-    
-    switch (a->kind) {
-        case TY_FUNC:
-            return type_equals(a->as.func.param, b->as.func.param) &&
-                   type_equals(a->as.func.ret, b->as.func.ret);
-        case TY_VAR:
-            return a->as.var.id == b->as.var.id;
-        default:
-            return true; // Primitive types are equal if kinds match
+// Node API implementation
+void dream_node_free(DreamNode* node) {
+    if (node) {
+        // Note: The underlying Node* may be managed by an arena,
+        // so we only free our wrapper
+        free(node);
     }
 }
 
-const char* type_to_string(Type* type) {
-    if (!type) return "null";
+int dream_node_get_kind(DreamNode* node) {
+    if (!node || !node->node) {
+        return -1;
+    }
+    return node->node->kind;
+}
+
+const char* dream_node_to_string(DreamNode* node) {
+    if (!node || !node->node) {
+        return "null";
+    }
     
-    switch (type->kind) {
-        case TY_INT: return "int";
-        case TY_FLOAT: return "float";
-        case TY_BOOL: return "bool";
-        case TY_CHAR: return "char";
-        case TY_STRING: return "string";
-        case TY_FUNC: return "function";
-        case TY_VAR: return "var";
-        case TY_ERROR: return "error";
-        default: return "unknown";
+    // Simple string representation based on node kind
+    switch (node->node->kind) {
+        case ND_INT: return "int_literal";
+        case ND_FLOAT: return "float_literal";
+        case ND_STRING: return "string_literal";
+        case ND_CHAR: return "char_literal";
+        case ND_BOOL: return "bool_literal";
+        case ND_IDENT: return "identifier";
+        case ND_BINOP: return "binary_op";
+        case ND_UNARY: return "unary_op";
+        case ND_CALL: return "function_call";
+        case ND_IF: return "if_statement";
+        case ND_WHILE: return "while_loop";
+        case ND_FOR: return "for_loop";
+        case ND_RETURN: return "return_statement";
+        case ND_BLOCK: return "block";
+        case ND_VAR_DECL: return "variable_declaration";
+        case ND_FUNC: return "function_declaration";
+        case ND_MODULE: return "module";
+        default: return "unknown_node";
     }
 }
 
-// Memory management
-Arena* arena_create(void) {
-    Arena* arena = malloc(sizeof(Arena));
-    if (!arena) return NULL;
-    
-    arena_init(arena);
-    return arena;
-}
-
-void arena_destroy(Arena* arena) {
-    if (arena) {
-        if (arena->ptr) {
-            free(arena->ptr);
-        }
-        free(arena);
-    }
-}
-
-void* arena_allocate(Arena* arena, size_t size) {
-    if (!arena) return NULL;
-    return arena_alloc(arena, size);
-}
-
-// Utility functions for end-to-end testing
-int dream_compile_string(const char* source, char** output, char** errors) {
-    // This is a simplified implementation for testing
-    // In reality, this would invoke the full compilation pipeline
-    
-    if (!source) return -1;
-    
-    // Create a simple success response for basic tests
-    if (output) {
-        *output = strdup("// Compiled successfully\n");
+// High-level compilation API
+DreamResult dream_compile_to_c(const char* input, const char* output_file) {
+    if (!input || !output_file) {
+        return DREAM_ERROR_IO;
     }
     
-    if (errors) {
-        *errors = strdup("");
+    // Create lexer
+    DreamLexer* lexer = dream_lexer_new(input);
+    if (!lexer) {
+        return DREAM_ERROR_LEX;
     }
     
-    return 0; // Success
-}
-
-int dream_run_string(const char* source, char** output, char** errors) {
-    // This is a simplified implementation for testing
-    // In reality, this would compile and execute the program
-    
-    if (!source) return -1;
-    
-    // Simple pattern matching for basic test cases
-    if (strstr(source, "Console.WriteLine(42)")) {
-        if (output) *output = strdup("42\n");
-        if (errors) *errors = strdup("");
-        return 0;
+    // Create parser
+    DreamParser* parser = dream_parser_new(lexer);
+    if (!parser) {
+        dream_lexer_free(lexer);
+        return DREAM_ERROR_PARSE;
     }
     
-    if (strstr(source, "Console.WriteLine(\"hello\")")) {
-        if (output) *output = strdup("hello\n");
-        if (errors) *errors = strdup("");
-        return 0;
+    // Parse input
+    DreamNode* root = NULL;
+    DreamResult result = dream_parser_parse(parser, &root);
+    if (result != DREAM_OK) {
+        dream_parser_free(parser);
+        dream_lexer_free(lexer);
+        return result;
     }
     
-    if (strstr(source, "1 + 2 + 3")) {
-        if (output) *output = strdup("6\n");
-        if (errors) *errors = strdup("");
-        return 0;
-    }
+    // TODO: Add semantic analysis and code generation
+    // For now, just return success if parsing worked
     
-    // Default case
-    if (output) *output = strdup("");
-    if (errors) *errors = strdup("");
-    return 0;
-}
-
-void dream_free_string(char* str) {
-    if (str) {
-        free(str);
-    }
+    // Cleanup
+    dream_node_free(root);
+    dream_parser_free(parser);
+    dream_lexer_free(lexer);
+    
+    return DREAM_OK;
 }

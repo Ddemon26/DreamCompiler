@@ -6,8 +6,12 @@
 /**
  * Represents a position in the source code with line and column numbers.
  */
+#ifndef POS_DEFINED
+#define POS_DEFINED
 typedef struct { size_t line; size_t column; } Pos;
+#endif
 
+#define TOKEN_ENUMS_DEFINED
 #define TOKEN(k, r) TK_##k,
 /**
  * Enum for different kinds of tokens.

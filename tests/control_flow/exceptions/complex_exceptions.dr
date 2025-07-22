@@ -1,0 +1,61 @@
+// Complex exception handling scenarios
+
+func int riskyDivision(int a, int b) {
+    try {
+        if (b == 0) {
+            throw "Division by zero!";
+        }
+        return a / b;
+    } catch (string error) {
+        Console.WriteLine("Caught error: " + error);
+        return -1;
+    }
+}
+
+func void nestedExceptions() {
+    try {
+        Console.WriteLine("Outer try block");
+        try {
+            Console.WriteLine("Inner try block");
+            throw "Inner exception";
+        } catch (string inner_error) {
+            Console.WriteLine("Inner catch: " + inner_error);
+            throw "Re-thrown from inner";
+        }
+    } catch (string outer_error) {
+        Console.WriteLine("Outer catch: " + outer_error);
+    } finally {
+        Console.WriteLine("Outer finally block");
+    }
+}
+
+// Test exception propagation
+func void caller() {
+    try {
+        int result = riskyDivision(10, 0);
+        Console.WriteLine("Result: " + result);
+    } catch (string e) {
+        Console.WriteLine("Caller caught: " + e);
+    }
+}
+
+// Main execution
+Console.WriteLine("Testing complex exceptions:");
+nestedExceptions();
+caller();
+
+// Test finally with early returns
+func int testFinally(bool shouldReturn) {
+    try {
+        if (shouldReturn) {
+            return 42;
+        }
+        return 24;
+    } finally {
+        Console.WriteLine("Finally block executed");
+    }
+}
+
+int result1 = testFinally(true);
+int result2 = testFinally(false);
+Console.WriteLine("Results: " + result1 + ", " + result2);

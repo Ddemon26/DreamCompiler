@@ -48,7 +48,7 @@ function Test-Prerequisites {
 function Build-CLibrary {
     Write-Host "Building C library..." -ForegroundColor Yellow
     
-    if ($IsWindows) {
+    if ([System.Environment]::OSVersion.Platform -eq "Win32NT") {
         $libName = "libdream.dll"
         $cc = "zig cc"
         $cflags = "-std=c11 -Wall -Wextra -D_GNU_SOURCE -fPIC -O2"

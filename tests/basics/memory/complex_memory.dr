@@ -1,0 +1,90 @@
+// Complex memory management scenarios
+
+struct Node {
+    public int value;
+    public string name;
+}
+
+// Test multiple allocations and references
+func void testMultipleAllocations() {
+    Console.WriteLine("Testing multiple allocations:");
+    
+    Node n1 = new Node();
+    n1.value = 10;
+    n1.name = "First";
+    
+    Node n2 = new Node();
+    n2.value = 20;
+    n2.name = "Second";
+    
+    Node n3 = new Node();
+    n3.value = 30;
+    n3.name = "Third";
+    
+    Console.WriteLine("Nodes created:");
+    Console.WriteLine(n1.name + ": " + n1.value);
+    Console.WriteLine(n2.name + ": " + n2.value);
+    Console.WriteLine(n3.name + ": " + n3.value);
+}
+
+// Test arrays of objects
+func void testObjectArrays() {
+    Console.WriteLine("Testing object arrays:");
+    
+    Node[] nodes = new Node[3];
+    
+    for (int i = 0; i < 3; i++) {
+        nodes[i] = new Node();
+        nodes[i].value = (i + 1) * 10;
+        nodes[i].name = "Node" + (i + 1);
+    }
+    
+    Console.WriteLine("Array contents:");
+    for (int i = 0; i < 3; i++) {
+        Console.WriteLine(nodes[i].name + ": " + nodes[i].value);
+    }
+}
+
+// Test nested object references
+func void testNestedReferences() {
+    Console.WriteLine("Testing nested references:");
+    
+    struct Container {
+        public Node inner;
+        public string label;
+    }
+    
+    Container container = new Container();
+    container.label = "Main Container";
+    container.inner = new Node();
+    container.inner.value = 42;
+    container.inner.name = "Nested Node";
+    
+    Console.WriteLine(container.label + " contains:");
+    Console.WriteLine(container.inner.name + " with value " + container.inner.value);
+}
+
+// Test string array memory management
+func void testStringArrayMemory() {
+    Console.WriteLine("Testing string array memory:");
+    
+    string[] messages = {"Hello", "World", "From", "Dream"};
+    string combined = "";
+    
+    for (int i = 0; i < 4; i++) {
+        combined = combined + messages[i];
+        if (i < 3) {
+            combined = combined + " ";
+        }
+    }
+    
+    Console.WriteLine("Combined: " + combined);
+}
+
+// Main execution
+Console.WriteLine("=== Complex Memory Management Tests ===");
+testMultipleAllocations();
+testObjectArrays();
+testNestedReferences();
+testStringArrayMemory();
+Console.WriteLine("=== Memory tests completed ===");

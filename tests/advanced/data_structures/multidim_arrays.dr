@@ -1,0 +1,46 @@
+// Multi-dimensional arrays and complex data structures
+
+// 2D array simulation using arrays of arrays
+int[] row1 = {1, 2, 3};
+int[] row2 = {4, 5, 6};
+int[] row3 = {7, 8, 9};
+
+Console.WriteLine("Matrix:");
+Console.WriteLine(row1[0] + " " + row1[1] + " " + row1[2]);
+Console.WriteLine(row2[0] + " " + row2[1] + " " + row2[2]);
+Console.WriteLine(row3[0] + " " + row3[1] + " " + row3[2]);
+
+// Array of arrays for different data types
+string[] names = {"Alice", "Bob", "Charlie"};
+int[] ages = {25, 30, 35};
+bool[] active = {true, false, true};
+
+Console.WriteLine("User Data:");
+for (int i = 0; i < 3; i++) {
+    string status = active[i] ? "active" : "inactive";
+    Console.WriteLine(names[i] + " (age " + ages[i] + ") - " + status);
+}
+
+// Complex nested structure simulation
+struct Point {
+    public int x;
+    public int y;
+}
+
+Point p1 = new Point();
+p1.x = 10;
+p1.y = 20;
+
+Point p2 = new Point();
+p2.x = 30;
+p2.y = 40;
+
+Console.WriteLine("Points:");
+Console.WriteLine("P1: (" + p1.x + ", " + p1.y + ")");
+Console.WriteLine("P2: (" + p2.x + ", " + p2.y + ")");
+
+// Distance calculation
+int dx = p2.x - p1.x;
+int dy = p2.y - p1.y;
+int distance_squared = dx * dx + dy * dy;
+Console.WriteLine("Distance squared: " + distance_squared);

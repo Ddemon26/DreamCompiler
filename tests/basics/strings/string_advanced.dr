@@ -1,0 +1,26 @@
+// Advanced string operations and concatenations
+string first = "Hello";
+string second = "World";
+int number = 42;
+float pi = 3.14;
+
+// Simple string concatenation
+string greeting = first + " " + second;
+Console.WriteLine(greeting);
+
+// Mixed type concatenations
+string info = "Number: " + number;
+Console.WriteLine(info);
+
+string pi_info = "Pi: " + pi;
+Console.WriteLine(pi_info);
+
+// String arrays with concatenation
+string[] words = {"Apple", "Banana", "Cherry"};
+string fruit_list = "Fruits: " + words[0];
+Console.WriteLine(fruit_list);
+
+// Boolean to string concatenation
+bool isTrue = true;
+string bool_info = "True: " + isTrue;
+Console.WriteLine(bool_info);

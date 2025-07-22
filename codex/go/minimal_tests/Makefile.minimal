@@ -1,0 +1,24 @@
+# Minimal Go Testing Makefile for DreamCompiler
+# This avoids the complex header conflicts and focuses on basic testing
+
+.PHONY: test-minimal clean-minimal bench-minimal
+
+# Test with minimal C library
+test-minimal:
+	@echo "Building minimal C library..."
+	@zig cc -std=c11 -Wall -fPIC -shared -o libdream_minimal.dll dream_minimal.c
+	@echo "Running minimal Go tests..."
+	@CGO_LDFLAGS="-L. -ldream_minimal" go test -v -run "Test" ./...
+
+# Run benchmarks
+bench-minimal:
+	@echo "Building minimal C library..."
+	@zig cc -std=c11 -Wall -fPIC -shared -o libdream_minimal.dll dream_minimal.c
+	@echo "Running benchmarks..."
+	@CGO_LDFLAGS="-L. -ldream_minimal" go test -bench=. -benchmem ./...
+
+# Clean minimal build artifacts
+clean-minimal:
+	@echo "Cleaning minimal test artifacts..."
+	@rm -f libdream_minimal.dll libdream_minimal.lib
+	@go clean -testcache
