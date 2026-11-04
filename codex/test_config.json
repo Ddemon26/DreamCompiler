@@ -3,6 +3,7 @@
   "description": "DreamCompiler Test Configuration",
   "timeout": 30,
   "build_timeout": 180,
+  "fixture_files": ["multifile/math_utils.dr", "multifile/string_utils.dr"],
   "parallel_jobs": 1,
   "memory_limit_mb": 512,
   "categories": {

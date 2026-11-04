@@ -1,45 +1,21 @@
-# Multi-File Compilation Test
+# Multi-file regression
 
-This directory contains test files for the DreamCompiler's multi-file compilation functionality.
+`main.dr` imports `math_utils.dr` and `string_utils.dr`, checks arithmetic and
+recursion, and prints the result of an exported string function.
 
-## Test Files
-
-- **`math_utils.dr`** - Math utility module with exported functions
-- **`string_utils.dr`** - String utility module with exported functions  
-- **`main.dr`** - Main program that imports and uses both utility modules
-
-## Features Demonstrated
-
-1. **Module Declarations** - `module module_name;`
-2. **Export Declarations** - `export func ...`
-3. **Import Statements** - `import module_name;`
-4. **Cross-Module Function Calls** - `module_name.function()`
-
-## Expected Compilation Flow
-
-1. **Dependency Resolution** - Determine compilation order based on imports
-2. **Module Compilation** - Generate separate C files for each module
-3. **Header Generation** - Create `.h` files with extern declarations for exports
-4. **Linking** - Combine all modules with runtime library into final executable
-
-## Usage
-
-```bash
-# Compile all modules (future command)
-zig build compile-multi tests/multifile/*.dr
-
-# Or individually
-./zig-out/bin/DreamCompiler --multi-file tests/multifile/main.dr
+```sh
+zig build compile-multi -- tests/multifile/main.dr
+./dream
 ```
 
-## Generated Output Structure
+On Windows, execute `./dream.exe`. To run it as an output-checked regression:
 
+```sh
+python codex/test_cli.py run --pattern "multifile/main.dr"
 ```
-build/multifile/
-├── math_utils.c        # Generated C code
-├── math_utils.h        # Export declarations
-├── string_utils.c      # Generated C code
-├── string_utils.h      # Export declarations
-├── main.c              # Generated C code
-└── main                # Final executable
-```
+
+The helper modules are fixtures excluded from standalone discovery by
+`codex/test_config.json`. Additional module integration and rejection cases run
+through the Go quick protocol in `codex/go/module_integration_test.go`.
+
+See `docs/advanced-topics/modules.md` for implemented behavior and limits.

@@ -156,6 +156,7 @@ static Node *parse_primary(Parser *p) {
     // fallthrough
   case TK_IDENT:
     n = node_new(p->arena, ND_IDENT);
+    n->pos = t.pos;
     n->as.ident.start = t.start;
     n->as.ident.len = t.len;
     next(p);
@@ -214,6 +215,7 @@ static Node *parse_postfix(Parser *p) {
       else
         diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
       Node *call = node_new(p->arena, ND_CALL);
+      call->pos = n->pos;
       call->as.call.callee = n;
       call->as.call.args = args;
       call->as.call.len = len;

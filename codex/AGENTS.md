@@ -79,6 +79,8 @@ src/
 │   └── stmt.h       # Statement codegen interface
 ├── driver/          # Compiler driver & main entry points
 │   ├── main.c       # Main compiler driver
+│   ├── modules.c    # Source loading, dependency validation, and module symbol resolution
+│   ├── modules.h    # Multi-file frontend interface
 │   ├── lex_main.c   # Lexer-only mode
 │   └── parse_main.c # Parser-only mode
 └── util/            # Utility functions & platform abstraction
@@ -175,6 +177,7 @@ codex/
 ├── go/             # Go testing suite
 │   ├── go.mod             # Module for compiler CLI integration tests
 │   ├── driver_stability_test.go # Error exits, warnings, and arena growth
+│   ├── module_integration_test.go # Dependencies, exports, signatures, and diagnostics
 │   ├── dream_test.go      # Unit tests via cgo
 │   ├── dream_bench_test.go # Performance benchmarks
 │   ├── dream_fuzz_test.go  # Fuzz testing
@@ -213,6 +216,9 @@ stdlib/             # Standard library implementation
 ```
 
 ### Generated & Cache Directories
+
+Completed pass checkpoints are recorded under `tasks/passes/` (starting with
+`P0003-multi-file.md`) and identified by `Pass-ID` commit trailers.
 ```
 .zig-cache/         # Zig build cache
 zig-out/            # Zig build output

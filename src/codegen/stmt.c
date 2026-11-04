@@ -6,6 +6,19 @@
 
 static CGTypeInfo *g_types = NULL;
 static size_t g_type_len = 0;
+static Node *g_program = NULL;
+
+void cg_register_program(Node *program) { g_program = program; }
+
+Node *cg_function(Slice name) {
+  if (!g_program) return NULL;
+  for (size_t i = 0; i < g_program->as.block.len; ++i) {
+    Node *node = g_program->as.block.items[i];
+    if (node->kind == ND_FUNC && node->as.func.name.len == name.len &&
+        memcmp(node->as.func.name.start, name.start, name.len) == 0) return node;
+  }
+  return NULL;
+}
 
 static void emit_func_impl(COut *b, Slice prefix, Node *n,
                            const char *src_file);
@@ -117,6 +130,19 @@ static void emit_type_with_pointer(COut *b, TokenKind k, Slice name, int is_poin
       c_out_write(b, "*");
     }
   }
+}
+
+void emit_func_prototype(COut *b, Node *n) {
+  bool main_function = n->as.func.name.len == 4 && memcmp(n->as.func.name.start, "main", 4) == 0;
+  c_out_write(b, "%s%s %.*s(", main_function ? "" : "static ",
+              n->as.func.is_async ? "Task*" : type_to_c(n->as.func.ret_type),
+              (int)n->as.func.name.len, n->as.func.name.start);
+  if (!n->as.func.param_len) c_out_write(b, "void");
+  for (size_t i = 0; i < n->as.func.param_len; ++i) {
+    if (i) c_out_write(b, ", ");
+    c_out_write(b, "%s", type_to_c(n->as.func.params[i]->as.var_decl.type));
+  }
+  c_out_write(b, ");\n");
 }
 
 void emit_type_decl(COut *b, Node *n, const char *src_file) {

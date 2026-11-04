@@ -18,7 +18,9 @@ static void diag_push(SemAnalyzer *s, Pos pos, DiagSeverity sev,
     .len = 0,
     .msg = msg, 
     .hint = NULL,
-    .sev = sev
+    .sev = sev,
+    .source_file = s->source_file,
+    .source_text = s->source_text
   };
 }
 
@@ -52,6 +54,8 @@ void sem_analyzer_init(SemAnalyzer *s, Arena *a) {
   s->current_ret = TK_KW_VOID;
   s->program = NULL;
   s->current_class = NULL;
+  s->source_file = NULL;
+  s->source_text = NULL;
 }
 
 void sem_analyzer_free(SemAnalyzer *s) {
@@ -75,6 +79,7 @@ struct Decl {
       TokenKind ret_type;
       TokenKind *param_types;
       size_t param_len;
+      Node *definition;
     } func;
   } as;
 };
@@ -86,6 +91,31 @@ static Decl *decl_new(SemAnalyzer *s, DeclKind kind) {
   Decl *d = arena_alloc(s->arena, sizeof(Decl));
   d->kind = kind;
   return d;
+}
+
+static void source_context(SemAnalyzer *s, Node *node) {
+  s->source_file = node->source_file;
+  s->source_text = node->source_text;
+}
+
+static Decl *declare_function(SemAnalyzer *s, Node *node) {
+  char *name = slice_to_cstr(s, node->as.func.name);
+  Symbol *sym = sym_intern(name);
+  Decl *known = scope_lookup(s->scope, sym);
+  if (known) {
+    if (known->kind == DECL_FUNC && known->as.func.definition == node) return known;
+    diag_pushf(s, node->pos, DIAG_ERROR, "redefinition of function '%s'", name);
+    return NULL;
+  }
+  Decl *function = decl_new(s, DECL_FUNC);
+  function->as.func.definition = node;
+  function->as.func.ret_type = node->as.func.is_async ? TK_KW_TASK : node->as.func.ret_type;
+  function->as.func.param_len = node->as.func.param_len;
+  function->as.func.param_types = arena_alloc(s->arena, sizeof(TokenKind) * node->as.func.param_len);
+  for (size_t i = 0; i < node->as.func.param_len; ++i)
+    function->as.func.param_types[i] = node->as.func.params[i]->as.var_decl.type;
+  scope_bind(s->scope, sym, function);
+  return function;
 }
 
 static bool slice_equal(Slice a, Slice b) {
@@ -252,8 +282,11 @@ static TokenKind analyze_call(SemAnalyzer *s, Node *n) {
                "expected %zu arguments but got %zu for function '%s'",
                d->as.func.param_len, n->as.call.len, name);
   }
-  for (size_t i = 0; i < n->as.call.len; i++)
-    analyze_expr(s, n->as.call.args[i]);
+  for (size_t i = 0; i < n->as.call.len; i++) {
+    TokenKind actual = analyze_expr(s, n->as.call.args[i]);
+    if (i < d->as.func.param_len && actual != d->as.func.param_types[i])
+      diag_pushf(s, n->pos, DIAG_ERROR, "argument %zu has incompatible type for function '%s'", i + 1, name);
+  }
   return d->as.func.ret_type;
 }
 
@@ -439,22 +472,7 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
     break;
   }
   case ND_FUNC: {
-    char *name = slice_to_cstr(s, n->as.func.name);
-    Symbol *sym = sym_intern(name);
-    if (scope_lookup(s->scope, sym)) {
-      diag_pushf(s, n->pos, DIAG_ERROR, "redefinition of function '%s'", name);
-      break;
-    }
-    Decl *d = decl_new(s, DECL_FUNC);
-    // For async functions, the semantic return type is Task*
-    d->as.func.ret_type = n->as.func.is_async ? TK_KW_TASK : n->as.func.ret_type;
-    d->as.func.param_len = n->as.func.param_len;
-    d->as.func.param_types = malloc(sizeof(TokenKind) * d->as.func.param_len);
-    for (size_t i = 0; i < d->as.func.param_len; i++) {
-      Node *param = n->as.func.params[i];
-      d->as.func.param_types[i] = param->as.var_decl.type;
-    }
-    scope_bind(s->scope, sym, d);
+    if (!declare_function(s, n)) break;
     s->scope = scope_push(s->scope);
     for (size_t i = 0; i < n->as.func.param_len; i++) {
       Node *param = n->as.func.params[i];
@@ -523,6 +541,7 @@ void sem_analyze_program(SemAnalyzer *s, Node *root) {
   s->program = root;
   for (size_t i = 0; i < root->as.block.len; ++i) {
     Node *n = root->as.block.items[i];
+    source_context(s, n);
     if (n->kind == ND_CLASS_DECL || n->kind == ND_STRUCT_DECL) {
       n->as.type_decl.base_decl = NULL;
       n->as.type_decl.inheritance_state = 0;
@@ -532,17 +551,25 @@ void sem_analyze_program(SemAnalyzer *s, Node *root) {
   bool valid = true;
   for (size_t i = 0; i < root->as.block.len; ++i) {
     Node *n = root->as.block.items[i];
+    source_context(s, n);
     if (n->kind == ND_CLASS_DECL || n->kind == ND_STRUCT_DECL)
       valid = resolve_inheritance(s, n) && valid;
   }
   if (!valid) return;
   for (size_t i = 0; i < root->as.block.len; ++i) {
     Node *n = root->as.block.items[i];
+    source_context(s, n);
+    if (n->kind == ND_FUNC) declare_function(s, n);
+  }
+  for (size_t i = 0; i < root->as.block.len; ++i) {
+    Node *n = root->as.block.items[i];
+    source_context(s, n);
     if (n->kind != ND_CLASS_DECL && n->kind != ND_STRUCT_DECL) analyze_stmt(s, n);
   }
   // Methods have their own parameter scope and resolve fields through this/base.
   for (size_t i = 0; i < root->as.block.len; ++i) {
     Node *type = root->as.block.items[i];
+    source_context(s, type);
     if (type->kind != ND_CLASS_DECL && type->kind != ND_STRUCT_DECL) continue;
     for (size_t j = 0; j < type->as.type_decl.len; ++j) {
       Node *method = type->as.type_decl.members[j];

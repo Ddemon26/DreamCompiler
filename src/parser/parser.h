@@ -22,6 +22,8 @@ typedef struct {
     const char *msg;
     const char *hint;   // Optional hint for fixing the issue
     DiagSeverity sev;
+    const char *source_file;
+    const char *source_text;
 } Diagnostic;
 
 /**

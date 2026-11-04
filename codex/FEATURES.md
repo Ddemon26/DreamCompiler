@@ -3,7 +3,7 @@
 This document tracks the implementation status of Dream language features.
 
 **Verified baseline (November 3, 2026):** Zig 0.17.1 builds on Windows;
-`zig build test` reports **107 passed, 22 skipped, 0 failures, 0 errors** out of
+`zig build test` reports **110 passed, 19 skipped, 0 failures, 0 errors** out of
 129 Dream fixtures. Linux cross-compilation succeeds; local Linux execution is
 not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
 
@@ -51,10 +51,10 @@ not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
 ## 🚧 Partially Implemented Features
 
 ### Multi-File System
-- **Status**: Framework exists, needs debugging
-- **Components**: Module declarations, import/export statements
-- **Issues**: Cross-module linking and dependency resolution need work
-- **Location**: Tests moved to individual test files, framework in `src/codegen/module.c`
+- **Status**: Function modules work through `--multi-file entry.dr`
+- **Components**: Relative imports, shared dependencies, private functions, exports, recursion, signatures, and source diagnostics
+- **Limits**: Imported types/globals, package paths, and separate object caching are not implemented
+- **Location**: Working frontend in `src/driver/modules.c`; combined-program C generation uses the main backend
 
 ## ❌ Not Implemented / Experimental Features
 
@@ -86,12 +86,12 @@ not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
 ## 📊 Current Implementation Status
 
 ### Test Suite Results (Latest)
-- **Windows Dream Suite**: 107 passed, 22 skipped, no failures or errors (129 discovered)
+- **Windows Dream Suite**: 110 passed, 19 skipped, no failures or errors (129 discovered)
 - **Basic Operations**: Fully functional
 - **Control Flow**: Fully functional  
 - **Functions**: Fully functional
 - **Exception Handling**: Existing annotated tests pass; additional fixtures remain skipped
-- **Multi-file**: Framework exists, needs debugging
+- **Multi-file**: Function imports compile and run; broader module exports remain future work
 - **Concurrency**: Not implemented (tests excluded)
 - **Graphics**: Not implemented (tests excluded)
 

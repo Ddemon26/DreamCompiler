@@ -67,6 +67,13 @@ class TestRunnerOutcomes(unittest.TestCase):
         self.assertEqual(suite.passed, 1)
         self.assertEqual(suite.total, 2)
 
+    def test_module_fixtures_are_not_counted_as_tests(self):
+        (self.root / "main.dr").touch()
+        (self.root / "helper.dr").touch()
+        self.manager.config["fixture_files"] = ["helper.dr"]
+        with patch.object(runner, "TEST_DIR", self.root):
+            self.assertEqual(self.manager.discover_tests(), [self.root / "main.dr"])
+
 
 if __name__ == "__main__":
     unittest.main()

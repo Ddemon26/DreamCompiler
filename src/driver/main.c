@@ -1,5 +1,5 @@
 #include "../codegen/codegen.h"
-#include "../codegen/module.h"
+#include "modules.h"
 #include "../ir/lower.h"
 #include "../lexer/lexer.h"
 #include "../opt/pipeline.h"
@@ -133,6 +133,10 @@ int main(int argc, char *argv[]) {
       multi_file = true;
       continue;
     }
+    if (input) {
+      fprintf(stderr, "pass one entry file; --multi-file resolves its imports automatically\n");
+      return 1;
+    }
     input = argv[i];
   }
 
@@ -171,6 +175,22 @@ int main(int argc, char *argv[]) {
   if (diagnostics_have_errors(&p.diags)) {
     status = 1;
     goto cleanup;
+  }
+
+  if (multi_file) {
+    if (!modules_expand_program(&arena, input, root, src, p.warn_config, &root)) {
+      status = 1;
+      goto cleanup;
+    }
+  } else {
+    for (size_t i = 0; i < root->as.block.len; ++i) {
+      NodeKind kind = root->as.block.items[i]->kind;
+      if (kind == ND_MODULE || kind == ND_IMPORT || kind == ND_EXPORT) {
+        fprintf(stderr, "error: module directives require --multi-file\n");
+        status = 1;
+        goto cleanup;
+      }
+    }
   }
 
   sem_analyze_program(&sem, root);

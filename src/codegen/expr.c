@@ -35,7 +35,10 @@ static Slice expr_type(CGCtx *ctx, Node *n) {
 }
 
 static Node *expr_member(CGCtx *ctx, Node *n, Node **owner) {
-  if (n->kind == ND_CALL) return expr_member(ctx, n->as.call.callee, owner);
+  if (n->kind == ND_CALL) {
+    if (n->as.call.callee->kind == ND_IDENT) return cg_function(n->as.call.callee->as.ident);
+    return expr_member(ctx, n->as.call.callee, owner);
+  }
   if (n->kind == ND_FIELD) return cg_member(expr_type(ctx, n->as.field.object), n->as.field.name, owner);
   if (n->kind == ND_BASE) return sem_find_member(base_type(ctx), n->as.base.name, owner);
   if (n->kind == ND_INDEX) return expr_member(ctx, n->as.index.array, owner);

@@ -146,7 +146,7 @@ function Invoke-Tests {
     switch ($TestType) {
         "quick" {
             Write-Host "=== QUICK VALIDATION (< 30s) ===" -ForegroundColor Cyan
-            go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal)$' .
+            go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules)$' .
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
         "unit" {

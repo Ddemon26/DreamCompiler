@@ -2,17 +2,15 @@ const std = @import("std");
 
 /// A list of all C source files used in the project.
 const AllCSources = [_][]const u8{
-    "src/driver/main.c",         "src/parser/ast.c",        "src/parser/parser.c",
-    "src/parser/error.c",        "src/parser/diagnostic.c", "src/parser/warnings.c",
-    "src/sem/scope.c",           "src/sem/symbol.c",        "src/sem/type.c",
-    "src/sem/infer.c",           "src/sem/analysis.c",      "src/ir/ir.c",
-    "src/ir/lower.c",            "src/cfg/cfg.c",           "src/ssa/ssa.c",
-    "src/opt/pipeline.c",        "src/opt/sccp.c",          "src/opt/dce.c",
-    "src/opt/value_numbering.c", "src/opt/licm.c",          "src/opt/copy_prop.c",
-    "src/opt/cse.c",             "src/opt/peephole.c",      "src/opt/inline.c",
-    "src/opt/loop_opt.c",        "src/codegen/c_emit.c",    "src/codegen/context.c",
-    "src/codegen/expr.c",        "src/codegen/stmt.c",      "src/codegen/codegen.c",
-    "src/codegen/backend.c",     "src/codegen/module.c",
+    "src/driver/main.c",    "src/driver/modules.c",    "src/parser/ast.c",      "src/parser/parser.c",
+    "src/parser/error.c",   "src/parser/diagnostic.c", "src/parser/warnings.c", "src/sem/scope.c",
+    "src/sem/symbol.c",     "src/sem/type.c",          "src/sem/infer.c",       "src/sem/analysis.c",
+    "src/ir/ir.c",          "src/ir/lower.c",          "src/cfg/cfg.c",         "src/ssa/ssa.c",
+    "src/opt/pipeline.c",   "src/opt/sccp.c",          "src/opt/dce.c",         "src/opt/value_numbering.c",
+    "src/opt/licm.c",       "src/opt/copy_prop.c",     "src/opt/cse.c",         "src/opt/peephole.c",
+    "src/opt/inline.c",     "src/opt/loop_opt.c",      "src/codegen/c_emit.c",  "src/codegen/context.c",
+    "src/codegen/expr.c",   "src/codegen/stmt.c",      "src/codegen/codegen.c", "src/codegen/backend.c",
+    "src/codegen/module.c",
 };
 
 /// Baseline runtime sources always compiled
@@ -274,10 +272,13 @@ fn addMultiFileCompileStep(
     // This step will be enhanced to accept command-line arguments for input files
     // For now, it demonstrates the framework for multi-file compilation
     const run_cmd = b.addRunArtifact(compiler);
+    run_cmd.setEnvironmentVariable("CC", "zig cc");
     run_cmd.addArgs(&.{"--multi-file"});
+    run_cmd.addPassthruArgs();
 
     // Add runtime library dependency
     run_cmd.step.dependOn(&runtime_lib.step);
+    run_cmd.step.dependOn(b.getInstallStep());
 
     step.dependOn(&run_cmd.step);
     return step;

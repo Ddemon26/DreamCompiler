@@ -133,6 +133,8 @@ typedef struct {
 struct Node {
   NodeKind kind; /**< The type of the node. */
   Pos pos;       /**< Source position of this node. */
+  const char *source_file; /**< Optional origin for multi-file compilation. */
+  const char *source_text;
   union {
     Slice lit;   /**< Literal value for ND_* literal nodes. */
     Slice ident; /**< Identifier for ND_IDENT nodes. */

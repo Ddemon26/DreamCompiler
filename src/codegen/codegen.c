@@ -111,6 +111,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
     }
   }
   cg_register_types(tinfo, tlen);
+  cg_register_program(root);
 
   char src_buf[512];
   size_t i = 0;
@@ -120,6 +121,13 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   src_buf[i] = 0;
   const char *src_norm = src_buf;
   c_out_write(&builder, "#line 1 \"%s\"\n", src_norm);
+
+  for (size_t i = 0; i < tlen; ++i)
+    c_out_write(&builder, "struct %.*s;\n", (int)tinfo[i].name.len, tinfo[i].name.start);
+  for (size_t i = 0; i < root->as.block.len; ++i) {
+    Node *node = root->as.block.items[i];
+    if (node->kind == ND_FUNC) emit_func_prototype(&builder, node);
+  }
 
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
@@ -131,7 +139,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_FUNC)
-      emit_func(&builder, it, src_norm);
+      emit_func(&builder, it, it->source_file ? it->source_file : src_norm);
   }
 
   Slice main_class = {NULL, 0};
@@ -185,6 +193,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_free(&builder);
   free(tinfo);
   cg_register_types(NULL, 0);
+  cg_register_program(NULL);
 }
 
 void codegen_emit_obj(Node *root, const char *path, const char *src_file) {

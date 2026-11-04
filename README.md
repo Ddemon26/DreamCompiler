@@ -17,6 +17,7 @@ The compiler currently supports:
 - Increment/decrement and compound assignment operators
 - Ternary operator `?:` and string concatenation with `+`
 - Console input/output via `Console.ReadLine`, `Console.Write` and `Console.WriteLine`
+- Function imports across sibling source files with `--multi-file` ([module guide](docs/advanced-topics/modules.md))
 See [codex/FEATURES.md](codex/FEATURES.md) for the full list of implemented language features.
 See the [changelog](docs/v1.1/changelog.md) for details on recent additions.
 

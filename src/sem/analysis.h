@@ -10,6 +10,8 @@ typedef struct SemAnalyzer {
   TokenKind current_ret;
   Node *program;
   Node *current_class;
+  const char *source_file;
+  const char *source_text;
 } SemAnalyzer;
 
 void sem_analyzer_init(SemAnalyzer *s, Arena *a);

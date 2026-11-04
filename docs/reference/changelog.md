@@ -2,6 +2,9 @@
 
 ## Unreleased - Compiler stabilization
 
+- Implement function modules with relative imports, export/private boundaries, dependency
+  checks, namespaced symbols, signatures, recursion, and combined-program native linking.
+- Preserve dependency source context and generate prototypes for forward function calls.
 - Upgrade to Zig 0.17.1, including its I/O, build-module, and argument-forwarding APIs.
 - Resolve single inheritance from declarations; support typed inherited fields,
   inherited methods/static members, explicit base calls, hidden fields, and upcasts.

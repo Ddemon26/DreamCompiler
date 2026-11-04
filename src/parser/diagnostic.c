@@ -63,10 +63,11 @@ void print_diagnostics(const char *src, DiagnosticVec *vec) {
         const char *label = d.sev == DIAG_ERROR ? "error" : "warning";
         
         // Print main diagnostic message
+        if (d.source_file) fprintf(stderr, "%s:", d.source_file);
         fprintf(stderr, "%s%zu:%zu: %s:%s %s\n", color, d.pos.line, d.pos.column, label, RESET, d.msg);
         
         // Always show context line and caret (not just in verbose mode)
-        const char *line_start = find_line_start(src, d.pos);
+        const char *line_start = find_line_start(d.source_text ? d.source_text : src, d.pos);
         const char *line_end = find_line_end(line_start);
         
         // Print the source line

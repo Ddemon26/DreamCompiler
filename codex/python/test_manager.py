@@ -490,7 +490,8 @@ class TestManager:
         
     def discover_tests(self, pattern: str = "**/*.dr") -> List[Path]:
         """Discover all test files matching pattern"""
-        tests = sorted(TEST_DIR.glob(pattern))
+        fixtures = {TEST_DIR / path for path in self.config.get("fixture_files", [])}
+        tests = sorted(path for path in TEST_DIR.glob(pattern) if path not in fixtures)
         self.logger.info(f"Discovered {len(tests)} test files")
         return tests
         
