@@ -1,30 +1,59 @@
-# DreamCompiler TODO
+# Ordered compiler backlog
 
-This file tracks current development tasks and progress.
+Read `STATE.md` first. Current measurements live in `MostRecentTestResults.md`;
+implemented language boundaries live in `../codex/FEATURES.md`. Do one bounded pass,
+commit and push it, and verify the remote SHA before starting another.
 
-## Current Tasks
+A baseline regression or failed CI takes priority over this queue. Select the first
+ready item; if it spans several passes, finish one useful, tested slice and leave the
+remaining acceptance criteria open. Update this queue with evidence when work lands.
 
-The November 3, 2026 baseline builds with Zig 0.17.1 and reports
-110 passing Dream tests, 19 skipped, and no failures or errors. See
-`MostRecentTestResults.md` for commands, limits, and platform verification.
+## T001 — Primitive function return checks (ready)
 
-1. **Daily-agent workflow** - Establish root instructions, durable pass records, and a reusable scheduled prompt; commit and push each completed pass.
-2. **Optimization output** - Connect optimized IR to code generation and restore validated SSA construction.
-3. **Coverage gaps** - Define expectations for the 19 skipped fixtures and repair the legacy Go suites.
-4. **Deferred features** - Keep async and graphics experiments outside the supported baseline until implemented.
+Module calls now check primitive argument signatures, but function return expressions
+are not comprehensively checked by semantic analysis. Establish and enforce return-value
+compatibility without relying on C compiler errors or accidentally rejecting valid code.
 
-The inheritance pass now resolves declarations and preserves base subobjects,
-typed fields, hidden fields, inherited methods/static members, base calls, and upcasts.
-Function imports now work across source files; exporting types/globals and separate
-module object caching remain outside that implemented subset.
+Acceptance:
+- Matching primitive return values continue to compile and execute.
+- Incompatible return expressions and invalid bare returns receive Dream diagnostics
+  before C emission, including when they occur in an imported module.
+- Diagnostics identify the originating dependency source; add focused Go/Dream cases.
+- Document any numeric-conversion policy used; preserve the existing annotated baseline.
+- Keep broader control-flow proofs for missing returns separate if they need another pass.
 
-## Feature Status
+## T002 — Member-call and static/instance diagnostics (ready)
 
-See `codex/FEATURES.md` for current implementation status of Dream language features.
+Close cases where an unresolved receiver or invalid static/instance access reaches the
+C compiler instead of a Dream diagnostic. Cover ordinary code and module entry classes.
 
-## Development Guidelines
+Acceptance: a focused negative/positive matrix, no generated artifacts for rejected
+programs, useful source locations, and preserved existing inheritance/module behavior.
 
-- Use `python codex/test_cli.py run --pattern "basics/arithmetic/*.dr"` for a small focused suite
-- Use `zig build test` or `python codex/test_cli.py run` for the full Dream suite
-- Tests in `not_implemented_tests/` directory are excluded from regular testing
-- Keep this file updated with active development tasks only
+## T003 — Close a skipped-regression gap (ready)
+
+Choose one of the 19 currently skipped entry files, verify its intended behavior against
+the implemented language, and make it an honest executable or rejection regression.
+Fix the real compiler defect if needed. Do not annotate an unsupported program as passing,
+move it out merely to improve counts, or change expected behavior without an explanation.
+
+Acceptance: one newly meaningful checked behavior, a recorded before/after result, and
+an accurate explanation of the remaining skips. Supporting module files remain fixtures.
+
+## T004 — Connect optimization to emitted code (needs a bounded design)
+
+The driver optimizes and discards a CFG, then emits C from the AST; SSA construction is
+disabled. Plan and implement a small end-to-end optimization slice with preserved behavior.
+Do not describe optimizer source files alone as working generated-code optimizations.
+
+Acceptance for the first slice: behavior-equivalence tests at supported optimization
+levels, evidence the transformed representation affects emitted code, and explicit
+fallback/error behavior for unsupported lowering. Split larger SSA/backend work into
+subsequent passes with durable handoffs.
+
+## Later work
+
+- Broaden module exports beyond functions; design namespaces and type ownership first.
+- Repair or retire the unsupported legacy Go/cgo suites with replacement coverage.
+- Virtual dispatch, access controls, and implicit base construction.
+- Async/concurrency and graphics remain experimental, outside the supported baseline.

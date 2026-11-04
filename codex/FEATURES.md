@@ -2,10 +2,9 @@
 
 This document tracks the implementation status of Dream language features.
 
-**Verified baseline (November 3, 2026):** Zig 0.17.1 builds on Windows;
-`zig build test` reports **110 passed, 19 skipped, 0 failures, 0 errors** out of
-129 Dream fixtures. Linux cross-compilation succeeds; local Linux execution is
-not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
+Use `tasks/MostRecentTestResults.md` for the dated, measured baseline and
+`tasks/STATE.md` for the current handoff. Zig 0.17.1 is pinned; Linux cross-build
+success is recorded separately from native runtime verification.
 
 ## ✅ Implemented Language Subset
 
@@ -86,7 +85,7 @@ not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
 ## 📊 Current Implementation Status
 
 ### Test Suite Results (Latest)
-- **Windows Dream Suite**: 110 passed, 19 skipped, no failures or errors (129 discovered)
+- **Windows Dream Suite**: See the dated counts in `tasks/MostRecentTestResults.md`
 - **Basic Operations**: Fully functional
 - **Control Flow**: Fully functional  
 - **Functions**: Fully functional

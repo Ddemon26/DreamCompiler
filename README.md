@@ -19,7 +19,7 @@ The compiler currently supports:
 - Console input/output via `Console.ReadLine`, `Console.Write` and `Console.WriteLine`
 - Function imports across sibling source files with `--multi-file` ([module guide](docs/advanced-topics/modules.md))
 See [codex/FEATURES.md](codex/FEATURES.md) for the full list of implemented language features.
-See the [changelog](docs/v1.1/changelog.md) for details on recent additions.
+See the [changelog](docs/reference/changelog.md) for details on recent additions.
 
 ## Getting Started
 
@@ -75,7 +75,16 @@ Example programs can be found in the [tests](tests) directory.
 
 Documentation lives under [`docs`](docs). Open [docs/index.html](docs/index.html) in a browser or read [docs/index.md](docs/index.md) directly.
 
-See [Compiler Docs](docs/compiler/index.md) for compiler information and [Dream.dr Language](docs/language/index.md) for language guides.
+See [Compiler Docs](docs/development/compiler/index.md) for compiler information and [Dream.dr Language](docs/reference/language/index.md) for language guides.
+
+## Agent development
+
+Start with [AGENTS.md](AGENTS.md) and the [current handoff](tasks/STATE.md).
+The [daily workflow](docs/development/agent-workflow.md) explains one-pass development,
+numbered records, validation, and mandatory commit/push verification. Paste the
+[daily progress prompt](codex/prompts/daily-progress.md) into a project-scoped daily
+schedule using an isolated worktree. Completed passes are indexed in
+[tasks/passes](tasks/passes/README.md).
 
 # Ownership
 
