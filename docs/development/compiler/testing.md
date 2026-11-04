@@ -1,5 +1,32 @@
 # Testing Framework Documentation
 
+## Current reproducible baseline
+
+Use Zig **0.15.1**, re2c, and Python 3.8 or newer. Run `zig build test` from the
+repository root to build the tools and execute the full Dream regression suite.
+`python codex/test_cli.py run` runs the same suite. Results, including skipped
+files and compilation errors, are saved under `test_results/`.
+
+Test metadata supports:
+
+```dream
+// Expected: text printed by the program
+// Expected exit: 8
+// Expected error: diagnostic required from a rejected program
+// Options: -Werror
+```
+
+`Expected exit` defaults to zero. `Expected error` describes a compiler failure,
+so the test is not linked or executed. Use `// Expected: (no output)` for a
+successful program with empty output. Files without expectations remain skipped.
+Timeouts are reported as errors and cause a nonzero suite exit status.
+
+For the Go stability checks, run `make quick-validate` from `codex/go` on Linux,
+or `powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 quick`
+from that directory on Windows. The legacy cgo suites remain unavailable; see
+`codex/go/README.md`. Older coverage percentages below are historical claims,
+not measurements of the current checkout.
+
 The Dream Compiler includes a comprehensive testing framework designed to ensure reliability, correctness, and performance across all supported platforms and language features.
 
 ## Testing Architecture

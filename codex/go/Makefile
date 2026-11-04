@@ -157,9 +157,10 @@ ci: deps verify test bench
 
 # Quick validation for agents (< 30 seconds)
 .PHONY: quick-validate
-quick-validate: $(LIBRARY)
+quick-validate:
 	@echo "=== QUICK VALIDATION ==="
-	go test -v -run "TestLexer_BasicTokens|TestParser_BasicExpressions|TestTypes_BasicOperations" ./...
+	cd ../.. && zig build
+	go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal)$$' .
 	@echo "✅ Quick validation passed!"
 
 # Comprehensive validation for new features

@@ -58,7 +58,7 @@ void sem_analyzer_free(SemAnalyzer *s) {
   free(s->diags.data);
 }
 
-typedef enum { DECL_VAR, DECL_FUNC } DeclKind;
+typedef enum { DECL_VAR, DECL_FUNC, DECL_TYPE } DeclKind;
 
 typedef struct Decl Decl;
 struct Decl {
@@ -96,6 +96,8 @@ static TokenKind analyze_ident(SemAnalyzer *s, Node *n) {
   }
   if (d->kind == DECL_VAR)
     return d->as.var.type;
+  if (d->kind == DECL_TYPE)
+    return TK_IDENT;
   return d->as.func.ret_type; /* function as value returns its return type */
 }
 
@@ -148,7 +150,7 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     }
     // Regular field access on objects
     return TK_KW_INT; // Default for now
-  case ND_BINOP:
+  case ND_BINOP: {
     // Check for assignment to const variable
     if (n->as.bin.op == TK_EQ && n->as.bin.lhs->kind == ND_IDENT) {
       char *name = slice_to_cstr(s, n->as.bin.lhs->as.ident);
@@ -158,9 +160,30 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
         diag_pushf(s, n->pos, DIAG_ERROR, "cannot assign to const variable '%s'", name);
       }
     }
-    analyze_expr(s, n->as.bin.lhs);
-    analyze_expr(s, n->as.bin.rhs);
-    return TK_KW_INT;
+    TokenKind lhs = analyze_expr(s, n->as.bin.lhs);
+    TokenKind rhs = analyze_expr(s, n->as.bin.rhs);
+    switch (n->as.bin.op) {
+    case TK_EQ:
+    case TK_PLUSEQ: case TK_MINUSEQ: case TK_STAREQ: case TK_SLASHEQ:
+    case TK_PERCENTEQ: case TK_ANDEQ: case TK_OREQ: case TK_XOREQ:
+    case TK_LSHIFTEQ: case TK_RSHIFTEQ:
+      return lhs;
+    case TK_EQEQ: case TK_NEQ: case TK_LT: case TK_LTEQ:
+    case TK_GT: case TK_GTEQ: case TK_ANDAND: case TK_OROR:
+      return TK_KW_BOOL;
+    case TK_PLUS:
+      if (lhs == TK_KW_STRING || rhs == TK_KW_STRING) return TK_KW_STRING;
+      /* fall through */
+    case TK_MINUS: case TK_STAR: case TK_SLASH:
+      return lhs == TK_KW_FLOAT || rhs == TK_KW_FLOAT ? TK_KW_FLOAT : TK_KW_INT;
+    default:
+      return TK_KW_INT;
+    }
+  }
+  case ND_CONSOLE_CALL:
+    if (n->as.console.read) return TK_KW_STRING;
+    analyze_expr(s, n->as.console.arg);
+    return TK_KW_VOID;
   case ND_CALL:
     return analyze_call(s, n);
   case ND_COND:
@@ -248,6 +271,17 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
     if (n->as.ret.expr)
       analyze_expr(s, n->as.ret.expr);
     break;
+  case ND_CLASS_DECL:
+  case ND_STRUCT_DECL: {
+    char *name = slice_to_cstr(s, n->as.type_decl.name);
+    Symbol *sym = sym_intern(name);
+    if (scope_lookup(s->scope, sym)) {
+      diag_pushf(s, n->pos, DIAG_ERROR, "redefinition of type '%s'", name);
+      break;
+    }
+    scope_bind(s->scope, sym, decl_new(s, DECL_TYPE));
+    break;
+  }
   case ND_FUNC: {
     char *name = slice_to_cstr(s, n->as.func.name);
     Symbol *sym = sym_intern(name);

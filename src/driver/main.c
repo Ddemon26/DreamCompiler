@@ -154,6 +154,9 @@ int main(int argc, char *argv[]) {
   arena_init(&arena);
   Parser p;
   parser_init(&p, &arena, src);
+  SemAnalyzer sem;
+  sem_analyzer_init(&sem, &arena);
+  int status = 0;
   
   // Apply warning configuration from command line
   p.warn_config.warnings_as_errors = warnings_as_errors;
@@ -165,11 +168,17 @@ int main(int argc, char *argv[]) {
   analyze_warnings(&p, root);
   
   print_diagnostics(src, &p.diags);
+  if (diagnostics_have_errors(&p.diags)) {
+    status = 1;
+    goto cleanup;
+  }
 
-  SemAnalyzer sem;
-  sem_analyzer_init(&sem, &arena);
   sem_analyze_program(&sem, root);
   print_diagnostics(src, &sem.diags);
+  if (diagnostics_have_errors(&sem.diags)) {
+    status = 1;
+    goto cleanup;
+  }
 
   int nvars = 0;
   CFG *cfg = ir_lower_program(root, &nvars);
@@ -216,7 +225,8 @@ int main(int argc, char *argv[]) {
     FILE *out = fopen("build/bin/dream.c", "w");
     if (!out) {
       perror("fopen");
-      return 1;
+      status = 1;
+      goto cleanup;
     }
     codegen_emit_c(root, out, input);
     fclose(out);
@@ -224,7 +234,7 @@ int main(int argc, char *argv[]) {
     // In dev mode, just generate C code and exit
     if (dev_mode) {
       printf("C code generated successfully at build/bin/dream.c\n");
-      return 0;
+      goto cleanup;
     }
     
     const char *cc = getenv("CC");
@@ -235,7 +245,7 @@ int main(int argc, char *argv[]) {
       cc = "gcc";
 #endif
     }
-    char cmd[256];
+    char cmd[1024];
     int res;
     const char *optflag =
         opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
@@ -250,15 +260,18 @@ int main(int argc, char *argv[]) {
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
-      return 1;
+      status = 1;
+      goto cleanup;
     }
   } else if (emit_obj) {
     codegen_emit_obj(root, "a.o", input);
   }
 
+cleanup:
   free(src);
   free(p.diags.data);
+  free(p.types);
   sem_analyzer_free(&sem);
-  free(arena.ptr);
-  return 0;
+  arena_free(&arena);
+  return status;
 }

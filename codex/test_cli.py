@@ -40,7 +40,7 @@ class UniversalTestCLI:
         if self.is_windows:
             # On Windows, use PowerShell for better PATH support
             try:
-                ps_cmd = ["powershell", "-Command", cmd]
+                ps_cmd = ["powershell", "-NoProfile", "-Command", cmd]
                 result = subprocess.run(ps_cmd, text=True, capture_output=True)
                 if result.stdout:
                     print(result.stdout)

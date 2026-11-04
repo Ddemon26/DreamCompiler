@@ -1,5 +1,19 @@
 # DreamCompiler Go Test Suite
 
+## Current compiler stability checks
+
+From this directory, run `make quick-validate` on Linux or
+`powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 quick`
+on Windows. These commands build with Zig 0.15.1 and run the CLI regressions for
+error exits, warnings, and stable AST allocation. They require no cgo library or
+downloaded Go dependencies. Use `-count=1` when running these Go tests directly:
+Go's cache does not track changes to the external compiler executable.
+
+The legacy `minimal_tests` and `temp_disabled` directories still import cgo
+directly in test files and cannot be run with `go test ./...`. The older general
+integration cases also contain unsupported syntax and incomplete fixtures; they
+are not part of the stability checks.
+
 This directory contains a comprehensive Go test suite for the DreamCompiler project, providing unit tests, benchmarks, and fuzz tests that complement the existing Python-based end-to-end tests.
 
 ## Overview

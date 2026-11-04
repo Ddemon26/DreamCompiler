@@ -119,6 +119,7 @@ tests/
 │   ├── oop/         # Object-oriented features
 │   └── ssa/         # SSA-specific tests
 ├── semantics/       # Semantic analysis tests
+│   ├── errors/      # Syntax errors, undefined names, and warning exit behavior
 │   └── basic.dr     # Basic semantic tests
 ├── debug/           # Debug feature tests
 │   └── line_directives.dr # Line directive handling
@@ -172,14 +173,17 @@ codex/
 ├── _startup.sh     # Linux environment setup
 ├── _startup.ps1    # Windows environment setup
 ├── go/             # Go testing suite
+│   ├── go.mod             # Module for compiler CLI integration tests
+│   ├── driver_stability_test.go # Error exits, warnings, and arena growth
 │   ├── dream_test.go      # Unit tests via cgo
 │   ├── dream_bench_test.go # Performance benchmarks
 │   ├── dream_fuzz_test.go  # Fuzz testing
 │   ├── dream_api.c        # C API wrapper
 │   ├── dream.h            # C API header
-│   ├── Makefile           # Go test build system
+│   ├── Makefile           # Go test build system (quick-validate runs CLI regressions)
 │   └── README.md          # Go testing documentation
-└── python/         # Python helper scripts (generated)
+└── python/         # Python helpers and runner
+    └── test_test_manager.py # Empty output, diagnostic, exit-code, and timeout regressions
 ```
 
 ### Sub-Project: JetBrains Plugin (`assets/jetbrains/`)

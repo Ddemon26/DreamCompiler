@@ -2,7 +2,12 @@
 
 This document tracks the implementation status of Dream language features.
 
-## ✅ Fully Implemented Features
+**Verified baseline (November 3, 2026):** Zig 0.15.1 builds on Windows;
+`zig build test` reports **95 passed, 22 skipped, 0 failures, 0 errors** out of
+117 Dream fixtures. Linux cross-compilation succeeds; local Linux execution is
+not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
+
+## ✅ Implemented Language Subset
 
 ### Core Language Features
 - **Primitive types**: `int`, `float`, `bool`, `char`, and `string`
@@ -29,7 +34,7 @@ This document tracks the implementation status of Dream language features.
 - **Function declarations**: With parameters and typed return values using `func` keyword
 - **Classes and structs**: Object construction and instantiation
 - **Instance methods**: With `this` pointer (emitted as C functions)
-- **Object-oriented programming**: Basic class inheritance and method calls
+- **Object-oriented programming**: Basic method calls; inheritance is partial and still contains class-name-specific field handling
 
 ### I/O and Runtime
 - **Console I/O**: `Console.Write`, `Console.WriteLine`, and `Console.ReadLine`
@@ -38,8 +43,8 @@ This document tracks the implementation status of Dream language features.
 - **Arrays**: Arrays of primitive types with indexing
 
 ### Code Generation
-- **C backend**: Complete C code generation pipeline
-- **Multi-file compilation**: Module system with import/export (framework implemented)
+- **C backend**: Generates C from the AST for the implemented subset
+- **Optimization**: Passes exist, but optimized IR is not used by C emission and SSA construction is disabled
 - **Runtime library**: Memory management, console I/O, and exception handling
 - **Build integration**: Zig build system with cross-platform support
 
@@ -81,24 +86,24 @@ This document tracks the implementation status of Dream language features.
 ## 📊 Current Implementation Status
 
 ### Test Suite Results (Latest)
-- **Core Features**: ~85-95% pass rate on Linux/Windows
+- **Windows Dream Suite**: 95 passed, 22 skipped, no failures or errors (117 discovered)
 - **Basic Operations**: Fully functional
 - **Control Flow**: Fully functional  
 - **Functions**: Fully functional
-- **Exception Handling**: Fully functional
+- **Exception Handling**: Existing annotated tests pass; additional fixtures remain skipped
 - **Multi-file**: Framework exists, needs debugging
 - **Concurrency**: Not implemented (tests excluded)
 - **Graphics**: Not implemented (tests excluded)
 
 ### Platform Support
-- **Linux**: Primary development platform, ~95% test pass rate
-- **Windows**: Good support, ~85% test pass rate (some struct parsing issues)
+- **Linux**: Cross-build verified; current runtime suite awaits CI execution
+- **Windows**: Annotated Dream suite passes with Zig 0.15.1; skipped fixtures remain unverified
 - **Cross-platform**: Build system supports both platforms
 
 ### Development Priority
-1. **High**: Complete multi-file compilation system
-2. **Medium**: Concurrency/async implementation with platform abstraction
-3. **Low**: Graphics/Vulkan integration (specialized use case)
+1. **High**: General inheritance and complete multi-file compilation
+2. **High**: Connect optimized IR to code emission and close skipped-test coverage gaps
+3. **Deferred**: Concurrency/async and graphics/Vulkan integration
 
 ## 📁 Test Organization
 

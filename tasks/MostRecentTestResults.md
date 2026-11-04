@@ -1,5 +1,34 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 3, 2026
+
+**Branch:** `codex/compiler-stabilization`
+
+**Platform:** Windows
+
+**Toolchain:** Zig 0.15.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+
+## Current stabilization baseline
+
+- `zig build test`: **117 discovered; 95 passed; 22 skipped; 0 failed; 0 errors** (~38 seconds).
+- Windows Go quick protocol: **3 test groups passed**, including four diagnostic rejection cases,
+  a 512-variable arena-growth program, and a warning-only program.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`: **4 tests passed**.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: cross-build succeeded.
+  Linux executables were not run locally; CI is configured to test on Linux and Windows.
+- Local detailed Dream report: `test_results/test_results_20261103_181550_windows.json` (ignored build output).
+
+The 22 skipped files lack expectations and are not validated. All three multi-file fixtures
+remain skipped. Four graphics and four concurrency fixtures remain outside the regular suite.
+Legacy cgo tests still cannot run with `go test ./...`; the repaired quick protocol runs
+the compiler CLI stability checks directly.
+
+The build, error exit handling, stable AST allocation, and test reporting are now verified
+for this baseline. General inheritance, multi-file linking, and emitting optimized IR
+remain unfinished. Passing example programs does not establish those features as complete.
+
+## Historical Windows report - July 20, 2025
+
 **Date:** July 20, 2025  
 **Platform:** Windows  
 **Test Runner:** Python test_cli.py  

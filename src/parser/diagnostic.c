@@ -5,6 +5,13 @@
 
 bool diag_verbose = false;
 
+bool diagnostics_have_errors(const DiagnosticVec *vec) {
+    for (size_t i = 0; i < vec->len; ++i) {
+        if (vec->data[i].sev == DIAG_ERROR) return true;
+    }
+    return false;
+}
+
 /**
  * @brief ANSI escape code for red text color.
  */

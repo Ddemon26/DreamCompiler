@@ -1,6 +1,7 @@
 package dream_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -27,6 +28,7 @@ type TestRunner struct {
 	compilerPath   string
 	tempDir        string
 	runtimeLibPath string
+	projectRoot    string
 }
 
 // NewTestRunner creates a new test runner
@@ -59,6 +61,7 @@ func NewTestRunner(t *testing.T) *TestRunner {
 		compilerPath:   compilerPath,
 		tempDir:        tempDir,
 		runtimeLibPath: runtimeLibPath,
+		projectRoot:    projectRoot,
 	}
 }
 
@@ -77,7 +80,15 @@ func (tr *TestRunner) RunTest(t *testing.T, tc CompilerTestCase) {
 	}
 
 	// Run compiler
-	cmd := exec.Command(tr.compilerPath, testFile)
+	timeout := tc.Timeout
+	if timeout == 0 {
+		timeout = 30 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, tr.compilerPath, testFile)
+	cmd.Dir = tr.projectRoot
+	cmd.Env = append(os.Environ(), "CC=zig cc")
 	output, err := cmd.CombinedOutput()
 	
 	if tc.ExpectSuccess {
@@ -86,9 +97,21 @@ func (tr *TestRunner) RunTest(t *testing.T, tc CompilerTestCase) {
 			return
 		}
 		
-		// Check expected output if specified
-		if tc.ExpectedOutput != "" && !strings.Contains(string(output), tc.ExpectedOutput) {
-			t.Errorf("Test %s: Expected output '%s' not found in: %s", tc.Name, tc.ExpectedOutput, string(output))
+		// ExpectedOutput describes the generated program, not compiler logging.
+		if tc.ExpectedOutput != "" {
+			executable := "dream"
+			if runtime.GOOS == "windows" {
+				executable += ".exe"
+			}
+			run := exec.CommandContext(ctx, filepath.Join(tr.projectRoot, executable))
+			run.Dir = tr.projectRoot
+			actual, runErr := run.CombinedOutput()
+			if runErr != nil {
+				t.Fatalf("Test %s: Program failed: %v\n%s", tc.Name, runErr, actual)
+			}
+			if !strings.Contains(string(actual), tc.ExpectedOutput) {
+				t.Errorf("Test %s: Expected output %q, got %q", tc.Name, tc.ExpectedOutput, actual)
+			}
 		}
 	} else {
 		if err == nil {

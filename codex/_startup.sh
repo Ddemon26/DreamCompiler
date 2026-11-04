@@ -41,7 +41,7 @@ fi
 # 2. Install Zig
 ###############################################################################
 echo "Installing Zig…"
-ZIG_VERSION=${ZIG_VERSION:-0.15.0-dev.1034+bd97b6618}
+ZIG_VERSION=${ZIG_VERSION:-0.15.1}
 ARCH=$(uname -m)
 case "$ARCH" in
   x86_64)  ZIG_ARCH="x86_64-linux"  ;;

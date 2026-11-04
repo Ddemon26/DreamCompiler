@@ -87,7 +87,7 @@ class TestSuite:
     
     @property
     def errors(self) -> int:
-        return sum(1 for r in self.results if r.status == TestStatus.ERROR)
+        return sum(1 for r in self.results if r.status in (TestStatus.ERROR, TestStatus.TIMEOUT))
     
     @property
     def total(self) -> int:
@@ -105,6 +105,7 @@ class TestManager:
         self.setup_logging()
         self.ensure_directories()
         self.load_config()
+        self._build_result = None
         
     def setup_logging(self):
         """Configure logging with appropriate levels"""
@@ -233,8 +234,8 @@ class TestManager:
         """Parse test file for expected output and options"""
         content = test_path.read_text(encoding='utf-8')
         
-        expected_matches = re.findall(r"//\s*Expected:\s*(.*)", content)
-        option_matches = re.findall(r"//\s*Options:\s*(.*)", content)
+        expected_matches = re.findall(r"//[ \t]*Expected:[ \t]*(.*)", content)
+        option_matches = re.findall(r"//[ \t]*Options:[ \t]*(.*)", content)
         
         expected_output = []
         for match in expected_matches:
@@ -248,13 +249,15 @@ class TestManager:
             
         return expected_output, options
         
-    def compile_test(self, test_path: Path, options: List[str]) -> Tuple[bool, float, str]:
+    def compile_test(self, test_path: Path, options: List[str], link: bool = True) -> Tuple[bool, float, str]:
         """Compile a single test file and link with runtime library"""
         start_time = time.time()
 
         # Ensure compiler and runtime library are built
-        if self.run_command(["zig", "build"]).returncode != 0:
-            return False, 0.0, "Build failed"
+        if self._build_result is None:
+            self._build_result = self.run_command(["zig", "build"])
+        if self._build_result.returncode != 0:
+            return False, 0.0, f"Build failed: {self._build_result.stderr}"
 
         is_windows = platform.system() == "Windows"
         compiler_name = "DreamCompiler.exe" if is_windows else "DreamCompiler"
@@ -278,6 +281,8 @@ class TestManager:
         result = self.run_command(cmd)
         if result.returncode != 0:
             return False, time.time() - start_time, result.stderr
+        if not link:
+            return True, time.time() - start_time, result.stderr
 
         exe = "dream.exe" if is_windows else "dream"
         exe_path = ROOT / exe
@@ -308,7 +313,7 @@ class TestManager:
 
         return True, compile_time, link_res.stdout
             
-    def execute_test(self, test_path: Path) -> Tuple[bool, float, str]:
+    def execute_test(self, test_path: Path, expected_exit: int = 0) -> Tuple[bool, float, str]:
         """Run the compiled test executable"""
         _ = test_path
         start_time = time.time()
@@ -320,8 +325,8 @@ class TestManager:
 
         res = self.run_command([str(exe_path)])
         runtime = time.time() - start_time
-        if res.returncode != 0:
-            return False, runtime, res.stderr
+        if res.returncode != expected_exit:
+            return False, runtime, f"Expected exit {expected_exit}, got {res.returncode}: {res.stderr}"
 
         return True, runtime, res.stdout.strip()
             
@@ -343,9 +348,13 @@ class TestManager:
         # Parse test file
         expected_output_lines, options = self.parse_test_file(test_path)
         expected_output = "\n".join(expected_output_lines)
+        content = test_path.read_text(encoding='utf-8')
+        expected_errors = re.findall(r"//[ \t]*Expected error:[ \t]*(.+)", content)
+        exit_match = re.search(r"//[ \t]*Expected exit:[ \t]*(-?\d+)", content)
+        expected_exit = int(exit_match.group(1)) if exit_match else 0
         
         # Skip if no expected output
-        if not expected_output_lines:
+        if not re.search(r"//[ \t]*Expected:", content) and not expected_errors and not exit_match:
             duration = time.time() - start_time
             # Safe path conversion for skip result
             try:
@@ -374,7 +383,18 @@ class TestManager:
             self.logger.info(f"[KNOWN FAILURE] {test_path.name}")
             
         # Compile test
-        compile_success, compile_time, compile_error = self.compile_test(test_path, options)
+        compile_success, compile_time, compile_error = self.compile_test(test_path, options, link=not expected_errors)
+
+        if expected_errors:
+            passed = not compile_success and all(message.strip() in compile_error for message in expected_errors)
+            return TestResult(
+                name=test_path.name, path=str(test_path), category=category,
+                status=TestStatus.PASS if passed else TestStatus.FAIL,
+                duration=time.time() - start_time,
+                expected_output="\n".join(expected_errors), actual_output=compile_error,
+                compile_time=compile_time, runtime=0.0,
+                error_message=None if passed else "Expected compiler diagnostics were not produced"
+            )
         
         if not compile_success:
             duration = time.time() - start_time
@@ -402,7 +422,7 @@ class TestManager:
             )
             
         # Execute test
-        exec_success, runtime, actual_output = self.execute_test(test_path)
+        exec_success, runtime, actual_output = self.execute_test(test_path, expected_exit)
         
         if not exec_success:
             duration = time.time() - start_time
@@ -473,6 +493,7 @@ class TestManager:
     def run_test_suite(self, pattern: str = "**/*.dr", categories: List[str] = None) -> TestSuite:
         """Run complete test suite with filtering"""
         start_time = time.time()
+        self._build_result = None
         
         tests = self.discover_tests(pattern)
         results = []
@@ -489,7 +510,15 @@ class TestManager:
         self.logger.info(f"Running {len(tests)} tests...")
         
         for test_path in tests:
-            result = self.run_single_test(test_path)
+            try:
+                result = self.run_single_test(test_path)
+            except subprocess.TimeoutExpired as error:
+                result = TestResult(
+                    name=test_path.name, path=str(test_path), category=self.categorize_test(test_path),
+                    status=TestStatus.TIMEOUT, duration=float(error.timeout),
+                    expected_output="", actual_output="", compile_time=0.0, runtime=0.0,
+                    error_message=f"Command timed out after {error.timeout}s: {error.cmd}"
+                )
             results.append(result)
             
         total_duration = time.time() - start_time
@@ -565,7 +594,7 @@ class TestManager:
             print(f"  {cat:12} {stats['pass']:3}/{total:3} ({pass_rate:5.1f}%)")
             
         # Failed tests
-        failed_tests = [r for r in suite.results if r.status == TestStatus.FAIL]
+        failed_tests = [r for r in suite.results if r.status in (TestStatus.FAIL, TestStatus.ERROR, TestStatus.TIMEOUT)]
         if failed_tests:
             print(f"\nFailed Tests ({len(failed_tests)}):")
             for result in failed_tests:

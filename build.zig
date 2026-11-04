@@ -17,7 +17,7 @@ const AllCSources = [_][]const u8{
 
 /// Baseline runtime sources always compiled
 const BaseRuntimeSources = [_][]const u8{
-    "src/runtime/memory/memory.c", "src/runtime/io/console.c",   "src/runtime/extensions/custom.c",
+    "src/runtime/memory/memory.c", "src/runtime/io/console.c",           "src/runtime/extensions/custom.c",
     "src/runtime/system/task.c",   "src/runtime/exceptions/exception.c",
 };
 
@@ -52,12 +52,12 @@ pub fn build(b: *std.Build) void {
     }
 
     // Collect runtime sources, adding Vulkan stub if available
-    var runtime_sources = std.ArrayList([]const u8).init(b.allocator);
-    for (BaseRuntimeSources) |s| runtime_sources.append(s) catch unreachable;
+    var runtime_sources: std.ArrayList([]const u8) = .empty;
+    for (BaseRuntimeSources) |s| runtime_sources.append(b.allocator, s) catch unreachable;
     if (vk_include != null) {
-        runtime_sources.append("src/runtime/graphics/vulkan/vulkan_stub.c") catch unreachable;
-        runtime_sources.append("src/runtime/graphics/vulkan/vulkan_helpers.c") catch unreachable;
-        runtime_sources.append("src/runtime/graphics/vulkan/vulkan.c") catch unreachable;
+        runtime_sources.append(b.allocator, "src/runtime/graphics/vulkan/vulkan_stub.c") catch unreachable;
+        runtime_sources.append(b.allocator, "src/runtime/graphics/vulkan/vulkan_helpers.c") catch unreachable;
+        runtime_sources.append(b.allocator, "src/runtime/graphics/vulkan/vulkan.c") catch unreachable;
     }
 
     // Add debug mode option for enhanced debugging support
@@ -145,7 +145,7 @@ pub fn build(b: *std.Build) void {
         .root_module = runtime_mod,
         .linkage = .static,
     });
-    const runtime_files = runtime_sources.toOwnedSlice() catch unreachable;
+    const runtime_files = runtime_sources.toOwnedSlice(b.allocator) catch unreachable;
     runtime_lib.addCSourceFiles(.{ .files = runtime_files, .flags = cflags });
     if (vk_include) |p| {
         runtime_lib.addIncludePath(.{ .cwd_relative = p });
@@ -168,8 +168,13 @@ pub fn build(b: *std.Build) void {
     multifile_step.dependOn(multifile_cmd);
 
     const test_step = b.step("test", "Run compiler tests");
-    test_step.dependOn(&lexexe.step);
-    test_step.dependOn(&parseexe.step);
+    const tests = b.addSystemCommand(&.{
+        if (b.graph.host.result.os.tag == .windows) "python" else "python3",
+        "codex/test_cli.py",
+        "run",
+    });
+    tests.step.dependOn(b.getInstallStep());
+    test_step.dependOn(&tests.step);
 
     const fmt_zig = b.addFmt(.{ .paths = &.{"build.zig"} });
     const fmt_c = b.addSystemCommand(&.{ "clang-format", "-i" });
@@ -188,13 +193,15 @@ pub fn build(b: *std.Build) void {
 fn collectDrSources(b: *std.Build) []const []const u8 {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
-    var list = std.ArrayList([]const u8).init(arena.allocator());
+    var list: std.ArrayList([]const u8) = .empty;
     var dir = std.fs.cwd().openDir("src", .{ .iterate = true }) catch return &.{};
+    defer dir.close();
     var walker = dir.walk(arena.allocator()) catch return &.{};
+    defer walker.deinit();
     while (walker.next() catch null) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".dr")) {
             const p = b.pathJoin(&.{ "src", entry.path });
-            list.append(p) catch {};
+            list.append(arena.allocator(), p) catch @panic("OOM");
         }
     }
     return b.dupeStrings(list.items);
@@ -217,7 +224,7 @@ fn addCompileDrStep(
     sources: []const []const u8,
 ) struct { step: *std.Build.Step, files: []const std.Build.LazyPath } {
     const step = b.step("compile-dr", "Compile .dr sources");
-    var generated = std.ArrayList(std.Build.LazyPath).init(b.allocator);
+    var generated: std.ArrayList(std.Build.LazyPath) = .empty;
 
     const triple = target.query.zigTriple(b.allocator) catch @panic("OOM");
     const mode_str = switch (optimize) {
@@ -234,11 +241,11 @@ fn addCompileDrStep(
         run.addFileInput(b.path("src/lexer/tokens.def"));
         const out =
             run.addOutputFileArg(b.fmt("{s}.c", .{std.fs.path.stem(src)}));
-        generated.append(out) catch @panic("OOM");
+        generated.append(b.allocator, out) catch @panic("OOM");
         step.dependOn(&run.step);
     }
 
-    return .{ .step = step, .files = generated.toOwnedSlice() catch @panic("OOM") };
+    return .{ .step = step, .files = generated.toOwnedSlice(b.allocator) catch @panic("OOM") };
 }
 
 /// Adds a multi-file compilation and linking step
@@ -285,7 +292,7 @@ fn addMultiFileCompileStep(
 fn collectDrSourcesFromDir(b: *std.Build, dir_path: []const u8) []const []const u8 {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
-    var list = std.ArrayList([]const u8).init(arena.allocator());
+    var list: std.ArrayList([]const u8) = .empty;
 
     var dir =
         std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return &.{};
@@ -297,7 +304,7 @@ fn collectDrSourcesFromDir(b: *std.Build, dir_path: []const u8) []const []const 
     while (walker.next() catch null) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".dr")) {
             const full_path = b.pathJoin(&.{ dir_path, entry.path });
-            list.append(full_path) catch {};
+            list.append(arena.allocator(), full_path) catch @panic("OOM");
         }
     }
 

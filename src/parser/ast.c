@@ -1,6 +1,12 @@
 #include "ast.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+
+struct ArenaBlock {
+  ArenaBlock *next;
+  max_align_t data[];
+};
 
 /**
  * @brief Initializes the memory arena.
@@ -14,6 +20,17 @@ void arena_init(Arena *a) {
   a->ptr = NULL;
   a->len = 0;
   a->cap = 0;
+  a->blocks = NULL;
+}
+
+void arena_free(Arena *a) {
+  ArenaBlock *block = a->blocks;
+  while (block) {
+    ArenaBlock *next = block->next;
+    free(block);
+    block = next;
+  }
+  arena_init(a);
 }
 
 /**
@@ -26,10 +43,15 @@ void arena_init(Arena *a) {
  * @param min Minimum additional size required.
  */
 static void arena_grow(Arena *a, size_t min) {
-  size_t new_cap = a->cap ? a->cap * 2 : 4096;
-  if (new_cap < a->len + min)
-    new_cap = a->len + min;
-  a->ptr = realloc(a->ptr, new_cap);
+  size_t new_cap = a->cap && a->cap <= SIZE_MAX / 2 ? a->cap * 2 : 4096;
+  if (new_cap < min) new_cap = min;
+  if (new_cap > SIZE_MAX - sizeof(ArenaBlock)) abort();
+  ArenaBlock *block = malloc(sizeof(ArenaBlock) + new_cap);
+  if (!block) abort();
+  block->next = a->blocks;
+  a->blocks = block;
+  a->ptr = (char *)block->data;
+  a->len = 0;
   a->cap = new_cap;
 }
 
@@ -46,7 +68,10 @@ static void arena_grow(Arena *a, size_t min) {
  * @return Pointer to the allocated memory block.
  */
 void *arena_alloc(Arena *a, size_t size) {
-  if (a->len + size > a->cap)
+  const size_t alignment = _Alignof(max_align_t);
+  if (size > SIZE_MAX - (alignment - 1)) abort();
+  size = (size + alignment - 1) & ~(alignment - 1);
+  if (!a->ptr || size > a->cap - a->len)
     arena_grow(a, size);
   void *ptr = a->ptr + a->len;
   a->len += size;

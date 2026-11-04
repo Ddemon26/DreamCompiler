@@ -6,13 +6,14 @@
 /**
  * @brief Represents a memory arena for dynamic memory allocation.
  *
- * This structure is used to manage a resizable memory buffer,
- * including its pointer, current length, and capacity.
+ * Blocks never move, so AST pointers remain valid when the arena grows.
  */
+typedef struct ArenaBlock ArenaBlock;
 typedef struct {
   char *ptr;
   size_t len;
   size_t cap;
+  ArenaBlock *blocks;
 } Arena;
 
 /**
@@ -21,6 +22,9 @@ typedef struct {
  * @param a Pointer to the memory arena to initialize.
  */
 void arena_init(Arena *a);
+
+/** Releases every block owned by the arena and resets it. */
+void arena_free(Arena *a);
 
 /**
  * @brief Allocates memory from the memory arena.

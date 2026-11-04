@@ -1,5 +1,16 @@
 # Dream Compiler Changelog
 
+## Unreleased - Compiler stabilization
+
+- Update the build API and pin CI and setup scripts to Zig 0.15.1.
+- Stop compilation after parser or semantic errors, including `-Werror` warnings.
+- Keep AST arena allocations aligned and stable across growth, and release all blocks.
+- Correct expression result types for float arithmetic, strings, comparisons, and console input.
+- Make `zig build test` run the Dream suite. Support expected compiler errors,
+  explicit runtime exit codes, empty output, and timeout failures in test reports.
+- Add Go regressions for error exits, warnings, and arena growth; correct the
+  integration harness to inspect generated program output.
+
 ## Version 1.1.12 (Current) - January 2025
 
 ### New Features

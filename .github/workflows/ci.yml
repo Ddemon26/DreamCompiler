@@ -15,11 +15,16 @@ jobs:
       - name: Setup Zig
         uses: goto-bus-stop/setup-zig@v2
         with:
-          version: master
+          version: '0.15.1'
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.8'
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: false
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -36,24 +41,13 @@ jobs:
         continue-on-error: true
       - name: Build DreamCompiler
         run: zig build
+      - name: Check Python test runner
+        run: python -m unittest discover -s codex/python -p test_test_manager.py
+      - name: Run compiler stability regressions
+        working-directory: codex/go
+        run: go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal)$' .
       - name: Cross-compile Windows binary
         if: runner.os == 'Linux'
-        run: zig build -Dtarget=x86_64-windows-gnu
-      - name: Run quick tests (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          chmod +x codex/test_cli.sh
-          ./codex/test_cli.sh quick
-      - name: Run quick tests (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          python codex/test_cli.py quick
-        shell: powershell
-      - name: Run basic test suite (Linux)
-        if: runner.os == 'Linux'
-        run: ./codex/test_cli.sh run --pattern "basics/**/*.dr"
-      - name: Run basic test suite (Windows) 
-        if: runner.os == 'Windows'
-        run: |
-          python codex/test_cli.py run --pattern "basics/**/*.dr"
-        shell: powershell
+        run: zig build -Dtarget=x86_64-windows-gnu --prefix build/windows
+      - name: Run Dream regression suite
+        run: zig build test

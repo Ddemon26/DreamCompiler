@@ -1,4 +1,4 @@
-#!/usr/bin/env powershell
+﻿#!/usr/bin/env powershell
 # Windows PowerShell script for DreamCompiler Go testing
 # Provides agent-friendly testing protocols with proper error handling
 
@@ -146,7 +146,8 @@ function Invoke-Tests {
     switch ($TestType) {
         "quick" {
             Write-Host "=== QUICK VALIDATION (< 30s) ===" -ForegroundColor Cyan
-            go test -v -run "TestLexer_BasicTokens|TestParser_BasicExpressions|TestTypes_BasicOperations" ./...
+            go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal)$' .
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
         "unit" {
             Write-Host "=== UNIT TESTS ===" -ForegroundColor Cyan
@@ -201,6 +202,17 @@ function Invoke-Tests {
 # Main execution
 function Main {
     Test-Prerequisites
+    if ($Action.ToLower() -eq "quick") {
+        Push-Location (Join-Path $PSScriptRoot "../..")
+        try {
+            zig build
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        } finally {
+            Pop-Location
+        }
+        Invoke-Tests "quick"
+        return
+    }
     Install-Dependencies
     Build-CLibrary
     
