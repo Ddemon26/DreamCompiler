@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -41,6 +42,18 @@ func TestCompiler_Modules(t *testing.T) {
 		{"entry_class", "42", "", map[string]string{
 			"main.dr":   `import values; class Reader { func int read() { return values.number(); } } Reader reader = new Reader(); Console.WriteLine(reader.read());`,
 			"values.dr": `module values; export func int number() { return 42; }`,
+		}},
+		{"dependency_return_type", "", "return expression has incompatible type", map[string]string{
+			"main.dr": `import values;`, "values.dr": "module values;\nexport func int value() {\nreturn \"bad\";\n}\n",
+		}},
+		{"dependency_return_bare", "", "return requires a value", map[string]string{
+			"main.dr": `import values;`, "values.dr": "module values;\nexport func int value() {\nreturn;\n}\n",
+		}},
+		{"dependency_return_void", "", "void function cannot return an expression", map[string]string{
+			"main.dr": `import values;`, "values.dr": "module values;\nexport func void value() {\nreturn 1;\n}\n",
+		}},
+		{"dependency_return_conditional", "", "conditional branches have incompatible types", map[string]string{
+			"main.dr": `import values;`, "values.dr": "module values;\nexport func int value(bool flag) {\nreturn flag ? 1 : \"bad\";\n}\n",
 		}},
 		{"missing", "", "cannot load module 'missing'", map[string]string{"main.dr": `import missing;`}},
 		{"mismatched_name", "", "module declaration must match import 'values'", map[string]string{
@@ -106,7 +119,8 @@ func TestCompiler_Modules(t *testing.T) {
 				if !strings.Contains(string(output), tc.diagnostic) {
 					t.Fatalf("Missing %q: %s", tc.diagnostic, output)
 				}
-				if tc.name == "dependency_error" && !strings.Contains(string(output), "values.dr:") {
+				plainOutput := regexp.MustCompile(`\x1b+\[[0-9;]*m`).ReplaceAllString(string(output), "")
+				if (tc.name == "dependency_error" || strings.HasPrefix(tc.name, "dependency_return_")) && !strings.Contains(plainOutput, "values.dr:3:") {
 					t.Fatalf("Missing source file: %s", output)
 				}
 				if _, err := os.Stat(filepath.Join(work, "build")); !os.IsNotExist(err) {

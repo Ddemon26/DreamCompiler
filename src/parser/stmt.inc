@@ -305,6 +305,7 @@ static Node *parse_continue(Parser *p) {
  * @return Pointer to the parsed return statement node.
  */
 static Node *parse_return(Parser *p) {
+  Pos start_pos = p->tok.pos;
   next(p); // consume 'return'
   Node *expr = NULL;
   if (p->tok.kind != TK_SEMICOLON) {
@@ -315,6 +316,7 @@ static Node *parse_return(Parser *p) {
   else
     diag_push(p, p->tok.pos, DIAG_ERROR, "expected ';'");
   Node *n = node_new(p->arena, ND_RETURN);
+  n->pos = start_pos;
   n->as.ret.expr = expr;
   return n;
 }

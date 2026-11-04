@@ -1,0 +1,22 @@
+// Expected: 42
+// Expected: -1.500000
+// Expected: Z
+// Expected: 1
+// Expected: hello
+// Expected: 2.500000
+func int number(int n) { return n + 1; }
+func float weight() { return -1.5; }
+func char marker(char c) { return c; }
+func bool ready(bool flag) { return !flag; }
+func string caption(bool flag) { return flag ? "hello" : "other"; }
+func float mixed(bool flag) { return flag ? 1 : 2.5; }
+func void nothing() { return; }
+Console.WriteLine(number(41));
+Console.WriteLine(weight());
+Console.WriteLine(marker('Z'));
+Console.WriteLine(ready(false));
+Console.WriteLine(caption(true));
+Console.WriteLine(mixed(false));
+nothing();
+// Top-level bare return keeps its existing entry-program meaning.
+return;

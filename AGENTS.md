@@ -35,9 +35,18 @@ branch `codex/compiler-stabilization`. The user authorized publishing completed,
 tested project passes there. Do not change remotes, publish elsewhere, merge into
 `main`, or use force pushes without a new user instruction.
 
-Verify a clean worktree, fetch that branch, and follow the synchronization rules in
-the workflow guide. Scheduled runs should use isolated worktrees. An automation-created
-worktree can work detached from the approved remote tip and publish with:
+Use only the existing checkout at `C:/Users/damon/cApps/DreamCompiler`, with HEAD
+attached to `codex/compiler-stabilization`, for manual and scheduled runs. Do not
+create separate Git worktrees, temporary clones, or detached-HEAD checkouts. Configure
+scheduled runs to use the local project directory. If a run starts elsewhere or with
+detached HEAD, stop and report the checkout mismatch instead of creating another
+workspace. A new explicit user instruction is required to change this policy.
+
+Keep one writer in this checkout; do not overlap manual and scheduled edits. Preserve
+unfinished changes in place and recover their documented pass before starting new work.
+Verify the checkout path, attached branch, and clean worktree before new work, fetch
+the approved branch, and follow the synchronization rules in the workflow guide.
+Publish completed passes with:
 
 ```sh
 git push origin HEAD:refs/heads/codex/compiler-stabilization

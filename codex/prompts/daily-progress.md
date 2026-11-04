@@ -1,16 +1,20 @@
-Run one development pass on DreamCompiler, using this project's isolated Git worktree.
+Run one development pass on DreamCompiler in the existing local checkout at
+C:/Users/damon/cApps/DreamCompiler, with HEAD attached to codex/compiler-stabilization.
+Do not create separate Git worktrees, temporary clones, or detached-HEAD checkouts.
+Configure the schedule to use the local project directory. If started elsewhere or
+with detached HEAD, stop and report the mismatch. Keep one writer; do not overlap
+scheduled and manual edits.
 
 I authorize committing and pushing this pass's completed, tested project changes and
 commit history to my public repository https://github.com/Ddemon26/DreamCompiler.git,
 branch codex/compiler-stabilization. Publish only to that repository and branch. Do not
 merge main, force-push, publish secrets, or include unrelated user changes.
 
-First inspect the worktree and configured origin. Fetch the approved branch. In a fresh,
-clean automation worktree, if HEAD equals or is an ancestor of the approved remote tip,
-you may switch detached to origin/codex/compiler-stabilization so the latest instructions
-and handoff are available. Preserve unpublished commits and pre-existing edits. If the
-checkout is dirty, divergent, or belongs to an unfinished pass, follow the delivery/blocker
-rules instead of discarding work or starting a new feature.
+First verify the checkout path, attached branch, worktree status, and configured origin.
+Fetch the approved branch. A clean checkout behind the approved remote tip may fast-forward
+with git merge --ff-only origin/codex/compiler-stabilization. Preserve unpublished commits
+and pre-existing edits. If the checkout is dirty, divergent, or belongs to an unfinished
+pass, follow the delivery/blocker rules instead of discarding work or starting a new feature.
 Check git history/worktree records and the preceding run for an unpublished or blocked
 agent pass before allocating a new ID; recover or report it rather than duplicating work.
 

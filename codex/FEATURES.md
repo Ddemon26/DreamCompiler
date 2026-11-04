@@ -31,6 +31,7 @@ success is recorded separately from native runtime verification.
 
 ### Functions and OOP
 - **Function declarations**: With parameters and typed return values using `func` keyword
+- **Primitive return checks**: Exact declared types and valid bare returns, including methods, nested statements, and imported functions; no implicit numeric conversion at the return boundary or proof that every path returns
 - **Classes and structs**: Object construction and instantiation
 - **Instance methods**: With `this` pointer (emitted as C functions)
 - **Object-oriented programming**: Declaration-based single inheritance, typed inherited fields, static method dispatch, base access, and checked upcasts; no virtual dispatch or access-control enforcement
@@ -88,7 +89,7 @@ success is recorded separately from native runtime verification.
 - **Windows Dream Suite**: See the dated counts in `tasks/MostRecentTestResults.md`
 - **Basic Operations**: Fully functional
 - **Control Flow**: Fully functional  
-- **Functions**: Fully functional
+- **Functions**: Primitive explicit returns checked; missing-return proofs and non-primitive contracts remain incomplete
 - **Exception Handling**: Existing annotated tests pass; additional fixtures remain skipped
 - **Multi-file**: Function imports compile and run; broader module exports remain future work
 - **Concurrency**: Not implemented (tests excluded)

@@ -463,6 +463,7 @@ static Node *parse_expr_prec(Parser *p, int min_prec) {
   Node *lhs = parse_unary(p);
   for (;;) {
     if (p->tok.kind == TK_QUESTION && min_prec <= 1) {
+      Pos question_pos = p->tok.pos;
       next(p);
       Node *then_expr = parse_expr_prec(p, 0);
       if (p->tok.kind != TK_COLON) {
@@ -472,6 +473,7 @@ static Node *parse_expr_prec(Parser *p, int min_prec) {
       }
       Node *else_expr = parse_expr_prec(p, 1);
       Node *tern = node_new(p->arena, ND_COND);
+      tern->pos = question_pos;
       tern->as.cond.cond = lhs;
       tern->as.cond.then_expr = then_expr;
       tern->as.cond.else_expr = else_expr;

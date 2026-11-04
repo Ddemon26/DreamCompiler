@@ -6,8 +6,9 @@
 | [P0002](P0002-zig-inheritance.md) | 2026-11-03 | Zig 0.17.1 and declaration-based inheritance | `e52280a` (legacy, no trailer) |
 | [P0003](P0003-multi-file.md) | 2026-11-03 | Function modules, dependency and export checks | `6fe29c4`, `Pass-ID: P0003` |
 | [P0004](P0004-daily-agent-workflow.md) | 2026-11-03 | Daily-agent contract, handoff, prompt, and delivery gate | `Pass-ID: P0004` |
+| [P0005](P0005-primitive-return-checks.md) | 2026-11-04 | Primitive return checks, recovered checkout, local-only workflow | `Pass-ID: P0005` |
 
-The next available ID is **P0005**; verify current git history before using it.
+The next available ID is **P0006**; verify current git history before using it.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not
 make an empty commit. Recover a documented unpublished pass before allocating new work.

@@ -60,6 +60,26 @@ float area = calculateArea(2.5);        // area ≈ 19.63
 string message = getGreeting("Alice");  // message = "Hello, Alice!"
 ```
 
+## Checked primitive returns
+
+Functions and instance/static methods returning `int`, `float`, `bool`, `char`, or
+`string` require each explicit `return` to provide an expression of that exact type.
+There is no implicit conversion at the return boundary: `func float weight() { return
+1; }` is rejected; use `return 1.0;`. Arithmetic expressions keep their existing
+promotion rules, and an `int`/`float` conditional expression has type `float`.
+Other conditional branches must have matching types; both branches are checked.
+
+A `void` function (including one with no written return type) accepts `return;` and
+rejects `return expression;`, even when the expression calls another void function.
+These checks run before C emission, including inside loops, switches, and
+try/catch/finally blocks and in imported function modules. Dependency diagnostics
+identify the dependency source and return line. Top-level entry-program returns
+retain their existing behavior.
+
+This checks explicit primitive returns, not whether every control-flow path returns.
+Pointer/array shape checking and broader operator validation remain separate work;
+async and non-primitive return contracts are outside this supported subset.
+
 ## Parameters
 
 ### Single Parameters

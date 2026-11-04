@@ -8,7 +8,9 @@ and verified git history carry the handoff between runs.
 ## Set up the daily schedule
 
 Create a daily, project-scoped scheduled task for DreamCompiler in the desktop app.
-Choose an isolated Git worktree and a daily time in `America/Vancouver`. Use the
+Choose the existing local project directory `C:/Users/damon/cApps/DreamCompiler`,
+with HEAD attached to `codex/compiler-stabilization`, and a daily time in
+`America/Vancouver`. Do not select worktree mode or create another checkout. Use the
 complete prompt in [daily-progress.md](../../codex/prompts/daily-progress.md).
 Keep one scheduled writer for this integration branch and avoid overlapping manual
 and scheduled passes.
@@ -26,10 +28,17 @@ Root and nested instructions follow [AGENTS.md discovery](https://learn.chatgpt.
 
 Inspect the worktree and origin without printing credentials. The approved destination
 is the public `Ddemon26/DreamCompiler` repository and `codex/compiler-stabilization`.
-If the worktree has pre-existing edits, do not publish or modify them as part of the run.
+Run only in `C:/Users/damon/cApps/DreamCompiler` on that attached branch. If the path
+or branch differs, or HEAD is detached, report the mismatch and stop. Do not create
+worktrees, temporary clones, or detached checkouts to proceed. Keep one writer;
+scheduled and manual runs must not edit the project concurrently.
+If the checkout has pre-existing edits, preserve them. Resume only a clearly documented,
+authorized unfinished pass; otherwise report the ownership blocker without modifying
+or publishing those changes.
 
 ```sh
 git status --short
+git rev-parse --show-toplevel
 git branch --show-current
 git fetch origin
 git log -5 --oneline
@@ -41,8 +50,6 @@ Fetch must succeed before selecting new work. Compare `HEAD` with
 - If they match, proceed.
 - If clean `HEAD` is an ancestor of the remote tip, a local checkout of the integration
   branch may fast-forward with `git merge --ff-only origin/codex/compiler-stabilization`.
-  A fresh automation-created worktree on another branch may instead use
-  `git switch --detach origin/codex/compiler-stabilization`.
 - If local commits are unpublished, finish only their clearly documented, authorized
   pass delivery first. Do not publish unrelated user commits or start a new feature.
 - If history diverged, an earlier run is still active, or ownership of local changes
@@ -50,8 +57,9 @@ Fetch must succeed before selecting new work. Compare `HEAD` with
 
 Before allocating a new pass ID, inspect `git log --all` and `git worktree list --porcelain`
 for an unpublished earlier agent pass, and review the preceding scheduled run when its
-status is available. A blocked earlier run must be recovered in its owned worktree or
-reported for attention; do not work around it by repeating the task in another worktree.
+status is available. Recover a blocked earlier run in the primary checkout or report
+it for attention. If legacy changes remain in another worktree, report them for safe
+recovery before proceeding; do not discard them or repeat the task in another worktree.
 Do not inspect or alter unrelated user work beyond what is needed to identify ownership.
 
 Useful read-only ancestry checks:

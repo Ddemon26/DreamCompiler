@@ -1,40 +1,51 @@
 # Most Recent Test Results - DreamCompiler
 
-**Date:** November 3, 2026
+**Date:** November 4, 2026
 
-**Branch:** `codex/compiler-stabilization`
+**Pass:** P0005 - primitive return checks and checkout recovery
 
-**Platform:** Windows
+**Branch/platform:** `codex/compiler-stabilization`, attached primary checkout, Windows
 
 **Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
 
-## Current stabilization baseline
+## Current measured state
 
-- `zig build test`: **129 discovered; 110 passed; 19 skipped; 0 failed; 0 errors** (~42 seconds).
-- Focused inheritance suite: **16 passed**, including eight invalid-program checks.
-- Windows Go quick protocol: **4 test groups passed**, including four diagnostic rejection cases,
-  arena growth, warning behavior, and **16 multi-file integration cases**.
-- `python -m unittest discover -s codex/python -p test_test_manager.py`: **5 tests passed**.
-- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: cross-build succeeded.
-  Linux executables were not run locally; CI is configured to test on Linux and Windows.
-- Local detailed Dream report: `test_results/test_results_20261103_185503_windows.json` (ignored build output).
-- Zig 0.17.1 is installed at `C:/Users/damon/AppData/Local/Programs/Zig/zig-x86_64-windows-0.17.1`;
-  the user PATH entry now selects it. Already-running shells may need to refresh their PATH.
+- `zig version`: **0.17.1**.
+- `zig build test`: **133 discovered; 114 passed; 19 skipped; 0 failed; 0 errors**
+  (42.83 seconds). Report: ignored `test_results/test_results_20261104_055115_windows.json`.
+- Windows Go quick protocol, from `codex/go`:
+  `powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 quick`:
+  **all four groups passed**, including 23 diagnostic cases, arena growth, nonfatal
+  warnings, and 20 module cases. Compiler launches use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five tests passed**.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **succeeded**.
+  Linux executables were not run locally; inspect Linux/Windows CI after publication.
+- Documentation links, checkout-policy consistency, diff review, and `git diff --check`
+  passed. The only registered worktree is the primary checkout on the attached branch.
 
-The 19 skipped files lack expectations and are not validated. The multi-file entry now
-executes; its two helper modules are excluded explicitly as fixtures. Four graphics and
-four concurrency fixtures remain outside the regular suite.
-Legacy cgo tests still cannot run with `go test ./...`; the repaired quick protocol runs
-the compiler CLI stability checks directly.
+The compiler suite, Go protocol, and cross-build used approved access to the installed
+toolchains outside the restricted sandbox. A restricted initial `zig build test`
+could not locate the Zig installation directory. Earlier runs in the detached checkout
+had three changing SDK/cache file-open errors, each with 113 passes, 19 skips and one
+compile error. Those errors did not recur in recovery; their original root cause has
+not been established. No tests were excluded or weakened, and no SDK/cache repair
+or deletion was performed.
 
-The build, error exit handling, stable AST allocation, and test reporting are now verified
-for this baseline. Single inheritance now resolves actual declarations, typed fields,
-methods, base calls, and upcasts. Virtual dispatch and access control remain unsupported.
-Function imports now resolve dependencies, enforce exports, check signatures, and build
-one native executable. Imported type/global exports and separate object caching remain
-unsupported. Emitting optimized IR remains unfinished.
+Recovery logs: ignored `build/P0005-recovery-full-suite.log`,
+`build/P0005-recovery-go-quick.log`, and `build/P0005-recovery-linux-cross-build.log`.
+Earlier failed-run logs and JSON reports were moved to the primary checkout, with
+verified backup copies under `build/P0005-worktree-recovery/`.
 
-The preceding Zig 0.15.1 baseline had 117 discovered, 95 passed, and 22 skipped.
+The 19 unannotated entry files remain skipped; supporting modules remain fixtures.
+Four graphics and four concurrency fixtures remain outside the regular suite.
+Legacy recursive cgo tests remain unsupported; use the Go quick protocol.
+
+P0005 adds explicit primitive return checks and regressions. Missing-return proofs,
+pointer/array shapes, general operator validation, and non-primitive/async return
+contracts remain outside this slice. Instance field declaration initializers were
+observed being ignored; the positive method fixture uses constructor assignment.
+See [P0005](passes/P0005-primitive-return-checks.md) and [STATE.md](STATE.md).
 
 ## Historical Windows report - July 20, 2025
 

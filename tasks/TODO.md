@@ -8,19 +8,20 @@ A baseline regression or failed CI takes priority over this queue. Select the fi
 ready item; if it spans several passes, finish one useful, tested slice and leave the
 remaining acceptance criteria open. Update this queue with evidence when work lands.
 
-## T001 — Primitive function return checks (ready)
+## T001 - Primitive function return checks (completed in P0005)
 
-Module calls now check primitive argument signatures, but function return expressions
-are not comprehensively checked by semantic analysis. Establish and enforce return-value
-compatibility without relying on C compiler errors or accidentally rejecting valid code.
+P0005 checks exact primitive return types and rejects missing values and void return
+expressions before C emission. Methods use their own return context; nested switch/try
+bodies and both conditional branches are visited. Four dependency-return cases require
+the originating source line and absence of generated artifacts. Matching returns run
+in Dream regressions and the module matrix. Numeric policy is documented in
+`../docs/language-features/functions.md`.
 
-Acceptance:
-- Matching primitive return values continue to compile and execute.
-- Incompatible return expressions and invalid bare returns receive Dream diagnostics
-  before C emission, including when they occur in an imported module.
-- Diagnostics identify the originating dependency source; add focused Go/Dream cases.
-- Document any numeric-conversion policy used; preserve the existing annotated baseline.
-- Keep broader control-flow proofs for missing returns separate if they need another pass.
+Recovery validation: 114 Dream passes, 19 skips, no failures/errors; four Go quick
+groups passed (23 diagnostic cases and 20 module cases included); five runner tests
+passed; Linux cross-build succeeded. See [P0005](passes/P0005-primitive-return-checks.md).
+Missing-return proofs, pointer/array shapes, and broader operator validation remain
+separate follow-ups. Verify P0005 publication before starting T002.
 
 ## T002 — Member-call and static/instance diagnostics (ready)
 
@@ -52,6 +53,12 @@ fallback/error behavior for unsupported lowering. Split larger SSA/backend work 
 subsequent passes with durable handoffs.
 
 ## Later work
+
+- Prove required returns on all control-flow paths; extend pointer/array return shapes
+  and general operator operand validation beyond the primitive scalar checks in P0005.
+- Honor instance field declaration initializers. P0005's initial method fixture printed
+  `(null)` for `string label = "label"`; constructor assignment works and is used by
+  the final return regression. This existing limitation is outside T001.
 
 - Broaden module exports beyond functions; design namespaces and type ownership first.
 - Repair or retire the unsupported legacy Go/cgo suites with replacement coverage.

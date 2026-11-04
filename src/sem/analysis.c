@@ -51,7 +51,7 @@ void sem_analyzer_init(SemAnalyzer *s, Arena *a) {
   s->diags.cap = 0;
   s->scope = malloc(sizeof(Scope));
   scope_init(s->scope, NULL);
-  s->current_ret = TK_KW_VOID;
+  s->current_ret = TK_EOF; /* Top-level entry statements retain their return behavior. */
   s->program = NULL;
   s->current_class = NULL;
   s->source_file = NULL;
@@ -86,6 +86,23 @@ struct Decl {
 
 static TokenKind analyze_expr(SemAnalyzer *s, Node *n);
 static void analyze_stmt(SemAnalyzer *s, Node *n);
+
+static const char *return_type_name(TokenKind type) {
+  switch (type) {
+  case TK_KW_INT: return "int";
+  case TK_KW_FLOAT: return "float";
+  case TK_KW_BOOL: return "bool";
+  case TK_KW_CHAR: return "char";
+  case TK_KW_STRING: return "string";
+  case TK_KW_VOID: return "void";
+  default: return "non-primitive";
+  }
+}
+
+static bool primitive_return_type(TokenKind type) {
+  return type == TK_KW_INT || type == TK_KW_FLOAT || type == TK_KW_BOOL ||
+         type == TK_KW_CHAR || type == TK_KW_STRING;
+}
 
 static Decl *decl_new(SemAnalyzer *s, DeclKind kind) {
   Decl *d = arena_alloc(s->arena, sizeof(Decl));
@@ -373,9 +390,26 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     return TK_KW_VOID;
   case ND_CALL:
     return analyze_call(s, n);
-  case ND_COND:
+  case ND_UNARY:
+  case ND_POST_UNARY: {
+    TokenKind operand = analyze_expr(s, n->as.unary.expr);
+    if (n->as.unary.op == TK_BANG) return TK_KW_BOOL;
+    if (n->as.unary.op == TK_TILDE) return TK_KW_INT;
+    if ((n->as.unary.op == TK_PLUS || n->as.unary.op == TK_MINUS) &&
+        (operand == TK_KW_CHAR || operand == TK_KW_BOOL)) return TK_KW_INT;
+    return operand;
+  }
+  case ND_COND: {
     analyze_expr(s, n->as.cond.cond);
-    return analyze_expr(s, n->as.cond.then_expr);
+    TokenKind then_type = analyze_expr(s, n->as.cond.then_expr);
+    TokenKind else_type = analyze_expr(s, n->as.cond.else_expr);
+    if (then_type == else_type) return then_type;
+    /* Match arithmetic promotion; returning an int alone never widens implicitly. */
+    if ((then_type == TK_KW_INT && else_type == TK_KW_FLOAT) ||
+        (then_type == TK_KW_FLOAT && else_type == TK_KW_INT)) return TK_KW_FLOAT;
+    diag_push(s, n->pos, DIAG_ERROR, "conditional branches have incompatible types");
+    return then_type;
+  }
   case ND_NEW:
     /* new expressions return a pointer to the type being constructed */
     for (size_t i = 0; i < n->as.new_expr.arg_len; i++)
@@ -456,10 +490,40 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
       analyze_expr(s, n->as.for_stmt.update);
     analyze_stmt(s, n->as.for_stmt.body);
     break;
-  case ND_RETURN:
-    if (n->as.ret.expr)
-      analyze_expr(s, n->as.ret.expr);
+  case ND_SWITCH:
+    analyze_expr(s, n->as.switch_stmt.expr);
+    for (size_t i = 0; i < n->as.switch_stmt.len; ++i) {
+      analyze_expr(s, n->as.switch_stmt.cases[i].value);
+      analyze_stmt(s, n->as.switch_stmt.cases[i].body);
+    }
     break;
+  case ND_TRY:
+    analyze_stmt(s, n->as.try_stmt.body);
+    s->scope = scope_push(s->scope);
+    if (n->as.try_stmt.catch_param.len) {
+      Decl *exception = decl_new(s, DECL_VAR);
+      exception->as.var.type = TK_IDENT;
+      exception->as.var.type_name = n->as.try_stmt.catch_type;
+      scope_bind(s->scope, sym_intern(slice_to_cstr(s, n->as.try_stmt.catch_param)), exception);
+    }
+    analyze_stmt(s, n->as.try_stmt.catch_body);
+    s->scope = scope_pop(s->scope);
+    analyze_stmt(s, n->as.try_stmt.finally_body);
+    break;
+  case ND_RETURN: {
+    TokenKind actual = n->as.ret.expr ? analyze_expr(s, n->as.ret.expr) : TK_KW_VOID;
+    if (s->current_ret == TK_KW_VOID && n->as.ret.expr) {
+      diag_push(s, n->pos, DIAG_ERROR, "void function cannot return an expression");
+    } else if (primitive_return_type(s->current_ret)) {
+      if (!n->as.ret.expr)
+        diag_push(s, n->pos, DIAG_ERROR, "return requires a value");
+      else if (actual != s->current_ret)
+        diag_pushf(s, n->pos, DIAG_ERROR,
+                   "return expression has incompatible type: expected '%s', got '%s'",
+                   return_type_name(s->current_ret), return_type_name(actual));
+    }
+    break;
+  }
   case ND_CLASS_DECL:
   case ND_STRUCT_DECL: {
     char *name = slice_to_cstr(s, n->as.type_decl.name);
@@ -589,7 +653,10 @@ void sem_analyze_program(SemAnalyzer *s, Node *root) {
         d->as.var.type_name = param->as.var_decl.type_name;
         scope_bind(s->scope, sym_intern(slice_to_cstr(s, param->as.var_decl.name)), d);
       }
+      TokenKind prev = s->current_ret;
+      s->current_ret = method->as.func.ret_type;
       analyze_stmt(s, method->as.func.body);
+      s->current_ret = prev;
       s->scope = scope_pop(s->scope);
       s->current_class = NULL;
     }
