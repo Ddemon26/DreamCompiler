@@ -50,6 +50,8 @@ void sem_analyzer_init(SemAnalyzer *s, Arena *a) {
   s->scope = malloc(sizeof(Scope));
   scope_init(s->scope, NULL);
   s->current_ret = TK_KW_VOID;
+  s->program = NULL;
+  s->current_class = NULL;
 }
 
 void sem_analyzer_free(SemAnalyzer *s) {
@@ -67,6 +69,7 @@ struct Decl {
     struct {
       TokenKind type;
       int is_const;
+      Slice type_name;
     } var;
     struct {
       TokenKind ret_type;
@@ -80,10 +83,116 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n);
 static void analyze_stmt(SemAnalyzer *s, Node *n);
 
 static Decl *decl_new(SemAnalyzer *s, DeclKind kind) {
-  (void)s;
-  Decl *d = malloc(sizeof(Decl));
+  Decl *d = arena_alloc(s->arena, sizeof(Decl));
   d->kind = kind;
   return d;
+}
+
+static bool slice_equal(Slice a, Slice b) {
+  return a.len == b.len && (a.len == 0 || memcmp(a.start, b.start, a.len) == 0);
+}
+
+Node *sem_find_type(Node *program, Slice name) {
+  if (!program || !name.len) return NULL;
+  for (size_t i = 0; i < program->as.block.len; ++i) {
+    Node *n = program->as.block.items[i];
+    if ((n->kind == ND_CLASS_DECL || n->kind == ND_STRUCT_DECL) &&
+        slice_equal(n->as.type_decl.name, name)) return n;
+  }
+  return NULL;
+}
+
+Node *sem_find_member(Node *type, Slice name, Node **owner) {
+  if (owner) *owner = NULL;
+  for (; type; type = type->as.type_decl.base_decl) {
+    for (size_t i = 0; i < type->as.type_decl.len; ++i) {
+      Node *member = type->as.type_decl.members[i];
+      Slice member_name = member->kind == ND_VAR_DECL ? member->as.var_decl.name :
+                          member->kind == ND_FUNC ? member->as.func.name : (Slice){0};
+      if (member_name.len && slice_equal(member_name, name)) {
+        if (owner) *owner = type;
+        return member;
+      }
+    }
+  }
+  return NULL;
+}
+
+bool sem_is_subclass(Node *derived, Node *base) {
+  if (!base) return false;
+  for (; derived; derived = derived->as.type_decl.base_decl) {
+    if (derived == base) return true;
+  }
+  return false;
+}
+
+static bool resolve_inheritance(SemAnalyzer *s, Node *type) {
+  if (type->as.type_decl.inheritance_state == 2) return true;
+  if (type->as.type_decl.inheritance_state == 3) return false;
+  Slice name = type->as.type_decl.name;
+  if (type->as.type_decl.inheritance_state == 1) {
+    diag_pushf(s, type->pos, DIAG_ERROR, "inheritance cycle involving '%.*s'", (int)name.len, name.start);
+    type->as.type_decl.inheritance_state = 3;
+    return false;
+  }
+  type->as.type_decl.inheritance_state = 1;
+  Slice base_name = type->as.type_decl.base_name;
+  if (base_name.len) {
+    Node *base = sem_find_type(s->program, base_name);
+    if (!base || base->kind != ND_CLASS_DECL) {
+      diag_pushf(s, type->pos, DIAG_ERROR, "unknown or invalid base class '%.*s'", (int)base_name.len, base_name.start);
+      type->as.type_decl.inheritance_state = 3;
+      return false;
+    }
+    if (!resolve_inheritance(s, base)) {
+      type->as.type_decl.inheritance_state = 3;
+      return false;
+    }
+    type->as.type_decl.base_decl = base;
+  }
+  for (size_t i = 0; i < type->as.type_decl.len; ++i) {
+    Node *member = type->as.type_decl.members[i];
+    Slice member_name = member->kind == ND_VAR_DECL ? member->as.var_decl.name : member->as.func.name;
+    for (size_t j = 0; j < i; ++j) {
+      Node *previous = type->as.type_decl.members[j];
+      Slice previous_name = previous->kind == ND_VAR_DECL ? previous->as.var_decl.name : previous->as.func.name;
+      if (slice_equal(member_name, previous_name)) {
+        diag_pushf(s, member->pos, DIAG_ERROR, "duplicate member '%.*s'", (int)member_name.len, member_name.start);
+        type->as.type_decl.inheritance_state = 3;
+        return false;
+      }
+    }
+  }
+  type->as.type_decl.inheritance_state = 2;
+  return true;
+}
+
+static Node *expr_class(SemAnalyzer *s, Node *n) {
+  if (!n) return NULL;
+  if (n->kind == ND_NEW) return sem_find_type(s->program, n->as.new_expr.type_name);
+  if (n->kind == ND_IDENT) {
+    Decl *d = scope_lookup(s->scope, sym_intern(slice_to_cstr(s, n->as.ident)));
+    if (d && d->kind == DECL_VAR) return sem_find_type(s->program, d->as.var.type_name);
+    if (d && d->kind == DECL_TYPE) return sem_find_type(s->program, n->as.ident);
+  }
+  if (n->kind == ND_FIELD) {
+    Node *member = sem_find_member(expr_class(s, n->as.field.object), n->as.field.name, NULL);
+    if (member && member->kind == ND_VAR_DECL) return sem_find_type(s->program, member->as.var_decl.type_name);
+  }
+  if (n->kind == ND_BASE && s->current_class) {
+    Node *member = sem_find_member(s->current_class->as.type_decl.base_decl, n->as.base.name, NULL);
+    if (member && member->kind == ND_VAR_DECL) return sem_find_type(s->program, member->as.var_decl.type_name);
+  }
+  return NULL;
+}
+
+static void check_class_assignment(SemAnalyzer *s, Node *target, Node *value) {
+  Node *source = expr_class(s, value);
+  if (target && source && !sem_is_subclass(source, target)) {
+    diag_pushf(s, value->pos, DIAG_ERROR, "cannot assign '%.*s' to '%.*s'",
+               (int)source->as.type_decl.name.len, source->as.type_decl.name.start,
+               (int)target->as.type_decl.name.len, target->as.type_decl.name.start);
+  }
 }
 
 static TokenKind analyze_ident(SemAnalyzer *s, Node *n) {
@@ -102,6 +211,31 @@ static TokenKind analyze_ident(SemAnalyzer *s, Node *n) {
 }
 
 static TokenKind analyze_call(SemAnalyzer *s, Node *n) {
+  if (n->as.call.callee->kind == ND_FIELD || n->as.call.callee->kind == ND_BASE) {
+    Node *field = n->as.call.callee;
+    bool is_base = field->kind == ND_BASE;
+    Slice member_name = is_base ? field->as.base.name : field->as.field.name;
+    Node *type = is_base ? (s->current_class ? s->current_class->as.type_decl.base_decl : NULL) : expr_class(s, field->as.field.object);
+    if (is_base && !type) {
+      diag_push(s, n->pos, DIAG_ERROR, "base access requires a base class and an instance method");
+      return TK_KW_INT;
+    }
+    if (type) {
+      Node *method = sem_find_member(type, member_name, NULL);
+      if (!method || method->kind != ND_FUNC) {
+        diag_pushf(s, n->pos, DIAG_ERROR, "unknown method '%.*s'", (int)member_name.len, member_name.start);
+        return TK_KW_INT;
+      }
+      if (!is_base && field->as.field.object->kind == ND_IDENT && !method->as.func.is_static) {
+        Decl *object = scope_lookup(s->scope, sym_intern(slice_to_cstr(s, field->as.field.object->as.ident)));
+        if (object && object->kind == DECL_TYPE) diag_push(s, n->pos, DIAG_ERROR, "instance method requires an object");
+      }
+      if (method->as.func.param_len != n->as.call.len)
+        diag_push(s, n->pos, DIAG_ERROR, "incorrect number of method arguments");
+      for (size_t i = 0; i < n->as.call.len; ++i) analyze_expr(s, n->as.call.args[i]);
+      return method->as.func.ret_type;
+    }
+  }
   if (n->as.call.callee->kind != ND_IDENT)
     return TK_KW_INT;
   char *name = slice_to_cstr(s, n->as.call.callee->as.ident);
@@ -141,16 +275,36 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     return TK_KW_VOID; // null is compatible with pointer types
   case ND_IDENT:
     return analyze_ident(s, n);
-  case ND_FIELD:
+  case ND_BASE: {
+    Node *base = s->current_class ? s->current_class->as.type_decl.base_decl : NULL;
+    if (!base) {
+      diag_push(s, n->pos, DIAG_ERROR, "base access requires a base class and an instance method");
+      return TK_KW_INT;
+    }
+    Node *member = sem_find_member(base, n->as.base.name, NULL);
+    if (!member || member->kind != ND_VAR_DECL) {
+      diag_pushf(s, n->pos, DIAG_ERROR, "unknown base field '%.*s'", (int)n->as.base.name.len, n->as.base.name.start);
+      return TK_KW_INT;
+    }
+    return member->as.var_decl.type;
+  }
+  case ND_FIELD: {
     // Handle field access, including enum member access
     TokenKind object_type = analyze_expr(s, n->as.field.object);
     if (object_type == TK_KW_ENUM) {
       // This is enum member access like VkResult.Success
       return TK_KW_INT; // enum members are integers
     }
-    // Regular field access on objects
+    Node *type = expr_class(s, n->as.field.object);
+    if (type) {
+      Node *member = sem_find_member(type, n->as.field.name, NULL);
+      if (member && member->kind == ND_VAR_DECL) return member->as.var_decl.type;
+      diag_pushf(s, n->pos, DIAG_ERROR, "unknown field '%.*s'", (int)n->as.field.name.len, n->as.field.name.start);
+    }
     return TK_KW_INT; // Default for now
+  }
   case ND_BINOP: {
+    if (n->as.bin.op == TK_EQ) check_class_assignment(s, expr_class(s, n->as.bin.lhs), n->as.bin.rhs);
     // Check for assignment to const variable
     if (n->as.bin.op == TK_EQ && n->as.bin.lhs->kind == ND_IDENT) {
       char *name = slice_to_cstr(s, n->as.bin.lhs->as.ident);
@@ -233,8 +387,10 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
     Decl *d = decl_new(s, DECL_VAR);
     d->as.var.type = n->as.var_decl.type;
     d->as.var.is_const = n->as.var_decl.is_const;
+    d->as.var.type_name = n->as.var_decl.type_name;
     scope_bind(s->scope, sym, d);
     if (n->as.var_decl.init) {
+      check_class_assignment(s, sem_find_type(s->program, n->as.var_decl.type_name), n->as.var_decl.init);
       TokenKind it = analyze_expr(s, n->as.var_decl.init);
       if (it != d->as.var.type)
         diag_pushf(s, n->pos, DIAG_ERROR,
@@ -307,6 +463,7 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
       Decl *pd = decl_new(s, DECL_VAR);
       pd->as.var.type = param->as.var_decl.type;
       pd->as.var.is_const = param->as.var_decl.is_const;
+      pd->as.var.type_name = param->as.var_decl.type_name;
       scope_bind(s->scope, ps, pd);
     }
     TokenKind prev = s->current_ret;
@@ -363,6 +520,51 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
 }
 
 void sem_analyze_program(SemAnalyzer *s, Node *root) {
-  for (size_t i = 0; i < root->as.block.len; i++)
-    analyze_stmt(s, root->as.block.items[i]);
+  s->program = root;
+  for (size_t i = 0; i < root->as.block.len; ++i) {
+    Node *n = root->as.block.items[i];
+    if (n->kind == ND_CLASS_DECL || n->kind == ND_STRUCT_DECL) {
+      n->as.type_decl.base_decl = NULL;
+      n->as.type_decl.inheritance_state = 0;
+      analyze_stmt(s, n);
+    }
+  }
+  bool valid = true;
+  for (size_t i = 0; i < root->as.block.len; ++i) {
+    Node *n = root->as.block.items[i];
+    if (n->kind == ND_CLASS_DECL || n->kind == ND_STRUCT_DECL)
+      valid = resolve_inheritance(s, n) && valid;
+  }
+  if (!valid) return;
+  for (size_t i = 0; i < root->as.block.len; ++i) {
+    Node *n = root->as.block.items[i];
+    if (n->kind != ND_CLASS_DECL && n->kind != ND_STRUCT_DECL) analyze_stmt(s, n);
+  }
+  // Methods have their own parameter scope and resolve fields through this/base.
+  for (size_t i = 0; i < root->as.block.len; ++i) {
+    Node *type = root->as.block.items[i];
+    if (type->kind != ND_CLASS_DECL && type->kind != ND_STRUCT_DECL) continue;
+    for (size_t j = 0; j < type->as.type_decl.len; ++j) {
+      Node *method = type->as.type_decl.members[j];
+      if (method->kind != ND_FUNC) continue;
+      s->scope = scope_push(s->scope);
+      s->current_class = method->as.func.is_static ? NULL : type;
+      if (!method->as.func.is_static) {
+        Decl *this_decl = decl_new(s, DECL_VAR);
+        this_decl->as.var.type = TK_IDENT;
+        this_decl->as.var.type_name = type->as.type_decl.name;
+        scope_bind(s->scope, sym_intern("this"), this_decl);
+      }
+      for (size_t k = 0; k < method->as.func.param_len; ++k) {
+        Node *param = method->as.func.params[k];
+        Decl *d = decl_new(s, DECL_VAR);
+        d->as.var.type = param->as.var_decl.type;
+        d->as.var.type_name = param->as.var_decl.type_name;
+        scope_bind(s->scope, sym_intern(slice_to_cstr(s, param->as.var_decl.name)), d);
+      }
+      analyze_stmt(s, method->as.func.body);
+      s->scope = scope_pop(s->scope);
+      s->current_class = NULL;
+    }
+  }
 }

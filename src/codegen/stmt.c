@@ -1,4 +1,5 @@
 #include "stmt.h"
+#include "../sem/analysis.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,6 +33,18 @@ static void emit_debug_line(COut *b, Node *n, const char *src_file, const char *
 void cg_register_types(CGTypeInfo *types, size_t n) {
   g_types = types;
   g_type_len = n;
+}
+
+Node *cg_type_decl(Slice name) {
+  for (size_t i = 0; i < g_type_len; ++i) {
+    if (g_types[i].name.len == name.len &&
+        strncmp(g_types[i].name.start, name.start, name.len) == 0) return g_types[i].decl;
+  }
+  return NULL;
+}
+
+Node *cg_member(Slice type, Slice name, Node **owner) {
+  return sem_find_member(cg_type_decl(type), name, owner);
 }
 
 int cg_is_class_type(Slice name) {
@@ -107,6 +120,14 @@ static void emit_type_with_pointer(COut *b, TokenKind k, Slice name, int is_poin
 }
 
 void emit_type_decl(COut *b, Node *n, const char *src_file) {
+  for (size_t i = 0; i < g_type_len; ++i) {
+    if (g_types[i].decl == n) {
+      if (g_types[i].emitted) return;
+      g_types[i].emitted = 1;
+      break;
+    }
+  }
+  if (n->as.type_decl.base_decl) emit_type_decl(b, n->as.type_decl.base_decl, src_file);
   const char *type_kind = (n->kind == ND_CLASS_DECL) ? "class" : "struct";
   c_out_write(b, "/* Dream %s %.*s", type_kind, (int)n->as.type_decl.name.len,
               n->as.type_decl.name.start);
@@ -122,60 +143,20 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
   c_out_newline(b);
   c_out_indent(b);
   
-  // If this is a class with inheritance, inline the base class fields  
-  // This allows direct access to inherited fields without base.field indirection
-  if (n->kind == ND_CLASS_DECL && n->as.type_decl.base_name.len > 0) {
-    c_out_write(b, "/* Inherited fields from %.*s: */",
-                (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start);
-    c_out_newline(b);
-    
-    // TODO: This is a simplified implementation
-    // In a complete implementation, we would need to:
-    // 1. Look up the base class AST node during compilation
-    // 2. Recursively inline all its fields (including its base class fields)
-    // 3. Handle potential name conflicts and method overrides
-    
-    // For now, manually inline common base class fields
-    // This is a temporary workaround - the proper solution requires
-    // semantic analysis improvements to track class definitions
-    
-    // Hardcoded common fields for testing - TODO: Make this dynamic
-    char base_name[256];
-    snprintf(base_name, sizeof(base_name), "%.*s", (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start);
-    
-    if (strcmp(base_name, "Animal") == 0) {
-      // Manually inline Animal fields for testing
-      c_out_write(b, "int age; /* inherited from Animal */");
-      c_out_newline(b);
-      c_out_write(b, "const char * name; /* inherited from Animal */");
-      c_out_newline(b);
-    } else if (strcmp(base_name, "Mammal") == 0) {
-      // Manually inline Mammal fields (which includes Animal fields)
-      c_out_write(b, "int age; /* inherited from Animal via Mammal */");
-      c_out_newline(b);
-      c_out_write(b, "const char * name; /* inherited from Animal via Mammal */");
-      c_out_newline(b);
-      c_out_write(b, "const char * furColor; /* inherited from Mammal */");
-      c_out_newline(b);
-    } else if (strcmp(base_name, "Vehicle") == 0) {
-      // Manually inline Vehicle fields for assignment compatibility test
-      c_out_write(b, "int wheels; /* inherited from Vehicle */");
-      c_out_newline(b);
-    } else {
-      // For unknown base classes, fall back to embedding
-      c_out_write(b, "struct %.*s base; /* inherited from %.*s - dynamic flattening not implemented */",
-                  (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start,
-                  (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start);
-      c_out_newline(b);
-    }
+  // An actual base subobject preserves its layout and makes upcasts well-defined.
+  if (n->as.type_decl.base_decl) {
+    Slice base_name = n->as.type_decl.base_decl->as.type_decl.name;
+    c_out_write(b, "struct %.*s base;\n", (int)base_name.len, base_name.start);
   }
   
   for (size_t i = 0; i < n->as.type_decl.len; i++) {
     Node *m = n->as.type_decl.members[i];
     if (m->kind == ND_VAR_DECL && !m->as.var_decl.is_static) {
-      emit_type(b, m->as.var_decl.type, m->as.var_decl.type_name);
-      c_out_write(b, " %.*s;", (int)m->as.var_decl.name.len,
+      emit_type_with_pointer(b, m->as.var_decl.type, m->as.var_decl.type_name, m->as.var_decl.is_pointer);
+      c_out_write(b, " %.*s", (int)m->as.var_decl.name.len,
                   m->as.var_decl.name.start);
+      if (m->as.var_decl.array_len) c_out_write(b, "[%zu]", m->as.var_decl.array_len);
+      c_out_write(b, ";");
       c_out_newline(b);
     }
   }
@@ -507,7 +488,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
                   n->as.var_decl.name.start);
       if (n->as.var_decl.init) {
         c_out_write(b, " = ");
-        cg_emit_expr(ctx, b, n->as.var_decl.init);
+        cg_emit_value_as(ctx, b, n->as.var_decl.type_name, n->as.var_decl.init);
       }
     }
     cgctx_push(ctx, n->as.var_decl.name.start, n->as.var_decl.name.len,

@@ -2,6 +2,11 @@
 
 ## Unreleased - Compiler stabilization
 
+- Upgrade to Zig 0.17.1, including its I/O, build-module, and argument-forwarding APIs.
+- Resolve single inheritance from declarations; support typed inherited fields,
+  inherited methods/static members, explicit base calls, hidden fields, and upcasts.
+- Reject unknown base classes, cycles, duplicate members, and unrelated class assignments.
+- Allow a longer initial toolchain build while keeping program execution timeouts at 30 seconds.
 - Update the build API and pin CI and setup scripts to Zig 0.15.1.
 - Stop compilation after parser or semantic errors, including `-Werror` warnings.
 - Keep AST arena allocations aligned and stable across growth, and release all blocks.

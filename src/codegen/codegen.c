@@ -105,8 +105,9 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
             strncmp(m->as.func.name.start, "init", 4) == 0)
           has_init = 1;
       }
-      tinfo[tlen++] = (CGTypeInfo){it->as.type_decl.name,
-                                   it->kind == ND_CLASS_DECL, has_init};
+      tinfo[tlen++] = (CGTypeInfo){.name = it->as.type_decl.name,
+                                   .is_class = it->kind == ND_CLASS_DECL,
+                                   .has_init = has_init, .decl = it};
     }
   }
   cg_register_types(tinfo, tlen);

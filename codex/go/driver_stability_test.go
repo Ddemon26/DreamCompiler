@@ -64,6 +64,7 @@ func TestCompiler_ArenaGrowth(t *testing.T) {
 	source.WriteString("Console.WriteLine(first + value511);\n")
 	tr.RunTest(t, CompilerTestCase{
 		Name: "arena_growth", Source: source.String(), ExpectSuccess: true, ExpectedOutput: "552",
+		Timeout: 180 * time.Second,
 	})
 }
 

@@ -1,0 +1,3 @@
+// Expected error: inheritance cycle involving 'First'
+class First : Second { int first; }
+class Second : First { int second; }

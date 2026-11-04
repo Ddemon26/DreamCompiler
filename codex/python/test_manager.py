@@ -106,6 +106,7 @@ class TestManager:
         self.ensure_directories()
         self.load_config()
         self._build_result = None
+        self._toolchain_ready = False
         
     def setup_logging(self):
         """Configure logging with appropriate levels"""
@@ -255,7 +256,7 @@ class TestManager:
 
         # Ensure compiler and runtime library are built
         if self._build_result is None:
-            self._build_result = self.run_command(["zig", "build"])
+            self._build_result = self.run_command(["zig", "build"], timeout=self.config.get("build_timeout", 180))
         if self._build_result.returncode != 0:
             return False, 0.0, f"Build failed: {self._build_result.stderr}"
 
@@ -306,10 +307,13 @@ class TestManager:
             "-o",
             str(exe_path),
         ]
-        link_res = self.run_command(cc_cmd)
+        link_res = self.run_command(cc_cmd, timeout=(
+            self.config["timeout"] if self._toolchain_ready else self.config.get("build_timeout", 180)
+        ))
         compile_time = time.time() - start_time
         if link_res.returncode != 0:
             return False, compile_time, link_res.stderr
+        self._toolchain_ready = True
 
         return True, compile_time, link_res.stdout
             

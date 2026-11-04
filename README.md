@@ -30,7 +30,7 @@ The steps below show how to build and use Dream on Linux **or Windows**.
      sudo apt update && sudo apt install -y build-essential gcc git
      ```
    - On Windows run `codex\_startup.ps1` from an elevated PowerShell (requires Chocolatey). The script installs MinGW (with `gdb`) and other tools automatically.
-   - Install [Zig 0.15.1](https://ziglang.org/download/) and add `zig` to your `PATH`. CI and setup scripts use this version.
+   - Install [Zig 0.17.1](https://ziglang.org/download/) and add `zig` to your `PATH`. CI and setup scripts use this version.
    - The Vulkan SDK is optional and only needed for experimental graphics support.
 2. **Clone the repository**
    ```bash

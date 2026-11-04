@@ -1,0 +1,17 @@
+// Expected: 73
+// Expected: 73
+// Expected: 19
+class Leaf : Branch { int leafValue; }
+class Branch : Root { int branchValue; }
+class Root {
+    int value;
+    func int readValue() { return this.value; }
+}
+Leaf leaf = new Leaf();
+leaf.value = 73;
+Root root = leaf;
+Console.WriteLine(leaf.readValue());
+Console.WriteLine(root.value);
+leaf.value = 19;
+root = leaf;
+Console.WriteLine(root.readValue());

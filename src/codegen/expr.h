@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 void cg_emit_expr(CGCtx *ctx, COut *b, Node *n);
+void cg_emit_value_as(CGCtx *ctx, COut *b, Slice target_type, Node *n);
 int cg_is_string_expr(CGCtx *ctx, Node *n);
 int cg_is_int_expr(CGCtx *ctx, Node *n);
 int cg_is_float_expr(CGCtx *ctx, Node *n);

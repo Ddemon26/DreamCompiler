@@ -1,0 +1,2 @@
+// Expected error: unknown or invalid base class 'Missing'
+class Derived : Missing { int value; }

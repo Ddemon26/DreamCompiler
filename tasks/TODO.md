@@ -4,15 +4,17 @@ This file tracks current development tasks and progress.
 
 ## Current Tasks
 
-The November 3, 2026 stabilization baseline builds with Zig 0.15.1 and reports
-95 passing Dream tests, 22 skipped, and no failures or errors. See
+The November 3, 2026 baseline builds with Zig 0.17.1 and reports
+107 passing Dream tests, 22 skipped, and no failures or errors. See
 `MostRecentTestResults.md` for commands, limits, and platform verification.
 
-1. **General inheritance** - Replace class-name-specific inherited fields with semantic type lookup.
-2. **Multi-file compilation** - Connect the driver, module emission, signatures, and linking; test real imports.
-3. **Optimization output** - Connect optimized IR to code generation and restore validated SSA construction.
-4. **Coverage gaps** - Define expectations for the 22 skipped fixtures and repair the legacy Go suites.
-5. **Deferred features** - Keep async and graphics experiments outside the supported baseline until implemented.
+1. **Multi-file compilation** - Connect the driver, module emission, signatures, and linking; test real imports.
+2. **Optimization output** - Connect optimized IR to code generation and restore validated SSA construction.
+3. **Coverage gaps** - Define expectations for the 22 skipped fixtures and repair the legacy Go suites.
+4. **Deferred features** - Keep async and graphics experiments outside the supported baseline until implemented.
+
+The inheritance pass now resolves declarations and preserves base subobjects,
+typed fields, hidden fields, inherited methods/static members, base calls, and upcasts.
 
 ## Feature Status
 

@@ -38,8 +38,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // Detect Vulkan SDK paths from environment
-    const vulkan_sdk =
-        std.process.getEnvVarOwned(b.allocator, "VULKAN_SDK") catch null;
+    const vulkan_sdk = b.graph.environ_map.get("VULKAN_SDK");
     var vk_include: ?[]const u8 = null;
     var vk_lib: ?[]const u8 = null;
     if (vulkan_sdk) |sdk| {
@@ -78,19 +77,20 @@ pub fn build(b: *std.Build) void {
     const bootstrap = b.addExecutable(.{ .name = "dreamc-bootstrap", .root_module = bootstrap_mod });
     bootstrap.step.dependOn(&re2c_step.step);
     const cflags = if (debug_mode) &DEBUG_CFLAGS else &CFLAGS;
-    bootstrap.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
-    bootstrap.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
+    bootstrap.root_module.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
+    bootstrap.root_module.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
+    bootstrap.root_module.link_libc = true;
 
     const lexexe = b.addExecutable(.{ .name = "lexdump", .root_module = lex_mod });
-    lexexe.addCSourceFiles(.{ .files = &.{"src/driver/lex_main.c"}, .flags = &CFLAGS });
-    lexexe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
-    lexexe.linkLibC();
+    lexexe.root_module.addCSourceFiles(.{ .files = &.{"src/driver/lex_main.c"}, .flags = &CFLAGS });
+    lexexe.root_module.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
+    lexexe.root_module.link_libc = true;
     lexexe.step.dependOn(&re2c_step.step);
     b.installArtifact(lexexe);
 
     const parseexe =
         b.addExecutable(.{ .name = "parse", .root_module = parse_mod });
-    parseexe.addCSourceFiles(.{ .files = &.{
+    parseexe.root_module.addCSourceFiles(.{ .files = &.{
         "src/driver/parse_main.c",
         "src/parser/ast.c",
         "src/parser/parser.c",
@@ -100,8 +100,8 @@ pub fn build(b: *std.Build) void {
         "src/sem/type.c",
         "src/sem/infer.c",
     }, .flags = &CFLAGS });
-    parseexe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
-    parseexe.linkLibC();
+    parseexe.root_module.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
+    parseexe.root_module.link_libc = true;
     parseexe.step.dependOn(&re2c_step.step);
     b.installArtifact(parseexe);
 
@@ -112,20 +112,18 @@ pub fn build(b: *std.Build) void {
     const exe =
         b.addExecutable(.{ .name = "DreamCompiler", .root_module = exe_mod });
     exe.step.dependOn(compile_step.step);
-    exe.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
-    exe.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
+    exe.root_module.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
+    exe.root_module.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
     for (compile_step.files) |gen| {
-        exe.addCSourceFile(.{ .file = gen, .flags = cflags });
+        exe.root_module.addCSourceFile(.{ .file = gen, .flags = cflags });
     }
-    exe.linkLibC();
+    exe.root_module.link_libc = true;
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.setEnvironmentVariable("CC", "zig cc");
     run_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
+    run_cmd.addPassthruArgs();
 
     const run_step = b.step("run", "Build and run DreamCompiler");
     run_step.dependOn(&run_cmd.step);
@@ -146,18 +144,18 @@ pub fn build(b: *std.Build) void {
         .linkage = .static,
     });
     const runtime_files = runtime_sources.toOwnedSlice(b.allocator) catch unreachable;
-    runtime_lib.addCSourceFiles(.{ .files = runtime_files, .flags = cflags });
+    runtime_lib.root_module.addCSourceFiles(.{ .files = runtime_files, .flags = cflags });
     if (vk_include) |p| {
-        runtime_lib.addIncludePath(.{ .cwd_relative = p });
-        if (vk_lib) |lib| runtime_lib.addLibraryPath(.{ .cwd_relative = lib });
-        runtime_lib.linkSystemLibrary(if (target.result.os.tag == .windows) "vulkan-1" else "vulkan");
+        runtime_lib.root_module.addIncludePath(.{ .cwd_relative = p });
+        if (vk_lib) |lib| runtime_lib.root_module.addLibraryPath(.{ .cwd_relative = lib });
+        runtime_lib.root_module.linkSystemLibrary(if (target.result.os.tag == .windows) "vulkan-1" else "vulkan", .{});
         if (target.result.os.tag == .windows) {
-            runtime_lib.linkSystemLibrary("user32");
+            runtime_lib.root_module.linkSystemLibrary("user32", .{});
         } else if (target.result.os.tag == .linux) {
-            runtime_lib.linkSystemLibrary("xcb");
+            runtime_lib.root_module.linkSystemLibrary("xcb", .{});
         }
     }
-    runtime_lib.linkLibC();
+    runtime_lib.root_module.link_libc = true;
     b.installArtifact(runtime_lib);
 
     // Multi-file compilation step
@@ -176,7 +174,7 @@ pub fn build(b: *std.Build) void {
     tests.step.dependOn(b.getInstallStep());
     test_step.dependOn(&tests.step);
 
-    const fmt_zig = b.addFmt(.{ .paths = &.{"build.zig"} });
+    const fmt_zig = b.addFmt(.{ .paths = &.{b.path("build.zig")} });
     const fmt_c = b.addSystemCommand(&.{ "clang-format", "-i" });
     for (AllCSources) |cfile| fmt_c.addFileArg(b.path(cfile));
     fmt_c.addFileArg(b.path("src/driver/lex_main.c"));
@@ -194,11 +192,12 @@ fn collectDrSources(b: *std.Build) []const []const u8 {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     var list: std.ArrayList([]const u8) = .empty;
-    var dir = std.fs.cwd().openDir("src", .{ .iterate = true }) catch return &.{};
-    defer dir.close();
+    const io = b.graph.io;
+    var dir = std.Io.Dir.cwd().openDir(io, "src", .{ .iterate = true }) catch return &.{};
+    defer dir.close(io);
     var walker = dir.walk(arena.allocator()) catch return &.{};
     defer walker.deinit();
-    while (walker.next() catch null) |entry| {
+    while (walker.next(io) catch null) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".dr")) {
             const p = b.pathJoin(&.{ "src", entry.path });
             list.append(arena.allocator(), p) catch @panic("OOM");
@@ -220,7 +219,7 @@ fn addCompileDrStep(
     b: *std.Build,
     bootstrap: *std.Build.Step.Compile,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.builtin.Optimize,
     sources: []const []const u8,
 ) struct { step: *std.Build.Step, files: []const std.Build.LazyPath } {
     const step = b.step("compile-dr", "Compile .dr sources");
@@ -264,7 +263,7 @@ fn addMultiFileCompileStep(
     compiler: *std.Build.Step.Compile,
     runtime_lib: *std.Build.Step.Compile,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.builtin.Optimize,
 ) *std.Build.Step {
     _ = target; // Suppress unused parameter warning
     _ = optimize; // Suppress unused parameter warning
@@ -294,14 +293,15 @@ fn collectDrSourcesFromDir(b: *std.Build, dir_path: []const u8) []const []const 
     defer arena.deinit();
     var list: std.ArrayList([]const u8) = .empty;
 
+    const io = b.graph.io;
     var dir =
-        std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return &.{};
-    defer dir.close();
+        std.Io.Dir.cwd().openDir(io, dir_path, .{ .iterate = true }) catch return &.{};
+    defer dir.close(io);
 
     var walker = dir.walk(arena.allocator()) catch return &.{};
     defer walker.deinit();
 
-    while (walker.next() catch null) |entry| {
+    while (walker.next(io) catch null) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".dr")) {
             const full_path = b.pathJoin(&.{ dir_path, entry.path });
             list.append(arena.allocator(), full_path) catch @panic("OOM");

@@ -6,17 +6,20 @@
 
 **Platform:** Windows
 
-**Toolchain:** Zig 0.15.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
 
 ## Current stabilization baseline
 
-- `zig build test`: **117 discovered; 95 passed; 22 skipped; 0 failed; 0 errors** (~38 seconds).
+- `zig build test`: **129 discovered; 107 passed; 22 skipped; 0 failed; 0 errors** (~67 seconds).
+- Focused inheritance suite: **16 passed**, including eight invalid-program checks.
 - Windows Go quick protocol: **3 test groups passed**, including four diagnostic rejection cases,
   a 512-variable arena-growth program, and a warning-only program.
 - `python -m unittest discover -s codex/python -p test_test_manager.py`: **4 tests passed**.
 - `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: cross-build succeeded.
   Linux executables were not run locally; CI is configured to test on Linux and Windows.
-- Local detailed Dream report: `test_results/test_results_20261103_181550_windows.json` (ignored build output).
+- Local detailed Dream report: `test_results/test_results_20261103_184019_windows.json` (ignored build output).
+- Zig 0.17.1 is installed at `C:/Users/damon/AppData/Local/Programs/Zig/zig-x86_64-windows-0.17.1`;
+  the user PATH entry now selects it. Already-running shells may need to refresh their PATH.
 
 The 22 skipped files lack expectations and are not validated. All three multi-file fixtures
 remain skipped. Four graphics and four concurrency fixtures remain outside the regular suite.
@@ -24,8 +27,11 @@ Legacy cgo tests still cannot run with `go test ./...`; the repaired quick proto
 the compiler CLI stability checks directly.
 
 The build, error exit handling, stable AST allocation, and test reporting are now verified
-for this baseline. General inheritance, multi-file linking, and emitting optimized IR
-remain unfinished. Passing example programs does not establish those features as complete.
+for this baseline. Single inheritance now resolves actual declarations, typed fields,
+methods, base calls, and upcasts. Virtual dispatch and access control remain unsupported.
+Multi-file linking and emitting optimized IR remain unfinished.
+
+The preceding Zig 0.15.1 baseline had 117 discovered, 95 passed, and 22 skipped.
 
 ## Historical Windows report - July 20, 2025
 

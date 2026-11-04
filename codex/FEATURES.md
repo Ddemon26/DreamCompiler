@@ -2,9 +2,9 @@
 
 This document tracks the implementation status of Dream language features.
 
-**Verified baseline (November 3, 2026):** Zig 0.15.1 builds on Windows;
-`zig build test` reports **95 passed, 22 skipped, 0 failures, 0 errors** out of
-117 Dream fixtures. Linux cross-compilation succeeds; local Linux execution is
+**Verified baseline (November 3, 2026):** Zig 0.17.1 builds on Windows;
+`zig build test` reports **107 passed, 22 skipped, 0 failures, 0 errors** out of
+129 Dream fixtures. Linux cross-compilation succeeds; local Linux execution is
 not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
 
 ## ✅ Implemented Language Subset
@@ -34,7 +34,7 @@ not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
 - **Function declarations**: With parameters and typed return values using `func` keyword
 - **Classes and structs**: Object construction and instantiation
 - **Instance methods**: With `this` pointer (emitted as C functions)
-- **Object-oriented programming**: Basic method calls; inheritance is partial and still contains class-name-specific field handling
+- **Object-oriented programming**: Declaration-based single inheritance, typed inherited fields, static method dispatch, base access, and checked upcasts; no virtual dispatch or access-control enforcement
 
 ### I/O and Runtime
 - **Console I/O**: `Console.Write`, `Console.WriteLine`, and `Console.ReadLine`
@@ -86,7 +86,7 @@ not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
 ## 📊 Current Implementation Status
 
 ### Test Suite Results (Latest)
-- **Windows Dream Suite**: 95 passed, 22 skipped, no failures or errors (117 discovered)
+- **Windows Dream Suite**: 107 passed, 22 skipped, no failures or errors (129 discovered)
 - **Basic Operations**: Fully functional
 - **Control Flow**: Fully functional  
 - **Functions**: Fully functional
@@ -97,11 +97,11 @@ not verified. See `tasks/MostRecentTestResults.md` for the detailed scope.
 
 ### Platform Support
 - **Linux**: Cross-build verified; current runtime suite awaits CI execution
-- **Windows**: Annotated Dream suite passes with Zig 0.15.1; skipped fixtures remain unverified
+- **Windows**: Annotated Dream suite passes with Zig 0.17.1; skipped fixtures remain unverified
 - **Cross-platform**: Build system supports both platforms
 
 ### Development Priority
-1. **High**: General inheritance and complete multi-file compilation
+1. **High**: Complete multi-file compilation
 2. **High**: Connect optimized IR to code emission and close skipped-test coverage gaps
 3. **Deferred**: Concurrency/async and graphics/Vulkan integration
 

@@ -4,7 +4,7 @@
 
 From this directory, run `make quick-validate` on Linux or
 `powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 quick`
-on Windows. These commands build with Zig 0.15.1 and run the CLI regressions for
+on Windows. These commands build with Zig 0.17.1 and run the CLI regressions for
 error exits, warnings, and stable AST allocation. They require no cgo library or
 downloaded Go dependencies. Use `-count=1` when running these Go tests directly:
 Go's cache does not track changes to the external compiler executable.

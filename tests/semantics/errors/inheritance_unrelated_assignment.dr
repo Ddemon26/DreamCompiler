@@ -1,0 +1,5 @@
+// Expected error: cannot assign 'First' to 'Second'
+class First { int value; }
+class Second { int value; }
+First first = new First();
+Second second = first;

@@ -1,0 +1,3 @@
+// Expected error: unknown or invalid base class 'Value'
+struct Value { int number; }
+class Derived : Value { int extra; }

@@ -234,6 +234,8 @@ struct Node {
     struct {
       Slice name;     /**< Name of the struct or class. */
       Slice base_name; /**< Name of the base class (empty if no inheritance). */
+      Node *base_decl; /**< Resolved by semantic analysis; null for a root type. */
+      unsigned char inheritance_state; /**< 0 unresolved, 1 visiting, 2 valid, 3 invalid. */
       Node **members; /**< Array of member declarations. */
       size_t len;     /**< Number of members. */
     } type_decl;

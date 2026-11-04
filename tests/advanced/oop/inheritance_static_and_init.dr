@@ -1,0 +1,19 @@
+// Expected: 17
+// Expected: 1
+// Expected: base label
+class Container {
+    int value;
+    static int count;
+    func void init(int n) { this.value = n; }
+    func string label() { return "base label"; }
+    static func void increment() { Container.count = Container.count + 1; }
+}
+class Package : Container {
+    func void init(int n) { base.init(n); }
+    func string label() { return base.label(); }
+}
+Package package = new Package(17);
+Package.increment();
+Console.WriteLine(package.value);
+Console.WriteLine(Package.count);
+Console.WriteLine(package.label());

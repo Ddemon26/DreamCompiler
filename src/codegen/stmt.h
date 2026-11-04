@@ -20,12 +20,16 @@ typedef struct {
   Slice name;
   int is_class;
   int has_init;
+  Node *decl;
+  int emitted;
 } CGTypeInfo;
 
 void cg_register_types(CGTypeInfo *types, size_t n);
 int cg_is_class_type(Slice name);
 int cg_is_known_type(Slice name);
 int cg_has_init(Slice name);
+Node *cg_type_decl(Slice name);
+Node *cg_member(Slice type, Slice name, Node **owner);
 
 #ifdef __cplusplus
 }

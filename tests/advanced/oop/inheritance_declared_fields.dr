@@ -1,0 +1,30 @@
+// Expected: inherited label
+// Expected: 2.500000
+// Expected: Q
+// Expected: 1
+// Expected: 42
+// Expected: 9
+struct Coordinate { int x; }
+class Record {
+    string caption;
+    float weight;
+    char marker;
+    bool ready;
+    int values[2];
+    Coordinate origin;
+    func string describe() { return this.caption; }
+}
+class Entry : Record { int local; }
+Entry entry = new Entry();
+entry.caption = "inherited label";
+entry.weight = 2.5;
+entry.marker = 'Q';
+entry.ready = true;
+entry.values[1] = 42;
+entry.origin.x = 9;
+Console.WriteLine(entry.describe());
+Console.WriteLine(entry.weight);
+Console.WriteLine(entry.marker);
+Console.WriteLine(entry.ready);
+Console.WriteLine(entry.values[1]);
+Console.WriteLine(entry.origin.x);

@@ -1,6 +1,14 @@
 #include "expr.h"
 #include "stmt.h"
+#include "../sem/analysis.h"
 #include <string.h>
+
+static Node *expr_member(CGCtx *ctx, Node *n, Node **owner);
+
+static Node *base_type(CGCtx *ctx) {
+  Node *type = cg_type_decl(cgctx_lookup_name(ctx, "this", 4));
+  return type ? type->as.type_decl.base_decl : NULL;
+}
 
 static Slice expr_type(CGCtx *ctx, Node *n) {
   switch (n->kind) {
@@ -15,9 +23,57 @@ static Slice expr_type(CGCtx *ctx, Node *n) {
   }
   case ND_NEW:
     return n->as.new_expr.type_name;
+  case ND_FIELD:
+  case ND_BASE: {
+    Node *member = expr_member(ctx, n, NULL);
+    if (member && member->kind == ND_VAR_DECL) return member->as.var_decl.type_name;
+    return (Slice){0};
+  }
   default:
     return (Slice){NULL, 0};
   }
+}
+
+static Node *expr_member(CGCtx *ctx, Node *n, Node **owner) {
+  if (n->kind == ND_CALL) return expr_member(ctx, n->as.call.callee, owner);
+  if (n->kind == ND_FIELD) return cg_member(expr_type(ctx, n->as.field.object), n->as.field.name, owner);
+  if (n->kind == ND_BASE) return sem_find_member(base_type(ctx), n->as.base.name, owner);
+  if (n->kind == ND_INDEX) return expr_member(ctx, n->as.index.array, owner);
+  return NULL;
+}
+
+static TokenKind member_type(CGCtx *ctx, Node *n) {
+  Node *member = expr_member(ctx, n, NULL);
+  if (!member) return TK_ERROR;
+  return member->kind == ND_FUNC ? member->as.func.ret_type : member->as.var_decl.type;
+}
+
+static int is_type_reference(CGCtx *ctx, Node *n) {
+  return n && n->kind == ND_IDENT && !cgctx_has_var(ctx, n->as.ident.start, n->as.ident.len) && cg_is_known_type(n->as.ident);
+}
+
+static void emit_receiver(CGCtx *ctx, COut *b, Node *object, Slice type, Node *owner) {
+  if (owner && owner->kind == ND_CLASS_DECL) {
+    Slice name = owner->as.type_decl.name;
+    c_out_write(b, "((struct %.*s *)", (int)name.len, name.start);
+    if (object) cg_emit_expr(ctx, b, object);
+    else c_out_write(b, "this");
+    c_out_write(b, ")");
+  } else if (cg_is_class_type(type)) {
+    cg_emit_expr(ctx, b, object);
+  } else {
+    c_out_write(b, "&(");
+    cg_emit_expr(ctx, b, object);
+    c_out_write(b, ")");
+  }
+}
+
+void cg_emit_value_as(CGCtx *ctx, COut *b, Slice target_type, Node *n) {
+  Node *target = cg_type_decl(target_type);
+  Node *source = cg_type_decl(expr_type(ctx, n));
+  if (target && target->kind == ND_CLASS_DECL && source != target && sem_is_subclass(source, target))
+    c_out_write(b, "(struct %.*s *)", (int)target_type.len, target_type.start);
+  cg_emit_expr(ctx, b, n);
 }
 
 static const char *op_text(TokenKind k) {
@@ -98,6 +154,8 @@ static const char *op_text(TokenKind k) {
 const char *cg_fmt_for_arg(CGCtx *ctx, Node *arg) {
   if (cg_is_string_expr(ctx, arg))
     return "%s";
+  if (cg_is_float_expr(ctx, arg)) return "%f";
+  if (member_type(ctx, arg) == TK_KW_CHAR) return "%c";
   if (arg->kind == ND_IDENT) {
     TokenKind ty = cgctx_lookup(ctx, arg->as.ident.start, arg->as.ident.len);
     switch (ty) {
@@ -135,21 +193,9 @@ int cg_is_string_expr(CGCtx *ctx, Node *n) {
   case ND_CONSOLE_CALL:
     return n->as.console.read;
   case ND_CALL:
-    // Handle method calls that might return strings
-    if (n->as.call.callee && n->as.call.callee->kind == ND_FIELD) {
-      Node *fld = n->as.call.callee;
-      // Check if method name suggests it returns a string
-      if (fld->as.field.name.len >= 7 && 
-          strncmp(fld->as.field.name.start, "getName", 7) == 0) {
-        return 1;
-      }
-      // Add other common string-returning method patterns
-      if (fld->as.field.name.len >= 8 && 
-          strncmp(fld->as.field.name.start, "toString", 8) == 0) {
-        return 1;
-      }
-    }
-    return 0;
+  case ND_FIELD:
+  case ND_BASE:
+    return member_type(ctx, n) == TK_KW_STRING;
   case ND_BINOP:
     // Handle string concatenation operations (+ operator with strings)
     if (n->as.bin.op == TK_PLUS) {
@@ -169,6 +215,7 @@ int cg_is_string_expr(CGCtx *ctx, Node *n) {
     }
     return 0;
   case ND_INDEX:
+    if (member_type(ctx, n) == TK_KW_STRING) return 1;
     // Array access - check if the array is a string array
     if (n->as.index.array->kind == ND_IDENT) {
       TokenKind array_type = cgctx_lookup(ctx, n->as.index.array->as.ident.start, 
@@ -187,6 +234,8 @@ int cg_is_int_expr(CGCtx *ctx, Node *n) {
     return 1;
   case ND_IDENT:
     return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) == TK_KW_INT;
+  case ND_FIELD: case ND_BASE: case ND_CALL: case ND_INDEX:
+    return member_type(ctx, n) == TK_KW_INT;
   default:
     return 0;
   }
@@ -198,6 +247,8 @@ int cg_is_float_expr(CGCtx *ctx, Node *n) {
     return 1;
   case ND_IDENT:
     return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) == TK_KW_FLOAT;
+  case ND_FIELD: case ND_BASE: case ND_CALL: case ND_INDEX:
+    return member_type(ctx, n) == TK_KW_FLOAT;
   default:
     return 0;
   }
@@ -297,7 +348,8 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
       // Non-plus operations
       cg_emit_expr(ctx, b, n->as.bin.lhs);
       c_out_write(b, " %s ", op_text(n->as.bin.op));
-      cg_emit_expr(ctx, b, n->as.bin.rhs);
+      if (n->as.bin.op == TK_EQ) cg_emit_value_as(ctx, b, expr_type(ctx, n->as.bin.lhs), n->as.bin.rhs);
+      else cg_emit_expr(ctx, b, n->as.bin.rhs);
     }
     c_out_write(b, ")");
     break;
@@ -331,23 +383,19 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     }
     
     Slice ty = expr_type(ctx, n->as.field.object);
-    int is_var = 0;
-    if (n->as.field.object->kind == ND_IDENT)
-      is_var = cgctx_has_var(ctx, n->as.field.object->as.ident.start,
-                             n->as.field.object->as.ident.len);
-    if (ty.len && !is_var) {
+    Node *owner = NULL;
+    Node *member = cg_member(ty, n->as.field.name, &owner);
+    if (owner && member && member->kind == ND_VAR_DECL && member->as.var_decl.is_static) ty = owner->as.type_decl.name;
+    if (is_type_reference(ctx, n->as.field.object) || (member && member->kind == ND_VAR_DECL && member->as.var_decl.is_static)) {
       c_out_write(b, "%.*s_%.*s", (int)ty.len, ty.start,
                   (int)n->as.field.name.len, n->as.field.name.start);
     } else {
-      cg_emit_expr(ctx, b, n->as.field.object);
       if (cg_is_class_type(ty)) {
-        // For class field access, check if this might be an inherited field
-        // that needs to go through the base member
-        // TODO: Implement proper inheritance field resolution
-        // For now, try direct access first, base access will be handled elsewhere
+        emit_receiver(ctx, b, n->as.field.object, ty, owner);
         c_out_write(b, "->%.*s", (int)n->as.field.name.len,
                     n->as.field.name.start);
       } else {
+        cg_emit_expr(ctx, b, n->as.field.object);
         c_out_write(b, ".%.*s", (int)n->as.field.name.len,
                     n->as.field.name.start);
       }
@@ -355,48 +403,27 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     break;
   }
   case ND_CALL:
-    if (n->as.call.callee && n->as.call.callee->kind == ND_FIELD) {
+    if (n->as.call.callee && (n->as.call.callee->kind == ND_FIELD || n->as.call.callee->kind == ND_BASE)) {
       Node *fld = n->as.call.callee;
-      
-      // Check if this is a module-qualified call (module.function)
-      if (fld->as.field.object && fld->as.field.object->kind == ND_IDENT) {
-        int is_var = cgctx_has_var(ctx, fld->as.field.object->as.ident.start,
-                                   fld->as.field.object->as.ident.len);
-        if (!is_var) {
-          // This appears to be a module-qualified call like math_utils.add()
-          // Convert to C function call: module_function()
-          c_out_write(b, "%.*s_%.*s(", 
-                      (int)fld->as.field.object->as.ident.len, fld->as.field.object->as.ident.start,
-                      (int)fld->as.field.name.len, fld->as.field.name.start);
-          
-          // Emit arguments
-          for (size_t i = 0; i < n->as.call.len; i++) {
-            if (i) c_out_write(b, ", ");
-            cg_emit_expr(ctx, b, n->as.call.args[i]);
-          }
-          c_out_write(b, ")");
-          break;
-        }
+      int is_base = fld->kind == ND_BASE;
+      Node *object = is_base ? NULL : fld->as.field.object;
+      Node *base = is_base ? base_type(ctx) : NULL;
+      Slice name = is_base ? fld->as.base.name : fld->as.field.name;
+      Slice ty = is_base ? (base ? base->as.type_decl.name : (Slice){0}) : expr_type(ctx, object);
+      Node *owner = NULL;
+      Node *method = cg_member(ty, name, &owner);
+      int has_receiver = method && method->kind == ND_FUNC ? !method->as.func.is_static : !is_type_reference(ctx, object);
+      // Preserve module-qualified calls until the multi-file backend is completed.
+      if (!ty.len && object && object->kind == ND_IDENT && !cgctx_has_var(ctx, object->as.ident.start, object->as.ident.len)) {
+        ty = object->as.ident;
+        has_receiver = 0;
       }
-      
-      Slice ty = expr_type(ctx, fld->as.field.object);
-      int is_var = 0;
-      if (fld->as.field.object->kind == ND_IDENT)
-        is_var = cgctx_has_var(ctx, fld->as.field.object->as.ident.start,
-                               fld->as.field.object->as.ident.len);
       if (ty.len) {
-        c_out_write(b, "%.*s_%.*s(", (int)ty.len, ty.start,
-                    (int)fld->as.field.name.len, fld->as.field.name.start);
-        if (is_var) {
-          if (cg_is_class_type(ty))
-            cg_emit_expr(ctx, b, fld->as.field.object);
-          else {
-            c_out_write(b, "&");
-            cg_emit_expr(ctx, b, fld->as.field.object);
-          }
-        }
+        Slice declaring_type = owner ? owner->as.type_decl.name : ty;
+        c_out_write(b, "%.*s_%.*s(", (int)declaring_type.len, declaring_type.start, (int)name.len, name.start);
+        if (has_receiver) emit_receiver(ctx, b, object, ty, owner);
         for (size_t i = 0; i < n->as.call.len; i++) {
-          if (is_var || i)
+          if (has_receiver || i)
             c_out_write(b, ", ");
           cg_emit_expr(ctx, b, n->as.call.args[i]);
         }
@@ -438,9 +465,18 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     }
     break;
   case ND_BASE:
-    // Access base class member: since inheritance is flattened, access directly
-    // Changed from this->base.member_name to this->member_name 
-    c_out_write(b, "this->%.*s", (int)n->as.base.name.len, n->as.base.name.start);
+    {
+      Node *owner = NULL;
+      Node *base = base_type(ctx);
+      Node *member = sem_find_member(base, n->as.base.name, &owner);
+      if (member && member->kind == ND_VAR_DECL && member->as.var_decl.is_static) {
+        Slice name = owner->as.type_decl.name;
+        c_out_write(b, "%.*s_%.*s", (int)name.len, name.start, (int)n->as.base.name.len, n->as.base.name.start);
+      } else {
+        emit_receiver(ctx, b, NULL, base ? base->as.type_decl.name : (Slice){0}, owner);
+        c_out_write(b, "->%.*s", (int)n->as.base.name.len, n->as.base.name.start);
+      }
+    }
     break;
   case ND_AWAIT:
     // Await expression: dr_task_await(expr)

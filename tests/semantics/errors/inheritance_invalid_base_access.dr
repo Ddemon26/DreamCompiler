@@ -1,0 +1,4 @@
+// Expected error: base access requires a base class and an instance method
+class Root {
+    func int value() { return base.missing; }
+}

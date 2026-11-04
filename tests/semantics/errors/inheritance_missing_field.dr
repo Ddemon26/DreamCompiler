@@ -1,0 +1,5 @@
+// Expected error: unknown field 'missing'
+class Root { int value; }
+class Derived : Root { int extra; }
+Derived item = new Derived();
+int value = item.missing;

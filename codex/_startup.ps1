@@ -12,6 +12,6 @@ foreach ($pkg in $packages) {
     choco install $pkg -y
 }
 
-choco install zig --version=0.15.1 -y
+choco install zig --version=0.17.1 -y
 
 Write-Host "Dependency setup complete ✅"

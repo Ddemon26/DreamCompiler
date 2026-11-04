@@ -2,7 +2,7 @@
 
 ## Current reproducible baseline
 
-Use Zig **0.15.1**, re2c, and Python 3.8 or newer. Run `zig build test` from the
+Use Zig **0.17.1**, re2c, and Python 3.8 or newer. Run `zig build test` from the
 repository root to build the tools and execute the full Dream regression suite.
 `python codex/test_cli.py run` runs the same suite. Results, including skipped
 files and compilation errors, are saved under `test_results/`.
@@ -20,6 +20,8 @@ Test metadata supports:
 so the test is not linked or executed. Use `// Expected: (no output)` for a
 successful program with empty output. Files without expectations remain skipped.
 Timeouts are reported as errors and cause a nonzero suite exit status.
+The compiler build and first C link allow up to 180 seconds for a cold Zig cache;
+later links and program executions use the configured 30-second timeout.
 
 For the Go stability checks, run `make quick-validate` from `codex/go` on Linux,
 or `powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 quick`

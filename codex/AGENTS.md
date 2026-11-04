@@ -116,10 +116,10 @@ tests/
 ├── advanced/        # Complex language features
 │   ├── concurrency/ # Concurrent programming
 │   ├── data_structures/ # Complex data types
-│   ├── oop/         # Object-oriented features
+│   ├── oop/         # Objects; inheritance_* covers layouts, fields, dispatch, upcasts, forward bases
 │   └── ssa/         # SSA-specific tests
 ├── semantics/       # Semantic analysis tests
-│   ├── errors/      # Syntax errors, undefined names, and warning exit behavior
+│   ├── errors/      # Syntax/exit errors; inheritance_* covers invalid bases, cycles, members, assignments
 │   └── basic.dr     # Basic semantic tests
 ├── debug/           # Debug feature tests
 │   └── line_directives.dr # Line directive handling

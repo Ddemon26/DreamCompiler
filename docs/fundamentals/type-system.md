@@ -1,5 +1,22 @@
 # Type System
 
+## Implemented single inheritance
+
+Classes can inherit from one class with `class Child : Parent`. Base classes
+may appear later in the same source file. Inherited fields retain their declared
+types, including arrays and struct fields. Instance methods and static members
+are found through the base hierarchy. `base.field` and `base.method()` select
+members beginning at the immediate base class.
+
+A derived object can be assigned to a variable of its base class; the variable
+refers to the same object. Unrelated class assignments, unknown bases, inheritance
+cycles, duplicate members within one class, and invalid `base` access are errors.
+Derived fields may hide base fields; the two fields keep separate storage.
+
+Method calls use the receiver's declared type. Virtual dispatch, access-control
+enforcement, interfaces, and implicit base-constructor calls remain unsupported.
+Constructors can call `base.init(...)` explicitly.
+
 Dream features a comprehensive static type system with type inference capabilities. This section covers all aspects of working with types, from basic primitives to complex data structures.
 
 ## Overview
