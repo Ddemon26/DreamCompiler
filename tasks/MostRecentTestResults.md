@@ -1,8 +1,8 @@
 # Most Recent Test Results - DreamCompiler
 
-**Date:** November 6, 2026 UTC (recovery run; local reports use November 5)
+**Date:** November 6, 2026 UTC (local reports also use November 6)
 
-**Pass:** P0006 - member receiver/access diagnostics; validation recovered
+**Pass:** P0007 - optimized loop compilation stability and one checked skipped entry
 
 **Branch/platform:** `codex/compiler-stabilization`, attached primary checkout, Windows
 
@@ -10,27 +10,51 @@
 
 ## Current measured state
 
-- Recovery `zig build test`: **136 discovered, 117 passed, 19 skipped, 0 failed,
-  0 errors** (46.57s). Report: `test_results/test_results_20261105_171508_windows.json`.
-- Windows Go quick protocol from `codex/go`,
-  `powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 quick`:
-  **all four groups passed**, including 38 diagnostic and 25 module cases,
-  arena growth and nonfatal warnings (`-count=1`, Go test 5.320s).
-- `python -m unittest discover -s codex/python -p test_test_manager.py`:
-  **5 passed** (0.051s).
-- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
-  Linux executables were not run locally. P0006 CI must be inspected after publication.
-- Diff review, local handoff links, and `git diff --check` passed before commit.
+- Unchanged baseline `zig build test`: **136 discovered, 117 passed, 19 skipped,
+  zero failures/errors** (49.32s). The loop fixture was skipped for missing metadata.
+- Final `zig build test`: **136 discovered, 118 passed, 18 skipped, zero failures/
+  errors** (42.32s). The same loop source now checks results 112 and 8 at `-O2`.
+  Report: `test_results/test_results_20261106_053355_windows.json`.
+- Focused `python codex/test_cli.py run --pattern '**/test_loop_opt.dr'`: **1 passed**,
+  zero skips/failures/errors (0.85s).
+- Focused Go `go test -count=1 -v -run '^TestCompiler_LoopsAtOptimizationLevels$' .`
+  from `codex/go`: **default, -O1, -O2, -O3 all passed**, printing exactly 112 and 8
+  (7.60s test body, 8.141s Go result).
+- Windows Go quick protocol from `codex/go`, `powershell -NoProfile -ExecutionPolicy
+  Bypass -File ./build_and_test.ps1 quick`: **all five groups passed**, including
+  38 diagnostic cases, arena growth, nonfatal warnings, four loop optimization settings,
+  and 25 module cases (`-count=1`, 7.065s).
+- `python -m unittest discover -s codex/python -p test_test_manager.py`: **5 passed**
+  (0.045s).
+- `zig build` and `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally. P0007 native Linux behavior awaits CI.
+- Diff review, local handoff links, quick/CI selection, PowerShell BOM preservation,
+  and `git diff --check` checked before commit.
 
-These checks used normal approved toolchain/cache access after restricted execution
-again could not locate Zig's installation directory. The earlier intermittent SDK
-file-open errors did not recur. Their cause remains unproven; no SDK/cache files,
-test exclusions, or assertions were changed during recovery. P0005 CI run 41833228164
-was rechecked and remains successful. Logs: `build/P0006-recovery-full-suite.log`,
-`build/P0006-recovery-go-quick.log`, `build/P0006-recovery-python.log`, and
-`build/P0006-recovery-linux-cross-build.log`.
+The new Go matrix initially failed at `-O1`/`-O2`/`-O3` with heap corruption exit
+`0xc0000374`; default succeeded. SCCP negative table indices and LICM shared instruction
+ownership were repaired. Intermediate `-O2` runs stalled because LICM/loop analysis
+reported changes without transformations; only this run's identified processes were
+stopped. An intermediate rebuild hit AccessDenied while its executable was still
+running; it passed after that process stopped. The final checks above all passed.
+No test exclusions or assertions were weakened. Full details and the remaining 18
+unannotated entries are in [P0007](passes/P0007-loop-optimization-stability.md).
 
-## Original implementation checks - November 5, 2026
+Restricted execution could not locate Zig's installation; compiler checks used approved
+installed-toolchain/cache access. No SDK/cache repair or deletion was performed. Logs:
+`build/P0007-{baseline,build,focused-go,focused-go-sccp,focused-go-fixed,focused-dream,
+full-suite,go-quick,python,linux-cross-build}.log`. Intermediate failures are diagnostic
+evidence, not successful validation. Optimized IR still does not feed C emission, so
+these results do not prove optimizer transformations or performance gains.
+
+Supporting modules remain fixtures; four graphics and four concurrency examples remain
+outside the suite. Recursive legacy Go/cgo tests remain unsupported. P0006 CI run
+42135769585 succeeded on Linux and Windows before this pass began. P0006 recovery
+results were 117 passes, 19 skips, zero failures/errors (46.57s), all four then-current
+Go quick groups, five runner tests, and a Linux cross-build; those historical recovery
+results are recorded in [P0006](passes/P0006-member-access-diagnostics.md).
+
+## Historical P0006 implementation checks - November 5, 2026
 
 - Unchanged baseline `zig build test`: **133 discovered, 114 passed, 19 skipped,
   0 failed, 0 errors** (41.39s).

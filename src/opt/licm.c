@@ -171,7 +171,8 @@ static bool value_in_set(int v, int *vals, size_t n) {
  * @param pre Pointer to the preheader basic block where instructions will be
  * hoisted.
  */
-static void hoist_loop(BasicBlock **loop, size_t n, BasicBlock *pre) {
+static bool hoist_loop(BasicBlock **loop, size_t n, BasicBlock *pre) {
+  bool changed = false;
   int *defined = NULL;
   size_t ndef = 0;
   for (size_t i = 0; i < n; i++) {
@@ -200,14 +201,18 @@ static void hoist_loop(BasicBlock **loop, size_t n, BasicBlock *pre) {
       (void)may_alias;
       pre->instrs =
           realloc(pre->instrs, sizeof(IRInstr *) * (pre->ninstrs + 1));
-      pre->instrs[pre->ninstrs++] = ins;
+      /* Each block owns its instructions; leave a separate NOP behind. */
+      pre->instrs[pre->ninstrs++] =
+          ir_instr_new(ins->op, ins->dst, ins->a, ins->b);
       ins->op = IR_NOP;
+      changed = true;
       hoisted = realloc(hoisted, sizeof(int) * (nhoisted + 1));
       hoisted[nhoisted++] = ins->dst.id;
     }
   }
   free(defined);
   free(hoisted);
+  return changed;
 }
 
 /**
@@ -234,8 +239,7 @@ bool licm(CFG *cfg) {
         collect_loop(t, b, &loop, &n);
         BasicBlock *pre = find_preheader(t, loop, n);
         if (pre) {
-          hoist_loop(loop, n, pre);
-          changed = true;
+          changed |= hoist_loop(loop, n, pre);
         }
         free(loop);
       }

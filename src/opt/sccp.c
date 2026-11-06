@@ -125,6 +125,9 @@ bool sccp(CFG *cfg) {
     BasicBlock *b = cfg->blocks[i];
     for (size_t j = 0; j < b->ninstrs; j++) {
       IRInstr *ins = b->instrs[j];
+      /* Terminators have no destination; negative IDs encode constants. */
+      if (ins->dst.id < 0)
+        continue;
       if (ins->op == IR_MOV && ins->a.id < 0) {
         vals[ins->dst.id].kind = VAL_CONST;
         vals[ins->dst.id].value = -ins->a.id - 1;
@@ -149,14 +152,14 @@ bool sccp(CFG *cfg) {
         }
       }
       if (is_binop(ins->op)) {
-        if (vals[ins->a.id].kind == VAL_CONST) {
+        if (ins->a.id >= 0 && vals[ins->a.id].kind == VAL_CONST) {
           int newv = -vals[ins->a.id].value - 1;
           if (ins->a.id != newv) {
             ins->a.id = newv;
             changed = true;
           }
         }
-        if (vals[ins->b.id].kind == VAL_CONST) {
+        if (ins->b.id >= 0 && vals[ins->b.id].kind == VAL_CONST) {
           int newv = -vals[ins->b.id].value - 1;
           if (ins->b.id != newv) {
             ins->b.id = newv;
@@ -171,7 +174,7 @@ bool sccp(CFG *cfg) {
           changed = true;
         }
       }
-      if (ins->op == IR_CJUMP && ir_is_const(ins->a)) {
+      if (ins->op == IR_CJUMP && b->nsucc == 2 && ir_is_const(ins->a)) {
         int cond = ir_const_value(ins->a);
         BasicBlock *taken = cond ? b->succ[0] : b->succ[1];
         BasicBlock *dead = cond ? b->succ[1] : b->succ[0];

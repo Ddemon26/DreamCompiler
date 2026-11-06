@@ -446,21 +446,7 @@ bool strength_reduction(Loop *loop, InductionVar *induction_vars, size_t count) 
                 }
             }
             
-            // Case 2: Array indexing patterns (base + i * size)
-            else if (instr->op == IR_ADD) {
-                for (size_t k = 0; k < count; k++) {
-                    InductionVar *iv = &induction_vars[k];
-                    
-                    // Look for pattern: base + (induction_var * stride)
-                    // This would be a multiplication we can strength reduce
-                    if (instr->a.id == iv->var.id || instr->b.id == iv->var.id) {
-                        // This is already an addition - check if we can optimize further
-                        // by recognizing derived induction variables
-                        changed = true; // Mark for potential future optimization
-                    }
-                }
-            }
-            
+            // Derived induction-variable recognition does not transform IR yet.
             // Case 3: Division by powers of 2
             else if (instr->op == IR_DIV && ir_is_const(instr->b)) {
                 int divisor = ir_const_value(instr->b);
@@ -598,9 +584,7 @@ bool fuse_compatible_loops(CFG *cfg, LoopNest *nest) {
     for (size_t i = 0; i < nest->nloops; i++) {
         for (size_t j = i + 1; j < nest->nloops; j++) {
             if (are_loops_fusible(nest->loops[i], nest->loops[j])) {
-                // Fuse loops i and j
-                // This is a complex transformation - simplified here
-                changed = true;
+                /* No CFG rewrite is implemented; candidate discovery is not a change. */
                 break;
             }
         }
@@ -693,11 +677,9 @@ static bool eliminate_empty_loops(CFG *cfg, LoopNest *nest) {
             }
         }
         
-        // Mark loop for elimination if empty or has very few meaningful operations
+        // Recognize candidates; elimination itself is not implemented.
         if (is_empty || (meaningful_ops <= 1 && loop->trip_count >= 0 && loop->trip_count <= 1)) {
-            // In a full implementation, we would remove the loop from the CFG
-            // For now, just mark it as eliminated
-            changed = true;
+            /* No CFG rewrite is implemented; candidate discovery is not a change. */
         }
     }
     

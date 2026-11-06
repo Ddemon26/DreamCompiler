@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -116,4 +117,44 @@ func TestCompiler_WarningsRemainNonfatal(t *testing.T) {
 		Name: "warning", Source: "int unusedValue = 42; Console.WriteLine(42);",
 		ExpectSuccess: true, ExpectedOutput: "42",
 	})
+}
+
+// Keep the previously skipped loop fixture as an execution baseline for backend work.
+func TestCompiler_LoopsAtOptimizationLevels(t *testing.T) {
+	tr := NewTestRunner(t)
+	defer tr.Cleanup()
+	source := filepath.Join(tr.projectRoot, "tests", "optimization", "test_loop_opt.dr")
+	for _, level := range []string{"default", "-O1", "-O2", "-O3"} {
+		t.Run(level, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
+			defer cancel()
+			args := []string{source}
+			if level != "default" {
+				args = append([]string{level}, args...)
+			}
+			cmd := exec.CommandContext(ctx, tr.compilerPath, args...)
+			cmd.Dir = tr.projectRoot
+			cmd.Env = append(os.Environ(), "CC=zig cc")
+			output, err := cmd.CombinedOutput()
+			if ctx.Err() != nil {
+				t.Fatalf("Compiler timed out: %s", output)
+			}
+			if err != nil {
+				t.Fatalf("Compilation failed: %v\n%s", err, output)
+			}
+			executable := "dream"
+			if runtime.GOOS == "windows" {
+				executable += ".exe"
+			}
+			run := exec.CommandContext(ctx, filepath.Join(tr.projectRoot, executable))
+			run.Dir = tr.projectRoot
+			actual, err := run.CombinedOutput()
+			if err != nil {
+				t.Fatalf("Program failed: %v\n%s", err, actual)
+			}
+			if got := strings.TrimSpace(strings.ReplaceAll(string(actual), "\r\n", "\n")); got != "112\n8" {
+				t.Fatalf("Expected loop results 112 and 8, got %q", got)
+			}
+		})
+	}
 }

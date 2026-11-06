@@ -1,16 +1,19 @@
-// Test file for loop optimizations
-// This should trigger multiple optimization opportunities
+// Expected: 112
+// Expected: 8
+// Options: -O2
+// Loop execution baseline, also checked at every supported optimization setting.
+// This verifies results, not strength reduction or unrolling in generated code.
 
-// Test 1: Simple loop with strength reduction opportunity
+// Sum 4 * (0 + 1 + ... + 7) = 112.
 int sum = 0;
 for (int i = 0; i < 8; i = i + 1) {
-    sum = sum + (i * 4);  // Should convert to shift operation
+    sum = sum + (i * 4);
 }
 
-// Test 2: Small loop that should be unrolled
+// Three multiplications by 2 produce 8.
 int product = 1;
 for (int j = 0; j < 3; j = j + 1) {
-    product = product * 2;  // Small loop with few iterations
+    product = product * 2;
 }
 
 Console.WriteLine(sum);

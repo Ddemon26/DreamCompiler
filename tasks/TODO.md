@@ -39,15 +39,24 @@ file-open errors did not recur; no tests or caches were changed to obtain the pa
 Verify [P0006](passes/P0006-member-access-diagnostics.md) publication before new work.
 After delivery, proceed to T003; method argument type/shape checks remain follow-up work.
 
-## T003 — Close a skipped-regression gap (ready)
+## T003 — Close a skipped-regression gap (completed in P0007)
 
-Choose one of the 19 currently skipped entry files, verify its intended behavior against
+Choose one of the 19 entry files skipped at the P0006 checkpoint, verify its intended behavior against
 the implemented language, and make it an honest executable or rejection regression.
 Fix the real compiler defect if needed. Do not annotate an unsupported program as passing,
 move it out merely to improve counts, or change expected behavior without an explanation.
 
 Acceptance: one newly meaningful checked behavior, a recorded before/after result, and
 an accurate explanation of the remaining skips. Supporting module files remain fixtures.
+
+P0007 makes `tests/optimization/test_loop_opt.dr` an executable `-O2` regression
+with independently calculated results 112 and 8. A four-setting Go matrix exposed
+heap corruption and nontermination in SCCP/LICM/loop analysis; the real optimizer
+paths are fixed, and the matrix runs in both quick protocols and CI. Full Windows
+suite: 118 passed, 18 skipped, zero failures/errors, versus the unchanged baseline's
+117 passed and 19 skipped. Go quick, five runner tests, and Linux cross-build passed.
+The other 18 entries remain unannotated and unverified, with no new exclusions.
+Verify [P0007](passes/P0007-loop-optimization-stability.md) publication, then take T004.
 
 ## T004 — Connect optimization to emitted code (needs a bounded design)
 
@@ -59,6 +68,13 @@ Acceptance for the first slice: behavior-equivalence tests at supported optimiza
 levels, evidence the transformed representation affects emitted code, and explicit
 fallback/error behavior for unsupported lowering. Split larger SSA/backend work into
 subsequent passes with durable handoffs.
+
+P0007 supplies a loop execution baseline at the default setting and `-O1`/`-O2`/`-O3`,
+and repairs the crashes/stalls it exposed. It does not connect optimized IR to C or
+validate IR semantics. First define a bounded supported lowering and its correctness
+requirements; current non-SSA propagation and CFG transformations need qualification
+before their results can be emitted. Fusion/empty-loop elimination/derived induction
+recognition are still analysis placeholders and must not claim transformations.
 
 ## Later work
 

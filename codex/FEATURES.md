@@ -46,6 +46,7 @@ success is recorded separately from native runtime verification.
 ### Code Generation
 - **C backend**: Generates C from the AST for the implemented subset
 - **Optimization**: Passes exist, but optimized IR is not used by C emission and SSA construction is disabled
+- **Optimization execution baseline**: The loop regression prints `112` and `8` at the default setting and `-O1`/`-O2`/`-O3`; this checks compiler stability and program results, not transformed C or optimizer correctness
 - **Runtime library**: Memory management, console I/O, and exception handling
 - **Build integration**: Zig build system with cross-platform support
 

@@ -8,8 +8,9 @@
 | [P0004](P0004-daily-agent-workflow.md) | 2026-11-03 | Daily-agent contract, handoff, prompt, and delivery gate | `Pass-ID: P0004` |
 | [P0005](P0005-primitive-return-checks.md) | 2026-11-04 | Primitive return checks, recovered checkout, local-only workflow | `Pass-ID: P0005` |
 | [P0006](P0006-member-access-diagnostics.md) | 2026-11-06 | Member receiver/access diagnostics; recovered passing validation | `Pass-ID: P0006` |
+| [P0007](P0007-loop-optimization-stability.md) | 2026-11-06 | Optimized loop compilation no longer crashes/stalls; skipped fixture now checked | `Pass-ID: P0007` |
 
-**P0006 validation is recovered. Verify publication before allocating P0007.**
+**P0006 publication and Linux/Windows CI verified. Verify P0007 publication before allocating P0008.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not
