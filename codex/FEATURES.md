@@ -34,6 +34,7 @@ success is recorded separately from native runtime verification.
 - **Primitive return checks**: Exact declared types and valid bare returns, including methods, nested statements, and imported functions; no implicit numeric conversion at the return boundary or proof that every path returns
 - **Classes and structs**: Object construction and instantiation
 - **Instance methods**: With `this` pointer (emitted as C functions)
+- **Member diagnostics**: Checked receivers, unknown members, and type-qualified instance access before C emission, including module entry classes; source positions preserved for member/base access. Method argument type/shape checks remain incomplete
 - **Object-oriented programming**: Declaration-based single inheritance, typed inherited fields, static method dispatch, base access, and checked upcasts; no virtual dispatch or access-control enforcement
 
 ### I/O and Runtime

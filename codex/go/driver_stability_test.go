@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -19,6 +20,21 @@ func TestCompiler_DiagnosticExitStatus(t *testing.T) {
 		name, source, diagnostic string
 		options                  []string
 	}{
+		{"member_missing_receiver", "\n\nmissing.read();", "undefined variable 'missing'", nil},
+		{"member_primitive_receiver", "int value = 1;\n\nvalue.read();", "method receiver must be a class or struct", nil},
+		{"member_expression_receiver", "\n\n(1 + 2).read();", "method receiver must be a class or struct", nil},
+		{"member_unknown_method", "class Reader {} Reader reader = new Reader();\n\nreader.read();", "unknown method 'read'", nil},
+		{"member_field_called", "class Reader { int value; } Reader reader = new Reader();\n\nreader.value();", "unknown method 'value'", nil},
+		{"member_type_method", "class Reader { func int read() { return 1; } }\n\nReader.read();", "instance method requires an object", nil},
+		{"member_type_field_read", "class Reader { int value; }\n\nConsole.WriteLine(Reader.value);", "instance field requires an object", nil},
+		{"member_type_field_write", "class Reader { int value; }\n\nReader.value = 2;", "instance field requires an object", nil},
+		{"member_inherited_type_field", "class Parent { int value; } class Child : Parent {}\n\nConsole.WriteLine(Child.value);", "instance field requires an object", nil},
+		{"member_nested_receiver", "class Reader { int value; } Reader reader = new Reader();\n\nreader.value.read();", "method receiver must be a class or struct", nil},
+		{"member_argument_analysis", "class Reader { static func int read(int n) { return n; } }\n\nReader.read(missing);", "undefined variable 'missing'", nil},
+		{"member_static_this", "class Reader { static func int read() {\n\nreturn this.read(); } }", "undefined variable 'this'", nil},
+		{"member_static_base", "class Parent { func int read() { return 1; } } class Child : Parent { static func int read() {\n\nreturn base.read(); } }", "base access requires a base class and an instance method", nil},
+		{"member_unknown_field", "class Reader {} Reader reader = new Reader();\n\nConsole.WriteLine(reader.missing);", "unknown field 'missing'", nil},
+		{"member_primitive_field", "int value = 1;\n\nConsole.WriteLine(value.missing);", "field receiver must be a class or struct", nil},
 		{"syntax", "int x = ;", "error:", nil},
 		{"undefined_variable", "int x = missing + 1;", "undefined variable 'missing'", nil},
 		{"const_assignment", "const int x = 42; x = 50;", "cannot assign to const variable 'x'", nil},
@@ -64,6 +80,12 @@ func TestCompiler_DiagnosticExitStatus(t *testing.T) {
 			}
 			if !strings.Contains(string(output), tc.diagnostic) {
 				t.Fatalf("Missing diagnostic %q: %s", tc.diagnostic, output)
+			}
+			if strings.HasPrefix(tc.name, "member_") {
+				plain := regexp.MustCompile(`\x1b+\[[0-9;]*m`).ReplaceAllString(string(output), "")
+				if !regexp.MustCompile(`(?m)(^|:)3:[1-9][0-9]*: error:`).MatchString(plain) {
+					t.Fatalf("Missing useful source position on line 3: %s", output)
+				}
 			}
 			if _, err := os.Stat(filepath.Join(work, "build")); !os.IsNotExist(err) {
 				t.Fatalf("Invalid program created build artifacts: %v", err)

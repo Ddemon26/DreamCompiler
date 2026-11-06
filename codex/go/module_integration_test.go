@@ -20,6 +20,22 @@ func TestCompiler_Modules(t *testing.T) {
 		name, output, diagnostic string
 		files                    map[string]string
 	}{
+		{"entry_member_access", "42\n2\n42", "", map[string]string{
+			"main.dr":   `import values; class Parent { int number; static int count; func void init() { this.number = values.number(); } func int read() { return this.number; } static func void increment() { Parent.count = Parent.count + 1; } } class Child : Parent { func void init() { base.init(); } func int read() { return base.read(); } } Child child = new Child(); Child.increment(); child.increment(); Console.WriteLine(child.read()); Console.WriteLine(Child.count); Console.WriteLine(values.number());`,
+			"values.dr": `module values; export func int number() { return 42; }`,
+		}},
+		{"entry_missing_receiver", "", "undefined variable 'missing'", map[string]string{
+			"main.dr": "import values;\nclass Reader { func int read() {\nreturn missing.read(); } }", "values.dr": `module values;`,
+		}},
+		{"entry_instance_method", "", "instance method requires an object", map[string]string{
+			"main.dr": "import values;\nclass Reader { func int read() { return 1; } }\nReader.read();", "values.dr": `module values;`,
+		}},
+		{"entry_instance_field", "", "instance field requires an object", map[string]string{
+			"main.dr": "import values;\nclass Reader { int number; }\nConsole.WriteLine(Reader.number);", "values.dr": `module values;`,
+		}},
+		{"dependency_member_receiver", "", "method receiver must be a class or struct", map[string]string{
+			"main.dr": `import values;`, "values.dr": "module values;\nexport func int number() { int value = 1;\nreturn value.read(); }",
+		}},
 		{"private_names", "103", "", map[string]string{
 			"main.dr":  `import alpha; import beta; func int helper() { return 100; } Console.WriteLine(alpha.value() + beta.value() + helper());`,
 			"alpha.dr": `module alpha; func int helper() { return 1; } export func int value() { return helper(); }`,
@@ -122,6 +138,12 @@ func TestCompiler_Modules(t *testing.T) {
 				plainOutput := regexp.MustCompile(`\x1b+\[[0-9;]*m`).ReplaceAllString(string(output), "")
 				if (tc.name == "dependency_error" || strings.HasPrefix(tc.name, "dependency_return_")) && !strings.Contains(plainOutput, "values.dr:3:") {
 					t.Fatalf("Missing source file: %s", output)
+				}
+				if strings.HasPrefix(tc.name, "entry_") && !regexp.MustCompile(`main\.dr:3:[1-9][0-9]*: error:`).MatchString(plainOutput) {
+					t.Fatalf("Missing entry source position: %s", output)
+				}
+				if tc.name == "dependency_member_receiver" && !regexp.MustCompile(`values\.dr:3:[1-9][0-9]*: error:`).MatchString(plainOutput) {
+					t.Fatalf("Missing dependency source position: %s", output)
 				}
 				if _, err := os.Stat(filepath.Join(work, "build")); !os.IsNotExist(err) {
 					t.Fatalf("Rejected program produced artifacts: %v", err)

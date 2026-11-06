@@ -1,0 +1,24 @@
+// Expected: 42
+// Expected: 2
+// Expected: 2
+// Expected: 42
+struct Point { int x; }
+class Parent {
+    int number;
+    Point origin;
+    static int count;
+    func void init(int n) { this.number = n; this.origin.x = n; }
+    func int read() { return this.number; }
+    static func void increment() { Parent.count = Parent.count + 1; }
+}
+class Child : Parent {
+    func void init(int n) { base.init(n); }
+    func int read() { return base.read(); }
+}
+Child child = new Child(42);
+Child.increment();
+child.increment();
+Console.WriteLine(child.read());
+Console.WriteLine(Child.count);
+Console.WriteLine(child.count);
+Console.WriteLine(child.origin.x);

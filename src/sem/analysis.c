@@ -257,11 +257,19 @@ static TokenKind analyze_ident(SemAnalyzer *s, Node *n) {
   return d->as.func.ret_type; /* function as value returns its return type */
 }
 
+static bool is_type_reference(SemAnalyzer *s, Node *n) {
+  if (!n || n->kind != ND_IDENT) return false;
+  Decl *d = scope_lookup(s->scope, sym_intern(slice_to_cstr(s, n->as.ident)));
+  return d && d->kind == DECL_TYPE;
+}
+
 static TokenKind analyze_call(SemAnalyzer *s, Node *n) {
   if (n->as.call.callee->kind == ND_FIELD || n->as.call.callee->kind == ND_BASE) {
     Node *field = n->as.call.callee;
     bool is_base = field->kind == ND_BASE;
     Slice member_name = is_base ? field->as.base.name : field->as.field.name;
+    if (!is_base) analyze_expr(s, field->as.field.object);
+    for (size_t i = 0; i < n->as.call.len; ++i) analyze_expr(s, n->as.call.args[i]);
     Node *type = is_base ? (s->current_class ? s->current_class->as.type_decl.base_decl : NULL) : expr_class(s, field->as.field.object);
     if (is_base && !type) {
       diag_push(s, n->pos, DIAG_ERROR, "base access requires a base class and an instance method");
@@ -273,15 +281,14 @@ static TokenKind analyze_call(SemAnalyzer *s, Node *n) {
         diag_pushf(s, n->pos, DIAG_ERROR, "unknown method '%.*s'", (int)member_name.len, member_name.start);
         return TK_KW_INT;
       }
-      if (!is_base && field->as.field.object->kind == ND_IDENT && !method->as.func.is_static) {
-        Decl *object = scope_lookup(s->scope, sym_intern(slice_to_cstr(s, field->as.field.object->as.ident)));
-        if (object && object->kind == DECL_TYPE) diag_push(s, n->pos, DIAG_ERROR, "instance method requires an object");
-      }
+      if (!is_base && is_type_reference(s, field->as.field.object) && !method->as.func.is_static)
+        diag_push(s, n->pos, DIAG_ERROR, "instance method requires an object");
       if (method->as.func.param_len != n->as.call.len)
         diag_push(s, n->pos, DIAG_ERROR, "incorrect number of method arguments");
-      for (size_t i = 0; i < n->as.call.len; ++i) analyze_expr(s, n->as.call.args[i]);
       return method->as.func.ret_type;
     }
+    diag_push(s, n->pos, DIAG_ERROR, "method receiver must be a class or struct");
+    return TK_KW_INT;
   }
   if (n->as.call.callee->kind != ND_IDENT)
     return TK_KW_INT;
@@ -348,8 +355,14 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     Node *type = expr_class(s, n->as.field.object);
     if (type) {
       Node *member = sem_find_member(type, n->as.field.name, NULL);
-      if (member && member->kind == ND_VAR_DECL) return member->as.var_decl.type;
+      if (member && member->kind == ND_VAR_DECL) {
+        if (is_type_reference(s, n->as.field.object) && !member->as.var_decl.is_static)
+          diag_push(s, n->pos, DIAG_ERROR, "instance field requires an object");
+        return member->as.var_decl.type;
+      }
       diag_pushf(s, n->pos, DIAG_ERROR, "unknown field '%.*s'", (int)n->as.field.name.len, n->as.field.name.start);
+    } else {
+      diag_push(s, n->pos, DIAG_ERROR, "field receiver must be a class or struct");
     }
     return TK_KW_INT; // Default for now
   }

@@ -23,13 +23,21 @@ passed; Linux cross-build succeeded. See [P0005](passes/P0005-primitive-return-c
 Missing-return proofs, pointer/array shapes, and broader operator validation remain
 separate follow-ups. Verify P0005 publication before starting T002.
 
-## T002 — Member-call and static/instance diagnostics (ready)
+## T002 — Member-call and static/instance diagnostics (completed in P0006)
 
 Close cases where an unresolved receiver or invalid static/instance access reaches the
 C compiler instead of a Dream diagnostic. Cover ordinary code and module entry classes.
 
 Acceptance: a focused negative/positive matrix, no generated artifacts for rejected
 programs, useful source locations, and preserved existing inheritance/module behavior.
+
+P0006 implements the receiver/access slice: 15 ordinary rejection cases, five module
+cases, and three annotated Dream entries. Recovery on 2026-11-06 UTC passed the full
+Dream suite (117 passed, 19 skipped, zero failures/errors), all four Go quick groups,
+five Python runner tests, and Linux cross-build. The earlier intermittent Zig SDK/cache
+file-open errors did not recur; no tests or caches were changed to obtain the pass.
+Verify [P0006](passes/P0006-member-access-diagnostics.md) publication before new work.
+After delivery, proceed to T003; method argument type/shape checks remain follow-up work.
 
 ## T003 — Close a skipped-regression gap (ready)
 
@@ -53,6 +61,9 @@ fallback/error behavior for unsupported lowering. Split larger SSA/backend work 
 subsequent passes with durable handoffs.
 
 ## Later work
+
+- Validate method argument types/shapes beyond the existing arity checks; analyze
+  class field declaration initializers. P0006 covers receiver/access diagnostics only.
 
 - Prove required returns on all control-flow paths; extend pointer/array return shapes
   and general operator operand validation beyond the primitive scalar checks in P0005.

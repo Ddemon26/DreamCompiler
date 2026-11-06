@@ -119,6 +119,7 @@ static Node *parse_primary(Parser *p) {
       return node_new(p->arena, ND_ERROR);
     }
     n = node_new(p->arena, ND_BASE);
+    n->pos = t.pos;
     n->as.base.name = (Slice){p->tok.start, p->tok.len};
     next(p);
     return n;
@@ -245,6 +246,7 @@ static Node *parse_postfix(Parser *p) {
         return node_new(p->arena, ND_ERROR);
       }
       Node *fld = node_new(p->arena, ND_FIELD);
+      fld->pos = p->tok.pos;
       fld->as.field.object = n;
       fld->as.field.name.start = p->tok.start;
       fld->as.field.name.len = p->tok.len;

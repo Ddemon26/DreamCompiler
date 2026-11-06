@@ -17,6 +17,16 @@ Method calls use the receiver's declared type. Virtual dispatch, access-control
 enforcement, interfaces, and implicit base-constructor calls remain unsupported.
 Constructors can call `base.init(...)` explicitly.
 
+Member calls analyze the receiver and arguments before C emission. Undefined receivers,
+non-object receivers, unknown methods/fields, and instance methods or fields accessed
+through a type name are Dream errors with source locations. These checks also apply
+to classes in a multi-file entry source and expressions in imported functions.
+Use an object for instance members (`reader.read()`, `reader.number`) and a type
+name for static members (`Reader.increment()`, `Reader.count`). Existing static
+access through a simple object variable remains supported, including inherited
+members. `this` and `base` require an instance method. Method argument type/shape
+compatibility and class field declaration initializer analysis remain incomplete.
+
 Dream features a comprehensive static type system with type inference capabilities. This section covers all aspects of working with types, from basic primitives to complex data structures.
 
 ## Overview

@@ -1,0 +1,3 @@
+// Expected error: instance field requires an object
+class Reader { int number; }
+Console.WriteLine(Reader.number);
