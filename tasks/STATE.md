@@ -1,46 +1,49 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0007 - stable optimized loop compilation and checked loop fixture**.
-- Record: [P0007](passes/P0007-loop-optimization-stability.md).
-- Parent and fetched approved remote: `f32f95ec373ee9aabc31b6c83d0ed0779a37247a` (P0006).
-- Commit lookup: exact `Pass-ID: P0007` trailer in git history.
-- Verify P0007 publication before allocating P0008 or starting T004.
+- Current pass: **P0008 - bounded optimization-to-emission design** (documentation only).
+- Record: [P0008](passes/P0008-optimization-emission-design.md).
+- Parent and fetched approved remote: `c162e0826d21a329ce3ca58a615c58f542cab92f` (P0007).
+- Commit lookup: exact `Pass-ID: P0008` trailer in git history.
+- Verify P0008 publication before allocating P0009 or implementing the design.
 
 Use only `C:/Users/damon/cApps/DreamCompiler`, attached to the integration branch.
-This pass began clean with HEAD equal to the approved fetched branch. Git history,
-the preceding automation memory, one registered worktree, and app thread inventory
-showed no unfinished pass or competing project writer. The existing schedule already
-uses local execution and this directory; no schedule change was needed. P0006 was
-delivered, and CI run 42135769585 passed on both Linux and Windows.
+P0008 began with a clean worktree, HEAD equal to the fetched approved branch, one
+registered worktree, and no competing writer in the app thread inventory. History
+and the preceding automation memory showed P0007 delivered and no unfinished pass.
+The schedule already uses local execution and this directory; no change was needed.
+Restricted fetch failed DNS resolution; approved network access completed the fetch.
 
-T003 selected the previously skipped `tests/optimization/test_loop_opt.dr`. The
-default setting printed the intended 112 and 8, but `-O1`/`-O2`/`-O3` crashed with
-heap corruption. P0007 guards negative SCCP IDs, gives LICM's hoisted instructions
-separate ownership, and makes LICM/loop candidate analysis report only real changes.
-Intermediate fixes exposed nontermination at `-O2`; the final four-setting regression
-passes. The annotated entry now runs at `-O2`, and the matrix is included in both Go
-quick protocols and Linux/Windows CI. No compiler output or assertion was special-cased.
+P0007 publication is verified. Its CI run
+[42219194531](https://github.com/Ddemon26/DreamCompiler/actions/runs/42219194531)
+completed successfully on Linux and Windows, including the compiler stability and
+Dream suite steps. This resolves the prior pending native-platform CI check.
 
-Validation on 2026-11-06 UTC, Windows, Zig 0.17.1: full Dream suite **136 discovered,
-118 passed, 18 skipped, zero failures/errors** (42.32s); Go quick passed all five
-groups (38 diagnostics, arena growth, warnings, four optimization settings, 25 module
-cases; `-count=1`, 7.065s); five Python runner tests passed; Linux cross-build passed.
-Restricted execution could not locate Zig, so compiler checks used approved installed
-toolchain/cache access. Native Linux execution of P0007 awaits CI; a cross-build is
-not runtime proof. See [MostRecentTestResults.md](MostRecentTestResults.md).
+T004's prerequisite design is now in
+[optimization-emission.md](../docs/development/optimization-emission.md). Source
+review identified unsupported lowering defaults, missing function lowering, mutable
+variable IDs, signed constant encoding limits, and unchecked SCCP arithmetic.
+The first implementation will use isolated literal-only arithmetic IR, restricted
+SCCP, and a verified literal replacement consumed by the AST C emitter. It must
+replace the discarded whole-program pipeline invocation so unsupported fallback
+cannot execute unsafe analysis. The design defines range/size gates, atomic
+replacement, fallback versus internal errors, and generated-C/runtime acceptance.
+No compiler behavior changed in P0008; T004 implementation remains open.
 
-The remaining 18 entries are unchanged, unannotated skips, not verified features.
-Supporting modules remain fixtures; graphics/async examples remain outside the suite.
-Optimized IR still does not feed C emission, SSA construction remains disabled, and
-this pass does not establish optimizer semantic correctness, transformed generated C,
-or performance gains. Loop fusion, empty-loop elimination, and derived induction
-variable recognition still lack CFG rewrites. Broader IR/CFG correctness is a T004
-prerequisite. Method argument shapes, class field initializers, all-path return proofs,
-virtual dispatch, access control, imported types/globals, async, and graphics remain
-follow-ups.
+Compiler tests were **not rerun** for this documentation-only pass. Reused P0007
+Windows results from 2026-11-06 UTC: 136 Dream entries discovered, **118 passed,
+18 skipped, zero failures/errors**; all five Go quick groups passed; five Python
+runner tests and Linux cross-build passed. See
+[MostRecentTestResults.md](MostRecentTestResults.md). P0008 checks documentation
+links, source references, handoff consistency, and the diff; its record has details.
 
-After verified delivery, inspect P0007 CI first. Otherwise take T004: define a bounded
-optimization-to-emission design with explicit supported lowering and fallback/error
-behavior before implementing it. Do not treat the new execution matrix as proof that
-the current IR is ready to emit. Preserve ignored recovery evidence from earlier passes.
+The 18 unannotated entries remain unverified. Supporting modules remain fixtures;
+graphics/concurrency examples remain excluded. Optimized IR is still discarded,
+SSA remains disabled, and host `-O2`/`-O3` optimization is not evidence that Dream
+transformations reach C. Method argument shapes, field initializers, all-path
+returns, and other deferred language work remain unchanged.
+
+After verified delivery, inspect P0008 CI, then implement the design's literal
+arithmetic bridge with generated-C checks and exact-output comparisons at default,
+`-O1`, `-O2`, and `-O3`. Do not expand to variables, CFG emission, SSA, or loop
+transforms in that slice. Preserve ignored recovery evidence from earlier passes.

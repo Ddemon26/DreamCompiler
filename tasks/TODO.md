@@ -58,7 +58,7 @@ suite: 118 passed, 18 skipped, zero failures/errors, versus the unchanged baseli
 The other 18 entries remain unannotated and unverified, with no new exclusions.
 Verify [P0007](passes/P0007-loop-optimization-stability.md) publication, then take T004.
 
-## T004 — Connect optimization to emitted code (needs a bounded design)
+## T004 — Connect optimization to emitted code (design complete; implementation open)
 
 The driver optimizes and discards a CFG, then emits C from the AST; SSA construction is
 disabled. Plan and implement a small end-to-end optimization slice with preserved behavior.
@@ -75,6 +75,19 @@ validate IR semantics. First define a bounded supported lowering and its correct
 requirements; current non-SSA propagation and CFG transformations need qualification
 before their results can be emitted. Fusion/empty-loop elimination/derived induction
 recognition are still analysis placeholders and must not claim transformations.
+
+P0008 completes the prerequisite source audit and bounded
+[design](../docs/development/optimization-emission.md), without changing compiler
+behavior. It selects literal-only `+`/`-`/`*` expression IR with checked nonnegative
+intermediates, restricted SCCP, and an atomic literal replacement consumed by the
+existing AST emitter. Unsupported expressions retain AST emission; internal errors
+must fail explicitly. Replace the unsafe discarded whole-program pipeline call
+rather than running it on fallback source. Generated-C assertions before host
+compilation are required alongside exact runtime output at all four settings.
+
+Next: verify [P0008](passes/P0008-optimization-emission-design.md) publication/CI,
+then implement this restricted bridge and its documented acceptance matrix as one
+bounded pass. T004's emitted-code and equivalence acceptance criteria remain open.
 
 ## Later work
 

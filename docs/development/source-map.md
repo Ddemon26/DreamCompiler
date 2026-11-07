@@ -11,6 +11,7 @@
 | Semantics | `src/sem/analysis.c`; names, signatures, class hierarchy; `scope.c`, `symbol.c`, `type.c`, `infer.c` |
 | IR / CFG / SSA | `src/ir/`, `src/cfg/`, `src/ssa/`; SSA construction is disabled in the driver |
 | Optimization | `src/opt/`; passes run on an IR that is not yet used for emitted C |
+| Optimization emission design | `docs/development/optimization-emission.md`; P0008 audited boundary, restricted first slice, fallback/errors, and acceptance checks (not implemented) |
 | Main C backend | `src/codegen/codegen.c`, `stmt.c`, `expr.c`, `context.c`, `c_emit.c` |
 | Experimental backend | `src/codegen/backend.c`, `module.c`; not the working multi-file driver path |
 | Runtime | `src/runtime/memory/`, `io/`, `exceptions/`, `extensions/`, `system/`; graphics remains experimental |

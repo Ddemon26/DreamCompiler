@@ -46,6 +46,8 @@ success is recorded separately from native runtime verification.
 ### Code Generation
 - **C backend**: Generates C from the AST for the implemented subset
 - **Optimization**: Passes exist, but optimized IR is not used by C emission and SSA construction is disabled
+- **Host optimization flags**: The C compilation command receives `-O2`/`-O3`; default and `-O1` supply no host optimization flag. This is separate from Dream IR transformations
+- **Optimization emission plan**: [P0008 design](../docs/development/optimization-emission.md) specifies a checked literal-arithmetic IR-to-AST bridge; it is not implemented
 - **Optimization execution baseline**: The loop regression prints `112` and `8` at the default setting and `-O1`/`-O2`/`-O3`; this checks compiler stability and program results, not transformed C or optimizer correctness
 - **Runtime library**: Memory management, console I/O, and exception handling
 - **Build integration**: Zig build system with cross-platform support
@@ -98,7 +100,7 @@ success is recorded separately from native runtime verification.
 - **Graphics**: Not implemented (tests excluded)
 
 ### Platform Support
-- **Linux**: Cross-build verified; current runtime suite awaits CI execution
+- **Linux**: [P0007 CI run 42219194531](https://github.com/Ddemon26/DreamCompiler/actions/runs/42219194531) passed build, compiler stability regressions, and the Dream suite; local cross-build evidence remains separate
 - **Windows**: Annotated Dream suite passes with Zig 0.17.1; skipped fixtures remain unverified
 - **Cross-platform**: Build system supports both platforms
 
