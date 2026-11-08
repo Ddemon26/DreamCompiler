@@ -16,7 +16,8 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file);
  *
  * @param root Pointer to the root node of the AST.
  * @param path Path to the output object file.
+ * @return 1 on success, 0 on emission or host compilation failure.
  */
-void codegen_emit_obj(Node *root, const char *path, const char *src_file);
+int codegen_emit_obj(Node *root, const char *path, const char *src_file);
 
 #endif

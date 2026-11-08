@@ -53,7 +53,7 @@ static bool has_async_functions(Node *n) {
   return false;
 }
 
-void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
+static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode) {
   COut builder;
   c_out_init(&builder);
 
@@ -64,14 +64,15 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include <setjmp.h>\n");
 
   // Include runtime headers from build/libs for distribution
-  c_out_write(&builder, "#include \"../libs/console.h\"\n");
-  c_out_write(&builder, "#include \"../libs/custom.h\"\n");
-  c_out_write(&builder, "#include \"../libs/memory.h\"\n");
-  c_out_write(&builder, "#include \"../libs/exception.h\"\n");
+  const char *prefix = object_mode ? "" : "../libs/";
+  c_out_write(&builder, "#include \"%sconsole.h\"\n", prefix);
+  c_out_write(&builder, "#include \"%scustom.h\"\n", prefix);
+  c_out_write(&builder, "#include \"%smemory.h\"\n", prefix);
+  c_out_write(&builder, "#include \"%sexception.h\"\n", prefix);
   
   // Only include task.h when async functions are used
   if (has_async_functions(root)) {
-    c_out_write(&builder, "#include \"../libs/task.h\"\n");
+    c_out_write(&builder, "#include \"%stask.h\"\n", prefix);
   }
   c_out_newline(&builder);
 
@@ -196,44 +197,55 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   cg_register_program(NULL);
 }
 
-void codegen_emit_obj(Node *root, const char *path, const char *src_file) {
+void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
+  emit_c(root, out, src_file, false);
+}
+
+int codegen_emit_obj(Node *root, const char *path, const char *src_file) {
 #ifdef _WIN32
   char tmp[L_tmpnam] = {0};
   if (tmpnam_s(tmp, L_tmpnam) != 0) {
     perror("tmpnam_s");
-    return;
+    return 0;
   }
   strcat(tmp, ".c");
   FILE *f = fopen(tmp, "w");
   if (!f) {
     perror("fopen");
-    return;
+    return 0;
   }
 #else
   char tmp[] = "/tmp/dreamXXXXXX.c";
   int fd = mkstemps(tmp, 2);
   if (fd == -1) {
     perror("mkstemps");
-    return;
+    return 0;
   }
   FILE *f = fdopen(fd, "w");
   if (!f) {
     perror("fdopen");
     close(fd);
     dr_unlink(tmp);
-    return;
+    return 0;
   }
 #endif
-  codegen_emit_c(root, f, src_file);
-  fclose(f);
-  char cmd[512];
-  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -g -c \"%s\" -o \"%s\"", tmp,
+  emit_c(root, f, src_file, true);
+  int write_failed = ferror(f);
+  if (fclose(f) != 0) write_failed = 1;
+  if (write_failed) {
+    fprintf(stderr, "failed to write object C source\n");
+    dr_unlink(tmp);
+    return 0;
+  }
+  char cmd[1024];
+  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -g -Isrc/runtime/io -Isrc/runtime/extensions -Isrc/runtime/memory -Isrc/runtime/exceptions -Isrc/runtime/system -c \"%s\" -o \"%s\"", tmp,
            path);
   int res = system(cmd);
   if (res != 0) {
     fprintf(stderr, "failed to run: %s\n", cmd);
     dr_unlink(tmp);
-    return;
+    return 0;
   }
   dr_unlink(tmp);
+  return 1;
 }

@@ -10,8 +10,8 @@
 | Diagnostics | `src/parser/diagnostic.c`, `diag.inc`, `warnings.c` |
 | Semantics | `src/sem/analysis.c`; names, signatures, class hierarchy; `scope.c`, `symbol.c`, `type.c`, `infer.c` |
 | IR / CFG / SSA | `src/ir/`, `src/cfg/`, `src/ssa/`; SSA construction is disabled in the driver |
-| Optimization | `src/opt/`; passes run on an IR that is not yet used for emitted C |
-| Optimization emission design | `docs/development/optimization-emission.md`; P0008 audited boundary, restricted first slice, fallback/errors, and acceptance checks (not implemented) |
+| Optimization | `src/opt/literal_fold.c`; bounded literal-only SCCP IR feeds the AST emitter; general passes remain unqualified and are not invoked by the driver |
+| Optimization emission contract | `docs/development/optimization-emission.md`; P0009 implementation, P0008 audited boundary/design, fallback/errors, and acceptance checks |
 | Main C backend | `src/codegen/codegen.c`, `stmt.c`, `expr.c`, `context.c`, `c_emit.c` |
 | Experimental backend | `src/codegen/backend.c`, `module.c`; not the working multi-file driver path |
 | Runtime | `src/runtime/memory/`, `io/`, `exceptions/`, `extensions/`, `system/`; graphics remains experimental |
@@ -19,7 +19,7 @@
 | Deferred examples | `not_implemented_tests/`; excluded graphics/async experiments |
 | Test runner | `codex/test_cli.py`, `codex/python/test_manager.py`, `codex/test_config.json` |
 | Runner regressions | `codex/python/test_test_manager.py` |
-| Go quick checks | `codex/go/driver_stability_test.go`, `module_integration_test.go`, Makefile and PowerShell protocol |
+| Go quick checks | `codex/go/driver_stability_test.go`, `module_integration_test.go`, `literal_emission_test.go`, `codex/c/literal_fold_harness.c`, Makefile and PowerShell protocol |
 | CI | `.github/workflows/ci.yml`; Linux/Windows checks and pinned Zig version |
 | Feature truth | `codex/FEATURES.md`, current source, and `tasks/MostRecentTestResults.md` |
 | Grammar | `docs/reference/grammar/Grammar.md`; behavior changes need matching docs/tests |

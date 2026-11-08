@@ -1,13 +1,11 @@
 #include "../codegen/codegen.h"
 #include "modules.h"
-#include "../ir/lower.h"
 #include "../lexer/lexer.h"
-#include "../opt/pipeline.h"
+#include "../opt/literal_fold.h"
 #include "../parser/diagnostic.h"
 #include "../parser/parser.h"
 #include "../parser/warnings.h"
 #include "../sem/analysis.h"
-#include "../ssa/ssa.h"
 #include "../util/console_debug.h"
 #include "../util/platform.h"
 #include <stdio.h>
@@ -200,12 +198,10 @@ int main(int argc, char *argv[]) {
     goto cleanup;
   }
 
-  int nvars = 0;
-  CFG *cfg = ir_lower_program(root, &nvars);
-  cfg_compute_dominators(cfg);
-  /* SSA construction disabled for now while control-flow lowering evolves */
-  run_pipeline(cfg, opt_level);
-  cfg_free(cfg);
+  if (opt_level > 0 && !fold_literal_arithmetic(&arena, root)) {
+    status = 1;
+    goto cleanup;
+  }
 
   if (emit_c) {
     dr_mkdir("build");
@@ -284,7 +280,7 @@ int main(int argc, char *argv[]) {
       goto cleanup;
     }
   } else if (emit_obj) {
-    codegen_emit_obj(root, "a.o", input);
+    if (!codegen_emit_obj(root, "a.o", input)) status = 1;
   }
 
 cleanup:

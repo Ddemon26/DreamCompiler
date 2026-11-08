@@ -10,8 +10,9 @@
 | [P0006](P0006-member-access-diagnostics.md) | 2026-11-06 | Member receiver/access diagnostics; recovered passing validation | `Pass-ID: P0006` |
 | [P0007](P0007-loop-optimization-stability.md) | 2026-11-06 | Optimized loop compilation no longer crashes/stalls; skipped fixture now checked | `Pass-ID: P0007` |
 | [P0008](P0008-optimization-emission-design.md) | 2026-11-07 | Source-audited literal-arithmetic IR-to-AST design; implementation remains open | `Pass-ID: P0008` |
+| [P0009](P0009-literal-emission.md) | 2026-11-08 | Checked literal SCCP results reach C/object emission; fallback and internal failures verified | `Pass-ID: P0009` |
 
-**P0007 publication and Linux/Windows CI verified. Verify P0008 publication before allocating P0009.**
+**P0008 publication and Linux/Windows CI verified. Verify P0009 publication/CI before allocating P0010.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

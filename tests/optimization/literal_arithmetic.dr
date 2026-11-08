@@ -1,0 +1,14 @@
+// Expected: 49
+// Expected: 65
+// Expected: 2147483646
+// Expected: 0
+// Options: -O1
+// Go quick checks also inspect C before host compilation at every setting.
+func int foldedValue() { return (6 * 7) + (10 - 3); }
+int nested = ((2 + 3) * (4 + 5)) + ((7 - 2) * (3 + 1));
+int boundary = 2147483645 + 1;
+int zero = (9 - 9) * (7 + 2);
+Console.WriteLine(foldedValue());
+Console.WriteLine(nested);
+Console.WriteLine(boundary);
+Console.WriteLine(zero);

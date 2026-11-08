@@ -10,7 +10,7 @@ const AllCSources = [_][]const u8{
     "src/opt/licm.c",       "src/opt/copy_prop.c",     "src/opt/cse.c",         "src/opt/peephole.c",
     "src/opt/inline.c",     "src/opt/loop_opt.c",      "src/codegen/c_emit.c",  "src/codegen/context.c",
     "src/codegen/expr.c",   "src/codegen/stmt.c",      "src/codegen/codegen.c", "src/codegen/backend.c",
-    "src/codegen/module.c",
+    "src/codegen/module.c", "src/opt/literal_fold.c",
 };
 
 /// Baseline runtime sources always compiled

@@ -1,5 +1,63 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 8, 2026 UTC
+
+**Pass:** P0009 - checked literal arithmetic reaches emitted C/object code
+
+**Branch/platform:** `codex/compiler-stabilization`, attached primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+
+## Current measured state
+
+- Unchanged baseline `zig build test`: **136 discovered, 118 passed, 18 skipped,
+  zero failures/errors**, 42.56s.
+- Final `zig build test`: **137 discovered, 119 passed, 18 skipped, zero failures/
+  errors**, 39.12s. New annotated literal regression checks 49, 65, 2147483646, 0.
+  Report: `test_results/test_results_20261108_053647_windows.json`.
+- Focused `python codex/test_cli.py run --pattern '**/literal_arithmetic.dr'`:
+  **1 passed**, zero skips/failures/errors, 0.79s.
+- Focused Go `go test -count=1 -v -run 'TestCompiler_Literal(Emission|Failures)$' .`
+  from `codex/go`: **passed**, 3.508s after the object header fix.
+- Windows Go quick protocol from `codex/go`, `powershell -NoProfile -ExecutionPolicy
+  Bypass -File ./build_and_test.ps1 quick`: **all seven groups passed**, 9.343s,
+  including 38 diagnostic cases, arena growth, warnings, four loop settings,
+  25 module cases, literal emission, and literal internal failures.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.046s.
+- `zig build` and `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`:
+  **passed**. Linux executables were not run locally; P0009 native behavior awaits CI.
+
+The emission matrix inspects generated C before host compilation and then compares
+exact output at default/`-O1`/`-O2`/`-O3`. It covers nested/zero/boundary arithmetic,
+free functions, methods, imported functions/source mapping, side effects, unsupported
+whole-tree fallback, accepted/rejected operation/depth bounds, and object success/
+nonzero host failure. Undefined overflow/division-by-zero examples are inspected
+only. The UBSan C harness checks controlled SCCP/arena allocation failures, a
+transformed-root mismatch, bounded nonconvergence, metadata, and atomic replacement.
+Fault controls exist only in test code, with no production bypass paths.
+
+Initial focused checks passed C/runtime settings and the allocation harness but
+failed object compilation on missing `../libs/console.h` from temporary C. The common
+emitter's header paths and object status propagation were fixed; final focused and
+quick checks passed. No test exclusions or assertions were weakened.
+Restricted baseline could not access Zig's installation directory; approved installed
+toolchain/cache access passed. No SDK/cache repair or deletion was performed.
+
+Ignored logs: `build/P0009-{baseline,baseline-approved,build,focused-go,
+focused-go-fixed,focused-dream,full-suite,python,go-quick,linux-cross-build}.log`.
+
+P0008 CI run [42373515160](https://github.com/Ddemon26/DreamCompiler/actions/runs/42373515160)
+succeeded on Linux and Windows before this pass. P0009's local Linux cross-build
+is separate evidence. The same 18 unannotated entries remain skipped/unverified;
+supporting modules and graphics/concurrency exclusions are unchanged. General IR
+emission/SSA and loop transformations remain unqualified. See
+[P0009](passes/P0009-literal-emission.md) for limits and the delivery handoff.
+
+---
+
+## Historical P0007 test checkpoint
+
 **Date:** November 6, 2026 UTC (local reports also use November 6)
 
 **Pass:** P0007 - optimized loop compilation stability and one checked skipped entry

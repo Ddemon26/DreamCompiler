@@ -113,7 +113,7 @@ static IRValue fold_bin(IROp op, IRValue a, IRValue b) {
   return (IRValue){.id = -res - 1};
 }
 
-bool sccp(CFG *cfg) {
+int sccp_checked(CFG *cfg) {
   if (!cfg)
     return false;
   bool changed = false;
@@ -121,6 +121,8 @@ bool sccp(CFG *cfg) {
   if (nvals <= 0)
     return false;
   LatticeVal *vals = calloc((size_t)nvals, sizeof(LatticeVal));
+  if (!vals)
+    return -1;
   for (size_t i = 0; i < cfg->nblocks; i++) {
     BasicBlock *b = cfg->blocks[i];
     for (size_t j = 0; j < b->ninstrs; j++) {
@@ -198,3 +200,5 @@ bool sccp(CFG *cfg) {
   free(vals);
   return changed;
 }
+
+bool sccp(CFG *cfg) { return sccp_checked(cfg) > 0; }

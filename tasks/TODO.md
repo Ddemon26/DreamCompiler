@@ -58,10 +58,10 @@ suite: 118 passed, 18 skipped, zero failures/errors, versus the unchanged baseli
 The other 18 entries remain unannotated and unverified, with no new exclusions.
 Verify [P0007](passes/P0007-loop-optimization-stability.md) publication, then take T004.
 
-## T004 — Connect optimization to emitted code (design complete; implementation open)
+## T004 — Connect optimization to emitted code (first bounded slice completed in P0009)
 
-The driver optimizes and discards a CFG, then emits C from the AST; SSA construction is
-disabled. Plan and implement a small end-to-end optimization slice with preserved behavior.
+Before P0009, the driver optimized and discarded a CFG, then emitted C from the AST.
+The selected task was a small end-to-end optimization slice with preserved behavior.
 Do not describe optimizer source files alone as working generated-code optimizations.
 
 Acceptance for the first slice: behavior-equivalence tests at supported optimization
@@ -85,13 +85,33 @@ must fail explicitly. Replace the unsafe discarded whole-program pipeline call
 rather than running it on fallback source. Generated-C assertions before host
 compilation are required alongside exact runtime output at all four settings.
 
-Next: verify [P0008](passes/P0008-optimization-emission-design.md) publication/CI,
-then implement this restricted bridge and its documented acceptance matrix as one
-bounded pass. T004's emitted-code and equivalence acceptance criteria remain open.
+P0009 implements that restricted bridge and completes the first slice's emitted-code
+and equivalence criteria. Generated C is inspected before host compilation, exact
+output matches at default/`-O1`/`-O2`/`-O3`, and fallback/side effects, function/method/
+module bodies, bounds, object emission, and controlled internal failures are checked.
+The unsafe discarded whole-program pipeline is removed from the driver. General
+CFG/SSA emission and extending eligible expressions remain separate future work;
+no loop or variable propagation is claimed. Full Windows suite: 119 passed, 18
+skipped, zero failures/errors; all seven Go quick groups, five Python runner tests,
+and Linux cross-build passed. See [P0009](passes/P0009-literal-emission.md).
+
+Next: verify P0009 publication and inspect CI, then take T005. Repair any failed
+baseline first; do not expand the bridge to unqualified mutable-variable IR.
+
+## T005 — Primitive method argument compatibility (ready after P0009 delivery)
+
+Extend the existing method arity checks to reject incompatible primitive scalar
+arguments before C emission. Use the actual receiver/method resolution path and
+the documented numeric compatibility policy; preserve existing valid method calls.
+Include ordinary source, inherited/static/instance methods, and module entry classes.
+
+Acceptance: focused positive/negative matrix with useful source positions and no
+new artifacts for rejection, exact output for valid calls, required full checks,
+and explicit remaining limits for arrays, pointers, and other argument shapes.
 
 ## Later work
 
-- Validate method argument types/shapes beyond the existing arity checks; analyze
+- Extend T005 to pointer/array and other method argument shapes later; analyze
   class field declaration initializers. P0006 covers receiver/access diagnostics only.
 
 - Prove required returns on all control-flow paths; extend pointer/array return shapes

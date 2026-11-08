@@ -45,10 +45,11 @@ success is recorded separately from native runtime verification.
 
 ### Code Generation
 - **C backend**: Generates C from the AST for the implemented subset
-- **Optimization**: Passes exist, but optimized IR is not used by C emission and SSA construction is disabled
+- **Optimization**: `-O1`/`-O2`/`-O3` fold canonical decimal literal `+`/`-`/`*` trees through isolated SCCP IR into emitted C; every intermediate must be in `0..INT_MAX-1`, with at most 256 operations and depth 64. Default emission retains arithmetic. General CFG emission and SSA remain disabled
 - **Host optimization flags**: The C compilation command receives `-O2`/`-O3`; default and `-O1` supply no host optimization flag. This is separate from Dream IR transformations
-- **Optimization emission plan**: [P0008 design](../docs/development/optimization-emission.md) specifies a checked literal-arithmetic IR-to-AST bridge; it is not implemented
-- **Optimization execution baseline**: The loop regression prints `112` and `8` at the default setting and `-O1`/`-O2`/`-O3`; this checks compiler stability and program results, not transformed C or optimizer correctness
+- **Optimization emission contract**: [P0009 implementation and P0008 design](../docs/development/optimization-emission.md) describe whole-tree fallback, source ownership, and explicit internal errors before output. Unsupported expressions retain AST emission; the unqualified whole-program pipeline is no longer invoked
+- **Optimization evidence**: Go quick/CI checks generated C before host compilation, exact output at all four settings, methods/modules, side effects, boundaries/fallback, object emission, and controlled internal failures. The loop regression still prints `112` and `8`; no general loop transformation is claimed
+- **Object emission**: Uses the common AST emitter with runtime include directories; failures return nonzero. Run from the project directory, as with C/native emission
 - **Runtime library**: Memory management, console I/O, and exception handling
 - **Build integration**: Zig build system with cross-platform support
 

@@ -35,6 +35,9 @@ void arena_free(Arena *a);
  */
 void *arena_alloc(Arena *a, size_t size);
 
+/* Recoverable allocation for compiler stages that report their own errors. */
+void *arena_try_alloc(Arena *a, size_t size);
+
 /**
  * @brief Enumerates the different kinds of nodes in the abstract syntax tree
  * (AST).

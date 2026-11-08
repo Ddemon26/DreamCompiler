@@ -42,17 +42,18 @@ void arena_free(Arena *a) {
  * @param a Pointer to the memory arena to grow.
  * @param min Minimum additional size required.
  */
-static void arena_grow(Arena *a, size_t min) {
+static int arena_grow(Arena *a, size_t min) {
   size_t new_cap = a->cap && a->cap <= SIZE_MAX / 2 ? a->cap * 2 : 4096;
   if (new_cap < min) new_cap = min;
-  if (new_cap > SIZE_MAX - sizeof(ArenaBlock)) abort();
+  if (new_cap > SIZE_MAX - sizeof(ArenaBlock)) return 0;
   ArenaBlock *block = malloc(sizeof(ArenaBlock) + new_cap);
-  if (!block) abort();
+  if (!block) return 0;
   block->next = a->blocks;
   a->blocks = block;
   a->ptr = (char *)block->data;
   a->len = 0;
   a->cap = new_cap;
+  return 1;
 }
 
 /**
@@ -67,16 +68,22 @@ static void arena_grow(Arena *a, size_t min) {
  * @param size Size of the memory block to allocate.
  * @return Pointer to the allocated memory block.
  */
-void *arena_alloc(Arena *a, size_t size) {
+void *arena_try_alloc(Arena *a, size_t size) {
   const size_t alignment = _Alignof(max_align_t);
-  if (size > SIZE_MAX - (alignment - 1)) abort();
+  if (size > SIZE_MAX - (alignment - 1)) return NULL;
   size = (size + alignment - 1) & ~(alignment - 1);
-  if (!a->ptr || size > a->cap - a->len)
-    arena_grow(a, size);
+  if ((!a->ptr || size > a->cap - a->len) && !arena_grow(a, size))
+    return NULL;
   void *ptr = a->ptr + a->len;
   a->len += size;
   // zero memory for determinism
   memset(ptr, 0, size);
+  return ptr;
+}
+
+void *arena_alloc(Arena *a, size_t size) {
+  void *ptr = arena_try_alloc(a, size);
+  if (!ptr) abort();
   return ptr;
 }
 

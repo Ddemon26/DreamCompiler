@@ -1,12 +1,48 @@
 # First optimization-to-emission slice
 
-Status: **design checkpoint P0008, 2026-11-07; not implemented**. This is the
-bounded first implementation for T004. General CFG emission and SSA remain later
-work. The current compiler still emits the original AST.
+Status: **implemented in P0009, 2026-11-08**, following the P0008 design.
+At `-O1`/`-O2`/`-O3`, checked literal arithmetic now reaches the AST C emitter
+through isolated SCCP IR. Default emission retains the original expressions.
+General CFG emission and SSA remain later work.
+
+## Implementation checkpoint
+
+[literal_fold.c](../../src/opt/literal_fold.c) implements the bridge below.
+Its temporary instructions, pointer table, block, and CFG are stack-owned and
+bounded; it does not call the unchecked general IR/CFG allocators. SCCP uses
+`sccp_checked` to distinguish allocation failure from convergence. Replacement
+text uses `arena_try_alloc`; existing callers of `arena_alloc` retain their prior
+abort-on-failure contract. Replacement is atomic per expression and retains source
+position, filename, and text. Bridge-internal errors return before the driver
+opens output files. The legacy whole-program pipeline is no longer invoked.
+
+The limits are **256 binary operations and depth 64** (root depth zero), with
+canonical decimal leaves and every intermediate in `0..INT_MAX-1`. A maximal
+binary expression is considered as a whole, including unsupported operators;
+fallback never partially folds its children. Unary expressions are also left whole.
+Known statement/container children, function/method bodies, call arguments, and
+conditional arms are visited explicitly. Unknown containers remain untouched.
+
+The shared C emitter also serves object emission. Object temporary C now uses
+runtime include directories instead of paths relative to `build/bin`; emission,
+write, and host-compiler failures propagate nonzero to the driver. Both CLI modes
+still expect the project working directory and its runtime sources.
+
+[Go regressions](../../codex/go/literal_emission_test.go) inspect generated C
+before host compilation and compare exact runtime output at all four settings.
+They cover nested trees, zero, boundaries, free functions, methods, imported
+functions/source mapping, side effects, fallback, accepted/rejected resource
+limits, object success, and host-compilation failure. The
+[C harness](../../codex/c/literal_fold_harness.c) uses the real implementation
+with controlled SCCP/arena allocation failures, a transformed-root mismatch, and
+nonconvergence; it checks diagnostics, nonzero status, unchanged candidates, and
+source metadata. Fault injection exists only in the harness. It does not qualify
+the general optimizer for arbitrary IR. See [P0009](../../tasks/passes/P0009-literal-emission.md)
+for measured validation and remaining limits.
 
 ## Audited boundary
 
-The following findings come from source review at parent
+The following historical findings come from P0008 source review at parent
 `c162e0826d21a329ce3ca58a615c58f542cab92f`, not new runtime experiments.
 
 | Source | Current behavior | Consequence for emission |
@@ -23,7 +59,7 @@ The following findings come from source review at parent
 | [driver/main.c](../../src/driver/main.c), host compiler command | Passes `-O2`/`-O3` to the host C compiler; default and `-O1` pass no host optimization flag | Runtime equivalence alone cannot establish a Dream transformation; inspect C before host compilation |
 
 The working backend is [codegen/codegen.c](../../src/codegen/codegen.c).
-`codegen_emit_obj` also calls `codegen_emit_c`; the experimental
+`codegen_emit_obj` and `codegen_emit_c` now share its internal emitter; the experimental
 [backend.c](../../src/codegen/backend.c) is not the driver integration point.
 Module expansion precedes semantic analysis and supplies a combined AST through
 [driver/modules.c](../../src/driver/modules.c).
@@ -57,6 +93,9 @@ answer would be nonnegative. This is an optimization eligibility rule, not a new
 restriction on valid Dream programs or a definition of overflow semantics.
 
 ## Lower, optimize, and commit atomically
+
+The original P0008 implementation requirements are retained below. P0009 uses
+stack-owned bounded IR instead of allocating a general CFG, as described above.
 
 1. Add a restricted helper under `src/opt/`, registered in `build.zig`. Invoke it
    after successful semantic analysis and module expansion, before output files
@@ -116,7 +155,8 @@ emitted anything; failure tests must use an artifact-free test setup.
 
 ## Required implementation evidence
 
-These are acceptance checks for the next pass, **not tests run by P0008**.
+These acceptance checks were designed in P0008 and exercised in P0009's focused
+matrix and fault harness. They were **not tests run by P0008**.
 
 | Case | Generated-C evidence | Execution evidence |
 | --- | --- | --- |
