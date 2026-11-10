@@ -1,0 +1,4 @@
+// Expected error: argument 2 has incompatible type for method 'pair': expected 'string', got 'int'
+class Reader { func int pair(int first, string second) { return first; } }
+Reader reader = new Reader();
+reader.pair(1, 2);

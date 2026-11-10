@@ -87,7 +87,7 @@ struct Decl {
 static TokenKind analyze_expr(SemAnalyzer *s, Node *n);
 static void analyze_stmt(SemAnalyzer *s, Node *n);
 
-static const char *return_type_name(TokenKind type) {
+static const char *primitive_type_name(TokenKind type) {
   switch (type) {
   case TK_KW_INT: return "int";
   case TK_KW_FLOAT: return "float";
@@ -99,7 +99,7 @@ static const char *return_type_name(TokenKind type) {
   }
 }
 
-static bool primitive_return_type(TokenKind type) {
+static bool is_primitive_type(TokenKind type) {
   return type == TK_KW_INT || type == TK_KW_FLOAT || type == TK_KW_BOOL ||
          type == TK_KW_CHAR || type == TK_KW_STRING;
 }
@@ -269,14 +269,27 @@ static TokenKind analyze_call(SemAnalyzer *s, Node *n) {
     bool is_base = field->kind == ND_BASE;
     Slice member_name = is_base ? field->as.base.name : field->as.field.name;
     if (!is_base) analyze_expr(s, field->as.field.object);
-    for (size_t i = 0; i < n->as.call.len; ++i) analyze_expr(s, n->as.call.args[i]);
     Node *type = is_base ? (s->current_class ? s->current_class->as.type_decl.base_decl : NULL) : expr_class(s, field->as.field.object);
+    Node *method = type ? sem_find_member(type, member_name, NULL) : NULL;
+    for (size_t i = 0; i < n->as.call.len; ++i) {
+      TokenKind actual = analyze_expr(s, n->as.call.args[i]);
+      if (!method || method->kind != ND_FUNC || i >= method->as.func.param_len) continue;
+      Node *param = method->as.func.params[i];
+      /* This boundary checks primitive scalar types only; pointer/array
+         contracts require richer expression types than TokenKind. */
+      TokenKind expected = param->as.var_decl.type;
+      if (is_primitive_type(expected) && !param->as.var_decl.is_pointer &&
+          !param->as.var_decl.array_len && actual != expected)
+        diag_pushf(s, n->pos, DIAG_ERROR,
+                   "argument %zu has incompatible type for method '%.*s': expected '%s', got '%s'",
+                   i + 1, (int)member_name.len, member_name.start,
+                   primitive_type_name(expected), primitive_type_name(actual));
+    }
     if (is_base && !type) {
       diag_push(s, n->pos, DIAG_ERROR, "base access requires a base class and an instance method");
       return TK_KW_INT;
     }
     if (type) {
-      Node *method = sem_find_member(type, member_name, NULL);
       if (!method || method->kind != ND_FUNC) {
         diag_pushf(s, n->pos, DIAG_ERROR, "unknown method '%.*s'", (int)member_name.len, member_name.start);
         return TK_KW_INT;
@@ -527,13 +540,13 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
     TokenKind actual = n->as.ret.expr ? analyze_expr(s, n->as.ret.expr) : TK_KW_VOID;
     if (s->current_ret == TK_KW_VOID && n->as.ret.expr) {
       diag_push(s, n->pos, DIAG_ERROR, "void function cannot return an expression");
-    } else if (primitive_return_type(s->current_ret)) {
+    } else if (is_primitive_type(s->current_ret)) {
       if (!n->as.ret.expr)
         diag_push(s, n->pos, DIAG_ERROR, "return requires a value");
       else if (actual != s->current_ret)
         diag_pushf(s, n->pos, DIAG_ERROR,
                    "return expression has incompatible type: expected '%s', got '%s'",
-                   return_type_name(s->current_ret), return_type_name(actual));
+                   primitive_type_name(s->current_ret), primitive_type_name(actual));
     }
     break;
   }

@@ -24,8 +24,11 @@ to classes in a multi-file entry source and expressions in imported functions.
 Use an object for instance members (`reader.read()`, `reader.number`) and a type
 name for static members (`Reader.increment()`, `Reader.count`). Existing static
 access through a simple object variable remains supported, including inherited
-members. `this` and `base` require an instance method. Method argument type/shape
-compatibility and class field declaration initializer analysis remain incomplete.
+members. `this` and `base` require an instance method. Primitive scalar method
+arguments require exact types, including inherited/static/instance and explicit
+`init` calls; see [checked method arguments](../language-features/functions.md#checked-primitive-method-arguments).
+Pointer/array shapes, custom-type arguments, implicit construction arguments, and
+class field declaration initializer analysis remain incomplete.
 
 Dream features a comprehensive static type system with type inference capabilities. This section covers all aspects of working with types, from basic primitives to complex data structures.
 

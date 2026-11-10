@@ -98,7 +98,7 @@ and Linux cross-build passed. See [P0009](passes/P0009-literal-emission.md).
 Next: verify P0009 publication and inspect CI, then take T005. Repair any failed
 baseline first; do not expand the bridge to unqualified mutable-variable IR.
 
-## T005 — Primitive method argument compatibility (ready after P0009 delivery)
+## T005 — Primitive method argument compatibility (completed in P0010)
 
 Extend the existing method arity checks to reject incompatible primitive scalar
 arguments before C emission. Use the actual receiver/method resolution path and
@@ -109,10 +109,23 @@ Acceptance: focused positive/negative matrix with useful source positions and no
 new artifacts for rejection, exact output for valid calls, required full checks,
 and explicit remaining limits for arrays, pointers, and other argument shapes.
 
+P0010 implements this scalar boundary with 82 ordinary/module-entry rejection cases
+and two exact-output programs, plus two annotated Dream regressions. Both new Dream
+entries, the focused matrix, Python runner tests, and Linux cross-build passed.
+Recovery on 2026-11-10 UTC passed the complete Dream suite (121 passed, 18 skipped,
+zero failures/errors), all eight Go quick groups, five Python runner tests, and
+the Linux cross-build. The earlier changing Zig SDK/cache errors did not recur;
+no exclusions, weakened assertions, SDK/cache changes, or implementation edits
+were used. See [P0010](passes/P0010-method-arguments.md) for historical failures
+and recovery evidence. Verify publication and inspect native CI before new work.
+
 ## Later work
 
 - Extend T005 to pointer/array and other method argument shapes later; analyze
   class field declaration initializers. P0006 covers receiver/access diagnostics only.
+- Check primitive implicit-constructor arguments and arity through resolved `init`;
+  P0010 checks explicit `object.init(...)` only. Method pointer emission currently
+  drops primitive pointer syntax, as exposed by P0010's initial new fixture.
 
 - Prove required returns on all control-flow paths; extend pointer/array return shapes
   and general operator operand validation beyond the primitive scalar checks in P0005.

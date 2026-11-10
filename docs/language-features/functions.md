@@ -82,6 +82,28 @@ async and non-primitive return contracts are outside this supported subset.
 
 ## Parameters
 
+### Checked primitive method arguments
+
+Calls such as `reader.take(value)`, `Reader.take(value)`, `this.take(value)`, and
+`base.take(value)` check each primitive scalar parameter (`int`, `float`, `bool`,
+`char`, `string`) against the analyzed expression type before generating C. As with
+free-function arguments and primitive returns, types must match exactly: an `int`
+argument does not implicitly widen to a `float` parameter, and `bool`/`char` remain
+distinct from `int`. Existing expression promotions still apply; `2 + 0.5` has type
+`float`. A void result or `null` does not match a scalar parameter.
+
+Resolution follows the receiver's declared type and inherited members, including
+static methods reached through a simple object variable. Rejections identify the
+method, one-based argument index, expected/actual types, and call position. These
+checks also apply to classes in multi-file entry sources; rejected input produces
+no new output artifacts. All supplied arguments are analyzed even on arity errors.
+
+Pointer parameters are outside this rule. Array/pointer expression shapes are not
+represented by the scalar type token and remain unqualified, even when their base
+token matches a scalar parameter. Custom types, implicit `new Type(...)` constructor
+argument compatibility, and broader operator validation remain separate work.
+Explicit `object.init(...)` calls use the checked method path.
+
 ### Single Parameters
 ```dream
 func void printNumber(int num) {

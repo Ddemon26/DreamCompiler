@@ -1,5 +1,118 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 10, 2026 UTC
+
+**Pass:** P0010 - primitive scalar method arguments; validation recovered
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+
+## Current measured state
+
+- `zig build test`: **139 discovered, 121 passed, 18 skipped, zero failures/errors**,
+  47.48s. Report: `test_results/test_results_20261110_052829_windows.json`.
+  Both new annotated method-argument entries passed.
+- From `codex/go`, `powershell -NoProfile -ExecutionPolicy Bypass -File
+  ./build_and_test.ps1 quick`: **all eight groups passed**, 10.964s. The protocol
+  rebuilds the compiler and uses `-count=1`. It includes **82 method argument
+  rejections and two exact-output programs** (2.19s focused group), 38 diagnostic
+  cases, arena growth, nonfatal warnings, four loop optimization settings,
+  25 module cases, and literal emission/failure checks.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.052s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; inspect native CI after publication.
+- Full diff review and `git diff --check` passed. All **29 local link occurrences**
+  resolve; 12 legacy broken links in the type-system guide are unchanged from HEAD.
+  The method anchor, regression paths, quick/CI selection, PowerShell BOM, and Go
+  formatting were verified. Publication requires a matching remote SHA.
+
+This recovers the existing P0010 pass; no new feature or pass ID was started.
+Restricted fetch failed DNS; approved fetch passed and the remote still matched
+P0009. Restricted `zig build test` could not locate the installed SDK; compiler
+checks used approved SDK/cache access. Earlier changing SDK/cache file-open errors
+did not recur. Their cause remains unproven. No SDK/cache content or permissions,
+tests, assertions, exclusions, or implementation changed during recovery.
+Ignored evidence: `build/P0010-recovery-{full-suite,full-suite-approved,go-quick,
+python,linux-cross-build}.log`.
+
+The same 18 unannotated entries remain skipped/unverified; supporting module fixtures
+and graphics/concurrency exclusions are unchanged. Pointer/array/custom method
+argument shapes, implicit constructor checks, and pointer parameter C emission remain
+unqualified. See [P0010](passes/P0010-method-arguments.md) and [STATE.md](STATE.md)
+for historical failures, scope, and next steps. P0009 CI run 42481471439 remains
+successful; P0010 native CI must be inspected after publication.
+
+---
+
+## Historical P0010 implementation checkpoint - November 9, 2026
+
+**Date:** November 9, 2026 UTC
+
+**Pass:** P0010 - primitive scalar method arguments; **validation/delivery blocked**
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+
+## Current measured state
+
+- Unchanged `zig build test`: **137 discovered, 119 passed, 18 skipped, zero
+  failures/errors**, 47.31s.
+- Pre-change focused Go float-to-int rejection failed: compiler returned 0 and
+  created C instead of issuing a Dream argument diagnostic.
+- `zig build`: **passed** after implementation.
+- Focused `go test -count=1 -v -run '^TestCompiler_MethodArguments$' .`: **80
+  rejections and two exact-output programs passed**, 2.925s. Final quick adds a
+  nested-invalid-argument case in each mode for **82 rejections**.
+- First final `zig build test`: **139 discovered, 120 passed, 18 skipped, zero
+  assertion failures, one compile error**, 44.64s. Unchanged `test_debug_simple.dr`
+  failed Zig mingw cache `file_open Unexpected` on SDK `misc/__winitenv.c`.
+- Referenced SDK file exists. Focused `python codex/test_cli.py run --pattern
+  '**/test_debug_simple.dr'`: **1 passed**, no skips/failures/errors, 0.81s.
+- Full-suite retry: **139 discovered, 119 passed, 18 skipped, zero assertion
+  failures, two compile errors**, 50.37s. Unchanged `string_array.dr` and
+  `global_release.dr` hit the same mingw error on SDK `libsrc/power-uuid.c` and
+  `gdtoa/g_xfmt.c`; both files exist. **Neither full run passed.** Latest report:
+  `test_results/test_results_20261109_053831_windows.json`.
+- Windows Go quick protocol: **failed**, 11.233s. Default loop compilation hit
+  Zig `libzigc` cache `file_open Unexpected` on SDK `std/zig/string_literal.zig`.
+  The `-O1`/`-O2`/`-O3` loop cases passed. Seven other groups passed: 38 diagnostics,
+  arena growth, warnings, 25 module cases, literal emission/failures, and method
+  arguments (**82 rejections and two exact-output programs**). All external
+  compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.045s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; no P0010 commit/native CI exists.
+
+Both new annotated entries passed in both complete runs. The initial new positive
+fixture failed because existing `int*` method parameters emit C `int`, so null was
+rejected by the host compiler. That deferred pointer assumption was removed from
+the scalar fixture; a separate negative case with a pointer parameter and mismatched
+second scalar requires exactly one scalar diagnostic. Pointer/array emission and
+shape compatibility are not qualified by this pass. No existing test was removed,
+excluded, or weakened.
+
+Restricted baseline could not locate Zig's installation; compiler checks used
+approved toolchain/cache access. SDK/cache contents and permissions were unchanged.
+The changing file-open failures resemble earlier checkpoints but their cause is
+unproven. Required full/quick validation must pass before P0010 commit/publication.
+Preserve the uncommitted work; recover this pass instead of allocating another ID.
+Ignored evidence: `build/P0010-{baseline,baseline-approved,rejection-before,build,
+focused-go,focused-go-fixed,full-suite,focused-debug,full-suite-retry,python,
+go-quick,linux-cross-build}.log`.
+
+P0009 [CI run 42481471439](https://github.com/Ddemon26/DreamCompiler/actions/runs/42481471439)
+passed on Linux and Windows before this pass. The same 18 entry skips, supporting
+modules, and graphics/concurrency exclusions remain. See
+[P0010](passes/P0010-method-arguments.md) for recovery and scope limits.
+
+---
+
+## Historical P0009 test checkpoint
+
 **Date:** November 8, 2026 UTC
 
 **Pass:** P0009 - checked literal arithmetic reaches emitted C/object code
