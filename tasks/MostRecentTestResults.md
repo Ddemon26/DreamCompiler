@@ -1,5 +1,74 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 11, 2026 UTC
+
+**Pass:** P0011 - primitive scalar constructor arguments and arity
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+## Current measured state
+
+- Unchanged baseline `zig build test`: **139 discovered, 121 passed, 18 skipped,
+  zero failures/errors**, 47.96s; `test_results/test_results_20261111_052841_windows.json`.
+- Pre-change constructor float-to-int rejection failed as intended: compiler
+  returned 0 and generated C rather than diagnosing the mismatch.
+- `zig build`: passed after implementation.
+- Focused `go test -count=1 -v -run '^TestCompiler_ConstructorArguments$' .`:
+  **80 rejection cases and two exact-output programs passed**, 2.830s (body 2.41s).
+- First final `zig build test`: **141 discovered, 122 passed, 18 skipped, zero
+  assertion failures, one compile error**, 44.34s. Unchanged `semantics/basic.dr`
+  hit a Zig cache FileNotFound opening SDK
+  `lib/libc/mingw/lib64/api-ms-win-crt-private-l1-1-0.def`. That path was absent
+  when checked. Focused `python codex/test_cli.py run --pattern
+  '**/semantics/basic.dr'` then passed **1/1**, 0.80s. Report:
+  `test_results/test_results_20261111_053344_windows.json`.
+- Full retry: **141 discovered, 122 passed, 18 skipped, zero assertion failures,
+  one compile error**, 44.21s. Unchanged `inheritance_basic.dr` hit libzigc
+  `file_open Unexpected` on SDK `lib/std/math/big.zig`; that path exists.
+  Report: `test_results/test_results_20261111_053501_windows.json`.
+- Windows Go quick from `codex/go`, `powershell -NoProfile -ExecutionPolicy Bypass
+  -File ./build_and_test.ps1 quick`: **all nine groups passed**, 12.690s. Includes
+  80 constructor rejections/two exact-output programs (1.85s), 82 method rejections/
+  two programs, 38 diagnostic cases, arena growth, warnings, four loop settings,
+  25 modules, and literal emission/failure checks. Compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.038s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; inspect native P0011 CI after publication.
+- Final unchanged `zig build test` after quick/cross-build: **141 discovered,
+  123 passed, 18 skipped, zero failures/errors**, 43.93s. Both new Dream entries
+  passed. Report: `test_results/test_results_20261111_053712_windows.json`.
+- Full diff review, local links, new constructor anchor, source paths, Go formatting,
+  quick/CI selection, PowerShell BOM and `git diff --check` passed. Twelve pre-existing
+  broken type-system links are unchanged from the parent.
+
+The earlier full attempts did not pass; the changing SDK/cache failures did not
+recur in the final run, and their cause remains unproven. No SDK/cache content or
+permissions, assertions, exclusions, implementation or fixtures changed between
+full attempts and the final pass. Restricted execution could not locate Zig's SDK;
+compiler checks used approved installed-toolchain/cache access. Restricted fetch
+failed DNS; approved fetch passed. P0010 Linux/Windows CI run 42816446088 passed.
+
+The initial new focused fixtures exposed unsupported custom-type parameter syntax
+that stalls parsing, and module/function/import name collisions. The nested test
+now uses the supported primitive expression `new Child(1.5).value`; diagnostic and
+once-only assertions remain intact. Positive names were corrected, with no weakened
+assertions or exclusions. T007 records parser recovery as the next task.
+
+The same 18 unannotated skips and existing module/graphics/concurrency exclusions
+remain. Pointer/array shapes, custom-type compatibility, primitive pointer parameter
+emission, field initializers and implicit inherited construction remain unqualified/
+unsupported. See [P0011](passes/P0011-constructor-arguments.md) and [STATE.md](STATE.md).
+Publication requires the pass commit and matching remote SHA. Ignored evidence:
+`build/P0011-*.log`, including baseline, pre-change, focused attempts, full-suite
+attempts, quick, Python and cross-build.
+
+---
+
+## Historical P0010 recovery checkpoint - November 10, 2026
+
 **Date:** November 10, 2026 UTC
 
 **Pass:** P0010 - primitive scalar method arguments; validation recovered

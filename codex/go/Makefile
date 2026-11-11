@@ -160,7 +160,7 @@ ci: deps verify test bench
 quick-validate:
 	@echo "=== QUICK VALIDATION ==="
 	cd ../.. && zig build
-	go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules|LoopsAtOptimizationLevels|LiteralEmission|LiteralFailures|MethodArguments)$$' .
+	go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules|LoopsAtOptimizationLevels|LiteralEmission|LiteralFailures|MethodArguments|ConstructorArguments)$$' .
 	@echo "✅ Quick validation passed!"
 
 # Comprehensive validation for new features

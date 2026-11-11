@@ -100,9 +100,30 @@ no new output artifacts. All supplied arguments are analyzed even on arity error
 
 Pointer parameters are outside this rule. Array/pointer expression shapes are not
 represented by the scalar type token and remain unqualified, even when their base
-token matches a scalar parameter. Custom types, implicit `new Type(...)` constructor
-argument compatibility, and broader operator validation remain separate work.
+token matches a scalar parameter. Custom types and broader operator validation
+remain separate work.
 Explicit `object.init(...)` calls use the checked method path.
+
+### Checked constructor arguments
+
+`new Reader(value)` checks arity against the class's own instance `init` method
+and checks its primitive scalar parameters with the same exact-type policy as
+method calls. Diagnostics name the constructed type, argument index and expected/
+actual types, at the `new` expression before output artifacts are created. Every
+supplied argument is analyzed once, including excess arguments and nested calls.
+These checks also apply to classes in multi-file entry sources.
+
+Construction invokes only the class's own `init`. A derived class without one
+takes zero arguments; it does not invoke an inherited `init`. Declare a local
+constructor and call `base.init(...)` explicitly when needed. A class without
+`init` and a zero-initialized struct also take zero arguments. Struct `init`
+methods are not invoked by `new`. Arguments in these cases are errors rather
+than silently ignored. A local static `init` cannot serve as a constructor;
+call that static method explicitly instead.
+
+Pointer/array parameter shapes and custom-type compatibility remain unqualified,
+as with method arguments. Primitive pointer parameter emission and class field
+declaration initializers are separate unresolved limitations.
 
 ### Single Parameters
 ```dream

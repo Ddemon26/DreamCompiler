@@ -35,7 +35,8 @@ success is recorded separately from native runtime verification.
 - **Classes and structs**: Object construction and instantiation
 - **Instance methods**: With `this` pointer (emitted as C functions)
 - **Member diagnostics**: Checked receivers, unknown members, and type-qualified instance access before C emission, including module entry classes; source positions preserved for member/base access
-- **Primitive method arguments**: Exact scalar types checked through ordinary/inherited/static/instance and explicit `init` calls, including module entry classes; useful call positions and artifact-free rejection. Pointer/array shapes, custom types, and implicit `new` arguments remain unqualified
+- **Primitive method arguments**: Exact scalar types checked through ordinary/inherited/static/instance and explicit `init` calls, including module entry classes; useful call positions and artifact-free rejection. Pointer/array shapes and custom types remain unqualified
+- **Constructor arguments**: `new Type(...)` checks arity and exact primitive scalar types against a class's own instance `init`, including module entry classes. Classes without local `init` and structs take zero arguments; arguments are never silently ignored. No implicit inherited construction; pointer/array shapes and custom-type compatibility remain unqualified
 - **Object-oriented programming**: Declaration-based single inheritance, typed inherited fields, static method dispatch, base access, and checked upcasts; no virtual dispatch or access-control enforcement
 
 ### I/O and Runtime

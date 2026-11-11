@@ -263,6 +263,40 @@ static bool is_type_reference(SemAnalyzer *s, Node *n) {
   return d && d->kind == DECL_TYPE;
 }
 
+static TokenKind analyze_new(SemAnalyzer *s, Node *n) {
+  Slice name = n->as.new_expr.type_name;
+  Node *type = sem_find_type(s->program, name);
+  Node *owner = NULL;
+  Node *init = type && type->kind == ND_CLASS_DECL ?
+               sem_find_member(type, (Slice){"init", 4}, &owner) : NULL;
+  /* Match construction emission: only the class's own init is called.
+     Inherited init is explicit; structs and classes without init take no args. */
+  if (owner != type || (init && init->kind != ND_FUNC)) init = NULL;
+  if (init && init->as.func.is_static)
+    diag_pushf(s, n->pos, DIAG_ERROR,
+               "constructor '%.*s' requires an instance init method",
+               (int)name.len, name.start);
+  size_t expected_len = init ? init->as.func.param_len : 0;
+  if (n->as.new_expr.arg_len != expected_len)
+    diag_pushf(s, n->pos, DIAG_ERROR,
+               "expected %zu arguments but got %zu for constructor '%.*s'",
+               expected_len, n->as.new_expr.arg_len, (int)name.len, name.start);
+  for (size_t i = 0; i < n->as.new_expr.arg_len; ++i) {
+    TokenKind actual = analyze_expr(s, n->as.new_expr.args[i]);
+    if (!init || i >= expected_len) continue;
+    Node *param = init->as.func.params[i];
+    TokenKind expected = param->as.var_decl.type;
+    /* Like explicit method calls, only primitive scalar contracts are checked. */
+    if (is_primitive_type(expected) && !param->as.var_decl.is_pointer &&
+        !param->as.var_decl.array_len && actual != expected)
+      diag_pushf(s, n->pos, DIAG_ERROR,
+                 "argument %zu has incompatible type for constructor '%.*s': expected '%s', got '%s'",
+                 i + 1, (int)name.len, name.start,
+                 primitive_type_name(expected), primitive_type_name(actual));
+  }
+  return TK_IDENT;
+}
+
 static TokenKind analyze_call(SemAnalyzer *s, Node *n) {
   if (n->as.call.callee->kind == ND_FIELD || n->as.call.callee->kind == ND_BASE) {
     Node *field = n->as.call.callee;
@@ -437,10 +471,7 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
     return then_type;
   }
   case ND_NEW:
-    /* new expressions return a pointer to the type being constructed */
-    for (size_t i = 0; i < n->as.new_expr.arg_len; i++)
-      analyze_expr(s, n->as.new_expr.args[i]);
-    return TK_IDENT; /* Custom type - actual type name stored in type_name */
+    return analyze_new(s, n);
   case ND_AWAIT:
     /* await expressions return TaskResult type */
     analyze_expr(s, n->as.await_expr.expr);

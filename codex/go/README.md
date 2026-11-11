@@ -5,7 +5,7 @@
 From this directory, run `make quick-validate` on Linux or
 `powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 quick`
 on Windows. These commands build with Zig 0.17.1 and run the CLI regressions for
-error exits, warnings, stable AST allocation, modules, primitive method arguments,
+error exits, warnings, stable AST allocation, modules, primitive method/constructor arguments,
 literal emission/failures, and loop execution at the
 default optimization setting and `-O1`/`-O2`/`-O3`. The loop fixture must print
 `112` and `8` at each setting; this does not prove optimized IR reaches emitted C.
@@ -16,7 +16,13 @@ Go's cache does not track changes to the external compiler executable.
 `TestCompiler_MethodArguments` checks all primitive type mismatches plus receiver
 resolution, arity, nested expressions, and artifact-free diagnostics in ordinary
 and module-entry sources. Valid calls require exact runtime output. Pointer/array
-shapes and implicit construction arguments remain outside that scalar contract.
+shapes remain outside that scalar contract.
+
+`TestCompiler_ConstructorArguments` checks exact primitive types, arity, nested
+expressions, and artifact-free diagnostics in ordinary and module-entry sources,
+plus exact runtime output. It follows the emitter's local instance `init` rule:
+inherited constructors are explicit, and classes without local `init` and structs
+take zero arguments. Pointer/array shapes and custom types remain unqualified.
 
 The legacy `minimal_tests` and `temp_disabled` directories still import cgo
 directly in test files and cannot be run with `go test ./...`. The older general

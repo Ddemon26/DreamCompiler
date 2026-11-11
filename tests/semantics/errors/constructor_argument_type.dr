@@ -1,0 +1,3 @@
+// Expected error: argument 2 has incompatible type for constructor 'Reader': expected 'bool', got 'int'
+class Reader { func init(int first, bool second) {} }
+Reader reader = new Reader(1, 2);

@@ -1,0 +1,58 @@
+// Expected: 42
+// Expected: 2.500000
+// Expected: 1
+// Expected: Z
+// Expected: label
+// Expected: 8
+// Expected: 9
+// Expected: 10
+// Expected: 11
+// Expected: 12
+// Expected: 13
+// Expected: 2
+class Values {
+    int amount;
+    float real;
+    bool flag;
+    char marker;
+    string text;
+    func init(int n, float r, bool f, char m, string t) {
+        this.amount = n; this.real = r; this.flag = f;
+        this.marker = m; this.text = t;
+    }
+}
+class Counter {
+    int value;
+    func init(int n) { this.value = n; }
+    static func int number() { return 9; }
+}
+class Child : Counter {
+    func init(int n) { base.init(n); }
+}
+class DefaultChild : Counter {}
+class Empty { int value; }
+struct Point { int value; }
+func int makeNumber() { return 8; }
+Values sample = new Values(40 + 2, 2 + 0.5, 1 < 2, 'Z', "la" + "bel");
+Console.WriteLine(sample.amount);
+Console.WriteLine(sample.real);
+Console.WriteLine(sample.flag);
+Console.WriteLine(sample.marker);
+Console.WriteLine(sample.text);
+Counter functionValue = new Counter(makeNumber());
+Console.WriteLine(functionValue.value);
+Counter methodValue = new Counter(Counter.number());
+Console.WriteLine(methodValue.value);
+Counter conditionalValue = new Counter(true ? 10 : 20);
+Console.WriteLine(conditionalValue.value);
+Counter child = new Child(11);
+Console.WriteLine(child.value);
+DefaultChild defaultChild = new DefaultChild();
+defaultChild.init(12);
+Console.WriteLine(defaultChild.value);
+Empty empty = new Empty();
+empty.value = 13;
+Console.WriteLine(empty.value);
+Point point = new Point();
+point.value = 2;
+Console.WriteLine(point.value);

@@ -102,6 +102,7 @@ static Node *parse_primary(Parser *p) {
     else
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
     n = node_new(p->arena, ND_NEW);
+    n->pos = t.pos;
     n->as.new_expr.type_name = type_name;
     n->as.new_expr.args = args;
     n->as.new_expr.arg_len = alen;

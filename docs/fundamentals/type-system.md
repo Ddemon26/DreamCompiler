@@ -27,8 +27,11 @@ access through a simple object variable remains supported, including inherited
 members. `this` and `base` require an instance method. Primitive scalar method
 arguments require exact types, including inherited/static/instance and explicit
 `init` calls; see [checked method arguments](../language-features/functions.md#checked-primitive-method-arguments).
-Pointer/array shapes, custom-type arguments, implicit construction arguments, and
-class field declaration initializer analysis remain incomplete.
+Implicit `new Type(...)` calls check arity and primitive scalar types against the
+class's own instance `init`; see [checked constructor arguments](../language-features/functions.md#checked-constructor-arguments).
+Classes without a local `init` and structs take zero construction arguments.
+Pointer/array shapes, custom-type arguments, and class field declaration
+initializer analysis remain incomplete.
 
 Dream features a comprehensive static type system with type inference capabilities. This section covers all aspects of working with types, from basic primitives to complex data structures.
 

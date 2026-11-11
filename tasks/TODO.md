@@ -119,13 +119,46 @@ no exclusions, weakened assertions, SDK/cache changes, or implementation edits
 were used. See [P0010](passes/P0010-method-arguments.md) for historical failures
 and recovery evidence. Verify publication and inspect native CI before new work.
 
+## T006 - Primitive constructor arguments (completed in P0011)
+
+Check `new Type(...)` arity and exact primitive scalar arguments against the
+class's own instance `init`, following the actual emitter's selection. Constructors
+are not inherited implicitly; classes without local `init` and structs take zero
+arguments. Reject formerly ignored arguments and static constructor methods before
+artifacts. Preserve explicit `base.init(...)` behavior and valid construction.
+
+Acceptance: all primitive mismatches, arity/default/local/inherited selection,
+nested arguments analyzed once, ordinary/module-entry diagnostic positions without
+artifacts, exact positive output, full checks, and documented shape limits.
+
+P0011 implements this boundary, with 80 rejection cases and two exact-output
+programs plus two annotated Dream entries. Final full Windows suite: 123 passed,
+18 skipped, zero failures/errors; all nine Go quick groups, five runner tests and
+Linux cross-build passed. Two prior full runs hit changing SDK/cache file-open
+errors; no tests/caches/implementation changed to obtain the final passing run.
+See [P0011](passes/P0011-constructor-arguments.md). Verify publication and inspect
+native CI before T007; fix any failed baseline first.
+
+## T007 - Guarantee parser progress on unsupported parameter syntax
+
+A new P0011 fixture initially used a custom-type parameter (`func init(Child child)`),
+which the current primitive-parameter grammar does not accept. Both ordinary and
+module-entry compilation timed out at 10 seconds. The constructor regression now
+uses the supported primitive field expression `new Child(1.5).value` and retains
+the same nested-constructor diagnostic and once-only assertions.
+
+Next bounded task: reproduce the unsupported parameter stall and repair parser
+recovery so malformed/unsupported declarations terminate with useful Dream errors
+and no artifacts. Add timeout-bounded ordinary/module regressions; do not silently
+claim custom-type parameter support or broaden the constructor contract.
+
 ## Later work
 
 - Extend T005 to pointer/array and other method argument shapes later; analyze
   class field declaration initializers. P0006 covers receiver/access diagnostics only.
-- Check primitive implicit-constructor arguments and arity through resolved `init`;
-  P0010 checks explicit `object.init(...)` only. Method pointer emission currently
-  drops primitive pointer syntax, as exposed by P0010's initial new fixture.
+- Extend constructor argument shapes beyond T006's scalar boundary only after
+  qualification. Method pointer emission currently drops primitive pointer syntax,
+  as exposed by P0010's initial new fixture.
 
 - Prove required returns on all control-flow paths; extend pointer/array return shapes
   and general operator operand validation beyond the primitive scalar checks in P0005.
