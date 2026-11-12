@@ -140,7 +140,9 @@ void emit_func_prototype(COut *b, Node *n) {
   if (!n->as.func.param_len) c_out_write(b, "void");
   for (size_t i = 0; i < n->as.func.param_len; ++i) {
     if (i) c_out_write(b, ", ");
-    c_out_write(b, "%s", type_to_c(n->as.func.params[i]->as.var_decl.type));
+    Node *p = n->as.func.params[i];
+    emit_type_with_pointer(b, p->as.var_decl.type, p->as.var_decl.type_name,
+                           p->as.var_decl.is_pointer);
   }
   c_out_write(b, ");\n");
 }
@@ -343,7 +345,9 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
     Node *p = n->as.func.params[i];
     if (i)
       c_out_write(b, ", ");
-    c_out_write(b, "%s %.*s", type_to_c(p->as.var_decl.type),
+    emit_type_with_pointer(b, p->as.var_decl.type, p->as.var_decl.type_name,
+                           p->as.var_decl.is_pointer);
+    c_out_write(b, " %.*s",
                 (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
   }
   c_out_write(b, ") ");
@@ -419,7 +423,10 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
               (int)class_name.len, class_name.start);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
-    c_out_write(b, ", %s %.*s", type_to_c(p->as.var_decl.type),
+    c_out_write(b, ", ");
+    emit_type_with_pointer(b, p->as.var_decl.type, p->as.var_decl.type_name,
+                           p->as.var_decl.is_pointer);
+    c_out_write(b, " %.*s",
                 (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
   }
   c_out_write(b, ") ");

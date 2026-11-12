@@ -2,6 +2,58 @@
 
 **Date:** November 12, 2026 UTC
 
+**Pass:** P0013 - primitive pointer parameter signature emission
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Unchanged `zig build test`: **142 discovered, 124 passed, 18 skipped, zero
+  failures/errors**, 38.12s; `test_results/test_results_20261112_095735_windows.json`.
+- Pre-change `go test -count=1 -v -run '^TestCompiler_PointerParameters$' .`:
+  **failed as intended**, 0.483s. All ten pointer signature expectations failed
+  in each of ordinary/module-entry emission; no host compilation was attempted.
+- `zig build`: **passed** after the three parameter-emission paths were repaired.
+- Final focused pointer matrix: **two modes passed**, ten C signature checks per
+  mode plus exact runtime output, 1.232s (body 0.80s).
+- Final `zig build test`: **143 discovered, 125 passed, 18 skipped, zero failures/
+  errors**, 35.34s; `test_results/test_results_20261112_100109_windows.json`.
+- Windows Go quick protocol: **all eleven groups passed**, 13.567s; pointer
+  group 0.74s. Existing scalar argument/constructor diagnostics, parser recovery,
+  modules, driver, loop and literal-emission checks remain selected. External
+  compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.037s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; inspect native P0013 CI after push.
+- Full diff review, `git diff --check`, all 42 local Markdown link occurrences,
+  new parameter anchor, source/fixture paths, Go formatting, quick/CI selection
+  and PowerShell UTF-8 BOM checks **passed**.
+
+Initial focused attempts exposed direct indexed float/char console formatting
+(`0`/`90` instead of `2.500000`/`Z`) and borrowed indexed string local cleanup
+(panic in `dr_release` on misaligned `DrRef`, both modes). Final fixture reads
+numeric elements through typed locals and prints the string element directly,
+retaining all exact output assertions and all five primitive pointer types.
+Module free-function signature expectations now use the actual lowered prefix.
+These fixture changes bound the signature objective; they do not fix or qualify
+those separate defects. T009/T010 preserve their triggers and acceptance criteria.
+
+Restricted baseline could not locate Zig's installed SDK; approved SDK/cache
+access passed all required checks without content/permission/cache changes.
+Restricted fetch failed DNS; approved fetch succeeded and matched HEAD. Prior
+P0012 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43208505371)
+passed. The same 18 unannotated skips and existing exclusions remain unchanged.
+Pointer shape, lifetime, bounds, return and async paths remain unqualified.
+See [P0013](passes/P0013-pointer-parameter-emission.md) and [STATE.md](STATE.md).
+Ignored evidence: `build/P0013-*.log`.
+
+---
+
+## Historical P0012 checkpoint - November 12, 2026
+
+**Date:** November 12, 2026 UTC
+
 **Pass:** P0012 - parser parameter recovery and statement progress
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

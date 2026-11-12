@@ -110,15 +110,16 @@ AccessModifier      ::= "public" | "private"                                    
 ```ebnf
 FunctionDeclaration ::= "func" [ Type ] Identifier "(" [ ParameterList ] ")" Block    // Implemented
 ParameterList       ::= Parameter { "," Parameter }                                   // Implemented
-Parameter           ::= PredefinedType [ "*" ] Identifier                             // Primitive subset; pointer emission unqualified
+Parameter           ::= PredefinedType [ "*" ] Identifier                             // Primitive subset; one pointer marker preserved in C signatures
 ```
 
 If the **Type** is omitted the function returns `void`. (Internally represented as a zero‑sized pseudo‑type.)
 
 Custom-type and array parameters are unsupported. Invalid parameter lists produce
 source-positioned errors before emission; recovery skips the malformed signature
-and its balanced body, preserving following declarations. Primitive pointer syntax
-is parsed but does not establish working pointer emission or shape compatibility.
+and its balanced body, preserving following declarations. One primitive pointer
+marker is preserved in C parameter signatures; argument shape compatibility and
+ownership remain unqualified. See [parameter limits](../../language-features/functions.md#primitive-pointer-parameter-emission).
 
 #### 2.3.3 Variables
 
@@ -222,7 +223,9 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write" | "ReadLine") Invoc
 1. **Top‑level functions and variables** are permitted; no namespaces yet; any `using` tokens are ignored other than for parsing (Appendix B).
 2. The `func` keyword replaces C#’s return‑type‑first syntax; optional type yields typed return; omitted implies `void` (no value).
 3. Core primitive types implemented: `int`, `bool`, `float`, `char`, `string`.
-4. All data is passed **by value**; no references/pointers yet (unsafe grammar reserved).
+4. Arguments are passed **by value**, including primitive pointer values. General
+   unsafe operations remain reserved; pointer shape, bounds and ownership checks
+   are not implemented.
 5. `Console.Write`/`WriteLine`/`ReadLine` are built‑ins; they do not require namespace qualification.
 6. Target C code‑gen uses 32‑bit signed integers and zero‑terminated UTF‑8 strings.
 7. Control‑flow semantics follow C# where implemented; `switch` supports constant integral cases with full `break` statement functionality and multiple statements per case.

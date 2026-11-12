@@ -161,7 +161,7 @@ tests and Linux cross-build passed. Custom-type and array parameters remain
 unsupported. See [P0012](passes/P0012-parser-parameter-recovery.md). Verify delivery
 and native CI before T008.
 
-## T008 - Preserve primitive pointer method parameter emission
+## T008 - Preserve primitive pointer method parameter emission (completed in P0013)
 
 P0010 exposed method `int*` parameters emitted as scalar C `int`; the pointer
 positive fixture therefore failed host compilation. Parser acceptance and deferred
@@ -175,13 +175,52 @@ runtime output for valid pointer method/constructor calls in ordinary and module
 entry sources, retain scalar argument diagnostics, run required checks and document
 any remaining pointer shape/ownership limits. Repair failed baseline/CI first.
 
+P0013 preserves pointer markers through the common type emitter for function
+prototypes/definitions and instance methods (including constructors). The new
+ordinary/module-entry matrix checks ten generated signatures per mode before
+host compilation, then exact output across all five primitive pointer types,
+array mutations, aliases, inheritance, local/base construction and forwarding.
+One annotated Dream entry is added. Scalar compatibility policy is unchanged;
+shape, ownership, async and pointer return paths remain unqualified. See
+[P0013](passes/P0013-pointer-parameter-emission.md). Verify publication and native
+CI before the next task; repair failed checks first.
+
+## T009 - Correct cleanup of strings borrowed from indexed storage
+
+P0013's initial fixture used `string textValue = s[0]` inside a static method
+with `string* s` pointing to an array containing a literal. Both ordinary and
+module-entry executions printed the expected text, then panicked in `dr_release`
+on a misaligned `DrRef`. Block cleanup releases every string local, including
+borrowed literal storage. P0013 prints the indexed string directly and retains
+its original exact output; it does not qualify borrowed string local ownership.
+
+Acceptance: reproduce this runtime failure, establish the actual literal/owned/
+borrowed string contract, and fix the relevant initializer/cleanup path without
+removing releases or suppressing runtime checks indiscriminately. Check ordinary
+and module-entry exact output, nested scopes and dynamically allocated backing
+strings with meaningful lifetime evidence. Run required checks and document the
+remaining ownership limits. Keep this separate from general pointer shapes.
+
+## T010 - Preserve indexed primitive types for console formatting
+
+P0013's initial direct `Console.WriteLine(r[0])` / `Console.WriteLine(c[0])`
+inside pointer-taking methods emitted `%d`, producing `0` and `90` rather than
+`2.500000` and `Z`. Its final signature fixture copies the numeric elements to
+typed scalar locals and keeps all original output assertions. The same backend
+classification should be audited for local arrays and scalar-string indexing.
+
+Acceptance: regress generated format selection and exact runtime output for
+indexed primitive arrays/pointer parameters in ordinary and module-entry code;
+preserve existing member indexing and distinguish scalar string indexing from
+string array elements. Avoid inferring general shape compatibility from this fix.
+
 ## Later work
 
 - Extend T005 to pointer/array and other method argument shapes later; analyze
   class field declaration initializers. P0006 covers receiver/access diagnostics only.
 - Extend constructor argument shapes beyond T006's scalar boundary only after
-  qualification. Method pointer emission currently drops primitive pointer syntax,
-  as exposed by P0010's initial new fixture.
+  qualification. P0013 preserves primitive pointer signatures; shape checking and
+  the indexed-value/ownership defects above remain open.
 
 - Prove required returns on all control-flow paths; extend pointer/array return shapes
   and general operator operand validation beyond the primitive scalar checks in P0005.

@@ -92,8 +92,9 @@ modules. Malformed parameter names, separators and closing parentheses also fail
 with source positions. Recovery discards the invalid signature and its balanced
 body so parsing can continue at the following declaration.
 
-Primitive pointer syntax is parsed, but pointer emission and argument compatibility
-remain unqualified. Array parameter declarations (`int items[]`) are unsupported.
+One primitive pointer marker is preserved in emitted parameter signatures; see
+the bounded pointer contract below. Pointer argument compatibility remains
+unqualified. Array parameter declarations (`int items[]`) are unsupported.
 The parser recovery checks do not qualify arbitrary malformed input or implement
 these additional parameter types.
 
@@ -137,8 +138,28 @@ than silently ignored. A local static `init` cannot serve as a constructor;
 call that static method explicitly instead.
 
 Pointer/array parameter shapes and custom-type compatibility remain unqualified,
-as with method arguments. Primitive pointer parameter emission and class field
-declaration initializers are separate unresolved limitations.
+as with method arguments. Class field declaration initializers remain unresolved.
+
+### Primitive pointer parameter emission
+
+`int*`, `float*`, `bool*`, `char*`, and `string*` parameters retain their pointer
+marker in free-function prototypes and definitions, static/instance methods, and
+instance `init` methods. `string*` maps to C `const char **`, while `bool*` maps to
+`int*`. This works in ordinary and multi-file entry sources, including inherited
+methods, `this`/`base` forwarding, local construction and explicit `init` calls.
+
+The regression borrows live primitive arrays and an `int*` alias, reads/writes
+their elements and checks exact output. Callers must supply compatible storage
+and keep it alive for the entire call. This adds no shape, lifetime, ownership,
+bounds or null-dereference checking. Address-of and unary dereference, custom-type
+parameters, multiple pointer levels, pointer returns and async paths are not
+qualified by these checks.
+
+Two existing limits remain: direct `Console.WriteLine(p[i])` for a float or char
+parameter selects the wrong C format; first copy the element to a typed numeric
+local. A local string initialized from `string*` indexing can release borrowed
+storage incorrectly; the regression prints the indexed string directly. These
+are open defects, not evidence of general pointer safety.
 
 ### Single Parameters
 ```dream

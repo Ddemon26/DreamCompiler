@@ -30,6 +30,13 @@ parameters, malformed lists, EOF and stray expression delimiters, useful positio
 continued diagnostics after invalid methods and absence of generated artifacts.
 It does not implement custom-type or array parameters.
 
+`TestCompiler_PointerParameters` checks C signatures before host compilation and
+exact runtime output in ordinary/module-entry sources. It covers all five primitive
+pointer parameter types, local/base construction, static/inherited/instance calls,
+`this`/`base` forwarding, array mutation, an alias and forward free-function calls.
+It does not qualify pointer shape checks or ownership. See the documented
+[pointer limits](../../docs/language-features/functions.md#primitive-pointer-parameter-emission).
+
 The legacy `minimal_tests` and `temp_disabled` directories still import cgo
 directly in test files and cannot be run with `go test ./...`. The older general
 integration cases also contain unsupported syntax and incomplete fixtures; they
