@@ -8,6 +8,9 @@
 
 int dr_custom_value(void);
 
+/* Copy borrowed string storage into a new managed allocation. NULL stays NULL. */
+char *dream_string_copy(const char *text);
+
 /**
  * Concatenate a string with an integer
  */

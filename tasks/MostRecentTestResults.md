@@ -2,6 +2,55 @@
 
 **Date:** November 12, 2026 UTC
 
+**Pass:** P0014 - indexed scalar string ownership
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Unchanged `zig build test`: **143 discovered, 125 passed, 18 skipped, zero
+  failures/errors**, 35.84s; `test_results/test_results_20261112_160128_windows.json`.
+- Uninstrumented pre-change execution happened to pass; the checked allocator
+  reproduced invalid literal cleanup deterministically in ordinary/module-entry
+  modes, 1.663s. See the pass record for fixture setup failures and corrections.
+- `zig build`: **passed** after implementation.
+- Final `go test -count=1 -v -run '^TestCompiler_IndexedStrings$' .`: **two modes
+  passed** generated-C, checked allocation lifetime and direct linked exact output,
+  2.317s (body 1.82s). Null, nested blocks, literal/dynamic backing, top-level copies
+  and once-only indexing included. Helper lifetime survives backing deallocation.
+- First full suite: 144 discovered, 125 passed, 18 skipped, **one output failure**,
+  zero errors, 32.50s. Fixed new fixture metadata line ordering to the established
+  Go oracle; no implementation or runtime assertion changes. Report:
+  `test_results/test_results_20261112_160632_windows.json`.
+- Final `zig build test`: **144 discovered, 126 passed, 18 skipped, zero failures/
+  errors**, 33.45s; `test_results/test_results_20261112_160736_windows.json`.
+- Windows Go quick protocol: **all twelve groups passed**, 15.706s; indexed string
+  group 1.52s. All existing groups remain selected; external compiler tests use
+  `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.040s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0014 runtime awaits CI.
+- Full diff review and `git diff --check`, 57 local Markdown link occurrences,
+  metadata/Go oracle agreement, Go formatting, quick/CI selection and PowerShell
+  UTF-8 BOM checks: **passed**.
+
+Restricted Zig SDK lookup failed; normal approved SDK/cache access passed without
+content or permission changes. Restricted fetch failed DNS; approved fetch matched
+HEAD. Prior P0013 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43265683253)
+passed on Windows and Linux. The same 18 unannotated skips and exclusions remain.
+Only indexed scalar string declarations gain copied ownership; other ownership,
+shape/lifetime, early-exit and scalar string indexing paths remain unqualified.
+See [P0014](passes/P0014-indexed-string-ownership.md), [STATE.md](STATE.md) and the
+[ownership contract](../docs/development/string-ownership.md).
+Ignored evidence: `build/P0014-*.log`.
+
+---
+
+## Historical P0013 checkpoint - November 12, 2026
+
+**Date:** November 12, 2026 UTC
+
 **Pass:** P0013 - primitive pointer parameter signature emission
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

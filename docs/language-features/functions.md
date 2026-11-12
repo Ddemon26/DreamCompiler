@@ -155,11 +155,12 @@ bounds or null-dereference checking. Address-of and unary dereference, custom-ty
 parameters, multiple pointer levels, pointer returns and async paths are not
 qualified by these checks.
 
-Two existing limits remain: direct `Console.WriteLine(p[i])` for a float or char
+An existing limit remains: direct `Console.WriteLine(p[i])` for a float or char
 parameter selects the wrong C format; first copy the element to a typed numeric
-local. A local string initialized from `string*` indexing can release borrowed
-storage incorrectly; the regression prints the indexed string directly. These
-are open defects, not evidence of general pointer safety.
+local. Scalar `string text = values[i]` declarations now copy indexed storage into
+their own managed allocation before normal block cleanup. See the bounded
+[string ownership checkpoint](../development/string-ownership.md); other string
+ownership paths and general pointer safety remain unqualified.
 
 ### Single Parameters
 ```dream

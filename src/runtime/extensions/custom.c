@@ -3,6 +3,14 @@
 
 int dr_custom_value(void) { return 42; }
 
+char *dream_string_copy(const char *text) {
+    if (!text) return NULL;
+    size_t size = strlen(text) + 1;
+    char *copy = dr_alloc(size);
+    if (copy) memcpy(copy, text, size);
+    return copy;
+}
+
 char *dream_concat(const char *str1, const char *str2) {
     size_t len1 = strlen(str1);
     size_t len2 = strlen(str2);

@@ -185,7 +185,7 @@ shape, ownership, async and pointer return paths remain unqualified. See
 [P0013](passes/P0013-pointer-parameter-emission.md). Verify publication and native
 CI before the next task; repair failed checks first.
 
-## T009 - Correct cleanup of strings borrowed from indexed storage
+## T009 - Correct cleanup of strings borrowed from indexed storage (completed in P0014)
 
 P0013's initial fixture used `string textValue = s[0]` inside a static method
 with `string* s` pointing to an array containing a literal. Both ordinary and
@@ -201,6 +201,17 @@ and module-entry exact output, nested scopes and dynamically allocated backing
 strings with meaningful lifetime evidence. Run required checks and document the
 remaining ownership limits. Keep this separate from general pointer shapes.
 
+P0014 gives scalar string declarations initialized directly from indexing their
+own managed copy. Normal cleanup remains intact; the allocator is unchanged.
+The ordinary/module-entry matrix validates emitted C, exact output, live managed
+release operands, nested blocks, dynamic/literal/null backing and once-only index
+evaluation. Helper checks prove a copy survives release of its backing allocation.
+The original uninstrumented fixture happened to pass this run; the checked live
+registry reproduced the invalid literal cleanup deterministically in both modes.
+See [P0014](passes/P0014-indexed-string-ownership.md) and the
+[bounded ownership contract](../docs/development/string-ownership.md). Broader
+ownership is deferred to T011. Verify publication and native CI before T010.
+
 ## T010 - Preserve indexed primitive types for console formatting
 
 P0013's initial direct `Console.WriteLine(r[0])` / `Console.WriteLine(c[0])`
@@ -214,13 +225,26 @@ indexed primitive arrays/pointer parameters in ordinary and module-entry code;
 preserve existing member indexing and distinguish scalar string indexing from
 string array elements. Avoid inferring general shape compatibility from this fix.
 
+## T011 - Qualify remaining string ownership paths
+
+P0014 fixes only scalar declarations initialized directly from an index expression.
+Source audit still finds unconditional block release of string bindings and plain
+C assignment elsewhere. For-header declarations, literal/identifier/call initializers, reassignment,
+array/pointer-local cleanup, return transfer, early exits and field ownership
+remain unqualified; do not infer these from indexed-copy success. The memory
+guide's old pools/cycle/alias examples are design material, not implemented APIs.
+
+Acceptance: choose one bounded ownership boundary, reproduce it with checked
+live-allocation evidence, retain meaningful cleanup, qualify ordinary/module
+behavior and document transfer/lifetime limits. Start after T010 and native CI.
+
 ## Later work
 
 - Extend T005 to pointer/array and other method argument shapes later; analyze
   class field declaration initializers. P0006 covers receiver/access diagnostics only.
 - Extend constructor argument shapes beyond T006's scalar boundary only after
   qualification. P0013 preserves primitive pointer signatures; shape checking and
-  the indexed-value/ownership defects above remain open.
+  indexed formatting and broader ownership above remain open.
 
 - Prove required returns on all control-flow paths; extend pointer/array return shapes
   and general operator operand validation beyond the primitive scalar checks in P0005.

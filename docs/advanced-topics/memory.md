@@ -1,5 +1,14 @@
 # Memory Management in Dream
 
+## Current implementation boundary
+
+The qualified indexed-string initialization behavior is described in the
+[P0014 ownership checkpoint](../development/string-ownership.md). The sections
+below are historical design material, not evidence that all examples or APIs
+are implemented. Cycle detection, pools and general automatic alias retention
+are not established by the current compiler/runtime. Use the checkpoint's source
+contract and limits when working with strings.
+
 Dream uses a sophisticated reference-counted memory management system that provides automatic memory management while maintaining predictable performance characteristics.
 
 ## Overview

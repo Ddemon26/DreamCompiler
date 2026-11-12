@@ -37,6 +37,14 @@ pointer parameter types, local/base construction, static/inherited/instance call
 It does not qualify pointer shape checks or ownership. See the documented
 [pointer limits](../../docs/language-features/functions.md#primitive-pointer-parameter-emission).
 
+`TestCompiler_IndexedStrings` checks indexed scalar string initialization in
+ordinary/module-entry programs: generated copy/release calls, exact linked output,
+and a harness that validates cleanup against the real allocator's live registry.
+It covers nested blocks, literal/dynamic backing, null and once-only index effects.
+The helper also proves independent lifetime after backing storage is freed. Both
+quick protocols and CI select it. See the bounded
+[ownership contract](../../docs/development/string-ownership.md).
+
 The legacy `minimal_tests` and `temp_disabled` directories still import cgo
 directly in test files and cannot be run with `go test ./...`. The older general
 integration cases also contain unsupported syntax and incomplete fixtures; they

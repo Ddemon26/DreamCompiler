@@ -1,0 +1,44 @@
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: 1
+// Expected: literal
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: 1
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: dynamic value
+class Reader {
+    static func void read(string* values) {
+        int index = 0;
+        string text = values[index++];
+        Console.WriteLine(text);
+        {
+            string nested = values[0];
+            Console.WriteLine(nested);
+        }
+        Console.WriteLine(text);
+        Console.WriteLine(index);
+    }
+}
+string values[1];
+values[0] = "literal";
+Reader.read(values);
+Console.WriteLine(values[0]);
+string backing = "dynamic" + " value";
+values[0] = backing;
+string snapshot = values[0];
+Reader.read(values);
+Console.WriteLine(values[0]);
+Console.WriteLine(backing);
+Console.WriteLine(snapshot);
+string nullable[1];
+nullable[0] = null;
+{
+    string absent = nullable[0];
+}
+values[0] = "replacement";
+Console.WriteLine(backing);
