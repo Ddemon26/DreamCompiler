@@ -1,5 +1,61 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 12, 2026 UTC
+
+**Pass:** P0012 - parser parameter recovery and statement progress
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+## Current measured state
+
+- Unchanged `zig build test`: **141 discovered, 123 passed, 18 skipped, zero
+  failures/errors**, 43.58s. Report: `test_results/test_results_20261112_041227_windows.json`.
+- Pre-change focused original-trigger regression: **two ten-second timeouts**,
+  ordinary and module-entry paths, as expected. Go total 21.348s (body 20.88s).
+- `zig build`: **passed** after implementation.
+- Final `go test -count=1 -v -run '^TestCompiler_ParserRecovery$' .` from `codex/go`:
+  **75 bounded rejections passed**, 1.907s. Covers ordinary/module-entry/dependency
+  parsing, useful positions, following declarations and no generated artifacts.
+- Final `zig build test`: **142 discovered, 124 passed, 18 skipped, zero failures/
+  errors**, 38.82s. New custom-parameter rejection passed. Report:
+  `test_results/test_results_20261112_041748_windows.json`.
+- Windows Go quick protocol from `codex/go`: **all ten groups passed**, 12.752s.
+  Includes 75 parser rejections (0.99s), 80 constructor rejections/two programs,
+  82 method rejections/two programs, 38 diagnostics, arena growth, warnings,
+  four loop settings, 25 module cases and literal emission/failure checks.
+  Compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.044s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not run locally; inspect P0012 native CI after publication.
+- Full diff review, `git diff --check`, all 36 local Markdown link occurrences,
+  Go formatting, source/regression paths, quick/CI selections and PowerShell BOM
+  checks **passed**.
+
+Initial focused failures were test position expectations: the enclosing brace was
+on line 4, then EOF name positions differed because the entry driver appends a
+newline and the dependency loader does not. The fixtures now explicitly place the
+brace on line 3 and EOF on line 4, retaining strict positions and all cases. No
+assertion/exclusion was weakened. Restricted baseline could not locate Zig's SDK;
+compiler checks used approved SDK/cache access without changing SDK/cache contents
+or permissions. Restricted fetch failed DNS; approved fetch succeeded. P0011
+[CI run 43022236461](https://github.com/Ddemon26/DreamCompiler/actions/runs/43022236461)
+passed native Windows/Linux jobs. No intermittent SDK/cache errors recurred in
+this pass's approved baseline or final checks.
+
+The same 18 unannotated skips and existing module/graphics/concurrency exclusions
+remain. Custom-type/array parameters and pointer emission/shape compatibility remain
+unsupported/unqualified. Recovery does not qualify every malformed construct or
+unbounded nesting. See [P0012](passes/P0012-parser-parameter-recovery.md) and
+[STATE.md](STATE.md). Publication requires a matching remote SHA. Ignored evidence:
+`build/P0012-*.log` includes all attempts and required checks.
+
+---
+
+## Historical P0011 checkpoint - November 11, 2026
+
 **Date:** November 11, 2026 UTC
 
 **Pass:** P0011 - primitive scalar constructor arguments and arity

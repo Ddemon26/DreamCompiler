@@ -31,6 +31,7 @@ success is recorded separately from native runtime verification.
 
 ### Functions and OOP
 - **Function declarations**: With parameters and typed return values using `func` keyword
+- **Parameter diagnostics and recovery**: Unsupported custom-type/array parameters and malformed names/separators fail before artifacts with source positions. Invalid signatures and balanced bodies are discarded; statement parsing advances past stray expression delimiters. Bounded ordinary/module-entry/dependency regressions cover this boundary; custom-type parameter support is not implemented
 - **Primitive return checks**: Exact declared types and valid bare returns, including methods, nested statements, and imported functions; no implicit numeric conversion at the return boundary or proof that every path returns
 - **Classes and structs**: Object construction and instantiation
 - **Instance methods**: With `this` pointer (emitted as C functions)

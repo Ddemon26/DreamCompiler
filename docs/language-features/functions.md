@@ -82,6 +82,21 @@ async and non-primitive return contracts are outside this supported subset.
 
 ## Parameters
 
+### Declaration syntax and recovery
+
+The supported scalar parameter types are `int`, `float`, `bool`, `char`, and
+`string`. Custom-type parameters such as `func init(Child child) {}` are not
+supported. They produce an `expected parameter type` error and an explanatory
+hint before generated artifacts, in ordinary sources, module entries and imported
+modules. Malformed parameter names, separators and closing parentheses also fail
+with source positions. Recovery discards the invalid signature and its balanced
+body so parsing can continue at the following declaration.
+
+Primitive pointer syntax is parsed, but pointer emission and argument compatibility
+remain unqualified. Array parameter declarations (`int items[]`) are unsupported.
+The parser recovery checks do not qualify arbitrary malformed input or implement
+these additional parameter types.
+
 ### Checked primitive method arguments
 
 Calls such as `reader.take(value)`, `Reader.take(value)`, `this.take(value)`, and
@@ -214,7 +229,8 @@ int fib8 = fibonacci(8);     // 21
 ```
 
 ### Functions with Arrays
-Functions can accept and return arrays:
+Array parameters and returns are future syntax. The following examples are
+illustrative and do not compile with the current parameter grammar:
 
 ```dream
 func int sum(int numbers[], int length) {

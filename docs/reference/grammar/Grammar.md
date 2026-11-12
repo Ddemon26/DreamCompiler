@@ -110,10 +110,15 @@ AccessModifier      ::= "public" | "private"                                    
 ```ebnf
 FunctionDeclaration ::= "func" [ Type ] Identifier "(" [ ParameterList ] ")" Block    // Implemented
 ParameterList       ::= Parameter { "," Parameter }                                   // Implemented
-Parameter           ::= Type Identifier                                               // Implemented
+Parameter           ::= PredefinedType [ "*" ] Identifier                             // Primitive subset; pointer emission unqualified
 ```
 
 If the **Type** is omitted the function returns `void`. (Internally represented as a zero‑sized pseudo‑type.)
+
+Custom-type and array parameters are unsupported. Invalid parameter lists produce
+source-positioned errors before emission; recovery skips the malformed signature
+and its balanced body, preserving following declarations. Primitive pointer syntax
+is parsed but does not establish working pointer emission or shape compatibility.
 
 #### 2.3.3 Variables
 

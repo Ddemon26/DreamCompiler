@@ -13,8 +13,9 @@
 | [P0009](P0009-literal-emission.md) | 2026-11-08 | Checked literal SCCP results reach C/object emission; fallback and internal failures verified | `Pass-ID: P0009` |
 | [P0010](P0010-method-arguments.md) | 2026-11-10 | Primitive scalar method checks; recovered passing full/quick validation | `Pass-ID: P0010` |
 | [P0011](P0011-constructor-arguments.md) | 2026-11-11 | Exact primitive constructor types/arity and artifact-free rejection; final full/quick validation passed | `Pass-ID: P0011` |
+| [P0012](P0012-parser-parameter-recovery.md) | 2026-11-12 | Malformed parameter parsing terminates; 75 bounded ordinary/module/dependency rejections and full/quick checks passed | `Pass-ID: P0012` |
 
-**P0011 validation passed. Verify publication and inspect native CI before allocating P0012.**
+**P0012 validation passed. Verify publication and inspect native CI before allocating P0013.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

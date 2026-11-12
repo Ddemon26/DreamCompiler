@@ -388,6 +388,38 @@ static Node *parse_try(Parser *p) {
   return n;
 }
 
+// Discard a malformed parameter list and its body without mistaking the body's
+// closing brace for the enclosing class/block. Leave an enclosing brace or a new
+// declaration for the caller if the signature/body is incomplete.
+static Node *recover_func_parameters(Parser *p, Node **params) {
+  free(params);
+  size_t parens = 0;
+  while (p->tok.kind != TK_EOF && p->tok.kind != TK_LBRACE &&
+         p->tok.kind != TK_RBRACE && p->tok.kind != TK_SEMICOLON &&
+         p->tok.kind != TK_KW_FUNC && p->tok.kind != TK_KW_CLASS &&
+         p->tok.kind != TK_KW_STRUCT) {
+    if (p->tok.kind == TK_RPAREN && parens == 0) {
+      next(p);
+      break;
+    }
+    if (p->tok.kind == TK_LPAREN) parens++;
+    else if (p->tok.kind == TK_RPAREN) parens--;
+    next(p);
+  }
+  if (p->tok.kind == TK_LBRACE) {
+    size_t braces = 1;
+    next(p);
+    while (braces && p->tok.kind != TK_EOF) {
+      if (p->tok.kind == TK_LBRACE) braces++;
+      else if (p->tok.kind == TK_RBRACE) braces--;
+      next(p);
+    }
+  } else if (p->tok.kind == TK_SEMICOLON) {
+    next(p);
+  }
+  return node_new(p->arena, ND_ERROR);
+}
+
 /**
  * @brief Parses a function definition.
  *
@@ -418,8 +450,11 @@ static Node *parse_func(Parser *p) {
   if (p->tok.kind != TK_RPAREN) {
     for (;;) {
       if (!is_type_token(p->tok.kind) && p->tok.kind != TK_KW_VOID) {
-        diag_push(p, p->tok.pos, DIAG_ERROR, "expected parameter type");
-        return node_new(p->arena, ND_ERROR);
+        diag_push_with_hint(p, p->tok.pos, DIAG_ERROR, "expected parameter type",
+                            p->tok.kind == TK_IDENT
+                              ? "Custom-type parameters are not supported; use a primitive parameter type."
+                              : NULL);
+        return recover_func_parameters(p, params);
       }
       TokenKind pt = p->tok.kind;
       next(p);
@@ -433,7 +468,7 @@ static Node *parse_func(Parser *p) {
       
       if (p->tok.kind != TK_IDENT) {
         diag_push(p, p->tok.pos, DIAG_ERROR, "expected parameter name");
-        return node_new(p->arena, ND_ERROR);
+        return recover_func_parameters(p, params);
       }
       Node *vd = node_new(p->arena, ND_VAR_DECL);
       vd->as.var_decl.type = pt;
@@ -454,8 +489,10 @@ static Node *parse_func(Parser *p) {
   }
   if (p->tok.kind == TK_RPAREN)
     next(p);
-  else
+  else {
     diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
+    return recover_func_parameters(p, params);
+  }
   Node *body = parse_stmt(p);
   Node *fn = node_new(p->arena, ND_FUNC);
   fn->pos = start_pos;
@@ -743,6 +780,7 @@ static Node *parse_export(Parser *p) {
  * @return Pointer to the parsed statement node.
  */
 static Node *parse_stmt(Parser *p) {
+  Token start_tok = p->tok;
   Pos start_pos = p->tok.pos;
   Node *n = NULL;
   if (p->tok.kind == TK_KW_IF) {
@@ -829,6 +867,12 @@ static Node *parse_stmt(Parser *p) {
     n = st;
   }
   n->pos = start_pos;
+  // Expression recovery deliberately leaves delimiters for its caller. If no
+  // statement consumed this erroneous token, advance so all statement loops
+  // (program, block and switch) make progress even on stray delimiters.
+  if (p->tok.kind != TK_EOF && p->tok.start == start_tok.start) {
+    next(p);
+  }
   return n;
 }
 

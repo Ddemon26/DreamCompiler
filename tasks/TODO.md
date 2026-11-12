@@ -139,7 +139,7 @@ errors; no tests/caches/implementation changed to obtain the final passing run.
 See [P0011](passes/P0011-constructor-arguments.md). Verify publication and inspect
 native CI before T007; fix any failed baseline first.
 
-## T007 - Guarantee parser progress on unsupported parameter syntax
+## T007 - Guarantee parser progress on unsupported parameter syntax (completed in P0012)
 
 A new P0011 fixture initially used a custom-type parameter (`func init(Child child)`),
 which the current primitive-parameter grammar does not accept. Both ordinary and
@@ -147,10 +147,33 @@ module-entry compilation timed out at 10 seconds. The constructor regression now
 uses the supported primitive field expression `new Child(1.5).value` and retains
 the same nested-constructor diagnostic and once-only assertions.
 
-Next bounded task: reproduce the unsupported parameter stall and repair parser
+Acceptance: reproduce the unsupported parameter stall and repair parser
 recovery so malformed/unsupported declarations terminate with useful Dream errors
 and no artifacts. Add timeout-bounded ordinary/module regressions; do not silently
 claim custom-type parameter support or broaden the constructor contract.
+
+P0012 reproduces both ten-second stalls, recovers invalid parameter signatures and
+balanced bodies, and guarantees progress for stray statement delimiters. All 75
+bounded rejection cases pass across ordinary/module-entry/dependency paths, with
+positions, continued declaration diagnostics and no artifacts. Full Windows suite:
+124 passed, 18 skipped, zero failures/errors; all ten Go quick groups, five runner
+tests and Linux cross-build passed. Custom-type and array parameters remain
+unsupported. See [P0012](passes/P0012-parser-parameter-recovery.md). Verify delivery
+and native CI before T008.
+
+## T008 - Preserve primitive pointer method parameter emission
+
+P0010 exposed method `int*` parameters emitted as scalar C `int`; the pointer
+positive fixture therefore failed host compilation. Parser acceptance and deferred
+shape checks do not establish working pointer arguments. Reproduce this defect,
+then take a bounded signature-emission slice through the actual static/instance
+method and constructor paths. Keep array/custom-type support and broader shape
+compatibility separate unless qualification is required for correctness.
+
+Acceptance: inspect generated signatures before host compilation, require exact
+runtime output for valid pointer method/constructor calls in ordinary and module
+entry sources, retain scalar argument diagnostics, run required checks and document
+any remaining pointer shape/ownership limits. Repair failed baseline/CI first.
 
 ## Later work
 
