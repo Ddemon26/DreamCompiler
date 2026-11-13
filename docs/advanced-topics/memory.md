@@ -2,9 +2,9 @@
 
 ## Current implementation boundary
 
-Qualified scalar string initialization from literals, indexing and identifiers is
+Qualified scalar string initialization from literals, indexing, identifiers and members is
 described in the [ownership checkpoint](../development/string-ownership.md)
-(P0014/P0017/P0018). The sections below are historical design material, not
+(P0014/P0017/P0018/P0019). The sections below are historical design material, not
 evidence that all examples or APIs
 are implemented. Cycle detection, pools and general automatic alias retention
 are not established by the current compiler/runtime. Use the checkpoint's source

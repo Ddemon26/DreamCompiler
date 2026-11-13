@@ -59,6 +59,28 @@ func TestCompiler_IdentifierStrings(t *testing.T) {
 		"literal\nliteral\nliteral\nliteral\nliteral\ndynamic value\ndynamic value\ndynamic value\ndynamic value\ndynamic value\nstatic\ninstance\nowned value\nowned value\ndynamic value\ndynamic value\nnull\ndynamic value\ndynamic value\n")
 }
 
+func TestCompiler_MemberStrings(t *testing.T) {
+	checkStringOwnership(t, "member_string_copy.dr", 16, []string{
+		"thisCopy=dream_string_copy(((structBase*)this)->value);",
+		"nested=dream_string_copy(((structBase*)this)->value);",
+		"staticCopy=dream_string_copy(Base_shared);",
+		"baseCopy=dream_string_copy(((structBase*)this)->value);",
+		"fieldCopy=dream_string_copy(((structBase*)literalOwner)->value);",
+		"dynamicCopy=dream_string_copy(((structBase*)managedOwner)->value);",
+		"absent=dream_string_copy(((structBase*)nullOwner)->value);",
+		"temporary=dream_string_copy(((structFresh*)({structFresh*tmp=dr_alloc(sizeof(structFresh));Fresh_init(tmp);tmp;}))->value);",
+		"globalCopy=dream_string_copy(((structBase*)globalOwner)->value);",
+		"repeated=dream_string_copy(Base_shared);",
+		`backing=(dream_concat("managed","value"));`,
+		`globalBacking=(dream_concat("static","value"));`,
+		"dr_release(thisCopy);", "dr_release(nested);", "dr_release(staticCopy);",
+		"dr_release(baseCopy);", "dr_release(fieldCopy);", "dr_release(literalOwner);",
+		"dr_release(dynamicCopy);", "dr_release(managedOwner);", "dr_release(backing);",
+		"dr_release(absent);", "dr_release(nullOwner);", "dr_release(temporary);",
+		"dr_release(repeated);",
+	}, "literal\nliteral\nliteral\nliteral\nliteral\nliteral\nliteral\nliteral\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nnull\ncreated\ntemporary\nstatic value\nstatic value\nstatic value\nglobal\nglobal\nglobal\nchanged\n")
+}
+
 func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string) {
 	t.Helper()
 	tr := NewTestRunner(t)

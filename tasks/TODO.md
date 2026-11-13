@@ -246,12 +246,12 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (literal/identifier slices completed)
+## T011 - Qualify remaining string ownership paths (literal/identifier/member slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
-P0017/P0018 add literals and identifiers. Source audit still finds unconditional
+P0017/P0018/P0019 add literals, identifiers and members. Source audit still finds unconditional
 block release of string bindings and plain C assignment elsewhere. For-header
-declarations, call/member initializers, reassignment, array/pointer-local cleanup,
+declarations, call initializers, reassignment, array/pointer-local cleanup,
 return transfer, early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
@@ -279,10 +279,20 @@ copy lifetime after backing release. Full suite: 129 passed, 18 skipped, no
 failures/errors; fifteen Go quick groups, five Python tests and Linux cross-build
 passed. See [P0018](passes/P0018-identifier-string-ownership.md).
 
-Broader T011 remains open. Call/member/for-header initializers, reassignment,
-return/field ownership and early-exit cleanup are unqualified. Verify P0018
-delivery/native CI first; next reproduce scalar member-expression initializer
-cleanup from literal/managed fields and qualify source/copy lifetimes in both modes.
+P0019 reproduces invalid literal field cleanup in both modes and copies direct
+scalar member initializers, including inherited `this`/`base` and static fields.
+Ten member-copy sites, thirteen release sites, sixteen nonnull releases and
+twenty-seven output lines per mode cover literal/managed/null sources, nested
+cleanup, const/grouped declarations, loops, top-level snapshots and once-only
+temporary receiver construction. Sources survive nested cleanup; a snapshot
+survives field replacement. Full suite: 130 passed, 18 skipped, zero failures/
+errors; sixteen Go quick groups, five Python tests and Linux cross-build passed.
+See [P0019](passes/P0019-member-string-ownership.md).
+
+Broader T011 remains open. Call/for-header initializers, reassignment, return/field
+ownership and early-exit cleanup are unqualified. Verify P0019 delivery/native CI
+first; next reproduce for-header string binding scope/cleanup emission with zero
+and nonzero iterations in both modes, then qualify ownership and loop-exit cleanup.
 
 ## Later work
 

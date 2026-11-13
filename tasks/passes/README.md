@@ -20,8 +20,9 @@
 | [P0016](P0016-indexed-console.md) | 2026-11-13 | Indexed primitives preserve console formats; string elements/characters distinguished, both modes and full/quick checks pass | `Pass-ID: P0016` |
 | [P0017](P0017-literal-string-ownership.md) | 2026-11-13 | Scalar literal string declarations own managed copies; checked cleanup and exact output in both modes, full/quick checks pass | `Pass-ID: P0017` |
 | [P0018](P0018-identifier-string-ownership.md) | 2026-11-13 | Scalar identifier string declarations own independent copies; nested source lifetime and both modes/full/quick checks pass | `Pass-ID: P0018` |
+| [P0019](P0019-member-string-ownership.md) | 2026-11-13 | Scalar member string declarations own independent copies; inherited/static/temporary receivers and both modes/full/quick checks pass | `Pass-ID: P0019` |
 
-**P0018 validation passed. Verify publication and inspect native CI before allocating P0019.**
+**P0019 validation passed. Verify publication and inspect native CI before allocating P0020.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

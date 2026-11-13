@@ -22,6 +22,13 @@ follow the same rule. Each declaration owns a separate copy, so cleaning up a
 nested alias does not release its source. This does not retain an alias reference
 or transfer parameter ownership. Reassignment and call initializers remain separate.
 
+P0019 extends scalar declaration copying to member expressions:
+`string copy = object.field`, `this.field`, `base.field`, and static field access. The receiver
+is evaluated once; parentheses and `const` bindings use the same path. Fields
+may borrow literal, managed or null storage. Copying leaves field/source ownership
+unchanged and gives the declaration its own storage for normal cleanup. It does
+not implement field initialization, replacement or destruction ownership.
+
 ## Storage contract
 
 | Storage | Current implementation | Indexed scalar initializer |
@@ -75,12 +82,23 @@ a copy remains readable after its managed backing is freed. Both modes failed th
 live-registry assertion before the identifier change. Both quick protocols and CI
 select this matrix alongside the indexed and literal checks.
 
+The [member regression](../../tests/basics/memory/member_string_copy.dr) and
+`TestCompiler_MemberStrings` check ten member-copy sites, thirteen release sites,
+sixteen nonnull runtime releases and twenty-seven output lines in each mode.
+Literal/managed/null fields, inherited `this`/`base` access, static fields,
+const/grouped declarations, nested blocks, loop-body and top-level copies are
+covered. Managed backing and fields remain readable after copies are released;
+a top-level copy also survives field replacement. A constructor output marker
+proves a temporary receiver runs once. Helper checks above establish copy lifetime
+after backing release. Before P0019, both modes failed the live-registry assertion
+on literal field cleanup. Both quick protocols and CI select this matrix.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
 headers and linking; Linux runtime evidence still requires native CI.
 
-This is not a complete string ownership system. For-header declarations, call/member/other initializer forms, string
+This is not a complete string ownership system. For-header declarations, call/other initializer forms, string
 reassignment, alias retention, array/pointer-local cleanup, function returns,
 early return/break/continue/exception cleanup, compound expressions and field
 ownership remain unqualified. Existing concatenations/read-line calls are not

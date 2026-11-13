@@ -64,6 +64,15 @@ Sources remain live after nested copies are cleaned up. Both quick protocols and
 CI select it. Assignment, call/for-header initializers and return transfer remain
 outside this boundary.
 
+`TestCompiler_MemberStrings` checks scalar member initializers through the same
+ordinary/module-entry harness and direct linker: ten member-copy sites, thirteen
+release sites, sixteen nonnull releases and twenty-seven output lines. Literal,
+managed and null fields, inherited `this`/`base`, static fields, nested/const/grouped
+bindings, loops, top-level snapshots and once-only temporary receiver construction
+are covered. Sources remain live after nested cleanup; snapshots survive field
+replacement. Both quick protocols and CI select it. Field ownership, call/for-header
+initializers, assignment and return transfer remain unqualified.
+
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element
 types, local arrays, numeric aliases, free functions/static methods, inherited member

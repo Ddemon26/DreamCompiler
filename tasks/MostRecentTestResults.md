@@ -2,6 +2,45 @@
 
 **Date:** November 13, 2026 UTC
 
+**Pass:** P0019 - scalar member string declaration ownership
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0018 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43515951800):
+  Linux and Windows jobs **passed**, including stability checks and full suite.
+- Unchanged `zig build test`: **147 discovered, 129 passed, 18 skipped, zero
+  failures/errors**, 39.15s; `test_results/test_results_20261113_161704_windows.json`.
+- Pre-change `go test -count=1 -v -run '^TestCompiler_MemberStrings$' .`:
+  **both modes failed** the live-allocation cleanup assertion, 3.405s (body 2.84s).
+  Linux harness cross-links passed before native execution failed.
+- `zig build`: **passed** after implementation.
+- `go test -count=1 -v -run
+  '^TestCompiler_(MemberStrings|IdentifierStrings|LiteralStrings|IndexedStrings)$' .`:
+  **all eight modes passed**, 11.646s; generated-C, Linux cross-link, native checked
+  lifetime and exact output through the harness and direct linker.
+- Final `zig build test`: **148 discovered, 130 passed, 18 skipped, zero
+  failures/errors**, 36.98s; `test_results/test_results_20261113_162034_windows.json`.
+- Windows Go quick protocol: **all sixteen groups passed**, 29.766s; member
+  body 3.08s. Existing groups/assertions remain selected; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.043s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0019 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Call/for-header initializers, reassignment, return/field ownership,
+array/pointer-local and early-exit cleanup remain unqualified. See
+[P0019](passes/P0019-member-string-ownership.md). Ignored evidence: `build/P0019-*.log`.
+
+---
+
+## Historical P0018 checkpoint - November 13, 2026
+
+**Date:** November 13, 2026 UTC
+
 **Pass:** P0018 - scalar identifier string declaration ownership
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

@@ -45,7 +45,7 @@ jobs:
         run: python -m unittest discover -s codex/python -p test_test_manager.py
       - name: Run compiler stability regressions
         working-directory: codex/go
-        run: go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules|LoopsAtOptimizationLevels|LiteralEmission|LiteralFailures|MethodArguments|ConstructorArguments|ParserRecovery|PointerParameters|IndexedStrings|LiteralStrings|IdentifierStrings|IndexedConsole)$' .
+        run: go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules|LoopsAtOptimizationLevels|LiteralEmission|LiteralFailures|MethodArguments|ConstructorArguments|ParserRecovery|PointerParameters|IndexedStrings|LiteralStrings|IdentifierStrings|MemberStrings|IndexedConsole)$' .
       - name: Cross-compile Windows binary
         if: runner.os == 'Linux'
         run: zig build -Dtarget=x86_64-windows-gnu --prefix build/windows

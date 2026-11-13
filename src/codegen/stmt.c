@@ -515,13 +515,16 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
                   n->as.var_decl.name.start);
       if (n->as.var_decl.init) {
         c_out_write(b, " = ");
-        // Literals have static storage; indexed/identifier values may be borrowed.
+        // Literals have static storage; indexed, identifier and member values
+        // may be borrowed.
         // Give these scalar declarations their own allocation for block cleanup.
         int copy_string = n->as.var_decl.type == TK_KW_STRING &&
                           !n->as.var_decl.is_pointer &&
                           (n->as.var_decl.init->kind == ND_INDEX ||
                            n->as.var_decl.init->kind == ND_STRING ||
-                           n->as.var_decl.init->kind == ND_IDENT);
+                           n->as.var_decl.init->kind == ND_IDENT ||
+                           n->as.var_decl.init->kind == ND_FIELD ||
+                           n->as.var_decl.init->kind == ND_BASE);
         if (copy_string) c_out_write(b, "dream_string_copy(");
         cg_emit_value_as(ctx, b, n->as.var_decl.type_name, n->as.var_decl.init);
         if (copy_string) c_out_write(b, ")");

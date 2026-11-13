@@ -1,0 +1,111 @@
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: managed value
+// Expected: managed value
+// Expected: managed value
+// Expected: managed value
+// Expected: managed value
+// Expected: managed value
+// Expected: managed value
+// Expected: managed value
+// Expected: managed value
+// Expected: null
+// Expected: created
+// Expected: temporary
+// Expected: static value
+// Expected: static value
+// Expected: static value
+// Expected: global
+// Expected: global
+// Expected: global
+// Expected: changed
+class Base {
+    string value;
+    static string shared;
+    func init(string input) { this.value = input; }
+    func void readThis() {
+        string thisCopy = (this.value);
+        Console.WriteLine(thisCopy);
+        {
+            const string nested = this.value;
+            Console.WriteLine(nested);
+        }
+        Console.WriteLine(this.value);
+        Console.WriteLine(thisCopy);
+    }
+    static func void readStatic() {
+        string staticCopy = Base.shared;
+        Console.WriteLine(staticCopy);
+    }
+}
+class Child : Base {
+    func init(string input) { base.init(input); }
+    func void readBase() {
+        string baseCopy = base.value;
+        Console.WriteLine(baseCopy);
+        Console.WriteLine(base.value);
+    }
+}
+class Fresh {
+    string value;
+    func init() {
+        this.value = "temporary";
+        Console.WriteLine("created");
+    }
+}
+func void readLiteral() {
+    Child literalOwner = new Child("literal");
+    {
+        const string fieldCopy = (literalOwner.value);
+        Console.WriteLine(fieldCopy);
+    }
+    Console.WriteLine(literalOwner.value);
+    literalOwner.readThis();
+    literalOwner.readBase();
+}
+func void readManaged() {
+    string backing = "managed" + " value";
+    Child managedOwner = new Child(backing);
+    {
+        string dynamicCopy = managedOwner.value;
+        Console.WriteLine(dynamicCopy);
+    }
+    Console.WriteLine(managedOwner.value);
+    managedOwner.readThis();
+    managedOwner.readBase();
+    Console.WriteLine(backing);
+}
+func void readNull() {
+    Base nullOwner = new Base("unused");
+    nullOwner.value = null;
+    string absent = nullOwner.value;
+    if (absent == null) { Console.WriteLine("null"); }
+}
+func void readTemporary() {
+    string temporary = new Fresh().value;
+    Console.WriteLine(temporary);
+}
+string globalBacking = "static" + " value";
+Base.shared = globalBacking;
+Base globalOwner = new Base("global");
+const string globalCopy = globalOwner.value;
+readLiteral();
+readManaged();
+readNull();
+readTemporary();
+Base.readStatic();
+for (int i = 0; i < 2; i++) {
+    string repeated = Base.shared;
+    Console.WriteLine(repeated);
+}
+Console.WriteLine(globalCopy);
+Console.WriteLine(globalOwner.value);
+globalOwner.value = "changed";
+Console.WriteLine(globalCopy);
+Console.WriteLine(globalOwner.value);
