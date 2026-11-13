@@ -246,11 +246,11 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths
+## T011 - Qualify remaining string ownership paths (literal slice completed in P0017)
 
 P0014 fixes only scalar declarations initialized directly from an index expression.
 Source audit still finds unconditional block release of string bindings and plain
-C assignment elsewhere. For-header declarations, literal/identifier/call initializers, reassignment,
+C assignment elsewhere. For-header declarations, identifier/call initializers, reassignment,
 array/pointer-local cleanup, return transfer, early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
@@ -258,6 +258,17 @@ guide's old pools/cycle/alias examples are design material, not implemented APIs
 Acceptance: choose one bounded ownership boundary, reproduce it with checked
 live-allocation evidence, retain meaningful cleanup, qualify ordinary/module
 behavior and document transfer/lifetime limits. Start after T010 and native CI.
+
+P0017 reproduces invalid literal cleanup with the checked live registry in both
+ordinary/module-entry modes and gives direct scalar literal declarations managed
+copies. Empty/escaped/const/parenthesized literals, nested scopes, loop bodies,
+free/static/instance functions and top-level storage are covered. Seven copy sites,
+eight real releases, ten output lines and unchanged concatenation emission are
+checked; existing indexed coverage is preserved. Full suite: 128 passed, 18 skipped,
+zero failures/errors; fourteen Go quick groups, five Python tests and Linux
+cross-build passed. See [P0017](passes/P0017-literal-string-ownership.md).
+Broader T011 remains open. Verify delivery/native CI first; next reproduce scalar
+identifier alias cleanup across nested scopes and qualify backing/copy lifetimes.
 
 ## Later work
 

@@ -2,6 +2,7 @@ package dream_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,9 +13,36 @@ import (
 )
 
 func TestCompiler_IndexedStrings(t *testing.T) {
+	checkStringOwnership(t, "indexed_string_copy.dr", 4, []string{
+		"text=dream_string_copy((values[(index++)]));",
+		"nested=dream_string_copy((values[0]));",
+		"snapshot=dream_string_copy((values[0]));",
+		"absent=dream_string_copy((nullable[0]));",
+		"dr_release(nested);", "dr_release(text);",
+	}, "literal\nliteral\nliteral\n1\nliteral\ndynamic value\ndynamic value\ndynamic value\n1\ndynamic value\ndynamic value\ndynamic value\ndynamic value\n")
+}
+
+func TestCompiler_LiteralStrings(t *testing.T) {
+	checkStringOwnership(t, "literal_string_copy.dr", 8, []string{
+		`text=dream_string_copy("literal");`,
+		`empty=dream_string_copy("");`,
+		`escaped=dream_string_copy("quote:\"ok\"");`,
+		`staticText=dream_string_copy("static");`,
+		`instanceText=dream_string_copy("instance");`,
+		`repeated=dream_string_copy("loop");`,
+		`globalText=dream_string_copy("global");`,
+		`managed=(dream_concat("dynamic","value"));`,
+		"dr_release(text);", "dr_release(empty);", "dr_release(escaped);",
+		"dr_release(managed);", "dr_release(staticText);", "dr_release(instanceText);",
+		"dr_release(repeated);",
+	}, "literal\nempty\nquote: \"ok\"\nliteral\ndynamic value\nstatic\ninstance\nloop\nloop\nglobal\n")
+}
+
+func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string) {
+	t.Helper()
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
-	program, err := os.ReadFile(filepath.Join(tr.projectRoot, "tests", "basics", "memory", "indexed_string_copy.dr"))
+	program, err := os.ReadFile(filepath.Join(tr.projectRoot, "tests", "basics", "memory", fixture))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,7 +52,12 @@ func TestCompiler_IndexedStrings(t *testing.T) {
 			text := string(program)
 			options := []string{}
 			if mode == "module_entry" {
-				text = "import labels;\n" + strings.ReplaceAll(text, "\"literal\";", "labels.literal();")
+				if fixture == "indexed_string_copy.dr" {
+					text = strings.ReplaceAll(text, "\"literal\";", "labels.literal();")
+				} else {
+					text += "\nlabels.literal();\n"
+				}
+				text = "import labels;\n" + text
 				options = append(options, "--multi-file")
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte("module labels; export func string literal() { return \"literal\"; }"), 0644); err != nil {
 					t.Fatal(err)
@@ -53,13 +86,7 @@ func TestCompiler_IndexedStrings(t *testing.T) {
 				t.Fatal(err)
 			}
 			c := strings.Join(strings.Fields(string(data)), "")
-			for _, emitted := range []string{
-				"text=dream_string_copy((values[(index++)]));",
-				"nested=dream_string_copy((values[0]));",
-				"snapshot=dream_string_copy((values[0]));",
-				"absent=dream_string_copy((nullable[0]));",
-				"dr_release(nested);", "dr_release(text);",
-			} {
+			for _, emitted := range emittedChecks {
 				if !strings.Contains(c, emitted) {
 					t.Fatalf("missing ownership emission %q", emitted)
 				}
@@ -83,6 +110,7 @@ func TestCompiler_IndexedStrings(t *testing.T) {
 			// Match build.zig's runtime feature macros, including the POSIX strdup
 			// declaration used by exception.c when compiling with Linux C11 headers.
 			compileArgs := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
+				fmt.Sprintf("-DDREAM_STRING_RELEASES=%d", releases),
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src", "runtime", "memory"),
 				"-I" + filepath.Join(tr.projectRoot, "build", "libs"),
@@ -98,7 +126,6 @@ func TestCompiler_IndexedStrings(t *testing.T) {
 				command("zig", linuxArgs...)
 			}
 			command("zig", append(compileArgs, "-o", binary)...)
-			want := "literal\nliteral\nliteral\n1\nliteral\ndynamic value\ndynamic value\ndynamic value\n1\ndynamic value\ndynamic value\ndynamic value\ndynamic value\n"
 			if got := strings.ReplaceAll(string(command(binary)), "\r\n", "\n"); got != want {
 				t.Fatalf("checked runtime: got %q, want %q", got, want)
 			}

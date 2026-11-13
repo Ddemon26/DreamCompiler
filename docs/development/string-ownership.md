@@ -1,10 +1,19 @@
-# Indexed string initialization checkpoint
+# Scalar string initialization checkpoint
 
 P0014 qualifies one ownership boundary: a scalar `string` declaration whose
 initializer is an index expression, for example `string text = values[i]`.
 The generated code calls `dream_string_copy` once on the selected element.
 This applies to ordinary programs and module entries, including pointer-taking
 methods and nested blocks. A top-level declaration also copies the element.
+
+P0017 extends this boundary to scalar declarations initialized directly from a
+string literal, including empty/escaped literals, parentheses and `const` bindings.
+For example, `string text = "literal"` now calls `dream_string_copy("literal")`.
+Literal storage has no managed header; copying allows the existing block release
+to remain valid. Loop-body declarations copy and release once per iteration.
+This also applies to free functions, static/instance methods and top-level
+declarations. Copies add an allocation; concatenation initializers retain their
+existing allocation and are not wrapped in another copy.
 
 ## Storage contract
 
@@ -39,15 +48,24 @@ against the real live-allocation registry before any header access, four nonnull
 local releases, shutdown cleanup, and helper ownership for literal, empty, null,
 managed and interior backing storage, including use after backing is freed.
 
+The [literal regression](../../tests/basics/memory/literal_string_copy.dr) and
+`TestCompiler_LiteralStrings` reuse the harness in both modes, checking seven
+literal-copy sites, unchanged concatenation emission, exactly eight nonnull local
+releases and ten output lines. Top-level storage remains live until shutdown;
+the registry must be empty afterward. Empty, escaped, nested and repeated literal
+declarations are included. Before P0017, both modes failed the live-registry
+assertion while cleaning up a literal.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
 headers and linking; Linux runtime evidence still requires native CI.
 
-This is not a complete string ownership system. For-header declarations, other initializer forms, string
+This is not a complete string ownership system. For-header declarations, identifier/call/other initializer forms, string
 reassignment, alias retention, array/pointer-local cleanup, function returns,
 early return/break/continue/exception cleanup, compound expressions and field
 ownership remain unqualified. Existing concatenations/read-line calls are not
 wrapped in copies by this pass; their temporary/result ownership is unchanged.
-Scalar string indexing and pointer shape compatibility are separate work. Direct
-indexed float/char console formatting remains T010.
+Pointer shape compatibility and general indexed expression typing remain separate
+work. P0016 qualifies direct indexed primitive console formatting, including scalar
+string characters; it does not establish semantic argument/return shapes.

@@ -2,6 +2,46 @@
 
 **Date:** November 13, 2026 UTC
 
+**Pass:** P0017 - literal string declaration ownership
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0016 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43431180404):
+  Linux and Windows jobs **passed**, including full suite and stability checks.
+- Unchanged `zig build test`: **145 discovered, 127 passed, 18 skipped, zero
+  failures/errors**, 33.24s; `test_results/test_results_20261113_120005_windows.json`.
+- Pre-change `go test -count=1 -v -run '^TestCompiler_LiteralStrings$' .`:
+  **both modes failed** the checked live-allocation assertion, 2.367s.
+  An unrelated direct-null fixture declaration was removed before reproduction.
+- `zig build`: **passed**. First focused post-change run caught omitted existing
+  parentheses in a new C-emission assertion; corrected that assertion.
+- `go test -count=1 -v -run '^TestCompiler_(LiteralStrings|IndexedStrings)$' .`:
+  **four modes passed**, 5.214s; emitted C, Linux cross-links, checked lifetime,
+  exact output from both harness and direct compiler linking.
+- Final `zig build test`: **146 discovered, 128 passed, 18 skipped, zero failures/
+  errors**, 36.68s; `test_results/test_results_20261113_120323_windows.json`.
+- Windows Go quick protocol: **all fourteen groups passed**, 18.349s; literal
+  group 2.05s, indexed group 1.91s, including final single-reference assertion.
+  Existing groups/assertions remain selected; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.056s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0017 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions; identifier/call/for-header/alias/reassignment/return/early-exit/field
+ownership remain unqualified. See [P0017](passes/P0017-literal-string-ownership.md).
+Ignored evidence: `build/P0017-*.log`.
+
+---
+
+## Historical P0016 checkpoint - November 13, 2026
+
+**Date:** November 13, 2026 UTC
+
 **Pass:** P0016 - preserve indexed primitive console formats
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

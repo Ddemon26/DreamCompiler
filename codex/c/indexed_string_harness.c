@@ -10,6 +10,7 @@ static void checked_release(void *ptr) {
     DrRef *ref = dr_head;
     while (ref && (void *)(ref + 1) != ptr) ref = ref->next;
     assert(ref && "cleanup must release a live managed allocation");
+    assert(ref->refcount == 1 && "scalar copies must own exactly one reference");
     releases++;
     dr_release(ptr);
 }
@@ -46,7 +47,7 @@ int main(void) {
 
     int result = dream_entry_main();
     assert(result == 0);
-    assert(releases == 4 && "each indexed scalar local must be released once");
+    assert(releases == DREAM_STRING_RELEASES && "each owned scalar local must be released once");
     assert(dr_head == NULL && "program shutdown must reclaim remaining storage");
     return result;
 }

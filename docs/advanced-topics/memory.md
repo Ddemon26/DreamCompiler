@@ -2,8 +2,8 @@
 
 ## Current implementation boundary
 
-The qualified indexed-string initialization behavior is described in the
-[P0014 ownership checkpoint](../development/string-ownership.md). The sections
+The qualified scalar literal/indexed-string initialization behavior is described in the
+[ownership checkpoint](../development/string-ownership.md) (P0014/P0017). The sections
 below are historical design material, not evidence that all examples or APIs
 are implemented. Cycle detection, pools and general automatic alias retention
 are not established by the current compiler/runtime. Use the checkpoint's source

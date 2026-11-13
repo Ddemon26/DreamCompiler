@@ -48,6 +48,13 @@ cross-link the harness for `x86_64-linux-gnu`; those binaries are not executed.
 Both quick protocols and CI select it. See the bounded
 [ownership contract](../../docs/development/string-ownership.md).
 
+`TestCompiler_LiteralStrings` reuses the same checked allocator and linking paths
+for scalar literal declarations: seven emitted copy sites, eight local releases,
+ten exact output lines, empty/escaped/const literals, nested blocks, loop bodies,
+free/static/instance functions and top-level storage. Concatenation initialization
+keeps its existing allocation without an extra copy. Both quick protocols and CI
+select it. Identifier/call/for-header initializers and broader ownership remain open.
+
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element
 types, local arrays, numeric aliases, free functions/static methods, inherited member
