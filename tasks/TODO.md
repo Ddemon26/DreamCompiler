@@ -246,12 +246,13 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (literal slice completed in P0017)
+## T011 - Qualify remaining string ownership paths (literal/identifier slices completed)
 
-P0014 fixes only scalar declarations initialized directly from an index expression.
-Source audit still finds unconditional block release of string bindings and plain
-C assignment elsewhere. For-header declarations, identifier/call initializers, reassignment,
-array/pointer-local cleanup, return transfer, early exits and field ownership
+P0014 qualifies scalar declarations initialized directly from an index expression;
+P0017/P0018 add literals and identifiers. Source audit still finds unconditional
+block release of string bindings and plain C assignment elsewhere. For-header
+declarations, call/member initializers, reassignment, array/pointer-local cleanup,
+return transfer, early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
 
@@ -267,8 +268,21 @@ eight real releases, ten output lines and unchanged concatenation emission are
 checked; existing indexed coverage is preserved. Full suite: 128 passed, 18 skipped,
 zero failures/errors; fourteen Go quick groups, five Python tests and Linux
 cross-build passed. See [P0017](passes/P0017-literal-string-ownership.md).
-Broader T011 remains open. Verify delivery/native CI first; next reproduce scalar
-identifier alias cleanup across nested scopes and qualify backing/copy lifetimes.
+
+P0018 reproduces nested identifier alias cleanup failure with the live registry
+in both modes and gives scalar identifier declarations independent managed copies.
+Nine identifier-copy sites, ten release sites, twelve nonnull releases and nineteen
+output lines per mode cover nested chains, literal/managed parameters, const/grouped
+bindings, free/static/instance functions, loops, top-level snapshots and null.
+The source remains live after nested cleanup; existing helper checks also prove
+copy lifetime after backing release. Full suite: 129 passed, 18 skipped, no
+failures/errors; fifteen Go quick groups, five Python tests and Linux cross-build
+passed. See [P0018](passes/P0018-identifier-string-ownership.md).
+
+Broader T011 remains open. Call/member/for-header initializers, reassignment,
+return/field ownership and early-exit cleanup are unqualified. Verify P0018
+delivery/native CI first; next reproduce scalar member-expression initializer
+cleanup from literal/managed fields and qualify source/copy lifetimes in both modes.
 
 ## Later work
 

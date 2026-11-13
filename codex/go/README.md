@@ -53,7 +53,16 @@ for scalar literal declarations: seven emitted copy sites, eight local releases,
 ten exact output lines, empty/escaped/const literals, nested blocks, loop bodies,
 free/static/instance functions and top-level storage. Concatenation initialization
 keeps its existing allocation without an extra copy. Both quick protocols and CI
-select it. Identifier/call/for-header initializers and broader ownership remain open.
+select it. Call/for-header initializers and broader ownership remain open.
+
+`TestCompiler_IdentifierStrings` adds scalar identifier initializers through the
+same ordinary/module-entry harness and direct linker: nine identifier-copy sites,
+ten release sites, twelve nonnull runtime releases and nineteen output lines.
+It covers borrowed literal/managed parameters, nested alias chains, const/grouped
+bindings, free/static/instance functions, loop bodies, top-level snapshots and null.
+Sources remain live after nested copies are cleaned up. Both quick protocols and
+CI select it. Assignment, call/for-header initializers and return transfer remain
+outside this boundary.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

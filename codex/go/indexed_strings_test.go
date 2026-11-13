@@ -38,6 +38,27 @@ func TestCompiler_LiteralStrings(t *testing.T) {
 	}, "literal\nempty\nquote: \"ok\"\nliteral\ndynamic value\nstatic\ninstance\nloop\nloop\nglobal\n")
 }
 
+func TestCompiler_IdentifierStrings(t *testing.T) {
+	checkStringOwnership(t, "identifier_string_copy.dr", 12, []string{
+		"first=dream_string_copy(borrowed);",
+		"nested=dream_string_copy(first);",
+		"chained=dream_string_copy(nested);",
+		"staticText=dream_string_copy(staticInput);",
+		"instanceText=dream_string_copy(instanceInput);",
+		"snapshot=dream_string_copy(backing);",
+		"absent=dream_string_copy(nullable);",
+		"globalSnapshot=dream_string_copy(globalBacking);",
+		"repeated=dream_string_copy(globalSnapshot);",
+		`backing=(dream_concat("owned","value"));`,
+		`globalBacking=(dream_concat("dynamic","value"));`,
+		"dr_release(first);", "dr_release(nested);", "dr_release(chained);",
+		"dr_release(staticText);", "dr_release(instanceText);",
+		"dr_release(snapshot);", "dr_release(backing);", "dr_release(repeated);",
+		"dr_release(nullable);", "dr_release(absent);",
+	},
+		"literal\nliteral\nliteral\nliteral\nliteral\ndynamic value\ndynamic value\ndynamic value\ndynamic value\ndynamic value\nstatic\ninstance\nowned value\nowned value\ndynamic value\ndynamic value\nnull\ndynamic value\ndynamic value\n")
+}
+
 func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string) {
 	t.Helper()
 	tr := NewTestRunner(t)

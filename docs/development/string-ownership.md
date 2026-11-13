@@ -15,6 +15,13 @@ This also applies to free functions, static/instance methods and top-level
 declarations. Copies add an allocation; concatenation initializers retain their
 existing allocation and are not wrapped in another copy.
 
+P0018 also copies scalar identifier initializers, for example `string copy = source`.
+The source may be a local, a top-level binding or a borrowed string parameter;
+it must designate readable string storage or null. Parentheses and `const` bindings
+follow the same rule. Each declaration owns a separate copy, so cleaning up a
+nested alias does not release its source. This does not retain an alias reference
+or transfer parameter ownership. Reassignment and call initializers remain separate.
+
 ## Storage contract
 
 | Storage | Current implementation | Indexed scalar initializer |
@@ -56,12 +63,24 @@ the registry must be empty afterward. Empty, escaped, nested and repeated litera
 declarations are included. Before P0017, both modes failed the live-registry
 assertion while cleaning up a literal.
 
+The [identifier regression](../../tests/basics/memory/identifier_string_copy.dr)
+and `TestCompiler_IdentifierStrings` check nine identifier-copy sites and ten
+release sites, exactly twelve nonnull runtime releases and nineteen output lines
+in each mode. Nested alias chains, managed and literal parameter backing,
+parenthesized/const bindings, free/static/instance functions, loop-body copies,
+top-level copies and a null identifier are included. Source strings are used after
+nested copies are released; the live registry and single-reference assertions
+ensure cleanup releases independent allocations. Helper checks above also prove
+a copy remains readable after its managed backing is freed. Both modes failed the
+live-registry assertion before the identifier change. Both quick protocols and CI
+select this matrix alongside the indexed and literal checks.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
 headers and linking; Linux runtime evidence still requires native CI.
 
-This is not a complete string ownership system. For-header declarations, identifier/call/other initializer forms, string
+This is not a complete string ownership system. For-header declarations, call/member/other initializer forms, string
 reassignment, alias retention, array/pointer-local cleanup, function returns,
 early return/break/continue/exception cleanup, compound expressions and field
 ownership remain unqualified. Existing concatenations/read-line calls are not
