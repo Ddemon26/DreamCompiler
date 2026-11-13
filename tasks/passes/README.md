@@ -16,8 +16,9 @@
 | [P0012](P0012-parser-parameter-recovery.md) | 2026-11-12 | Malformed parameter parsing terminates; 75 bounded ordinary/module/dependency rejections and full/quick checks passed | `Pass-ID: P0012` |
 | [P0013](P0013-pointer-parameter-emission.md) | 2026-11-12 | Primitive pointer parameter signatures preserved; generated-C and exact runtime checks, full/quick checks passed | `Pass-ID: P0013` |
 | [P0014](P0014-indexed-string-ownership.md) | 2026-11-12 | Indexed scalar strings own managed copies; checked lifetime and exact output in both modes, full/quick checks passed | `Pass-ID: P0014` |
+| [P0015](P0015-linux-string-harness.md) | 2026-11-13 | Linux ownership harness flags match runtime; both modes cross-link on Windows and full/quick checks pass | `Pass-ID: P0015` |
 
-**P0014 validation passed. Verify publication and inspect native CI before allocating P0015.**
+**P0015 validation passed. Verify publication and inspect native CI before allocating P0016.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

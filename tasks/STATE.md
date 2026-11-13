@@ -1,54 +1,41 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0014 - indexed scalar string ownership**.
-- Record: [P0014](passes/P0014-indexed-string-ownership.md).
-- Parent/fetched approved remote: `36adec3f7569686806195ab55a3d70d9a950c961` (P0013).
-- Resolve the pass commit by its exact `Pass-ID: P0014` trailer.
+- Current pass: **P0015 - restore Linux indexed-string harness builds**.
+- Record: [P0015](passes/P0015-linux-string-harness.md).
+- Parent/fetched approved remote: `d156d5cab31304eb2cec695d83ab0f4083acac35` (P0014).
+- Resolve the pass commit by its exact `Pass-ID: P0015` trailer.
 - Publication requires push and matching `git ls-remote`; report that identity
   after delivery. Inspect native CI before selecting the next task.
 
-The 2026-11-12 pass started clean in the approved primary checkout on the attached
-branch/origin, one registered worktree, no unpublished agent pass or competing
-active writer in app inventory. Approved fetch passed after restricted DNS failure
-and matched HEAD. P0013 [CI run 43265683253](https://github.com/Ddemon26/DreamCompiler/actions/runs/43265683253)
-passed on Windows and Linux. Automation already uses local execution and the
-approved cwd; unchanged.
+The 2026-11-13 pass started clean in the approved primary checkout on the attached
+branch/origin, one registered worktree, no unpublished pass or competing active
+project writer in app inventory. Approved fetch matched HEAD after restricted DNS
+failure. Automation already uses local execution and the approved cwd; unchanged.
 
-Scalar string declarations initialized directly from indexing now call
-`dream_string_copy`, producing independent managed storage for literals or
-allocated backing. Null is preserved. Normal block cleanup releases the copy;
-top-level copies are reclaimed at shutdown. The allocator and other string
-initializer/assignment paths are unchanged. See the
-[bounded ownership checkpoint](../docs/development/string-ownership.md).
+P0014 [CI run 43326685373](https://github.com/Ddemon26/DreamCompiler/actions/runs/43326685373)
+failed Linux harness compilation because `exception.c` could not see `strdup` in
+strict C11; Windows was cancelled. P0015 fixes that priority baseline failure by
+adding the normal runtime build's `_GNU_SOURCE` flag to the Go ownership harness.
+Both ordinary/module-entry modes also cross-link for Linux on Windows, catching
+the original CI failure locally. Existing generated-C, checked allocator lifetime,
+sanitizer and exact output assertions remain intact. Compiler/runtime behavior,
+string ownership and indexed formatting are unchanged.
 
-One annotated Dream entry and an ordinary/module-entry Go matrix check emitted
-copy/release calls, exact direct-linked output and a checked allocator registry.
-They cover nested blocks, literal/dynamic/null backing, top-level copying and a
-once-only index side effect. The harness checks four nonnull local releases,
-shutdown reclamation, independent copies, unchanged backing reference counts and
-helper use after backing is freed. Both quick protocols and CI select the group.
+Before the flag fix, both new Linux cross-link checks reproduced the CI failure.
+After it, both focused modes passed in 2.846s. Final full suite ran alone:
+**144 discovered, 126 passed, 18 skipped, zero failures/errors**, 34.21s.
+All **twelve Go quick groups passed**, 17.419s. Python: **five passed**, 0.045s.
+Linux compiler cross-build passed. Native P0015 runtime awaits CI; cross-linked
+Linux harnesses were not executed locally. See [MostRecentTestResults.md](MostRecentTestResults.md).
+The provisional initial baseline briefly overlapped focused reproduction; it was
+replaced by the final isolated suite above. No assertions or exclusions changed.
 
-Uninstrumented pre-change execution happened to pass; the checked live registry
-reproduced invalid literal cleanup deterministically in both modes. Fixture setup
-initially used unsupported shadowing, duplicate copied/source headers and a module
-name conflict; corrected before qualification. The first full run caught incorrect
-expected-line ordering in the new fixture; corrected to the Go oracle without
-implementation or runtime assertion changes. All failures are recorded in P0014.
+The same 18 skips and previous limitations remain. Indexed scalar string copies
+are still the P0014 ownership boundary; other initializers, reassignment, returns,
+early exits, fields and general lifetime/shape safety remain T011. Harness
+const-discard warnings remain. Windows: Zig 0.17.1, re2c 3.0, Python 3.13.17,
+Go 1.27.4. SDK/cache access used normal approvals without content/permission changes.
 
-Windows toolchain: Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.
-Unchanged baseline: 125 passed, 18 skipped, zero failures/errors, 35.84s.
-Final focused matrix passed, 2.317s. Final full suite: **144 discovered, 126 passed,
-18 skipped, zero failures/errors**, 33.45s. All **twelve Go quick groups passed**,
-15.706s. Python: **five passed**, 0.040s. Linux cross-build passed; native P0014
-runtime awaits CI. SDK/cache checks used normal approved access without content
-or permission changes. See [MostRecentTestResults.md](MostRecentTestResults.md).
-
-The same 18 unannotated skips and exclusions remain. This adds a copy/allocation
-cost for indexed scalar string declarations. For-header declarations, other initializer forms, assignment,
-returns, early exits, fields, array/pointer-local cleanup and general string
-ownership remain unqualified (T011). Pointer shapes, bounds, scalar string indexing,
-async and general CFG/SSA behavior remain unsupported/unqualified.
-
-Next: verify P0014 delivery and inspect native CI; repair failures first. Otherwise
+Next: verify P0015 delivery and inspect native CI; repair failures first. Otherwise
 take **T010**, indexed primitive console formatting. Do not start a second pass here.

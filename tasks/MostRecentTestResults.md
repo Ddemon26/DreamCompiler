@@ -1,5 +1,40 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 13, 2026 UTC
+
+**Pass:** P0015 - restore Linux indexed-string harness builds
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Prior P0014 [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43326685373):
+  Linux failed on undeclared `strdup` in both harness builds; Windows cancelled.
+- Linux C11 object compilation and both newly added harness cross-links reproduced
+  the same four errors before adding `_GNU_SOURCE` to match `build.zig`.
+- Focused `go test -count=1 -v -run '^TestCompiler_IndexedStrings$' .`: **both modes
+  passed** Linux cross-link, native checked lifetime and exact direct-linked output,
+  2.846s (body 2.39s).
+- Final isolated `zig build test`: **144 discovered, 126 passed, 18 skipped, zero
+  failures/errors**, 34.21s; `test_results/test_results_20261113_005631_windows.json`.
+- Windows Go quick protocol: **all twelve groups passed**, 17.419s; indexed-string
+  group 2.19s. All previous assertions/groups remain; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.045s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux compiler/harness binaries were not run locally; native P0015 CI awaits push.
+
+Initial baseline reported 126 passes/18 skips/no failures, 38.93s, but briefly
+shared generated output with the focused reproduction; final isolated validation
+above supersedes it. See [P0015](passes/P0015-linux-string-harness.md) for exact
+commands, setup errors and limits. Approved SDK/cache access used without content
+or permission changes. Same 18 unannotated skips and exclusions; no language or
+ownership behavior changes. Ignored evidence: `build/P0015-*.log`.
+
+---
+
+## Historical P0014 checkpoint - November 12, 2026
+
 **Date:** November 12, 2026 UTC
 
 **Pass:** P0014 - indexed scalar string ownership

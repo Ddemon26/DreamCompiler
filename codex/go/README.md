@@ -41,8 +41,11 @@ It does not qualify pointer shape checks or ownership. See the documented
 ordinary/module-entry programs: generated copy/release calls, exact linked output,
 and a harness that validates cleanup against the real allocator's live registry.
 It covers nested blocks, literal/dynamic backing, null and once-only index effects.
-The helper also proves independent lifetime after backing storage is freed. Both
-quick protocols and CI select it. See the bounded
+The helper also proves independent lifetime after backing storage is freed. Its
+C11 harness build uses the runtime's `_GNU_SOURCE` feature macro so Linux exposes
+the `strdup` declaration used by exception support. On Windows both modes also
+cross-link the harness for `x86_64-linux-gnu`; those binaries are not executed.
+Both quick protocols and CI select it. See the bounded
 [ownership contract](../../docs/development/string-ownership.md).
 
 The legacy `minimal_tests` and `temp_disabled` directories still import cgo

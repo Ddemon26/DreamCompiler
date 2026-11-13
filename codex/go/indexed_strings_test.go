@@ -80,14 +80,24 @@ func TestCompiler_IndexedStrings(t *testing.T) {
 			if runtime.GOOS == "windows" {
 				binary += ".exe"
 			}
-			command("zig", "cc", "-std=c11", "-fsanitize=undefined",
-				"-DDREAM_STRING_PROGRAM=\""+filepath.ToSlash(generated)+"\"",
-				"-I"+filepath.Join(tr.projectRoot, "src", "runtime", "memory"),
-				"-I"+filepath.Join(tr.projectRoot, "build", "libs"),
+			// Match build.zig's runtime feature macros, including the POSIX strdup
+			// declaration used by exception.c when compiling with Linux C11 headers.
+			compileArgs := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
+				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
+				"-I" + filepath.Join(tr.projectRoot, "src", "runtime", "memory"),
+				"-I" + filepath.Join(tr.projectRoot, "build", "libs"),
 				filepath.Join(tr.projectRoot, "codex", "c", "indexed_string_harness.c"),
 				filepath.Join(tr.projectRoot, "src", "runtime", "extensions", "custom.c"),
 				filepath.Join(tr.projectRoot, "src", "runtime", "io", "console.c"),
-				filepath.Join(tr.projectRoot, "src", "runtime", "exceptions", "exception.c"), "-o", binary)
+				filepath.Join(tr.projectRoot, "src", "runtime", "exceptions", "exception.c")}
+			if runtime.GOOS == "windows" {
+				// Exercise Linux's headers and linker here as well: a native Windows
+				// build alone does not detect missing POSIX feature-test macros.
+				linuxArgs := append([]string{}, compileArgs...)
+				linuxArgs = append(linuxArgs, "-target", "x86_64-linux-gnu", "-o", filepath.Join(work, "checked-strings-linux"))
+				command("zig", linuxArgs...)
+			}
+			command("zig", append(compileArgs, "-o", binary)...)
 			want := "literal\nliteral\nliteral\n1\nliteral\ndynamic value\ndynamic value\ndynamic value\n1\ndynamic value\ndynamic value\ndynamic value\ndynamic value\n"
 			if got := strings.ReplaceAll(string(command(binary)), "\r\n", "\n"); got != want {
 				t.Fatalf("checked runtime: got %q, want %q", got, want)

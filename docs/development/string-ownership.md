@@ -39,6 +39,11 @@ against the real live-allocation registry before any header access, four nonnull
 local releases, shutdown cleanup, and helper ownership for literal, empty, null,
 managed and interior backing storage, including use after backing is freed.
 
+P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
+`_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
+both modes for Linux before executing the native harness. Cross-linking checks
+headers and linking; Linux runtime evidence still requires native CI.
+
 This is not a complete string ownership system. For-header declarations, other initializer forms, string
 reassignment, alias retention, array/pointer-local cleanup, function returns,
 early return/break/continue/exception cleanup, compound expressions and field

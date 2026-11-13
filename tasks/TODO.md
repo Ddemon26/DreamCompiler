@@ -212,6 +212,16 @@ See [P0014](passes/P0014-indexed-string-ownership.md) and the
 [bounded ownership contract](../docs/development/string-ownership.md). Broader
 ownership is deferred to T011. Verify publication and native CI before T010.
 
+## P0015 baseline repair before T010
+
+P0014 native CI failed Linux ownership-harness compilation: strict C11 hid the
+POSIX `strdup` declaration because the harness omitted the normal runtime's
+`_GNU_SOURCE` flag. P0015 aligns that flag and cross-links both harness modes for
+Linux on Windows. The new checks reproduced the same four errors before the fix;
+focused, full Dream, twelve Go quick groups, Python and Linux cross-build passed.
+See [P0015](passes/P0015-linux-string-harness.md). Verify delivery and native CI
+before T010; repair failed checks first. No T010 implementation was started.
+
 ## T010 - Preserve indexed primitive types for console formatting
 
 P0013's initial direct `Console.WriteLine(r[0])` / `Console.WriteLine(c[0])`
