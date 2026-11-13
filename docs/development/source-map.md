@@ -19,7 +19,7 @@
 | Deferred examples | `not_implemented_tests/`; excluded graphics/async experiments |
 | Test runner | `codex/test_cli.py`, `codex/python/test_manager.py`, `codex/test_config.json` |
 | Runner regressions | `codex/python/test_test_manager.py` |
-| Go quick checks | `codex/go/driver_stability_test.go`, `parser_recovery_test.go`, `module_integration_test.go`, `method_arguments_test.go`, `constructor_arguments_test.go`, `pointer_parameters_test.go`, `indexed_strings_test.go`, `literal_emission_test.go`, `codex/c/literal_fold_harness.c`, `codex/c/indexed_string_harness.c`, Makefile and PowerShell protocol |
+| Go quick checks | `codex/go/driver_stability_test.go`, `parser_recovery_test.go`, `module_integration_test.go`, `method_arguments_test.go`, `constructor_arguments_test.go`, `pointer_parameters_test.go`, `indexed_strings_test.go`, `indexed_console_test.go`, `literal_emission_test.go`, `codex/c/literal_fold_harness.c`, `codex/c/indexed_string_harness.c`, Makefile and PowerShell protocol |
 | Indexed string ownership | `src/codegen/stmt.c`, `src/runtime/extensions/custom.c`; bounded [storage contract](string-ownership.md), indexed scalar copies and cleanup evidence |
 | CI | `.github/workflows/ci.yml`; Linux/Windows checks and pinned Zig version |
 | Feature truth | `codex/FEATURES.md`, current source, and `tasks/MostRecentTestResults.md` |

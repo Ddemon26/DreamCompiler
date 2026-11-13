@@ -1,0 +1,97 @@
+// Expected: 42
+// Expected: 2.500000
+// Expected: 1
+// Expected: Z
+// Expected: array
+// Expected: 2.500000
+// Expected: 1
+// Expected: r
+// Expected: t
+// Expected: a
+// Expected: t
+// Expected: i
+// Expected: 4.500000
+// Expected: L
+// Expected: 4.500000
+// Expected: array
+// Expected: 2.500000
+// Expected: 42
+// Expected: 2.500000
+// Expected: 1
+// Expected: Z
+// Expected: array
+// Expected: 2.500000Z
+// Expected: 2.500000
+// Expected: Z
+// Expected: array
+// Expected: 3.500000
+// Expected: M
+// Expected: member
+// Expected: s
+// Expected: 9
+// Expected: 1
+// Expected: a
+// Expected: 3.500000
+// Expected: M
+// Expected: member
+// Expected: c
+// Expected: 3.500000
+// Expected: M
+// Expected: member
+// Expected: a
+class Base {
+    float reals[1]; char marks[1]; string words[1]; string label;
+    int numbers[1]; bool flags[1];
+    func init() {
+        this.reals[0] = 3.5; this.marks[0] = 'M';
+        this.words[0] = "member"; this.label = "scalar";
+        this.numbers[0] = 9; this.flags[0] = true;
+    }
+    func void show(string text) {
+        Console.WriteLine(this.reals[0]); Console.WriteLine(this.marks[0]);
+        Console.WriteLine(this.words[0]); Console.WriteLine(this.label[0]);
+        Console.WriteLine(this.numbers[0]); Console.WriteLine(this.flags[0]);
+        Console.WriteLine(text[1]);
+    }
+    static func void pointers(int* n, float* r, bool* b, char* c, string* s) {
+        Console.WriteLine(n[0]); Console.WriteLine(r[0]); Console.WriteLine(b[0]);
+        Console.WriteLine(c[0]); Console.WriteLine(s[0]);
+        Console.Write(r[0]); Console.WriteLine(c[0]);
+    }
+}
+class Child : Base {
+    func init() { base.init(); }
+    func void inherited() {
+        Console.WriteLine(base.reals[0]); Console.WriteLine(base.marks[0]);
+        Console.WriteLine(base.words[0]); Console.WriteLine(base.label[1]);
+    }
+}
+func void freePointers(float* r, char* c, string* s) {
+    Console.WriteLine(r[0]); Console.WriteLine(c[0]); Console.WriteLine(s[0]);
+}
+func string textValue() { return "call"; }
+int numbers[1]; float reals[1]; bool flags[1]; char marks[1]; string words[1];
+numbers[0] = 42; reals[0] = 2.5; flags[0] = true; marks[0] = 'Z'; words[0] = "array";
+Console.WriteLine(numbers[0]); Console.WriteLine(reals[0]); Console.WriteLine(flags[0]);
+Console.WriteLine(marks[0]); Console.WriteLine(words[0]);
+int index = 0;
+Console.WriteLine(reals[index++]); Console.WriteLine(index);
+Console.WriteLine(words[0][1]); Console.WriteLine("literal"[2]);
+Console.WriteLine(textValue()[1]);
+string scalar = "text";
+Console.WriteLine(scalar[0]);
+{
+    string innerText = "inner" + "";
+    Console.WriteLine(innerText[0]);
+    float innerReals[1]; char innerMarks[1];
+    innerReals[0] = 4.5; innerMarks[0] = 'L';
+    Console.WriteLine(innerReals[0]); Console.WriteLine(innerMarks[0]);
+    float* alias = innerReals; Console.WriteLine(alias[0]);
+}
+Console.WriteLine(words[0]); Console.WriteLine(reals[0]);
+Base.pointers(numbers, reals, flags, marks, words);
+freePointers(reals, marks, words);
+Child child = new Child();
+child.show("param"); child.inherited();
+Console.WriteLine(child.reals[0]); Console.WriteLine(child.marks[0]);
+Console.WriteLine(child.words[0]); Console.WriteLine(child.label[2]);

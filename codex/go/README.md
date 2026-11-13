@@ -48,6 +48,14 @@ cross-link the harness for `x86_64-linux-gnu`; those binaries are not executed.
 Both quick protocols and CI select it. See the bounded
 [ownership contract](../../docs/development/string-ownership.md).
 
+`TestCompiler_IndexedConsole` checks generated formats before linking and exact
+output in ordinary/module-entry programs. All five primitive array/pointer element
+types, local arrays, numeric aliases, free functions/static methods, inherited member
+arrays, scalar string fields/parameters/locals/literals/calls and nested string
+indexing are covered. A side-effecting index must run once; Write and WriteLine
+share the element format. Both quick protocols and CI select it. This qualifies
+backend format selection, not general shape, bounds, string ownership or operator typing.
+
 The legacy `minimal_tests` and `temp_disabled` directories still import cgo
 directly in test files and cannot be run with `go test ./...`. The older general
 integration cases also contain unsupported syntax and incomplete fixtures; they

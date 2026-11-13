@@ -2,6 +2,42 @@
 
 **Date:** November 13, 2026 UTC
 
+**Pass:** P0016 - preserve indexed primitive console formats
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0015 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43389722344):
+  Windows and Linux jobs **passed**, including stability checks and full suite.
+- Unchanged `zig build test`: **144 discovered, 126 passed, 18 skipped, zero
+  failures/errors**, 31.41s; `test_results/test_results_20261113_060253_windows.json`.
+- Focused pre-change backend reproduction: **both modes failed ten format checks**,
+  0.466s. Prior unsupported shadowing in the new fixture was corrected separately.
+- After implementation, `go test -count=1 -v -run '^TestCompiler_IndexedConsole$' .`
+  from `codex/go`: **both modes passed**, 1.218s; generated-C and 41 output lines.
+- Final `zig build test`: **145 discovered, 127 passed, 18 skipped, zero failures/
+  errors**, 29.57s; `test_results/test_results_20261113_060617_windows.json`.
+- Windows Go quick protocol: **all thirteen groups passed**, 15.509s; indexed
+  console group 0.63s, final 18 generated format checks and exact output per mode.
+  All previous groups/assertions remain selected; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.041s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not run locally; native P0016 runtime awaits CI.
+
+Compiler checks ran sequentially. Normal approved SDK/cache access used after
+restricted Zig lookup failed; no SDK/cache content or permission changes. Same
+18 unannotated skips/exclusions remain. Backend formatting does not qualify
+semantic shapes, bounds, null safety, general operators or broader ownership.
+See [P0016](passes/P0016-indexed-console.md). Ignored logs: `build/P0016-*.log`.
+
+---
+
+## Historical P0015 checkpoint - November 13, 2026
+
+**Date:** November 13, 2026 UTC
+
 **Pass:** P0015 - restore Linux indexed-string harness builds
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

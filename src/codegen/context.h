@@ -14,6 +14,7 @@ typedef struct VarBinding {
   TokenKind type;
   Slice type_name;
   int depth;
+  int indirections; /* Array and explicit pointer layers, excluding string storage. */
 } VarBinding;
 
 typedef struct CGCtx {
@@ -28,6 +29,8 @@ typedef struct CGCtx {
 
 void cgctx_push(CGCtx *ctx, const char *start, size_t len, TokenKind ty,
                 Slice type_name);
+void cgctx_push_decl(CGCtx *ctx, Node *decl);
+const VarBinding *cgctx_binding(CGCtx *ctx, const char *start, size_t len);
 void cgctx_scope_enter(CGCtx *ctx);
 void cgctx_scope_leave(CGCtx *ctx);
 TokenKind cgctx_lookup(CGCtx *ctx, const char *start, size_t len);

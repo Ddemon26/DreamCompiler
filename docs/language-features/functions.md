@@ -155,9 +155,12 @@ bounds or null-dereference checking. Address-of and unary dereference, custom-ty
 parameters, multiple pointer levels, pointer returns and async paths are not
 qualified by these checks.
 
-An existing limit remains: direct `Console.WriteLine(p[i])` for a float or char
-parameter selects the wrong C format; first copy the element to a typed numeric
-local. Scalar `string text = values[i]` declarations now copy indexed storage into
+Direct `Console.Write(p[i])` and `Console.WriteLine(p[i])` select the primitive
+element format, including `%f` for float and `%c` for char parameters. String
+array/pointer elements print as strings; indexing a scalar string prints a
+character. This also applies to local arrays and inherited member storage in
+ordinary and module-entry programs. It adds no semantic shape or bounds checks.
+Scalar `string text = values[i]` declarations copy indexed storage into
 their own managed allocation before normal block cleanup. See the bounded
 [string ownership checkpoint](../development/string-ownership.md); other string
 ownership paths and general pointer safety remain unqualified.

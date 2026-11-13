@@ -51,6 +51,37 @@ static TokenKind member_type(CGCtx *ctx, Node *n) {
   return member->kind == ND_FUNC ? member->as.func.ret_type : member->as.var_decl.type;
 }
 
+/* Keep string's character storage distinct from an array/pointer of strings.
+ * This is backend classification, not semantic shape or bounds validation. */
+typedef struct PrimitiveShape {
+  TokenKind type;
+  int indirections;
+} PrimitiveShape;
+
+static PrimitiveShape primitive_shape(CGCtx *ctx, Node *n) {
+  if (n->kind == ND_INDEX) {
+    PrimitiveShape shape = primitive_shape(ctx, n->as.index.array);
+    if (shape.indirections > 0) shape.indirections--;
+    else if (shape.type == TK_KW_STRING) shape.type = TK_KW_CHAR;
+    else shape.type = TK_ERROR;
+    return shape;
+  }
+  if (n->kind == ND_IDENT) {
+    const VarBinding *v = cgctx_binding(ctx, n->as.ident.start, n->as.ident.len);
+    if (v) return (PrimitiveShape){v->type, v->indirections};
+  }
+  if (n->kind == ND_STRING ||
+      (n->kind == ND_CONSOLE_CALL && n->as.console.read))
+    return (PrimitiveShape){TK_KW_STRING, 0};
+  Node *member = expr_member(ctx, n, NULL);
+  if (member && member->kind == ND_VAR_DECL)
+    return (PrimitiveShape){member->as.var_decl.type,
+        (member->as.var_decl.array_len > 0) + !!member->as.var_decl.is_pointer};
+  if (member && member->kind == ND_FUNC && n->kind == ND_CALL)
+    return (PrimitiveShape){member->as.func.ret_type, 0};
+  return (PrimitiveShape){TK_ERROR, 0};
+}
+
 static int is_type_reference(CGCtx *ctx, Node *n) {
   return n && n->kind == ND_IDENT && !cgctx_has_var(ctx, n->as.ident.start, n->as.ident.len) && cg_is_known_type(n->as.ident);
 }
@@ -158,7 +189,8 @@ const char *cg_fmt_for_arg(CGCtx *ctx, Node *arg) {
   if (cg_is_string_expr(ctx, arg))
     return "%s";
   if (cg_is_float_expr(ctx, arg)) return "%f";
-  if (member_type(ctx, arg) == TK_KW_CHAR) return "%c";
+  if ((arg->kind == ND_INDEX ? primitive_shape(ctx, arg).type
+                             : member_type(ctx, arg)) == TK_KW_CHAR) return "%c";
   if (arg->kind == ND_IDENT) {
     TokenKind ty = cgctx_lookup(ctx, arg->as.ident.start, arg->as.ident.len);
     switch (ty) {
@@ -218,14 +250,7 @@ int cg_is_string_expr(CGCtx *ctx, Node *n) {
     }
     return 0;
   case ND_INDEX:
-    if (member_type(ctx, n) == TK_KW_STRING) return 1;
-    // Array access - check if the array is a string array
-    if (n->as.index.array->kind == ND_IDENT) {
-      TokenKind array_type = cgctx_lookup(ctx, n->as.index.array->as.ident.start, 
-                                          n->as.index.array->as.ident.len);
-      return array_type == TK_KW_STRING;
-    }
-    return 0;
+    return primitive_shape(ctx, n).type == TK_KW_STRING;
   default:
     return 0;
   }
@@ -237,7 +262,9 @@ int cg_is_int_expr(CGCtx *ctx, Node *n) {
     return 1;
   case ND_IDENT:
     return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) == TK_KW_INT;
-  case ND_FIELD: case ND_BASE: case ND_CALL: case ND_INDEX:
+  case ND_INDEX:
+    return primitive_shape(ctx, n).type == TK_KW_INT;
+  case ND_FIELD: case ND_BASE: case ND_CALL:
     return member_type(ctx, n) == TK_KW_INT;
   default:
     return 0;
@@ -250,7 +277,9 @@ int cg_is_float_expr(CGCtx *ctx, Node *n) {
     return 1;
   case ND_IDENT:
     return cgctx_lookup(ctx, n->as.ident.start, n->as.ident.len) == TK_KW_FLOAT;
-  case ND_FIELD: case ND_BASE: case ND_CALL: case ND_INDEX:
+  case ND_INDEX:
+    return primitive_shape(ctx, n).type == TK_KW_FLOAT;
+  case ND_FIELD: case ND_BASE: case ND_CALL:
     return member_type(ctx, n) == TK_KW_FLOAT;
   default:
     return 0;

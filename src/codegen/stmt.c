@@ -387,10 +387,7 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
     cgctx_scope_enter(&ctx);
     for (size_t i = 0; i < n->as.func.param_len; i++) {
       Node *p = n->as.func.params[i];
-      cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
-                 p->as.var_decl.type,
-                 p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
-                                                 : (Slice){NULL, 0});
+      cgctx_push_decl(&ctx, p);
     }
     cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
     cgctx_scope_leave(&ctx);
@@ -436,10 +433,7 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
   cgctx_push(&ctx, "this", 4, TK_IDENT, class_name);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
-    cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
-               p->as.var_decl.type,
-               p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
-                                               : (Slice){NULL, 0});
+    cgctx_push_decl(&ctx, p);
   }
   cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
   cgctx_scope_leave(&ctx);
@@ -531,10 +525,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         if (copy_indexed_string) c_out_write(b, ")");
       }
     }
-    cgctx_push(ctx, n->as.var_decl.name.start, n->as.var_decl.name.len,
-               n->as.var_decl.type,
-               n->as.var_decl.type == TK_IDENT ? n->as.var_decl.type_name
-                                               : (Slice){NULL, 0});
+    cgctx_push_decl(ctx, n);
     c_out_write(b, ";");
     c_out_newline(b);
     break;
@@ -593,10 +584,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
             cg_emit_expr(ctx, b, vd->as.var_decl.init);
           }
         }
-        cgctx_push(ctx, vd->as.var_decl.name.start, vd->as.var_decl.name.len,
-                   vd->as.var_decl.type,
-                   vd->as.var_decl.type == TK_IDENT ? vd->as.var_decl.type_name
-                                                    : (Slice){NULL, 0});
+        cgctx_push_decl(ctx, vd);
       } else {
         cg_emit_expr(ctx, b, n->as.for_stmt.init);
       }

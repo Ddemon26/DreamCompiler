@@ -222,7 +222,7 @@ focused, full Dream, twelve Go quick groups, Python and Linux cross-build passed
 See [P0015](passes/P0015-linux-string-harness.md). Verify delivery and native CI
 before T010; repair failed checks first. No T010 implementation was started.
 
-## T010 - Preserve indexed primitive types for console formatting
+## T010 - Preserve indexed primitive types for console formatting (completed in P0016)
 
 P0013's initial direct `Console.WriteLine(r[0])` / `Console.WriteLine(c[0])`
 inside pointer-taking methods emitted `%d`, producing `0` and `90` rather than
@@ -234,6 +234,17 @@ Acceptance: regress generated format selection and exact runtime output for
 indexed primitive arrays/pointer parameters in ordinary and module-entry code;
 preserve existing member indexing and distinguish scalar string indexing from
 string array elements. Avoid inferring general shape compatibility from this fix.
+
+P0016 preserves array/pointer layers in backend bindings and consumes them during
+indexed classification. Direct float/char output selects `%f`/`%c`; string array
+or pointer elements remain strings, while scalar string indexing prints characters.
+The ordinary/module-entry matrix checks 18 C format snippets and exactly 41 output
+lines per mode, all five primitives, member/this/base storage, free/static paths,
+numeric aliases, nested string indexing and once-only index effects. Full Windows
+suite: 127 passed, 18 skipped, no failures/errors; thirteen Go quick groups, five
+Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-console.md).
+Semantic shape/bounds/operator/ownership qualification remains separate. Verify
+publication and native CI before T011; repair failed checks first.
 
 ## T011 - Qualify remaining string ownership paths
 
