@@ -103,6 +103,18 @@ instance methods, loops, header updates and top-level replacement are covered.
 Both quick protocols and CI select it. Compound assignment, ownership transfer,
 parameter/field/index destination ownership and early-exit cleanup remain open.
 
+`TestCompiler_StringContainers` checks normal block cleanup of string arrays and
+borrowed `string*` locals in four array/pointer ordinary/module-entry modes. The
+real checked allocator requires eight and seven nonnull releases, respectively,
+and thirteen/eleven exact output lines. Generated-C assertions forbid releases of
+containers and aliases while requiring owned scalar and class-instance cleanup.
+Nested/unused storage, literal/managed/null elements, alias chains and rebinding,
+null pointers, loop bodies and static/instance methods are covered. Managed sources
+survive container cleanup and element replacement. All four modes failed the live
+registry assertion before the fix; existing allocator assertions remain. Both
+quick protocols and CI select this group. Owning containers, element destruction,
+early exits and dangling-alias checks remain unqualified.
+
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element
 types, local arrays, numeric aliases, free functions/static methods, inherited member

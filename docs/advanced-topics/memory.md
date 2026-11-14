@@ -5,11 +5,15 @@
 Qualified scalar string initialization from literals, indexing, identifiers, members and calls,
 including supported for-header declarations, is
 described in the [ownership checkpoint](../development/string-ownership.md)
-(P0014/P0017/P0018/P0019/P0020/P0021/P0022). Calls copy their readable result without
+(P0014/P0017/P0018/P0019/P0020/P0021/P0022/P0023). Calls copy their readable result without
 transferring ownership; fresh managed results can remain registered until shutdown.
 Plain `=` on qualified owned scalar bindings copies a readable replacement before
 releasing the old allocation. Self-assignment is safe; uninitialized scalar strings
-start as null. This does not establish parameter, field or array-element ownership.
+start as null. Local string arrays and `string*` bindings borrow their elements
+and target storage; normal block exit releases neither those bindings nor their
+elements. Managed backing must outlive alias use. Scalar copies and class-instance
+cleanup remain intact. This does not establish parameter, field, owning-container
+or array-element ownership.
 The sections below are historical design material, not
 evidence that all examples or APIs
 are implemented. Cycle detection, pools and general automatic alias retention

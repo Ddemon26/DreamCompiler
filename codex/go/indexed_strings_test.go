@@ -169,7 +169,39 @@ func TestCompiler_AssignedStrings(t *testing.T) {
 	}, "literal\nbacking value\nbacking value\nbacking value\nnested value\nbacking value\n1\nnull\nstill null\nempty\nonce\nbacking value\nbacking value appended\nfresh value\nexpression\nchain\nchain\nnested assignment\npending\nbacking value\ncleared\nheader\nheader\nbacking value\nbacking value\nstatic\ninstance\nbase\nparameter\nbacking value\ntop literal\nbacking value\nbacking value\n")
 }
 
-func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string) {
+func TestCompiler_StringContainers(t *testing.T) {
+	t.Run("array", func(t *testing.T) {
+		checkStringOwnership(t, "array_string_storage.dr", 8, []string{
+			`char*localValues[4];`, `char*nestedValues[1];`,
+			`nestedCopy=dream_string_copy((nestedValues[0]));`,
+			`__dream_string_assign(&owner,"changed");`,
+			`dr_release(nestedCopy);`, `dr_release(repeatedCopy);`,
+			`dr_release(staticCopy);`, `dr_release(instanceCopy);`,
+			`dr_release(owner);`, `dr_release(reader);`,
+		}, "owned array\nliteral\nbacking value\nowned array\nnull element\nbacking value\nowned array\nchanged\nchanged\nchanged\nstatic\ninstance\nbacking value\n",
+			`dr_release(localValues);`, `dr_release(nestedValues);`,
+			`dr_release(repeatedValues);`, `dr_release(unusedValues);`,
+			`dr_release(staticValues);`, `dr_release(instanceValues);`)
+	})
+	t.Run("pointer", func(t *testing.T) {
+		checkStringOwnership(t, "pointer_string_storage.dr", 7, []string{
+			`char**alias=input;`, `char**nestedAlias=alias;`,
+			`(nestedAlias=other);`, `(nullAlias=((void*)0));`,
+			`nestedCopy=dream_string_copy((nestedAlias[0]));`,
+			`reboundCopy=dream_string_copy((nestedAlias[0]));`,
+			`dr_release(nestedCopy);`, `dr_release(reboundCopy);`,
+			`dr_release(absentCopy);`, `dr_release(repeatedCopy);`,
+			`dr_release(staticCopy);`, `dr_release(instanceCopy);`,
+			`dr_release(reader);`,
+		}, "backing value\nalternate\nnull element\nbacking value\nbacking value\nnull pointer\nbacking value\nbacking value\nbacking value\nbacking value\nbacking value\n",
+			`dr_release(alias);`, `dr_release(nestedAlias);`,
+			`dr_release(nullAlias);`, `dr_release(repeatedAlias);`,
+			`dr_release(unusedAlias);`, `dr_release(staticAlias);`,
+			`dr_release(instanceAlias);`, `dr_release(input);`, `dr_release(other);`)
+	})
+}
+
+func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string, forbiddenChecks ...string) {
 	t.Helper()
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
@@ -226,6 +258,11 @@ func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChe
 				emitted = strings.ReplaceAll(emitted, "@entry@", prefix)
 				if !strings.Contains(c, emitted) {
 					t.Fatalf("missing ownership emission %q", emitted)
+				}
+			}
+			for _, forbidden := range forbiddenChecks {
+				if strings.Contains(c, forbidden) {
+					t.Fatalf("unexpected ownership emission %q", forbidden)
 				}
 			}
 			// Preserve the generated program while allowing the harness to use the

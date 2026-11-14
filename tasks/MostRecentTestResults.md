@@ -2,6 +2,50 @@
 
 **Date:** November 14, 2026 UTC
 
+**Pass:** P0023 - borrowed string array/pointer block cleanup
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0022 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43598710643):
+  Linux/Windows checks and full suite **passed** for the exact parent SHA.
+- Baseline `zig build test`: **151 discovered, 133 passed, 18 skipped, zero
+  failures/errors**, 34.07s; `test_results/test_results_20261114_120336_windows.json`.
+- Before implementation, `TestCompiler_StringContainers` **failed all four
+  array/pointer ordinary/module-entry modes** at the live-allocation release
+  assertion, 3.717s. Linux harness cross-links passed before native execution.
+- `zig build`: **passed** after normal block cleanup began checking existing
+  string binding indirection metadata. Owned scalar/class releases remain intact.
+- Focused ownership matrix: **all eighteen modes passed**, 18.221s; new group body
+  3.93s. Generated-C positive/negative checks, Linux cross-links, checked native
+  lifetime and exact direct-linked output passed. New array/pointer fixtures
+  require eight/seven nonnull releases and thirteen/eleven output lines per mode;
+  prior allocator/refcount/shutdown assertions are unchanged.
+- Final `zig build test`: **153 discovered, 135 passed, 18 skipped, zero
+  failures/errors**, 35.23s; `test_results/test_results_20261114_120718_windows.json`.
+- Windows Go quick protocol: **all twenty groups passed**, 32.398s;
+  external compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.032s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0023 runtime awaits CI.
+
+Compiler tests ran sequentially with approved SDK/cache access after restricted
+SDK discovery failed, without content/permission changes. Same 18 unannotated
+skips/exclusions. String arrays and explicit pointers borrow their elements/targets;
+backing must outlive alias use. Owning containers, automatic element destruction,
+other scalar initializers, compound assignment, parameter/field/index destination
+ownership, return transfer and early-exit cleanup remain unqualified. See
+[P0023](passes/P0023-borrowed-string-containers.md). Ignored evidence:
+`build/P0023-*.log`.
+
+---
+
+## Historical P0022 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
 **Pass:** P0022 - owned scalar string replacement copies and old-value release
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

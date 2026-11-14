@@ -444,7 +444,9 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
 static void emit_scope_cleanup(CGCtx *ctx, COut *b, size_t start) {
   for (size_t i = ctx->len; i-- > start;) {
     VarBinding *v = &ctx->vars[i];
-    if (v->type == TK_KW_STRING ||
+    // String arrays are C storage and explicit pointers borrow their target.
+    // Neither binding owns a scalar string allocation or its borrowed elements.
+    if ((v->type == TK_KW_STRING && v->indirections == 0) ||
         (v->type == TK_IDENT && cg_is_class_type(v->type_name))) {
       c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
     }

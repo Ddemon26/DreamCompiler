@@ -1,4 +1,4 @@
-# Scalar string storage checkpoint
+# String storage checkpoint
 
 P0014 qualifies one ownership boundary: a scalar `string` declaration whose
 initializer is an index expression, for example `string text = values[i]`.
@@ -74,6 +74,24 @@ release. Allocation failure follows `dream_string_copy`: the new value is null
 and the old value is released. Source ownership is unchanged. Fresh call,
 concatenation and read-line results used as replacements can remain registered
 until shutdown; this pass does not introduce temporary ownership transfer.
+
+P0023 distinguishes string container bindings from scalar strings during normal
+block cleanup. A local `string values[N]` is emitted as a C array of borrowed
+string pointers; a local `string* alias = values` borrows the array storage.
+Neither binding is passed to `dr_release` when its block ends. Pointer aliases
+and element writes do not copy, retain, release or transfer their targets.
+Rebinding a pointer leaves its previous target's ownership unchanged. Null and
+unused pointer/array declarations likewise need no scalar cleanup; their existing
+initialization behavior is unchanged, so unused storage must not be read.
+
+Elements may borrow literal, managed or null string pointers. Managed backing must
+outlive every use through the container; destroying the container does not release
+its elements. A scalar declaration such as `string copy = values[0]` still owns
+an independent copy and receives normal cleanup. Owned scalar and class-instance
+cleanup are preserved. This qualifies normal block exit in free functions,
+static/instance methods, nested blocks and loop bodies in ordinary/module-entry
+programs. It does not add owning containers, heap-array allocation, pointer-result
+ownership, dangling-alias checks or automatic element destruction.
 
 ## Storage contract
 
@@ -176,6 +194,18 @@ cleanup before the fix; no allocator assertions were removed. Both quick protoco
 and CI select this group. The exact release total checks old-value reclamation
 as well as final block/header cleanup; shutdown still requires an empty registry.
 
+The [array regression](../../tests/basics/memory/array_string_storage.dr) and
+[pointer regression](../../tests/basics/memory/pointer_string_storage.dr), selected
+by `TestCompiler_StringContainers`, require eight and seven nonnull checked
+releases respectively, with thirteen and eleven exact output lines in both modes.
+Generated C must omit container/alias releases and retain scalar and class-instance
+releases. Nested/unused storage, literal/managed/null elements, pointer alias chains
+and rebinding, null pointers, repeated loop bodies and static/instance methods are
+covered. Managed sources survive container exit and element replacement; scalar
+copies still have one reference and are reclaimed. All four modes failed the live
+registry assertion before P0023. Both quick protocols and CI select this group;
+the harness's release/refcount/shutdown assertions are unchanged.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
@@ -183,7 +213,7 @@ headers and linking; Linux runtime evidence still requires native CI.
 
 This is not a complete string ownership system. Other initializer forms, compound
 assignment, parameter/field/index destination ownership, alias retention,
-array/pointer-local cleanup, function returns,
+owning arrays/pointers and automatic element destruction, function returns,
 early return/exception cleanup, body-local cleanup skipped by break/continue,
 compound expressions and field ownership remain unqualified. Concatenation and
 read-line initializers keep their existing managed allocation; as replacements

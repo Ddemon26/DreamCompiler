@@ -1,0 +1,58 @@
+// Expected: backing value
+// Expected: alternate
+// Expected: null element
+// Expected: backing value
+// Expected: backing value
+// Expected: null pointer
+// Expected: backing value
+// Expected: backing value
+// Expected: backing value
+// Expected: backing value
+// Expected: backing value
+class PointerReader {
+    static func void readStatic(string* input) {
+        string* staticAlias = input;
+        string staticCopy = staticAlias[0];
+        Console.WriteLine(staticCopy);
+    }
+    func void readInstance(string* input) {
+        string* instanceAlias = input;
+        string instanceCopy = instanceAlias[0];
+        Console.WriteLine(instanceCopy);
+    }
+}
+func void exercise(string* input, string* other) {
+    string* alias = input;
+    {
+        string* nestedAlias = (alias);
+        string nestedCopy = nestedAlias[0];
+        Console.WriteLine(nestedCopy);
+        nestedAlias = other;
+        string reboundCopy = nestedAlias[0];
+        Console.WriteLine(reboundCopy);
+        string absentCopy = nestedAlias[1];
+        if (absentCopy == null) { Console.WriteLine("null element"); }
+    }
+    Console.WriteLine(alias[0]);
+    Console.WriteLine(input[0]);
+    string* nullAlias = input;
+    nullAlias = null;
+    if (nullAlias == null) { Console.WriteLine("null pointer"); }
+    for (int i = 0; i < 2; i++) {
+        string* repeatedAlias = input;
+        string repeatedCopy = repeatedAlias[0];
+        Console.WriteLine(repeatedCopy);
+    }
+    string* unusedAlias;
+    PointerReader.readStatic(input);
+    PointerReader reader = new PointerReader();
+    reader.readInstance(input);
+}
+string backing = "backing" + " value";
+string values[1];
+values[0] = backing;
+string otherValues[2];
+otherValues[0] = "alternate";
+otherValues[1] = null;
+exercise(values, otherValues);
+Console.WriteLine(backing);
