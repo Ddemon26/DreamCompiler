@@ -60,3 +60,6 @@ CLAUDE.md
 /test_results
 /assets/vscode/node_modules
 /codex/go/build
+
+# Downloaded toolchain installers do not belong in the checkout.
+/go[0-9]*.tar.gz

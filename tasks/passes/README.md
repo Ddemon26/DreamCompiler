@@ -27,8 +27,9 @@
 | [P0023](P0023-borrowed-string-containers.md) | 2026-11-14 | Borrowed string arrays/pointers avoid scalar cleanup; four checked modes preserve owned releases, full/quick checks pass | `Pass-ID: P0023` |
 | [P0024](P0024-loop-exit-strings.md) | 2026-11-14 | Break/continue release exited owned scalar strings; target/header boundaries, both checked modes and full/quick checks pass | `Pass-ID: P0024` |
 | [P0025](P0025-compiler-dogfooding.md) | 2026-11-14 | Production compiler uses Dream source normalizer; host seed, function-library emission, differential bytes and full/quick/cross checks pass | `Pass-ID: P0025` |
+| [P0026](P0026-repository-cleanup.md) | 2026-11-14 | Eleven obsolete files removed; operational docs consolidated; source hashes/discovery unchanged and full/quick checks pass | `Pass-ID: P0026` |
 
-**P0025 validation passed. Verify publication and inspect native CI before allocating P0026.**
+**P0026 validation passed. Verify publication and inspect native CI before allocating P0027.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

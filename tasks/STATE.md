@@ -1,58 +1,48 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0025 - first production compiler dogfooding**.
-- Record: [P0025](passes/P0025-compiler-dogfooding.md).
-- Parent/fetched approved remote: `fe657146e26209db3936b52cbb6f413723d5558e` (P0024).
-- Resolve the pass commit by its exact `Pass-ID: P0025` trailer.
-- Publication requires push and matching `git ls-remote`; inspect native CI before
-  selecting the next task.
+- Current pass: **P0026 - repository tooling and operational documentation cleanup**.
+- Record: [P0026](passes/P0026-repository-cleanup.md).
+- Parent/fetched approved remote: `52de683a1752e1a6b22b5ecfe673fdc72f23cc76` (P0025).
+- Resolve the pass commit by its exact `Pass-ID: P0026` trailer.
+- Publication requires push and matching `git ls-remote`; inspect CI before new work.
 
-The user selected a first Dream-written production component ahead of the next
-T011 slice. This pass started clean in the approved local checkout/branch/origin,
-one worktree and no competing active project chat in app inventory. Approved
-fetch matched HEAD after restricted `.git/FETCH_HEAD` write denial. P0024
-[CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43647310315) passed
-native Linux/Windows checks and full suites for the exact parent SHA.
+The user requested repository pruning ahead of T011. The pass started clean in
+the approved primary checkout, attached branch/origin, one worktree and no competing
+active project chat. Approved fetch matched HEAD. P0025
+[CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43649932934) passed
+native Linux/Windows builds, stability checks and suites for the exact parent SHA.
 
-`src/driver/source_text.dr` now supplies production entry-file CRLF normalization.
-It borrows writable NUL-terminated input and uses pointer cursors without allocation.
-The C-only host `dreamc-bootstrap` retains the C seed, emits cached library C from
-tracked Dream sources, and builds independently of generated code. The production
-target compiler links the Dream implementation and runtime without the seed.
-Host/target separation works in the Windows-to-Linux cross-build. Both executables
-are installed. See the [contract](../docs/development/compiler-dogfooding.md).
+P0026 removes eleven proven obsolete files: a downloaded 66 MB Go installer,
+root scratch programs, superseded runner/runtime scripts, an unusable cgo workflow
+wrapper and redundant stale setup/status documents. A narrow root installer ignore
+rule prevents reintroduction. The pass record inventories each deletion and evidence.
+No history rewrite or recursive cache purge was used.
 
-`--emit-library-c OUTPUT SOURCE` uses real parser/semantic/common C emission with
-external synchronous function linkage, forward prototypes and no main or host
-compilation. Non-function top-level nodes, main and async are rejected; module/
-object modes cannot be combined with it. Source rejection preserves existing
-output; open/write failures fail. Program/object emission retains prior behavior.
+Operational build, architecture, development and testing guides now describe the
+actual supported commands and pipeline. Compiler testing delegates to the maintained
+[codex testing guide](../codex/TEST_GUIDE.md). The current Go coverage descriptions
+remain without the stale cgo tutorials. README uses the maintained Markdown index
+and the approved existing-checkout schedule policy. No compiler or plugin code,
+fixtures, test exclusions, build graph, supported runner or CI selector changed.
 
-The new Go/CI group checks 97,912 inputs against the C seed and independent expected
-output, complete-buffer equivalence, boundaries and repeated calls. It checks
-bootstrap/production helper C equality, separately linked forward/scalar/pointer
-functions, rejection/output behavior and installed-compiler newline variants.
-An incorrect initial idempotence assumption was corrected to preserve the seed's
-single-pass CRCRLF behavior; independent byte and boundary checks remain.
+Verification: **367 protected file hashes unchanged** and **154 test entries with
+identical categories** before/after. The full suite passed **136/154**, with the
+same **18 skips**, zero failures/errors, 51.72s. All **22 Go quick groups passed**,
+41.955s; Python **five passed**, 0.044s. Revised/new Markdown's **184 local links**
+resolved in the final check; added handoff links, retired-entry references,
+paths and diff were checked. See [results](MostRecentTestResults.md).
+No C/build inputs changed, so no new cross-build was required. Native P0026 CI
+awaits publication. SDK/cache access used normal approval without content changes.
 
-Baseline and final full suite: **154 discovered, 136 passed, 18 skipped, zero
-failures/errors**; final 46.69s. All **twenty-two Go quick groups passed**, 45.446s;
-Python **five passed**, 0.058s. Focused group passed; final expanded checks passed
-in quick. Linux compiler cross-build and harness cross-link passed; Linux binaries
-were not run locally. Native P0025 runtime awaits CI. See
-[MostRecentTestResults.md](MostRecentTestResults.md).
+P0025's Dream production normalizer and C-only host bootstrap remain intact.
+This cleanup does not qualify new language features or eliminate the same ownership,
+shape/operator, return/unwinding, allocation-failure and skipped-test limitations.
+Historical records, versioned references, unique legacy cgo tests, deferred examples
+and experimental compiler code remain. The HTML docs viewer and broader language/
+API tutorials need a separate path/accuracy audit; this is one bounded cleanup.
 
-Same 18 skips/exclusions and prior ownership/shape/operator/allocation-failure
-limits remain. Lexer, parser, semantics and emitter are still C. Helper C equality
-does not prove successive whole-compiler rebuilds. Custom-type parameters, shared
-module types, compiler data structures, ownership and host I/O remain future work.
-Embedding hosts own runtime lifecycle for library functions needing it; the
-normalizer needs none. Tools: Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.
-Approved SDK/cache access was used without content/permission changes.
-
-Next: verify P0025 publication/native CI and repair failures first. Otherwise
-resume T011 conditional (`?:`) string initializer ownership with live-registry
-evidence for literal/borrowed/managed/null branches and once-only branch effects
-in ordinary/module entries. A future lexer migration needs its own token/storage
-interface and equivalence pass. Do not start a second pass here.
+Next: verify P0026 publication/native CI and repair failures first. Otherwise
+resume T011 conditional string initializer ownership using checked live-registry
+and branch-evaluation evidence, unless the user chooses another cleanup slice.
+Do not start a second pass here.

@@ -2,6 +2,42 @@
 
 **Date:** November 14, 2026 UTC
 
+**Pass:** P0026 - obsolete tooling and operational documentation cleanup
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0025 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43649932934):
+  Linux/Windows jobs and suites **passed** for the exact parent SHA.
+- Before/after cleanup: **367 protected source/build/fixture/plugin/runner hashes
+  unchanged**; `python codex/test_cli.py list` returns the same **154 entries and
+  categories**. CLI `--help` passed. No tests or exclusions were removed.
+- `zig build test`: **154 discovered, 136 passed, 18 skipped, zero failures/errors**,
+  51.72s; `test_results/test_results_20261114_161430_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.044s.
+- Windows Go quick protocol: **all twenty-two groups passed**, 41.955s;
+  external compiler tests use `-count=1`.
+- Revised operational docs: **101 local links resolved** before pass metadata,
+  **184** across all revised/new Markdown in the final check;
+  added handoff links, literal paths, inbound fragments, retired-entry references,
+  the installer ignore rule and diff were also checked.
+- No C/build inputs changed: no new cross-build was required or claimed. Native
+  P0026 CI awaits publication. Prior P0025 native evidence is dated above.
+
+Compiler checks ran sequentially with approved SDK/cache access and no SDK/cache
+changes. Same 18 skips and existing language/ownership limits remain. Retired
+scripts had no active consumers; the supported runner is unchanged. See
+[P0026](passes/P0026-repository-cleanup.md) for the deletion inventory and retained
+legacy/experimental boundaries. Ignored evidence: `build/P0026-*`.
+
+---
+
+## Historical P0025 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
 **Pass:** P0025 - first production compiler dogfooding (Dream source normalizer)
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

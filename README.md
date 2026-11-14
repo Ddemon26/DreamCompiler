@@ -78,7 +78,8 @@ Example programs can be found in the [tests](tests) directory.
 
 ## Documentation
 
-Documentation lives under [`docs`](docs). Open [docs/index.html](docs/index.html) in a browser or read [docs/index.md](docs/index.md) directly.
+Start with the maintained [documentation index](docs/index.md),
+[build guide](docs/development/compiler/build.md), and [testing guide](codex/TEST_GUIDE.md).
 
 See [Compiler Docs](docs/development/compiler/index.md) for compiler information and [Dream.dr Language](docs/reference/language/index.md) for language guides.
 
@@ -88,7 +89,7 @@ Start with [AGENTS.md](AGENTS.md) and the [current handoff](tasks/STATE.md).
 The [daily workflow](docs/development/agent-workflow.md) explains one-pass development,
 numbered records, validation, and mandatory commit/push verification. Paste the
 [daily progress prompt](codex/prompts/daily-progress.md) into a project-scoped daily
-schedule using an isolated worktree. Completed passes are indexed in
+schedule using this existing local checkout, as required by the workflow. Completed passes are indexed in
 [tasks/passes](tasks/passes/README.md).
 
 # Ownership

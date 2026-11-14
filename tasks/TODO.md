@@ -354,6 +354,23 @@ literal/borrowed/managed/null branches, once-only branch evaluation and independ
 storage in ordinary/module-entry modes. Class-instance cleanup on break/continue,
 return ownership and exception/finally unwinding remain separate work.
 
+## T012 - Prune obsolete repository tooling and operational docs (completed in P0026)
+
+Explicit user cleanup priority. P0026 removes eleven unused/superseded files:
+root scratch programs, a downloaded Go installer, obsolete runtime/runner scripts,
+an unusable legacy validation wrapper and redundant stale setup/status docs.
+Operational build, testing, architecture and development guides now describe the
+actual supported entry points. README uses the current local-checkout workflow.
+The pass record lists each deletion and its evidence.
+
+Acceptance: no active repository references to deleted entry points; unchanged
+compiler/build/fixture/plugin/runner inputs and test discovery; working full suite,
+Go quick checks and runner regressions; verified documentation paths and publication.
+See [P0026](passes/P0026-repository-cleanup.md) for results and retained boundaries.
+Legacy cgo suites and their unique test sources, the historical HTML documentation
+viewer, and language/API tutorial accuracy need separate audits. Do not purge these
+based only on missing references or claim skipped coverage is now qualified.
+
 ## Later work
 
 ### Compiler dogfooding (explicit user priority, first slice in P0025)
