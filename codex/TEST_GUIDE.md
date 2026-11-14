@@ -37,6 +37,13 @@ require no cgo library or downloaded Go modules. Use `-count=1` for direct Go
 invocations because Go does not track changes to the external compiler binary.
 See the [Go checks](go/README.md) for coverage and legacy exclusions.
 
+The Makefile defaults to `quick-validate`; the PowerShell script defaults to
+`quick`. Both also provide `help`. Unsupported cgo/benchmark/fuzz launch actions
+and standalone library builders have been retired; their unique legacy test
+sources remain outside this protocol. Neither launcher installs dependencies or
+cleans caches. A failed build stops before Go, and a failing Go run returns its
+exit status.
+
 Compiler tests share `build/bin/dream.c` and `dream`/`dream.exe`. Run them
 sequentially; concurrent runs can overwrite each other's inputs and executables.
 

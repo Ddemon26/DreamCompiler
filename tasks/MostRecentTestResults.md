@@ -2,6 +2,42 @@
 
 **Date:** November 14, 2026 UTC
 
+**Pass:** P0027 - unsupported Go build entry-point cleanup
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0026 [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43652638299):
+  native Linux/Windows jobs **passed** before edits began.
+- **474 protected hashes unchanged**, including compiler, fixtures, docs/Pages,
+  plugins, unique Go test/legacy sources and supported build/runner/CI inputs.
+- Both launchers and CI preserve the same **22-group selector** and `-count=1`.
+- Controlled launcher probes: **seven passed**, including default/help, build/test
+  exit propagation, directories, retired action and missing prerequisite behavior.
+  PowerShell parsing/BOM and GNU Make help/default/explicit dry-runs passed;
+  retired Make target rejection passed. Native Linux Make was not executed here.
+- `zig build test`: **154 discovered, 136 passed, 18 skipped, zero failures/errors**,
+  48.74s; `test_results/test_results_20261114_163145_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.029s.
+- Pruned Windows Go quick launcher: **all twenty-two groups passed**, 36.863s.
+- Removed-entry searches, **95 local Markdown links**, paths and diff checked before commit. No C/build
+  input changed; no cross-build was required or rerun. Native P0027 CI awaits
+  publication. Prior P0026 native evidence is dated above.
+
+Compiler checks ran sequentially with approved SDK/cache access and no content or
+permission changes. Same 18 skips and prior language/ownership limits remain.
+Legacy unique cgo sources/checksums and the active Pages assets remain; no coverage
+is claimed for them. See [P0027](passes/P0027-go-tooling-cleanup.md).
+Ignored evidence: `build/P0027-*`.
+
+---
+
+## Historical P0026 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
 **Pass:** P0026 - obsolete tooling and operational documentation cleanup
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

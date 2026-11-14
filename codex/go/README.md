@@ -150,6 +150,17 @@ directly in test files and cannot be run with `go test ./...`. The older general
 integration cases also contain unsupported syntax and incomplete fixtures; they
 are not part of the stability checks.
 
-Install Go on PATH outside the checkout. The supported quick protocols do not
-use the legacy C library builders or recursive make targets. See the
+Install Go and Zig 0.17.1 on PATH outside the checkout. The launchers now expose
+only the supported quick checks and help. `make` defaults to `quick-validate`;
+`build_and_test.ps1` defaults to `quick`. Run `make help` or
+`powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 help`
+for usage. The PowerShell launcher resolves build/test directories from its own
+location, so calling it from another working directory selects the same checks.
+
+The launchers preserve build and test failure exit codes and do not install Go
+modules, build cgo libraries, clean caches or advertise unsupported benchmark/fuzz
+coverage. Retired actions/targets fail instead of falling through to recursive
+tests. The two obsolete standalone library builders have been removed. Legacy
+cgo source fixtures, disabled benchmark/fuzz files and their checksums remain for
+a separate replacement-coverage audit. See the
 [testing guide](../TEST_GUIDE.md) for the complete validation procedure.

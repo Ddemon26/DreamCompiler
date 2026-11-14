@@ -371,6 +371,22 @@ Legacy cgo suites and their unique test sources, the historical HTML documentati
 viewer, and language/API tutorial accuracy need separate audits. Do not purge these
 based only on missing references or claim skipped coverage is now qualified.
 
+## T013 - Retire unsupported Go build entry points (completed in P0027)
+
+Explicit follow-up cleanup priority. P0027 removes the two unused standalone C
+library builders and reduces the Go Makefile/PowerShell launcher to the supported
+quick protocol and help. Default invocations select quick; retired modes fail
+instead of launching absent cgo APIs, module installation, benchmarks or fuzzing.
+The existing 22-group selectors and unique legacy sources/checksums are preserved.
+
+Acceptance: selector equality with CI, successful real quick/full/runner checks,
+controlled build/test failure propagation, directory handling, missing-tool/help/
+retired-action probes, parser/dry-run checks and verified publication. See
+[P0027](passes/P0027-go-tooling-cleanup.md) for evidence. The docs HTML/CSS were
+retained because repository metadata shows an active Pages site from `main:/docs`;
+they cannot be treated as unused from a local reference scan. Audit their paths
+separately, and qualify replacement coverage before pruning unique cgo fixtures.
+
 ## Later work
 
 ### Compiler dogfooding (explicit user priority, first slice in P0025)
