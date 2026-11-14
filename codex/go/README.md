@@ -80,8 +80,8 @@ Zero/multiple iterations, null, borrowed sources, member/index expressions,
 once-only indexing, break/continue, condition/update visibility, later name reuse
 and top-level cleanup are included. Four driver diagnostic cases require useful
 positions and no artifacts for string/integer header uses after a loop. Both quick
-protocols and CI select this group. Return/exception exits and cleanup of owned
-body locals skipped by break/continue remain unqualified.
+protocols and CI select this group. Return/exception exits remain unqualified;
+`TestCompiler_LoopExitStrings` below qualifies owned scalar body locals.
 
 `TestCompiler_CallStrings` checks fifteen call-copy sites, fourteen block/header release sites,
 fifteen nonnull releases and nineteen output lines in each mode (P0022 also releases
@@ -113,7 +113,20 @@ null pointers, loop bodies and static/instance methods are covered. Managed sour
 survive container cleanup and element replacement. All four modes failed the live
 registry assertion before the fix; existing allocator assertions remain. Both
 quick protocols and CI select this group. Owning containers, element destruction,
-early exits and dangling-alias checks remain unqualified.
+dangling-alias checks and return/exception exits remain unqualified.
+
+`TestCompiler_LoopExitStrings` requires thirty-seven nonnull checked releases and
+sixteen exact output lines in ordinary/module-entry modes. Before the fix both
+modes failed the release total, exposing locals retained until shutdown. Exact
+generated-C cleanup sequences check reverse order and target boundaries before
+each break/continue, excluding later declarations, surviving outer bindings,
+borrowed containers/parameters and for headers. While/do/for, expression for
+initializers, unbraced conditional jumps, nested loop/switch targets, null/empty
+strings, header replacement updates, free/static/instance paths and top-level
+loops are covered. The prior allocator/refcount/shutdown assertions and ownership
+matrices remain intact. Both quick protocols and CI select this group. Class
+early-exit cleanup, unsupported string initializers and return/exception/finally
+unwinding remain unqualified.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

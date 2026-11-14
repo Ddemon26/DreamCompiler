@@ -246,15 +246,16 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (initializer/header/assignment/borrowed-container slices completed)
+## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
 P0017/P0018/P0019 add literals, identifiers and members; P0020 scopes for-header
 declarations and qualifies their loop-exit cleanup; P0021 copies direct call results
 without transferring ownership; P0022 qualifies plain replacement on known-owned
 scalar identifiers; P0023 excludes borrowed array/pointer bindings from scalar
-block cleanup. Source audit still finds plain C assignment elsewhere. Compound
-assignment, owning containers, return transfer, early exits and field ownership
+block cleanup; P0024 qualifies owned scalar cleanup on break/continue. Source
+audit still finds plain C assignment elsewhere. Compound assignment, owning
+containers, return transfer, other early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
 
@@ -336,11 +337,22 @@ are covered. Full suite: 135 passed, 18 skipped, no failures/errors; twenty Go q
 groups, five Python tests and Linux cross-build passed. See
 [P0023](passes/P0023-borrowed-string-containers.md).
 
-Broader T011 remains open. Verify P0023 publication/native CI first. Next qualify
-owned scalar body-local cleanup skipped by loop-targeting `break`/`continue`:
-use checked release totals to expose deferred-until-shutdown allocations, preserve
-for-header lifetime through continue/update, and distinguish nested loop/switch
-targets. Keep function-return/exception cleanup and return ownership separate.
+P0024 reproduces missing body-local releases in both modes, then tracks loop/switch
+target binding boundaries to release exited owned scalar strings in reverse order
+before break/continue. Headers survive continue/update and receive their existing
+loop-exit cleanup. Exact C sequences, thirty-seven nonnull checked releases and
+sixteen output lines cover while/do/for, nested loop/switch targets, switch normal
+completion, null/empty locals, borrowed containers, later declarations, unbraced
+conditionals, header replacement updates, methods and top-level loops. All prior
+allocator/refcount/shutdown assertions remain. Full suite: 136 passed, 18 skipped,
+no failures/errors; twenty-one Go quick groups, five Python tests and Linux
+cross-build passed. See [P0024](passes/P0024-loop-exit-strings.md).
+
+Broader T011 remains open. Verify P0024 publication/native CI first. Next qualify
+scalar conditional (`?:`) string initializers using checked lifetime evidence for
+literal/borrowed/managed/null branches, once-only branch evaluation and independent
+storage in ordinary/module-entry modes. Class-instance cleanup on break/continue,
+return ownership and exception/finally unwinding remain separate work.
 
 ## Later work
 

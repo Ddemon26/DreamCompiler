@@ -41,8 +41,8 @@ Existing restrictions on shadowing an enclosing binding remain unchanged.
 Header storage is released once on normal termination or a break targeting that
 loop. Continue preserves it through the update and subsequent iterations. This
 also applies at top level, before shutdown. Return and exception exits can bypass
-this cleanup, and cleanup of owned body locals skipped by break/continue remains
-unqualified.
+this cleanup. P0024 qualifies owned scalar body-local cleanup on break/continue
+as described below.
 
 P0021 extends scalar declaration copying to direct function and method calls:
 `string text = getText()` evaluates the call once and copies its readable result.
@@ -92,6 +92,24 @@ cleanup are preserved. This qualifies normal block exit in free functions,
 static/instance methods, nested blocks and loop bodies in ordinary/module-entry
 programs. It does not add owning containers, heap-array allocation, pointer-result
 ownership, dangling-alias checks or automatic element destruction.
+
+P0024 releases qualified owned scalar strings before `break` or `continue`, in
+reverse declaration order through the scopes the jump leaves. A break targets
+the nearest loop or switch; a continue targets the nearest loop, including from
+inside a switch. Nested loops preserve enclosing body locals. Switch breaks
+release case locals while preserving the surrounding loop body. Declarations
+after the jump are excluded, and single-statement conditional jumps keep cleanup
+inside the condition.
+
+For-header storage survives body cleanup and continue/update, then receives its
+existing single loop-exit release. Normal fall-through cleanup remains intact;
+the early jump bypasses it, so each executed path releases a local once. Empty
+and null strings follow the same rule, while borrowed parameters, arrays and
+explicit pointer aliases receive no release. This applies to while/do-while/for,
+free/static/instance functions and top-level loop bodies in ordinary/module-entry
+programs. It does not qualify class-instance early-exit cleanup, unsupported
+string initializer forms, return ownership, or exception/finally unwinding when
+a jump crosses an exception context.
 
 ## Storage contract
 
@@ -206,6 +224,18 @@ copies still have one reference and are reclaimed. All four modes failed the liv
 registry assertion before P0023. Both quick protocols and CI select this group;
 the harness's release/refcount/shutdown assertions are unchanged.
 
+The [loop-exit regression](../../tests/basics/memory/loop_exit_strings.dr) and
+`TestCompiler_LoopExitStrings` require thirty-seven nonnull checked releases and
+sixteen exact output lines in both modes. Before P0024 both modes failed the
+release total, exposing allocations retained until shutdown. Generated C must
+release exactly the active owned strings before each jump, excluding later
+declarations, surviving outer locals and headers. Repeated while/do/for bodies,
+switch break/continue and normal completion, nested loops, a loop inside a switch,
+null/empty strings, borrowed containers, unbraced conditionals, for-header
+replacement updates, free/static/instance methods and top-level loops are covered.
+The existing allocator/refcount/shutdown assertions and all prior ownership
+matrices remain intact. Both quick protocols and CI select this group.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
@@ -214,7 +244,7 @@ headers and linking; Linux runtime evidence still requires native CI.
 This is not a complete string ownership system. Other initializer forms, compound
 assignment, parameter/field/index destination ownership, alias retention,
 owning arrays/pointers and automatic element destruction, function returns,
-early return/exception cleanup, body-local cleanup skipped by break/continue,
+early return/exception cleanup, class-instance cleanup on break/continue,
 compound expressions and field ownership remain unqualified. Concatenation and
 read-line initializers keep their existing managed allocation; as replacements
 they are copied, leaving temporary/result ownership unchanged.

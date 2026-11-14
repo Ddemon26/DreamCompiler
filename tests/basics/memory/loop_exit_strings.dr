@@ -1,0 +1,125 @@
+// Expected: backing value
+// Expected: normal
+// Expected: do value
+// Expected: backing value
+// Expected: backing value
+// Expected: default
+// Expected: backing value
+// Expected: backing value
+// Expected: outer loop
+// Expected: case
+// Expected: outer
+// Expected: backing value
+// Expected: static
+// Expected: instance
+// Expected: top
+// Expected: backing value
+func string borrow(string input) { return input; }
+func void runExits(string source, string* values) {
+    string survivor = "outer";
+    int i = 0;
+    while (i < 3) {
+        i++;
+        string whileBody = source;
+        string empty = "";
+        string absent;
+        string localValues[1];
+        localValues[0] = whileBody;
+        string* alias = localValues;
+        {
+            string deep = values[0];
+            if (i == 1) continue;
+            if (i == 3) break;
+            Console.WriteLine(deep);
+        }
+        string late = "normal";
+        Console.WriteLine(late);
+    }
+    int d = 0;
+    do {
+        string doBody = "do" + " value";
+        d++;
+        if (d == 1) continue;
+        Console.WriteLine(doBody);
+        break;
+    } while (d < 3);
+    int f = 0;
+    for (string header = source; f < 3; header = borrow(header)) {
+        string forBody = header;
+        f++;
+        switch (f) {
+            case 1:
+                string switchContinue = header;
+                continue;
+            case 2:
+                string switchBreak = header;
+                break;
+            default:
+                string switchNormal = "default";
+                Console.WriteLine(switchNormal);
+        }
+        Console.WriteLine(forBody);
+        Console.WriteLine(header);
+        if (f == 3) break;
+    }
+    while (true) {
+        string outerBody = "outer loop";
+        int j = 0;
+        for (string innerHeader = source; j < 3; innerHeader = borrow(innerHeader)) {
+            string innerBody = innerHeader;
+            j++;
+            if (j == 1) continue;
+            break;
+        }
+        Console.WriteLine(outerBody);
+        break;
+    }
+    switch (1) {
+        case 1:
+            string caseOwner = "case";
+            while (true) {
+                string loopInSwitch = source;
+                break;
+            }
+            Console.WriteLine(caseOwner);
+            break;
+    }
+    Console.WriteLine(survivor);
+    Console.WriteLine(source);
+}
+class ExitReader {
+    static func void runStatic() {
+        int i = 0;
+        for (i = 0; i < 2; i++) {
+            string staticText = "static";
+            if (i == 0) continue;
+            Console.WriteLine(staticText);
+        }
+    }
+    func void runInstance() {
+        do {
+            string instanceText = "instance";
+            Console.WriteLine(instanceText);
+            break;
+        } while (true);
+    }
+}
+func void runMethods() {
+    ExitReader.runStatic();
+    ExitReader reader = new ExitReader();
+    reader.runInstance();
+}
+string backing = "backing" + " value";
+string values[1];
+values[0] = backing;
+runExits(backing, values);
+runMethods();
+int topIndex = 0;
+for (string topHeader = "top"; topIndex < 2; topHeader = borrow(topHeader)) {
+    string topBody = topHeader;
+    topIndex++;
+    if (topIndex == 1) continue;
+    Console.WriteLine(topBody);
+    break;
+}
+Console.WriteLine(backing);

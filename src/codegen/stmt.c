@@ -459,6 +459,33 @@ static int copies_string_initializer(Node *init) {
                   init->kind == ND_BASE || init->kind == ND_CALL);
 }
 
+static void emit_loop_body(CGCtx *ctx, COut *b, Node *body,
+                           const char *src_file) {
+  CGControlTarget target = {ctx->len, 1, ctx->control_target};
+  ctx->control_target = &target;
+  cg_emit_stmt(ctx, b, body, src_file);
+  ctx->control_target = target.parent;
+}
+
+static void emit_control_jump(CGCtx *ctx, COut *b, int is_continue) {
+  CGControlTarget *target = ctx->control_target;
+  while (target && is_continue && !target->is_loop) target = target->parent;
+  // A compound statement keeps cleanup conditional for an unbraced if body.
+  // Do not pop emitter bindings: other branches still need their scope metadata.
+  c_out_write(b, "{\n");
+  c_out_indent(b);
+  if (target) {
+    for (size_t i = ctx->len; i-- > target->binding_start;) {
+      VarBinding *v = &ctx->vars[i];
+      if (v->owns_string)
+        c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
+    }
+  }
+  c_out_write(b, "%s;\n", is_continue ? "continue" : "break");
+  c_out_dedent(b);
+  c_out_write(b, "}\n");
+}
+
 void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   // Emit debug line directive for this statement
   switch (n->kind) {
@@ -578,11 +605,11 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_write(b, "while (");
     cg_emit_expr(ctx, b, n->as.while_stmt.cond);
     c_out_write(b, ") ");
-    cg_emit_stmt(ctx, b, n->as.while_stmt.body, src_file);
+    emit_loop_body(ctx, b, n->as.while_stmt.body, src_file);
     break;
   case ND_DO_WHILE:
     c_out_write(b, "do ");
-    cg_emit_stmt(ctx, b, n->as.do_while_stmt.body, src_file);
+    emit_loop_body(ctx, b, n->as.do_while_stmt.body, src_file);
     c_out_write(b, " while (");
     cg_emit_expr(ctx, b, n->as.do_while_stmt.cond);
     c_out_write(b, ");");
@@ -609,7 +636,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     if (n->as.for_stmt.update)
       cg_emit_expr(ctx, b, n->as.for_stmt.update);
     c_out_write(b, ") ");
-    cg_emit_stmt(ctx, b, n->as.for_stmt.body, src_file);
+    emit_loop_body(ctx, b, n->as.for_stmt.body, src_file);
     if (declaration) {
       emit_scope_cleanup(ctx, b, loop_start);
       cgctx_scope_leave(ctx);
@@ -618,7 +645,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     }
     break;
   }
-  case ND_SWITCH:
+  case ND_SWITCH: {
+    CGControlTarget target = {ctx->len, 0, ctx->control_target};
+    ctx->control_target = &target;
     c_out_write(b, "switch (");
     cg_emit_expr(ctx, b, n->as.switch_stmt.expr);
     c_out_write(b, ") {");
@@ -639,14 +668,14 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_dedent(b);
     c_out_write(b, "}");
     c_out_newline(b);
+    ctx->control_target = target.parent;
     break;
+  }
   case ND_BREAK:
-    c_out_write(b, "break;");
-    c_out_newline(b);
+    emit_control_jump(ctx, b, 0);
     break;
   case ND_CONTINUE:
-    c_out_write(b, "continue;");
-    c_out_newline(b);
+    emit_control_jump(ctx, b, 1);
     break;
   case ND_RETURN:
     if (ctx->is_async_worker) {

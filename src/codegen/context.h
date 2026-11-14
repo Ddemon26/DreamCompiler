@@ -18,6 +18,12 @@ typedef struct VarBinding {
   int owns_string; /* Qualified scalar declaration; parameters remain borrowed. */
 } VarBinding;
 
+typedef struct CGControlTarget {
+  size_t binding_start; /* First binding whose scope a jump leaves. */
+  int is_loop;
+  struct CGControlTarget *parent;
+} CGControlTarget;
+
 typedef struct CGCtx {
   VarBinding *vars;
   size_t len;
@@ -26,6 +32,7 @@ typedef struct CGCtx {
   TokenKind ret_type;
   int is_async_worker;
   Slice async_func_name;
+  CGControlTarget *control_target;
 } CGCtx;
 
 void cgctx_push(CGCtx *ctx, const char *start, size_t len, TokenKind ty,

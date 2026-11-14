@@ -2,6 +2,50 @@
 
 **Date:** November 14, 2026 UTC
 
+**Pass:** P0024 - owned scalar string cleanup on break/continue
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0023 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43630813439):
+  Linux/Windows checks and full suites **passed** for the exact parent SHA.
+- Baseline `zig build test`: **153 discovered, 135 passed, 18 skipped, zero
+  failures/errors**, 43.62s; `test_results/test_results_20261114_150829_windows.json`.
+- Before implementation, `TestCompiler_LoopExitStrings` **failed both modes** at
+  the exact release total before shutdown, 2.676s. Linux harness cross-links passed
+  before native execution; skipped body cleanup deferred storage until shutdown.
+- `zig build`: **passed** after target-aware cleanup; initial new group **passed
+  both modes**, 3.144s.
+- Final focused ownership matrix: **all twenty modes passed**, 24.888s; new group
+  body 2.37s. Exact generated-C cleanup sequences, Linux harness cross-links,
+  checked native lifetime and exact direct-linked output passed. The new fixture
+  requires thirty-seven nonnull releases and sixteen output lines per mode;
+  prior allocator/refcount/shutdown assertions and eighteen modes are unchanged.
+- Final `zig build test`: **154 discovered, 136 passed, 18 skipped, zero
+  failures/errors**, 42.93s; `test_results/test_results_20261114_151212_windows.json`.
+- Windows Go quick protocol: **all twenty-one groups passed**, 35.530s;
+  external compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.043s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0024 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK discovery failed, without content/permission changes. Same 18 unannotated
+skips/exclusions. Jump cleanup releases qualified owned strings in exited scopes,
+leaving outer locals and for headers live through continue/update. Class-instance
+early exits, unsupported initializers, compound assignment, parameter/field/index
+destinations, owning containers, return ownership and return/exception/finally
+unwinding remain unqualified. See [P0024](passes/P0024-loop-exit-strings.md).
+Ignored evidence: `build/P0024-*.log`.
+
+---
+
+## Historical P0023 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
 **Pass:** P0023 - borrowed string array/pointer block cleanup
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

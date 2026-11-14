@@ -269,8 +269,11 @@ reclaimed at shutdown. Local string arrays contain borrowed element pointers;
 local `string*` bindings borrow their target storage. Normal block exit releases
 neither the container/alias nor its elements. Keep managed backing live while
 using these aliases; copying an element into a scalar still gives it independent
-storage. Parameters, fields, owning containers, compound assignment and early-exit
-cleanup have separate, unqualified ownership rules.
+storage. Break/continue release qualified owned scalar strings in the scopes
+they leave, preserving outer locals and for headers through continue/update.
+Switch breaks leave enclosing loop locals live; switch continues clean through
+the enclosing loop body. Parameters, fields, owning containers, compound assignment,
+class-instance early exits and return/exception cleanup remain unqualified.
 See the [string storage checkpoint](../development/string-ownership.md) for the
 qualified initializer forms and remaining limits.
 

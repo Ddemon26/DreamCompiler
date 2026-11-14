@@ -25,8 +25,9 @@
 | [P0021](P0021-call-string-ownership.md) | 2026-11-14 | Scalar string call initializers own copies without result transfer; both modes/full/quick checks pass | `Pass-ID: P0021` |
 | [P0022](P0022-assigned-string-ownership.md) | 2026-11-14 | Owned scalar replacements copy before old-value release; self/nested assignment, null defaults, both modes/full/quick checks pass | `Pass-ID: P0022` |
 | [P0023](P0023-borrowed-string-containers.md) | 2026-11-14 | Borrowed string arrays/pointers avoid scalar cleanup; four checked modes preserve owned releases, full/quick checks pass | `Pass-ID: P0023` |
+| [P0024](P0024-loop-exit-strings.md) | 2026-11-14 | Break/continue release exited owned scalar strings; target/header boundaries, both checked modes and full/quick checks pass | `Pass-ID: P0024` |
 
-**P0023 validation passed. Verify publication and inspect native CI before allocating P0024.**
+**P0024 validation passed. Verify publication and inspect native CI before allocating P0025.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

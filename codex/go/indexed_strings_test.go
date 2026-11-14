@@ -201,6 +201,27 @@ func TestCompiler_StringContainers(t *testing.T) {
 	})
 }
 
+func TestCompiler_LoopExitStrings(t *testing.T) {
+	checkStringOwnership(t, "loop_exit_strings.dr", 37, []string{
+		// The exact sequences end at the jump: later declarations, surviving
+		// outer bindings and for headers must not be included in cleanup.
+		`dr_release(deep);dr_release(absent);dr_release(empty);dr_release(whileBody);continue;}`,
+		`dr_release(deep);dr_release(absent);dr_release(empty);dr_release(whileBody);break;}`,
+		`dr_release(doBody);continue;}`, `dr_release(doBody);break;}`,
+		`dr_release(switchContinue);dr_release(forBody);continue;}`,
+		`dr_release(switchBreak);break;}`, `{dr_release(forBody);break;}`,
+		`{dr_release(innerBody);continue;}`, `{dr_release(innerBody);break;}`,
+		`}dr_release(innerHeader);}`, `{dr_release(outerBody);break;}`,
+		`{dr_release(loopInSwitch);break;}`, `{dr_release(caseOwner);break;}`,
+		`{dr_release(staticText);continue;}`, `{dr_release(instanceText);break;}`,
+		`{dr_release(topBody);continue;}`, `{dr_release(topBody);break;}`,
+		`}dr_release(header);}`, `}dr_release(topHeader);}`,
+	},
+		"backing value\nnormal\ndo value\nbacking value\nbacking value\ndefault\nbacking value\nbacking value\nouter loop\ncase\nouter\nbacking value\nstatic\ninstance\ntop\nbacking value\n",
+		`dr_release(localValues);`, `dr_release(alias);`, `dr_release(source);`,
+		`dr_release(input);`)
+}
+
 func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string, forbiddenChecks ...string) {
 	t.Helper()
 	tr := NewTestRunner(t)
