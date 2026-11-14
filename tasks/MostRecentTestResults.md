@@ -2,6 +2,47 @@
 
 **Date:** November 14, 2026 UTC
 
+**Pass:** P0021 - scalar string call-initializer copies
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0020 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43539278761):
+  Linux/Windows stability checks and full suite **passed**.
+- Baseline `zig build test`: **149 discovered, 131 passed, 18 skipped, zero
+  failures/errors**, 34.69s; `test_results/test_results_20261114_000133_windows.json`.
+- Before implementation, focused call tests **failed both modes** on invalid
+  live-allocation cleanup, 2.511s. Linux harness cross-links passed first.
+- `zig build`: **passed** after adding call copying. The empty-result fixture was
+  corrected to check output rather than pointer equality against a literal;
+  no existing assertion or compiler equality behavior was changed.
+- Final focused ownership check: **all twelve modes passed**, 12.745s; call body
+  1.97s. Generated copies/releases, Linux cross-links, checked native lifetime and
+  exact direct-linked output passed, retaining all previous ownership checks.
+- Final `zig build test`: **150 discovered, 132 passed, 18 skipped, zero
+  failures/errors**, 33.46s; `test_results/test_results_20261114_000525_windows.json`.
+- Windows Go quick protocol: **all eighteen groups passed**, 27.077s.
+  Existing groups/assertions remain; external compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.046s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0021 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Calls copy readable results without ownership transfer; original
+managed results can remain registered until shutdown. Return/exception and skipped
+body-local cleanup, reassignment, fields and array/pointer-local cleanup remain
+unqualified. See [P0021](passes/P0021-call-string-ownership.md). Ignored evidence:
+`build/P0021-*.log`.
+
+---
+
+## Historical P0020 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
 **Pass:** P0020 - for-header string declaration scope and cleanup
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

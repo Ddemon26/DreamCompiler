@@ -246,13 +246,14 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (literal/identifier/member/for-header slices completed)
+## T011 - Qualify remaining string ownership paths (literal/identifier/member/for-header/call slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
 P0017/P0018/P0019 add literals, identifiers and members; P0020 scopes for-header
-declarations and qualifies their loop-exit cleanup. Source audit still finds
-unconditional block release and plain C assignment elsewhere. Call initializers,
-reassignment, array/pointer-local cleanup,
+declarations and qualifies their loop-exit cleanup; P0021 copies direct call results
+without transferring ownership. Source audit still finds
+unconditional block release and plain C assignment elsewhere.
+Reassignment, array/pointer-local cleanup,
 return transfer, early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
@@ -300,11 +301,21 @@ Full suite: 131 passed, 18 skipped, zero failures/errors; seventeen Go quick gro
 five Python tests and Linux cross-build passed. See
 [P0020](passes/P0020-for-header-string-ownership.md).
 
-Broader T011 remains open. Call/other initializers, reassignment, return/field
-ownership, return/exception cleanup and skipped body-local cleanup remain
-unqualified. Verify P0020 delivery/native CI first; next reproduce scalar string
-call initializers from literal/borrowed versus managed function results in both
-modes, then define and qualify their copy/transfer lifetime contract.
+P0021 reproduces invalid call-result cleanup in both modes and gives direct scalar
+call initializers independent managed copies. Fifteen copy sites, fourteen release
+sites, fourteen nonnull releases and nineteen output lines cover literal/empty/
+borrowed/fresh/local-returned/null results, static/instance/base calls, nested/
+const/grouped declarations, loops and top-level snapshots. Calls evaluate once;
+borrowed backing survives cleanup. Full suite: 132 passed, 18 skipped, zero
+failures/errors; eighteen Go quick groups, five Python tests and Linux cross-build
+passed. See [P0021](passes/P0021-call-string-ownership.md). Original managed results
+can remain registered until shutdown; return transfer is not implemented.
+
+Broader T011 remains open. Other initializers, reassignment, return/field ownership,
+return/exception cleanup and skipped body-local cleanup remain unqualified. Verify
+P0021 delivery/native CI first; next audit/reproduce scalar string reassignment from
+literal/borrowed/managed values on normal paths, then define old-value release and
+replacement-copy rules in both modes. Return transfer remains separate.
 
 ## Later work
 

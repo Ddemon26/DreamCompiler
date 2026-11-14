@@ -165,6 +165,17 @@ their own managed allocation before normal block cleanup. See the bounded
 [string ownership checkpoint](../development/string-ownership.md); other string
 ownership paths and general pointer safety remain unqualified.
 
+### Scalar string call initializers
+
+`string text = getText()` evaluates the call once and copies its readable result
+into independent managed storage. Literal, borrowed, managed and null results
+follow this rule for free functions and static/instance/base methods, including
+const declarations and for headers. Normal declaration cleanup releases the copy.
+The caller does not take ownership of the returned pointer: a fresh managed result
+can remain registered until shutdown. Return transfer, early-exit cleanup and
+dangling results remain unqualified; see the
+[ownership checkpoint](../development/string-ownership.md).
+
 ### Single Parameters
 ```dream
 func void printNumber(int num) {

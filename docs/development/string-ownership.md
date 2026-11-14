@@ -20,7 +20,7 @@ The source may be a local, a top-level binding or a borrowed string parameter;
 it must designate readable string storage or null. Parentheses and `const` bindings
 follow the same rule. Each declaration owns a separate copy, so cleaning up a
 nested alias does not release its source. This does not retain an alias reference
-or transfer parameter ownership. Reassignment and call initializers remain separate.
+or transfer parameter ownership. Reassignment remains separate.
 
 P0019 extends scalar declaration copying to member expressions:
 `string copy = object.field`, `this.field`, `base.field`, and static field access. The receiver
@@ -42,7 +42,19 @@ Header storage is released once on normal termination or a break targeting that
 loop. Continue preserves it through the update and subsequent iterations. This
 also applies at top level, before shutdown. Return and exception exits can bypass
 this cleanup, and cleanup of owned body locals skipped by break/continue remains
-unqualified. Call initializers still require a separate ownership contract.
+unqualified.
+
+P0021 extends scalar declaration copying to direct function and method calls:
+`string text = getText()` evaluates the call once and copies its readable result.
+Literal, borrowed managed, fresh managed and null results use the same rule;
+static, instance and base methods, parentheses, const declarations, loop bodies,
+for headers and top-level declarations follow this path. Cleanup releases the
+declaration's copy, leaving the returned pointer's ownership unchanged. This is
+not a return-transfer ABI: a fresh managed result, or a local whose return bypasses
+cleanup, remains in the allocation registry until shutdown unless otherwise
+released by its owner. This can retain storage and adds an extra allocation.
+The callee must return storage that is still readable when the caller copies it.
+No return cleanup, dangling-result repair or ownership inference is introduced.
 
 ## Storage contract
 
@@ -120,16 +132,27 @@ both harness modes failed Linux C compilation on nine out-of-scope release opera
 Four ordinary/module-entry diagnostic cases now reject string and integer header
 uses after the loop, with source positions and no generated artifacts.
 
+The [call regression](../../tests/basics/memory/call_string_copy.dr) and
+`TestCompiler_CallStrings` check fifteen copy sites, fourteen release sites,
+fourteen nonnull runtime releases and nineteen exact output lines in each mode.
+Literal/empty/borrowed/fresh/local-returned/null results, nested copies, static/
+instance/base calls, zero/multiple loop iterations, const/grouped declarations
+and top-level snapshots are included. An output marker proves once-only call
+evaluation. Borrowed backing survives nested cleanup; the global snapshot survives
+source replacement. Both modes failed the live-allocation assertion before the
+fix. Existing registry/refcount assertions are preserved, including empty registry
+after shutdown. Both quick protocols and CI select this group.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
 headers and linking; Linux runtime evidence still requires native CI.
 
-This is not a complete string ownership system. Call/other initializer forms, string
+This is not a complete string ownership system. Other initializer forms, string
 reassignment, alias retention, array/pointer-local cleanup, function returns,
 early return/exception cleanup, body-local cleanup skipped by break/continue,
 compound expressions and field
-ownership remain unqualified. Existing concatenations/read-line calls are not
+ownership remain unqualified. Existing concatenations/read-line expressions are not
 wrapped in copies by this pass; their temporary/result ownership is unchanged.
 Pointer shape compatibility and general indexed expression typing remain separate
 work. P0016 qualifies direct indexed primitive console formatting, including scalar

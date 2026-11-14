@@ -53,7 +53,7 @@ for scalar literal declarations: seven emitted copy sites, eight local releases,
 ten exact output lines, empty/escaped/const literals, nested blocks, loop bodies,
 free/static/instance functions and top-level storage. Concatenation initialization
 keeps its existing allocation without an extra copy. Both quick protocols and CI
-select it. Call initializers and broader ownership remain open.
+select it. See the call-initializer boundary below; broader ownership remains open.
 
 `TestCompiler_IdentifierStrings` adds scalar identifier initializers through the
 same ordinary/module-entry harness and direct linker: nine identifier-copy sites,
@@ -61,7 +61,7 @@ ten release sites, twelve nonnull runtime releases and nineteen output lines.
 It covers borrowed literal/managed parameters, nested alias chains, const/grouped
 bindings, free/static/instance functions, loop bodies, top-level snapshots and null.
 Sources remain live after nested copies are cleaned up. Both quick protocols and
-CI select it. Assignment, call initializers and return transfer remain
+CI select it. Assignment and return transfer remain
 outside this boundary.
 
 `TestCompiler_MemberStrings` checks scalar member initializers through the same
@@ -70,8 +70,8 @@ release sites, sixteen nonnull releases and twenty-seven output lines. Literal,
 managed and null fields, inherited `this`/`base`, static fields, nested/const/grouped
 bindings, loops, top-level snapshots and once-only temporary receiver construction
 are covered. Sources remain live after nested cleanup; snapshots survive field
-replacement. Both quick protocols and CI select it. Field ownership, call
-initializers, assignment and return transfer remain unqualified.
+replacement. Both quick protocols and CI select it. Field ownership,
+assignment and return transfer remain unqualified.
 
 `TestCompiler_ForStrings` checks supported primitive for-header declaration scope
 and string ownership: nine copy sites, unchanged concatenation, ten loop-exit
@@ -82,6 +82,15 @@ and top-level cleanup are included. Four driver diagnostic cases require useful
 positions and no artifacts for string/integer header uses after a loop. Both quick
 protocols and CI select this group. Return/exception exits and cleanup of owned
 body locals skipped by break/continue remain unqualified.
+
+`TestCompiler_CallStrings` checks fifteen call-copy sites, fourteen release sites,
+fourteen nonnull releases and nineteen output lines in each mode. Literal, empty,
+borrowed, fresh managed, local-returned and null results, nested/const/grouped
+declarations, static/instance/base methods, loops and top-level snapshots are
+covered. The call runs once; cleanup preserves borrowed backing. Both quick
+protocols and CI select it. Calls copy without transferring ownership; original
+managed results may stay registered until shutdown. Return/early-exit cleanup and
+general ownership remain unqualified.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

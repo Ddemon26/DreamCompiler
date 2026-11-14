@@ -102,6 +102,32 @@ func TestCompiler_ForStrings(t *testing.T) {
 		"source value\nsource value\nsource value\nsource value\n1\nfield\nowned value\nnull\nbreak\ncontinue\nsource value\nreused\ntop\n")
 }
 
+func TestCompiler_CallStrings(t *testing.T) {
+	checkStringOwnership(t, "call_string_copy.dr", 14, []string{
+		`literalText=dream_string_copy(@entry@literal());`,
+		`emptyText=dream_string_copy(@entry@empty());`,
+		`alias=dream_string_copy(@entry@borrow(backing));`,
+		`nested=dream_string_copy(@entry@borrow(alias));`,
+		`freshText=dream_string_copy(@entry@fresh());`,
+		`localText=dream_string_copy(@entry@fromLocal());`,
+		`nullText=dream_string_copy(@entry@borrow(absent));`,
+		`staticText=dream_string_copy(Reader_getStatic());`,
+		`instanceText=dream_string_copy(Reader_getInstance(((structReader*)reader)));`,
+		`baseText=dream_string_copy(Base_get(((structBase*)this)));`,
+		`zero=dream_string_copy(@entry@literal());`,
+		`header=dream_string_copy(@entry@borrow(backing));`,
+		`repeated=dream_string_copy(@entry@borrow("tick"));`,
+		`globalText=dream_string_copy(@entry@once());`,
+		`globalSnapshot=dream_string_copy(@entry@borrow(globalBacking));`,
+		`dr_release(literalText);`, `dr_release(emptyText);`, `dr_release(alias);`,
+		`dr_release(nested);`, `dr_release(freshText);`, `dr_release(localText);`,
+		`dr_release(nullText);`, `dr_release(staticText);`, `dr_release(instanceText);`,
+		`dr_release(reader);`, `dr_release(baseText);`, `dr_release(repeated);`,
+		`}dr_release(zero);}`, `}dr_release(header);}`,
+	},
+		"literal\nempty\nbacking value\nbacking value\nbacking value\nfresh value\nlocal value\nnull\nstatic\ninstance\nbase\ntick\ntick\nbacking value\nbacking value\nonce\nbacking value\nbacking value\nglobal\n")
+}
+
 func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string) {
 	t.Helper()
 	tr := NewTestRunner(t)
@@ -151,6 +177,12 @@ func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChe
 			}
 			c := strings.Join(strings.Fields(string(data)), "")
 			for _, emitted := range emittedChecks {
+				// Entry functions are lowered in module mode; methods keep their names.
+				prefix := ""
+				if mode == "module_entry" {
+					prefix = "__dream_module_0_"
+				}
+				emitted = strings.ReplaceAll(emitted, "@entry@", prefix)
 				if !strings.Contains(c, emitted) {
 					t.Fatalf("missing ownership emission %q", emitted)
 				}

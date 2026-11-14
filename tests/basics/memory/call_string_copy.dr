@@ -1,0 +1,83 @@
+// Expected: literal
+// Expected: empty
+// Expected: backing value
+// Expected: backing value
+// Expected: backing value
+// Expected: fresh value
+// Expected: local value
+// Expected: null
+// Expected: static
+// Expected: instance
+// Expected: base
+// Expected: tick
+// Expected: tick
+// Expected: backing value
+// Expected: backing value
+// Expected: once
+// Expected: backing value
+// Expected: backing value
+// Expected: global
+func string literal() { return "literal"; }
+func string empty() { return ""; }
+func string borrow(string input) { return input; }
+func string fresh() { return "fresh" + " value"; }
+func string fromLocal() {
+    string local = "local" + " value";
+    return local;
+}
+func string once() { Console.WriteLine("once"); return "global"; }
+class Base {
+    func string get() { return "base"; }
+}
+class Reader : Base {
+    static func string getStatic() { return "static"; }
+    func string getInstance() { return "instance"; }
+    func void readBase() {
+        string baseText = base.get();
+        Console.WriteLine(baseText);
+    }
+}
+func void exercise(string backing, string absent) {
+    string literalText = literal();
+    Console.WriteLine(literalText);
+    const string emptyText = (empty());
+    Console.Write(emptyText);
+    Console.WriteLine("empty");
+    string alias = borrow(backing);
+    Console.WriteLine(alias);
+    {
+        string nested = borrow(alias);
+        Console.WriteLine(nested);
+    }
+    Console.WriteLine(alias);
+    string freshText = fresh();
+    Console.WriteLine(freshText);
+    string localText = fromLocal();
+    Console.WriteLine(localText);
+    string nullText = borrow(absent);
+    if (nullText == null) { Console.WriteLine("null"); }
+    string staticText = Reader.getStatic();
+    Console.WriteLine(staticText);
+    Reader reader = new Reader();
+    string instanceText = reader.getInstance();
+    Console.WriteLine(instanceText);
+    reader.readBase();
+    for (string zero = literal(); false; ) { Console.WriteLine("unreachable"); }
+    int i = 0;
+    for (string header = borrow(backing); i < 2; i++) {
+        string repeated = borrow("tick");
+        Console.WriteLine(repeated);
+    }
+    Console.WriteLine(backing);
+}
+string globalBacking = "backing" + " value";
+string values[1];
+values[0] = null;
+exercise(globalBacking, values[0]);
+Console.WriteLine(globalBacking);
+const string globalText = once();
+string globalSnapshot = borrow(globalBacking);
+globalBacking = "changed";
+Console.WriteLine(globalSnapshot);
+Console.WriteLine(globalSnapshot);
+Console.WriteLine(globalText);
