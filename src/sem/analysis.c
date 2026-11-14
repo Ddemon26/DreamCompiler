@@ -539,6 +539,7 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
     analyze_expr(s, n->as.do_while_stmt.cond);
     break;
   case ND_FOR:
+    s->scope = scope_push(s->scope);
     if (n->as.for_stmt.init)
       analyze_stmt(s, n->as.for_stmt.init);
     if (n->as.for_stmt.cond)
@@ -546,6 +547,7 @@ static void analyze_stmt(SemAnalyzer *s, Node *n) {
     if (n->as.for_stmt.update)
       analyze_expr(s, n->as.for_stmt.update);
     analyze_stmt(s, n->as.for_stmt.body);
+    s->scope = scope_pop(s->scope);
     break;
   case ND_SWITCH:
     analyze_expr(s, n->as.switch_stmt.expr);

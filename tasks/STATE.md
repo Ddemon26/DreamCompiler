@@ -1,49 +1,53 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0019 - give member string declarations independent storage**.
-- Record: [P0019](passes/P0019-member-string-ownership.md).
-- Parent/fetched approved remote: `8a8329f2869399b602abbbec25f3e3d0039f0f48` (P0018).
-- Resolve the pass commit by its exact `Pass-ID: P0019` trailer.
+- Current pass: **P0020 - scope and release for-header string declarations**.
+- Record: [P0020](passes/P0020-for-header-string-ownership.md).
+- Parent/fetched approved remote: `dcec2a3f9a764b804e071039ba5b626ff0cc9272` (P0019).
+- Resolve the pass commit by its exact `Pass-ID: P0020` trailer.
 - Publication requires push and matching `git ls-remote`; report that identity
   after delivery. Inspect native CI before selecting the next task.
 
-The 2026-11-13 pass started clean in the approved primary checkout, attached branch
+The 2026-11-14 UTC pass started clean in the approved checkout, attached branch
 and origin, one worktree, no unpublished pass or competing active project writer.
-Approved fetch matched HEAD after restricted DNS failure. Automation uses local
-execution and approved cwd. P0018
-[CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43515951800) passed
-native Linux and Windows jobs; no baseline repair was needed.
+Approved fetch matched HEAD after restricted DNS failure. Automation already uses
+local execution and approved cwd. P0019
+[CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43526977205) passed
+native Linux/Windows stability checks and full suite; no baseline repair was needed.
 
-P0019 completes one T011 slice. Scalar declarations initialized directly from
-member expressions (`ND_FIELD`/`ND_BASE`) call `dream_string_copy`, leaving source
-ownership unchanged and giving each nonnull copy independent storage for normal
-cleanup. The receiver runs once. Literal/managed/null fields, inherited `this`/
-`base`, static fields, const/grouped declarations, nested blocks, loops, top-level
-snapshots and a temporary receiver are covered. Concatenation, field assignment,
-allocator and normal cleanup remain unchanged. The ordinary/module-entry matrix
-checks ten member-copy sites, thirteen release sites, sixteen nonnull releases
-and twenty-seven output lines per mode. Sources survive nested copy cleanup;
-a top-level snapshot survives field replacement. Shared helper checks prove copy
-lifetime after backing release. All previous ownership checks remain selected.
+P0020 completes one T011 slice. Semantic for-loop scopes prevent header binding
+leaks. Declaration-form loops emit a wrapper scope and reuse normal declaration
+emission, then release the header after the loop. Literal/index/identifier/member
+string initializers copy; concatenation keeps its allocation. Initialization runs
+once even with zero iterations. Headers remain available in condition/body/update,
+are unavailable afterward, and later loops can reuse their names. Existing
+restrictions on shadowing enclosing names remain unchanged.
 
-Unchanged baseline: 129 passed/18 skipped/no failures. Both new modes reproduced
-invalid field cleanup with the live registry before implementation; all eight
-ownership modes passed afterward. Final full suite: **148 discovered, 130 passed,
-18 skipped, zero failures/errors**, 36.98s. All **sixteen Go quick groups passed**,
-29.766s; Python **five passed**, 0.043s. Linux compiler cross-build and both new
-harness mode cross-links passed; Linux binaries were not run locally. Native
-P0019 runtime awaits CI. See [MostRecentTestResults.md](MostRecentTestResults.md).
+The ordinary/module-entry regression checks nine copy sites, ten release sites,
+nine nonnull checked releases and thirteen output lines per mode. Zero/multiple
+iterations, borrowed sources, member/index/null values, once-only indexing,
+condition/update visibility, break/continue and top-level cleanup are included.
+Four positioned, artifact-free driver cases reject header uses after the loop.
+The test first reproduced a leaked-name redefinition; semantic-only repair then
+exposed nine invalid C cleanup references per mode. The checked allocator and
+exact-output paths pass after emission repair; all previous assertions remain.
 
-Same 18 skips/exclusions remain. Call/for-header initializers, reassignment,
-return/field ownership, array/pointer-local and early-exit cleanup remain
-unqualified. Copies add allocation cost and require readable input. The temporary
-receiver is reclaimed at shutdown by the existing registry. General shape/bounds/
-operator correctness remains separate; existing harness const-discard warnings
-remain. Windows tools: Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4. Approved
-SDK/cache access used without content/permission changes; compiler checks sequential.
+Unchanged baseline: 130 passed/18 skipped/no failures. Final full suite:
+**149 discovered, 131 passed, 18 skipped, zero failures/errors**, 33.93s. All
+**seventeen Go quick groups passed**, 25.622s; Python **five passed**, 0.043s.
+Linux compiler cross-build and both new harness cross-links passed; Linux binaries
+were not run locally. Native P0020 runtime awaits CI. See
+[MostRecentTestResults.md](MostRecentTestResults.md).
 
-Next: verify P0019 delivery and inspect native CI, repairing failures first.
-Otherwise take a bounded **T011 for-header declaration** slice: reproduce string
-binding scope/cleanup emission for zero and nonzero iterations in both modes,
-then qualify storage ownership and loop-exit cleanup. Do not start a second pass here.
+Same 18 skips/exclusions remain. Return/exception exits can bypass header cleanup;
+owned body locals skipped by break/continue remain unqualified. Call/other
+initializers, reassignment, return/field ownership and array/pointer-local cleanup
+remain open. Copy cost/readable-input/null-on-allocation-failure constraints,
+general shape/bounds/operator limits and existing C warnings remain. Windows
+tools: Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4. Approved SDK/cache access
+used without content/permission changes; compiler checks sequential.
+
+Next: verify P0020 delivery and inspect native CI, repairing failures first.
+Otherwise take a bounded **T011 call-initializer** slice: reproduce literal/borrowed
+versus managed string function results in scalar declarations in both modes, then
+qualify copy/transfer lifetime. Do not start a second pass here.

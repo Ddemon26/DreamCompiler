@@ -38,6 +38,10 @@ func TestCompiler_DiagnosticExitStatus(t *testing.T) {
 		{"member_primitive_field", "int value = 1;\n\nConsole.WriteLine(value.missing);", "field receiver must be a class or struct", nil},
 		{"syntax", "int x = ;", "error:", nil},
 		{"undefined_variable", "int x = missing + 1;", "undefined variable 'missing'", nil},
+		{"for_string_scope", "for (string hidden = \"text\"; false; ) {}\n\nConsole.WriteLine(hidden);", "undefined variable 'hidden'", nil},
+		{"for_int_scope", "for (int hidden = 0; hidden < 1; hidden++) {}\n\nConsole.WriteLine(hidden);", "undefined variable 'hidden'", nil},
+		{"for_module_string_scope", "for (string hidden = \"text\"; false; ) {}\n\nConsole.WriteLine(hidden);", "undefined variable 'hidden'", []string{"--multi-file"}},
+		{"for_module_int_scope", "for (int hidden = 0; hidden < 1; hidden++) {}\n\nConsole.WriteLine(hidden);", "undefined variable 'hidden'", []string{"--multi-file"}},
 		{"const_assignment", "const int x = 42; x = 50;", "cannot assign to const variable 'x'", nil},
 		{"return_int", "func int value() { return \"bad\"; }", "return expression has incompatible type: expected 'int', got 'string'", nil},
 		{"return_float", "func float value() { return 1; }", "return expression has incompatible type: expected 'float', got 'int'", nil},
@@ -82,7 +86,7 @@ func TestCompiler_DiagnosticExitStatus(t *testing.T) {
 			if !strings.Contains(string(output), tc.diagnostic) {
 				t.Fatalf("Missing diagnostic %q: %s", tc.diagnostic, output)
 			}
-			if strings.HasPrefix(tc.name, "member_") {
+			if strings.HasPrefix(tc.name, "member_") || strings.HasPrefix(tc.name, "for_") {
 				plain := regexp.MustCompile(`\x1b+\[[0-9;]*m`).ReplaceAllString(string(output), "")
 				if !regexp.MustCompile(`(?m)(^|:)3:[1-9][0-9]*: error:`).MatchString(plain) {
 					t.Fatalf("Missing useful source position on line 3: %s", output)

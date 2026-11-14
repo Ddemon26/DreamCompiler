@@ -1,0 +1,62 @@
+// Expected: source value
+// Expected: source value
+// Expected: source value
+// Expected: source value
+// Expected: 1
+// Expected: field
+// Expected: owned value
+// Expected: null
+// Expected: break
+// Expected: continue
+// Expected: source value
+// Expected: reused
+// Expected: top
+class HeaderSource {
+    static string text;
+}
+func void runHeaders(string source, string* values) {
+    int i = 0;
+    for (string zero = "zero"; i < 0; i++) {
+        Console.WriteLine(zero);
+    }
+    for (string repeated = source; i < 2; i++) {
+        Console.WriteLine(repeated);
+    }
+    Console.WriteLine(source);
+    int index = 0;
+    for (string indexed = values[index++]; i < 3; i++) {
+        Console.WriteLine(indexed);
+    }
+    Console.WriteLine(index);
+    for (string member = HeaderSource.text; i < 4; i++) {
+        Console.WriteLine(member);
+    }
+    for (string managed = "owned" + " value"; i < 5; i++) {
+        Console.WriteLine(managed);
+    }
+    for (string absent = values[1]; i < 6; i++) {
+        if (absent == null) { Console.WriteLine("null"); }
+    }
+    for (string stopped = "break"; ; ) {
+        Console.WriteLine(stopped);
+        break;
+    }
+    for (string continued = "continue"; continued != null && i < 8; i = i + (continued != null ? 1 : 99)) {
+        if (i == 6) { continue; }
+        Console.WriteLine(continued);
+    }
+    Console.WriteLine(source);
+    for (string repeated = "reused"; i < 9; i++) {
+        Console.WriteLine(repeated);
+    }
+}
+HeaderSource.text = "field";
+string backing = "source" + " value";
+string values[2];
+values[0] = backing;
+values[1] = null;
+runHeaders(backing, values);
+int topIndex = 0;
+for (string top = "top"; topIndex < 1; topIndex++) {
+    Console.WriteLine(top);
+}

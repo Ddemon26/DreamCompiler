@@ -229,6 +229,12 @@ ConsoleCall         ::= "Console" "." ("WriteLine" | "Write" | "ReadLine") Invoc
 5. `Console.Write`/`WriteLine`/`ReadLine` are built‑ins; they do not require namespace qualification.
 6. Target C code‑gen uses 32‑bit signed integers and zero‑terminated UTF‑8 strings.
 7. Control‑flow semantics follow C# where implemented; `switch` supports constant integral cases with full `break` statement functionality and multiple statements per case.
+   A supported primitive `for` header declaration is scoped to that loop: its
+   binding is visible in condition/body/update and unavailable afterward. Later
+   loops may reuse the name; existing enclosing-name shadowing restrictions remain.
+   Scalar string header initialization and loop-exit cleanup follow the bounded
+   [ownership contract](../../development/string-ownership.md); return/exception
+   exits and skipped body-local cleanup remain unqualified.
 8. **String concatenation** using `+` operator with automatic type conversion for mixed-type operations (`string + int/float`).
 9. Basic exception handling with `try`/`catch` statements and `throw` uses a simple longjmp mechanism.
 

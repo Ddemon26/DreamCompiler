@@ -441,6 +441,16 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
   c_out_newline(b);
 }
 
+static void emit_scope_cleanup(CGCtx *ctx, COut *b, size_t start) {
+  for (size_t i = ctx->len; i-- > start;) {
+    VarBinding *v = &ctx->vars[i];
+    if (v->type == TK_KW_STRING ||
+        (v->type == TK_IDENT && cg_is_class_type(v->type_name))) {
+      c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
+    }
+  }
+}
+
 void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   // Emit debug line directive for this statement
   switch (n->kind) {
@@ -561,39 +571,20 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_write(b, ");");
     c_out_newline(b);
     break;
-  case ND_FOR:
-    c_out_write(b, "for (");
-    if (n->as.for_stmt.init) {
-      if (n->as.for_stmt.init->kind == ND_VAR_DECL) {
-        Node *vd = n->as.for_stmt.init;
-        if (vd->as.var_decl.array_len > 0) {
-          if (vd->as.var_decl.is_const) {
-            c_out_write(b, "const ");
-          }
-          emit_type(b, vd->as.var_decl.type, vd->as.var_decl.type_name);
-          c_out_write(b, " %.*s[%zu]", (int)vd->as.var_decl.name.len,
-                      vd->as.var_decl.name.start, vd->as.var_decl.array_len);
-          if (vd->as.var_decl.init) {
-            c_out_write(b, " = ");
-            cg_emit_expr(ctx, b, vd->as.var_decl.init);
-          }
-        } else {
-          if (vd->as.var_decl.is_const) {
-            c_out_write(b, "const ");
-          }
-          emit_type(b, vd->as.var_decl.type, vd->as.var_decl.type_name);
-          c_out_write(b, " %.*s", (int)vd->as.var_decl.name.len,
-                      vd->as.var_decl.name.start);
-          if (vd->as.var_decl.init) {
-            c_out_write(b, " = ");
-            cg_emit_expr(ctx, b, vd->as.var_decl.init);
-          }
-        }
-        cgctx_push_decl(ctx, vd);
-      } else {
-        cg_emit_expr(ctx, b, n->as.for_stmt.init);
-      }
+  case ND_FOR: {
+    Node *init = n->as.for_stmt.init;
+    int declaration = init && init->kind == ND_VAR_DECL;
+    size_t loop_start = ctx->len;
+    if (declaration) {
+      // Keep the binding alive through condition/body/update and release it
+      // after the loop, including zero iterations and a loop-targeting break.
+      c_out_write(b, "{\n");
+      c_out_indent(b);
+      cgctx_scope_enter(ctx);
+      cg_emit_stmt(ctx, b, init, src_file);
     }
+    c_out_write(b, "for (");
+    if (init && !declaration) cg_emit_expr(ctx, b, init);
     c_out_write(b, "; ");
     if (n->as.for_stmt.cond)
       cg_emit_expr(ctx, b, n->as.for_stmt.cond);
@@ -602,7 +593,14 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       cg_emit_expr(ctx, b, n->as.for_stmt.update);
     c_out_write(b, ") ");
     cg_emit_stmt(ctx, b, n->as.for_stmt.body, src_file);
+    if (declaration) {
+      emit_scope_cleanup(ctx, b, loop_start);
+      cgctx_scope_leave(ctx);
+      c_out_dedent(b);
+      c_out_write(b, "}\n");
+    }
     break;
+  }
   case ND_SWITCH:
     c_out_write(b, "switch (");
     cg_emit_expr(ctx, b, n->as.switch_stmt.expr);
@@ -703,13 +701,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     cgctx_scope_enter(ctx);
     for (size_t i = 0; i < n->as.block.len; i++)
       cg_emit_stmt(ctx, b, n->as.block.items[i], src_file);
-    for (size_t i = ctx->len; i-- > block_start;) {
-      VarBinding *v = &ctx->vars[i];
-      if (v->type == TK_KW_STRING ||
-          (v->type == TK_IDENT && cg_is_class_type(v->type_name))) {
-        c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
-      }
-    }
+    emit_scope_cleanup(ctx, b, block_start);
     cgctx_scope_leave(ctx);
     c_out_dedent(b);
     c_out_write(b, "}");

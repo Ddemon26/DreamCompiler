@@ -1,5 +1,46 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0020 - for-header string declaration scope and cleanup
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0019 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43526977205):
+  Linux/Windows jobs **passed**, including stability checks and full suite.
+- Unchanged `zig build test`: **148 discovered, 130 passed, 18 skipped, zero
+  failures/errors**, 40.26s; `test_results/test_results_20261113_180507_windows.json`.
+- Before implementation, focused for-header tests **failed both modes** on leaked
+  binding redefinition, 0.535s. After semantic scope repair and a successful build,
+  both failed Linux harness C compilation on nine out-of-scope cleanup operands,
+  1.245s. Runtime lifetime checks could not run before emission repair.
+- `zig build`: **passed** after code generation repair.
+- Final focused ownership/diagnostic check: **all ten ownership modes and driver
+  diagnostics passed**, 12.118s; for-header body 2.15s. Generated-C copy/cleanup,
+  Linux cross-links, native checked lifetime, exact direct-linked output and four
+  positioned/artifact-free scope rejections passed.
+- Final `zig build test`: **149 discovered, 131 passed, 18 skipped, zero
+  failures/errors**, 33.93s; `test_results/test_results_20261113_180919_windows.json`.
+- Windows Go quick protocol: **all seventeen groups passed**, 25.622s; for-header
+  body 2.06s. Existing groups/assertions remain; compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.043s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0020 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Return/exception exits can bypass header cleanup; owned body locals
+skipped by break/continue, call/other initializers, reassignment, return/field
+ownership and array/pointer-local cleanup remain unqualified. See
+[P0020](passes/P0020-for-header-string-ownership.md). Ignored evidence: `build/P0020-*.log`.
+
+---
+
+## Historical P0019 checkpoint - November 13, 2026
+
 **Date:** November 13, 2026 UTC
 
 **Pass:** P0019 - scalar member string declaration ownership

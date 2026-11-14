@@ -246,12 +246,13 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (literal/identifier/member slices completed)
+## T011 - Qualify remaining string ownership paths (literal/identifier/member/for-header slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
-P0017/P0018/P0019 add literals, identifiers and members. Source audit still finds unconditional
-block release of string bindings and plain C assignment elsewhere. For-header
-declarations, call initializers, reassignment, array/pointer-local cleanup,
+P0017/P0018/P0019 add literals, identifiers and members; P0020 scopes for-header
+declarations and qualifies their loop-exit cleanup. Source audit still finds
+unconditional block release and plain C assignment elsewhere. Call initializers,
+reassignment, array/pointer-local cleanup,
 return transfer, early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
@@ -289,10 +290,21 @@ survives field replacement. Full suite: 130 passed, 18 skipped, zero failures/
 errors; sixteen Go quick groups, five Python tests and Linux cross-build passed.
 See [P0019](passes/P0019-member-string-ownership.md).
 
-Broader T011 remains open. Call/for-header initializers, reassignment, return/field
-ownership and early-exit cleanup are unqualified. Verify P0019 delivery/native CI
-first; next reproduce for-header string binding scope/cleanup emission with zero
-and nonzero iterations in both modes, then qualify ownership and loop-exit cleanup.
+P0020 scopes for-header bindings in semantic analysis and C emission, reuses normal
+declaration copying, and releases each header after its loop. Nine copy sites, ten
+release sites, nine nonnull checked releases and thirteen output lines per mode
+cover zero/multiple iterations, borrowed/member/index/null sources, once-only
+indexing, header visibility in condition/update, break/continue, name reuse and
+top-level cleanup. Four positioned/artifact-free cases reject post-loop uses.
+Full suite: 131 passed, 18 skipped, zero failures/errors; seventeen Go quick groups,
+five Python tests and Linux cross-build passed. See
+[P0020](passes/P0020-for-header-string-ownership.md).
+
+Broader T011 remains open. Call/other initializers, reassignment, return/field
+ownership, return/exception cleanup and skipped body-local cleanup remain
+unqualified. Verify P0020 delivery/native CI first; next reproduce scalar string
+call initializers from literal/borrowed versus managed function results in both
+modes, then define and qualify their copy/transfer lifetime contract.
 
 ## Later work
 

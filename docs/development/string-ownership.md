@@ -29,6 +29,21 @@ may borrow literal, managed or null storage. Copying leaves field/source ownersh
 unchanged and gives the declaration its own storage for normal cleanup. It does
 not implement field initialization, replacement or destruction ownership.
 
+P0020 applies the same declaration path to supported primitive `for` headers.
+For example, `for (string text = source; condition; update) { ... }` creates a
+loop scope containing the declaration and the C loop, then releases `text` after
+the loop. Literal/index/identifier/member initializers copy as above; concatenation
+initializers keep their existing managed allocation. Initialization runs once,
+even when the condition is initially false. The binding is visible in condition,
+body and update, and unavailable afterward; separate loops may reuse its name.
+Existing restrictions on shadowing an enclosing binding remain unchanged.
+
+Header storage is released once on normal termination or a break targeting that
+loop. Continue preserves it through the update and subsequent iterations. This
+also applies at top level, before shutdown. Return and exception exits can bypass
+this cleanup, and cleanup of owned body locals skipped by break/continue remains
+unqualified. Call initializers still require a separate ownership contract.
+
 ## Storage contract
 
 | Storage | Current implementation | Indexed scalar initializer |
@@ -93,14 +108,27 @@ proves a temporary receiver runs once. Helper checks above establish copy lifeti
 after backing release. Before P0019, both modes failed the live-registry assertion
 on literal field cleanup. Both quick protocols and CI select this matrix.
 
+The [for-header regression](../../tests/basics/memory/for_string_copy.dr) and
+`TestCompiler_ForStrings` check nine copy sites, unchanged concatenation emission,
+ten header release sites and exactly nine nonnull runtime releases, with thirteen
+output lines in each mode. Zero/multiple iterations, borrowed managed sources,
+member/index/null values, once-only indexing, break, continue, header use in the
+condition/update, reused names and top-level cleanup are covered. Generated C
+must release each header immediately after its loop, within the wrapper scope.
+Before P0020, reused names failed semantic analysis; after semantic scope repair,
+both harness modes failed Linux C compilation on nine out-of-scope release operands.
+Four ordinary/module-entry diagnostic cases now reject string and integer header
+uses after the loop, with source positions and no generated artifacts.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
 headers and linking; Linux runtime evidence still requires native CI.
 
-This is not a complete string ownership system. For-header declarations, call/other initializer forms, string
+This is not a complete string ownership system. Call/other initializer forms, string
 reassignment, alias retention, array/pointer-local cleanup, function returns,
-early return/break/continue/exception cleanup, compound expressions and field
+early return/exception cleanup, body-local cleanup skipped by break/continue,
+compound expressions and field
 ownership remain unqualified. Existing concatenations/read-line calls are not
 wrapped in copies by this pass; their temporary/result ownership is unchanged.
 Pointer shape compatibility and general indexed expression typing remain separate

@@ -81,6 +81,27 @@ func TestCompiler_MemberStrings(t *testing.T) {
 	}, "literal\nliteral\nliteral\nliteral\nliteral\nliteral\nliteral\nliteral\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nmanaged value\nnull\ncreated\ntemporary\nstatic value\nstatic value\nstatic value\nglobal\nglobal\nglobal\nchanged\n")
 }
 
+func TestCompiler_ForStrings(t *testing.T) {
+	checkStringOwnership(t, "for_string_copy.dr", 9, []string{
+		`zero=dream_string_copy("zero");`,
+		`repeated=dream_string_copy(source);`,
+		`indexed=dream_string_copy((values[(index++)]));`,
+		`member=dream_string_copy(HeaderSource_text);`,
+		`managed=(dream_concat("owned","value"));`,
+		`absent=dream_string_copy((values[1]));`,
+		`stopped=dream_string_copy("break");`,
+		`continued=dream_string_copy("continue");`,
+		`repeated=dream_string_copy("reused");`,
+		`top=dream_string_copy("top");`,
+		"}dr_release(zero);}", "}dr_release(repeated);}",
+		"}dr_release(indexed);}", "}dr_release(member);}",
+		"}dr_release(managed);}", "}dr_release(absent);}",
+		"}dr_release(stopped);}", "}dr_release(continued);}",
+		"}dr_release(top);}",
+	},
+		"source value\nsource value\nsource value\nsource value\n1\nfield\nowned value\nnull\nbreak\ncontinue\nsource value\nreused\ntop\n")
+}
+
 func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string) {
 	t.Helper()
 	tr := NewTestRunner(t)
