@@ -325,6 +325,19 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     c_out_write(b, ")");
     break;
   case ND_BINOP:
+    if (n->as.bin.op == TK_EQ && n->as.bin.lhs->kind == ND_IDENT) {
+      Node *lhs = n->as.bin.lhs;
+      const VarBinding *binding = cgctx_binding(ctx, lhs->as.ident.start,
+                                              lhs->as.ident.len);
+      if (binding && binding->owns_string) {
+        c_out_write(b, "__dream_string_assign(&");
+        cg_emit_expr(ctx, b, lhs);
+        c_out_write(b, ", ");
+        cg_emit_expr(ctx, b, n->as.bin.rhs);
+        c_out_write(b, ")");
+        break;
+      }
+    }
     c_out_write(b, "(");
     if (n->as.bin.op == TK_PLUS) {
       int lhs_is_string = cg_is_string_expr(ctx, n->as.bin.lhs);

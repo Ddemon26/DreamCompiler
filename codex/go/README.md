@@ -83,14 +83,25 @@ positions and no artifacts for string/integer header uses after a loop. Both qui
 protocols and CI select this group. Return/exception exits and cleanup of owned
 body locals skipped by break/continue remain unqualified.
 
-`TestCompiler_CallStrings` checks fifteen call-copy sites, fourteen release sites,
-fourteen nonnull releases and nineteen output lines in each mode. Literal, empty,
+`TestCompiler_CallStrings` checks fifteen call-copy sites, fourteen block/header release sites,
+fifteen nonnull releases and nineteen output lines in each mode (P0022 also releases
+the replaced top-level backing). Literal, empty,
 borrowed, fresh managed, local-returned and null results, nested/const/grouped
 declarations, static/instance/base methods, loops and top-level snapshots are
 covered. The call runs once; cleanup preserves borrowed backing. Both quick
 protocols and CI select it. Calls copy without transferring ownership; original
 managed results may stay registered until shutdown. Return/early-exit cleanup and
 general ownership remain unqualified.
+
+`TestCompiler_AssignedStrings` checks plain `=` on qualified owned scalar
+bindings in both modes: thirty-nine nonnull checked releases and thirty-three
+exact output lines. Generated-C checks require copying before old-value release,
+assignment result values, null defaults and unchanged borrowed parameter/field/index
+destinations. Literal/managed/borrowed/member/index/call sources, self/nested/chained
+assignment, empty/null values, once-only effects, nested source lifetime, free/static/
+instance methods, loops, header updates and top-level replacement are covered.
+Both quick protocols and CI select it. Compound assignment, ownership transfer,
+parameter/field/index destination ownership and early-exit cleanup remain open.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

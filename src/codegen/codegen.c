@@ -76,6 +76,13 @@ static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode
   }
   c_out_newline(&builder);
 
+  // Evaluate/copy the replacement before releasing the slot's current value.
+  // In particular, self-assignment and borrowed results can read that value.
+  c_out_write(&builder, "static char *__dream_string_assign(char **slot, const char *text) {\n");
+  c_out_write(&builder, "    char *copy = dream_string_copy(text);\n");
+  c_out_write(&builder, "    dr_release(*slot);\n");
+  c_out_write(&builder, "    *slot = copy;\n    return copy;\n}\n\n");
+
   // Initialize exception handling system
   c_out_write(&builder, "static void dream_init_runtime(void) {\n");
   c_out_write(&builder, "    dream_exception_init();\n");

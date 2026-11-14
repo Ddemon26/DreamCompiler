@@ -249,18 +249,26 @@ bool z = true;
 
 ## Memory Management
 
-Dream uses automatic reference counting for memory management:
+Qualified scalar string declarations own independent managed storage. Plain `=`
+on these bindings copies the readable replacement before releasing the old value;
+self-assignment is safe. A scalar string declared without an initializer starts as
+null. For example:
 
 ```dream
-// String memory is automatically managed
 string text1 = "Hello";
-string text2 = text1;      // Reference count increases
-text1 = "World";            // Original "Hello" reference count decreases
-
-// Arrays are also automatically managed
-int numbers[100];           // Automatically allocated
-// Automatically freed when out of scope
+string text2 = text1;      // Independent copy; text1's reference count is unchanged
+text1 = "World";          // Copy "World", release text1's old allocation
+// text2 still contains "Hello"
+string pending;           // Null until assigned
+pending = text2;          // Independent copy
 ```
+
+Normal block cleanup releases each owned scalar's current value. Supported
+for-header strings are released after their loop; final top-level storage is
+reclaimed at shutdown. Parameters, fields, array/pointer bindings, compound
+assignment and early-exit cleanup have separate, unqualified ownership rules.
+See the [string storage checkpoint](../development/string-ownership.md) for the
+qualified initializer forms and remaining limits.
 
 ## Best Practices
 

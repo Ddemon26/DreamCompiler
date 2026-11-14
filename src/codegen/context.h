@@ -15,6 +15,7 @@ typedef struct VarBinding {
   Slice type_name;
   int depth;
   int indirections; /* Array and explicit pointer layers, excluding string storage. */
+  int owns_string; /* Qualified scalar declaration; parameters remain borrowed. */
 } VarBinding;
 
 typedef struct CGCtx {

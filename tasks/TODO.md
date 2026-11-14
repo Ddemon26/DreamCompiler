@@ -246,14 +246,14 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (literal/identifier/member/for-header/call slices completed)
+## T011 - Qualify remaining string ownership paths (initializer/for-header/plain owned-scalar assignment slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
 P0017/P0018/P0019 add literals, identifiers and members; P0020 scopes for-header
 declarations and qualifies their loop-exit cleanup; P0021 copies direct call results
-without transferring ownership. Source audit still finds
-unconditional block release and plain C assignment elsewhere.
-Reassignment, array/pointer-local cleanup,
+without transferring ownership; P0022 qualifies plain replacement on known-owned
+scalar identifiers. Source audit still finds unconditional block release and plain
+C assignment elsewhere. Compound assignment, array/pointer-local cleanup,
 return transfer, early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
@@ -311,11 +311,26 @@ failures/errors; eighteen Go quick groups, five Python tests and Linux cross-bui
 passed. See [P0021](passes/P0021-call-string-ownership.md). Original managed results
 can remain registered until shutdown; return transfer is not implemented.
 
-Broader T011 remains open. Other initializers, reassignment, return/field ownership,
-return/exception cleanup and skipped body-local cleanup remain unqualified. Verify
-P0021 delivery/native CI first; next audit/reproduce scalar string reassignment from
-literal/borrowed/managed values on normal paths, then define old-value release and
-replacement-copy rules in both modes. Return transfer remains separate.
+P0022 copies plain `=` replacements before releasing a known-owned scalar
+identifier's old value, preserving self/chained/nested assignment and expression
+results. No-initializer scalar strings now start as null. Thirty-nine nonnull
+checked releases and thirty-three output lines in both modes cover literal,
+borrowed/managed/member/index/call replacement, source/copy lifetime, null/empty,
+once-only effects, static/instance paths, loops, header updates and top-level
+replacement. The call fixture's release count increases to fifteen to require
+old top-level reclamation. Full suite: 133 passed, 18 skipped, no failures/errors;
+nineteen Go quick groups, five Python tests and Linux cross-build passed. See
+[P0022](passes/P0022-assigned-string-ownership.md). Replacement temporaries can
+remain registered until shutdown; parameter/field/index destinations, other
+initializers, compound assignment and return transfer remain unqualified.
+
+Broader T011 remains open. Verify P0022 delivery/native CI first. Next qualify
+normal block cleanup for local string arrays and borrowed string pointers:
+a P0022 intermediate fixture reproduced `dr_release` of a stack string array.
+`emit_scope_cleanup` currently checks only the primitive string tag, ignoring
+array/pointer layers. Require checked lifetime evidence for both binding forms,
+preserve owned-scalar releases, and document borrowed element ownership; keep
+return/exception and skipped body-local cleanup separate.
 
 ## Later work
 

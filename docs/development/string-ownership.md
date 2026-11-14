@@ -1,4 +1,4 @@
-# Scalar string initialization checkpoint
+# Scalar string storage checkpoint
 
 P0014 qualifies one ownership boundary: a scalar `string` declaration whose
 initializer is an index expression, for example `string text = values[i]`.
@@ -55,6 +55,25 @@ cleanup, remains in the allocation registry until shutdown unless otherwise
 released by its owner. This can retain storage and adds an extra allocation.
 The callee must return storage that is still readable when the caller copies it.
 No return cleanup, dangling-result repair or ownership inference is introduced.
+
+P0022 qualifies plain `=` when the destination is an identifier bound to a known
+owned scalar declaration. The emitter records this for the copied initializer
+forms above, concatenation and read-line initializers, and declarations without
+an initializer. The latter now start as null. Parameters do not acquire this flag;
+fields, indexed destinations, pointer/array bindings and compound operators keep
+their existing emission. Other initializer forms remain unqualified.
+
+`text = replacement` evaluates the replacement once, copies its readable bytes
+(or preserves null), releases the slot's current managed allocation, stores the
+copy and yields that pointer as the assignment expression's value. Copying first
+makes `text = text`, a call borrowing `text`, and nested/chained assignment safe.
+Nested replacement of the same slot releases the value current after the inner
+assignment. Normal block/for-header cleanup later releases the final copy;
+top-level final storage remains for shutdown. An initially null slot needs no
+release. Allocation failure follows `dream_string_copy`: the new value is null
+and the old value is released. Source ownership is unchanged. Fresh call,
+concatenation and read-line results used as replacements can remain registered
+until shutdown; this pass does not introduce temporary ownership transfer.
 
 ## Storage contract
 
@@ -133,8 +152,9 @@ Four ordinary/module-entry diagnostic cases now reject string and integer header
 uses after the loop, with source positions and no generated artifacts.
 
 The [call regression](../../tests/basics/memory/call_string_copy.dr) and
-`TestCompiler_CallStrings` check fifteen copy sites, fourteen release sites,
-fourteen nonnull runtime releases and nineteen exact output lines in each mode.
+`TestCompiler_CallStrings` check fifteen copy sites, fourteen block/header release sites,
+fifteen nonnull runtime releases and nineteen exact output lines in each mode
+after P0022 adds release of the replaced top-level backing (fourteen in P0021).
 Literal/empty/borrowed/fresh/local-returned/null results, nested copies, static/
 instance/base calls, zero/multiple loop iterations, const/grouped declarations
 and top-level snapshots are included. An output marker proves once-only call
@@ -143,17 +163,31 @@ source replacement. Both modes failed the live-allocation assertion before the
 fix. Existing registry/refcount assertions are preserved, including empty registry
 after shutdown. Both quick protocols and CI select this group.
 
+The [assignment regression](../../tests/basics/memory/assigned_string_copy.dr) and
+`TestCompiler_AssignedStrings` require thirty-nine nonnull checked releases and
+thirty-three exact output lines in both modes. They check replacement copy/release
+ordering in generated C, managed/literal/borrowed/member/index/call sources,
+self/chained/nested assignment and its result, null/empty values, null defaults,
+source survival and copies surviving nested source cleanup. Index and call markers
+prove once-only evaluation. Free/static/instance paths, loop bodies, header updates
+and top-level replacement are included. Parameter rebinding and field/index
+writes retain their existing borrowed emission. Both modes failed live-registry
+cleanup before the fix; no allocator assertions were removed. Both quick protocols
+and CI select this group. The exact release total checks old-value reclamation
+as well as final block/header cleanup; shutdown still requires an empty registry.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
 headers and linking; Linux runtime evidence still requires native CI.
 
-This is not a complete string ownership system. Other initializer forms, string
-reassignment, alias retention, array/pointer-local cleanup, function returns,
+This is not a complete string ownership system. Other initializer forms, compound
+assignment, parameter/field/index destination ownership, alias retention,
+array/pointer-local cleanup, function returns,
 early return/exception cleanup, body-local cleanup skipped by break/continue,
-compound expressions and field
-ownership remain unqualified. Existing concatenations/read-line expressions are not
-wrapped in copies by this pass; their temporary/result ownership is unchanged.
+compound expressions and field ownership remain unqualified. Concatenation and
+read-line initializers keep their existing managed allocation; as replacements
+they are copied, leaving temporary/result ownership unchanged.
 Pointer shape compatibility and general indexed expression typing remain separate
 work. P0016 qualifies direct indexed primitive console formatting, including scalar
 string characters; it does not establish semantic argument/return shapes.

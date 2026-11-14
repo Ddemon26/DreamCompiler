@@ -451,6 +451,12 @@ static void emit_scope_cleanup(CGCtx *ctx, COut *b, size_t start) {
   }
 }
 
+static int copies_string_initializer(Node *init) {
+  return init && (init->kind == ND_INDEX || init->kind == ND_STRING ||
+                  init->kind == ND_IDENT || init->kind == ND_FIELD ||
+                  init->kind == ND_BASE || init->kind == ND_CALL);
+}
+
 void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   // Emit debug line directive for this statement
   switch (n->kind) {
@@ -530,18 +536,26 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         // Give these scalar declarations their own allocation for block cleanup.
         int copy_string = n->as.var_decl.type == TK_KW_STRING &&
                           !n->as.var_decl.is_pointer &&
-                          (n->as.var_decl.init->kind == ND_INDEX ||
-                           n->as.var_decl.init->kind == ND_STRING ||
-                           n->as.var_decl.init->kind == ND_IDENT ||
-                           n->as.var_decl.init->kind == ND_FIELD ||
-                           n->as.var_decl.init->kind == ND_BASE ||
-                           n->as.var_decl.init->kind == ND_CALL);
+                          copies_string_initializer(n->as.var_decl.init);
         if (copy_string) c_out_write(b, "dream_string_copy(");
         cg_emit_value_as(ctx, b, n->as.var_decl.type_name, n->as.var_decl.init);
         if (copy_string) c_out_write(b, ")");
+      } else if (n->as.var_decl.type == TK_KW_STRING &&
+                 !n->as.var_decl.is_pointer) {
+        // An empty scalar slot must be safe to replace and clean up.
+        c_out_write(b, " = NULL");
       }
     }
     cgctx_push_decl(ctx, n);
+    if (n->as.var_decl.type == TK_KW_STRING &&
+        !n->as.var_decl.array_len && !n->as.var_decl.is_pointer) {
+      Node *init = n->as.var_decl.init;
+      ctx->vars[ctx->len - 1].owns_string =
+          !init || copies_string_initializer(init) || init->kind == ND_NULL ||
+          (init->kind == ND_CONSOLE_CALL && init->as.console.read) ||
+          (init->kind == ND_BINOP && init->as.bin.op == TK_PLUS &&
+           cg_is_string_expr(ctx, init));
+    }
     c_out_write(b, ";");
     c_out_newline(b);
     break;

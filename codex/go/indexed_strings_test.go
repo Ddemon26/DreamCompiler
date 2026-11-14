@@ -103,7 +103,8 @@ func TestCompiler_ForStrings(t *testing.T) {
 }
 
 func TestCompiler_CallStrings(t *testing.T) {
-	checkStringOwnership(t, "call_string_copy.dr", 14, []string{
+	// P0022 additionally releases globalBacking's old allocation on replacement.
+	checkStringOwnership(t, "call_string_copy.dr", 15, []string{
 		`literalText=dream_string_copy(@entry@literal());`,
 		`emptyText=dream_string_copy(@entry@empty());`,
 		`alias=dream_string_copy(@entry@borrow(backing));`,
@@ -119,6 +120,7 @@ func TestCompiler_CallStrings(t *testing.T) {
 		`repeated=dream_string_copy(@entry@borrow("tick"));`,
 		`globalText=dream_string_copy(@entry@once());`,
 		`globalSnapshot=dream_string_copy(@entry@borrow(globalBacking));`,
+		`__dream_string_assign(&globalBacking,"changed");`,
 		`dr_release(literalText);`, `dr_release(emptyText);`, `dr_release(alias);`,
 		`dr_release(nested);`, `dr_release(freshText);`, `dr_release(localText);`,
 		`dr_release(nullText);`, `dr_release(staticText);`, `dr_release(instanceText);`,
@@ -126,6 +128,45 @@ func TestCompiler_CallStrings(t *testing.T) {
 		`}dr_release(zero);}`, `}dr_release(header);}`,
 	},
 		"literal\nempty\nbacking value\nbacking value\nbacking value\nfresh value\nlocal value\nnull\nstatic\ninstance\nbase\ntick\ntick\nbacking value\nbacking value\nonce\nbacking value\nbacking value\nglobal\n")
+}
+
+func TestCompiler_AssignedStrings(t *testing.T) {
+	checkStringOwnership(t, "assigned_string_copy.dr", 39, []string{
+		`char*copy=dream_string_copy(text);dr_release(*slot);*slot=copy;returncopy;`,
+		`replaced=dream_string_copy("old");`,
+		`__dream_string_assign(&replaced,"literal");`,
+		`__dream_string_assign(&text,backing);`,
+		`__dream_string_assign(&text,text);`,
+		`__dream_string_assign(&text,@entry@borrow(text));`,
+		`__dream_string_assign(&text,source);`,
+		`__dream_string_assign(&text,(values[(index++)]));`,
+		`__dream_string_assign(&text,absent);`,
+		`__dream_string_assign(&text,((void*)0));`,
+		`__dream_string_assign(&text,"");`,
+		`__dream_string_assign(&text,@entry@once(backing));`,
+		`__dream_string_assign(&text,(dream_concat(text,"appended")));`,
+		`__dream_string_assign(&text,@entry@fresh());`,
+		`@entry@borrow(__dream_string_assign(&text,"expression"))`,
+		`__dream_string_assign(&text,__dream_string_assign(&other,"chain"));`,
+		`__dream_string_assign(&text,__dream_string_assign(&text,"nestedassignment"));`,
+		`pending=NULL;`, `untouched=NULL;`,
+		`__dream_string_assign(&pending,"pending");`,
+		`managed=(dream_concat("managed","old"));`,
+		`__dream_string_assign(&managed,backing);`,
+		`__dream_string_assign(&nullStart,backing);`,
+		`__dream_string_assign(&nullStart,((void*)0));`,
+		`__dream_string_assign(&header,@entry@borrow(header)))`,
+		`}dr_release(header);}`, `__dream_string_assign(&repeated,backing);`,
+		`__dream_string_assign(&staticText,"static");`,
+		`__dream_string_assign(&instanceText,"instance");`,
+		`__dream_string_assign(&baseText,((structBase*)this)->field);`,
+		`(input="parameter");`, `(((structBase*)this)->field="base");`,
+		`((nullable[0])=globalBacking);`,
+		`__dream_string_assign(&globalText,"topliteral");`,
+		`__dream_string_assign(&globalText,globalBacking);`,
+		`dr_release(text);`, `dr_release(other);`, `dr_release(pending);`,
+		`dr_release(untouched);`, `dr_release(managed);`, `dr_release(nullStart);`,
+	}, "literal\nbacking value\nbacking value\nbacking value\nnested value\nbacking value\n1\nnull\nstill null\nempty\nonce\nbacking value\nbacking value appended\nfresh value\nexpression\nchain\nchain\nnested assignment\npending\nbacking value\ncleared\nheader\nheader\nbacking value\nbacking value\nstatic\ninstance\nbase\nparameter\nbacking value\ntop literal\nbacking value\nbacking value\n")
 }
 
 func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string) {

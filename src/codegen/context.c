@@ -9,7 +9,7 @@ void cgctx_push(CGCtx *ctx, const char *start, size_t len, TokenKind ty,
     ctx->vars = realloc(ctx->vars, ctx->cap * sizeof(VarBinding));
   }
   ctx->vars[ctx->len++] =
-      (VarBinding){start, len, ty, type_name, ctx->depth, 0};
+      (VarBinding){start, len, ty, type_name, ctx->depth, 0, 0};
 }
 
 void cgctx_push_decl(CGCtx *ctx, Node *decl) {

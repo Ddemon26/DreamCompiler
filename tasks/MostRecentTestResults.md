@@ -2,6 +2,51 @@
 
 **Date:** November 14, 2026 UTC
 
+**Pass:** P0022 - owned scalar string replacement copies and old-value release
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0021 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43569739018):
+  Linux/Windows checks and full suite **passed** for the exact parent SHA.
+- Baseline `zig build test`: **150 discovered, 132 passed, 18 skipped, zero
+  failures/errors**, 37.38s; `test_results/test_results_20261114_060342_windows.json`.
+- Before implementation, focused replacement tests **failed both modes** on invalid
+  live-allocation cleanup, 2.438s. Linux harness cross-links passed first.
+- `zig build`: **passed** after replacement repair. Initial fixture adjustments
+  replaced unsupported direct null initialization with a typed borrowed-null value
+  and moved array backing outside local cleanup, whose separate scalar-style
+  release remains a known next task. The old call fixture now requires fifteen
+  releases, including reclamation of its replaced top-level backing.
+- Final focused ownership check: **all fourteen modes passed**, 14.707s;
+  assignment body 2.00s. Generated copy/release ordering, null defaults, assignment
+  results, Linux cross-links, checked native lifetime and exact linked output
+  passed. Existing allocator/refcount/shutdown assertions remain.
+- Final `zig build test`: **151 discovered, 133 passed, 18 skipped, zero
+  failures/errors**, 33.90s; `test_results/test_results_20261114_060854_windows.json`.
+- Windows Go quick protocol: **all nineteen groups passed**, 28.582s;
+  external compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.038s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0022 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Replacement copies readable input before releasing the current
+owned scalar value; temporary managed results can remain registered until shutdown.
+Other initializers, compound assignment, parameter/field/index destinations,
+array/pointer-local cleanup, return transfer, return/exception and skipped body-local
+cleanup remain unqualified. See [P0022](passes/P0022-assigned-string-ownership.md).
+Ignored evidence: `build/P0022-*.log`.
+
+---
+
+## Historical P0021 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
 **Pass:** P0021 - scalar string call-initializer copies
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
