@@ -4,6 +4,7 @@
 | --- | --- |
 | Build | `build.zig`; Zig 0.17.1, re2c generation, compiler tools, runtime, test steps |
 | Driver | `src/driver/main.c`; flags, diagnostics, compilation and native linking |
+| Compiler dogfooding | `src/driver/source_text.dr`, `source_text.h`, `source_text_bootstrap.c`; Dream production entry-file normalization, C-only host seed, function-library emission and staged builds; [contract](compiler-dogfooding.md), `codex/go/compiler_dogfood_test.go`, `codex/c/source_text_harness.c` |
 | Modules | `src/driver/modules.c`, `modules.h`; dependency loading, exports, symbol lowering |
 | Lexer | `src/lexer/lexer.re`, `tokens.def`, `lexer.h`; generated `lexer.c` is ignored |
 | Parser / AST | `src/parser/parser.c`, `expr.inc`, `stmt.inc`, `ast.h`, `ast.c` |

@@ -63,7 +63,7 @@ pub fn build(b: *std.Build) void {
 
     const exe_mod = b.createModule(.{ .target = target, .optimize = optimize });
     const bootstrap_mod =
-        b.createModule(.{ .target = target, .optimize = optimize });
+        b.createModule(.{ .target = b.graph.host, .optimize = optimize });
     const lex_mod = b.createModule(.{ .target = target, .optimize = optimize });
     const parse_mod = b.createModule(.{ .target = target, .optimize = optimize });
 
@@ -76,8 +76,10 @@ pub fn build(b: *std.Build) void {
     bootstrap.step.dependOn(&re2c_step.step);
     const cflags = if (debug_mode) &DEBUG_CFLAGS else &CFLAGS;
     bootstrap.root_module.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
+    bootstrap.root_module.addCSourceFile(.{ .file = b.path("src/driver/source_text_bootstrap.c"), .flags = cflags });
     bootstrap.root_module.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
     bootstrap.root_module.link_libc = true;
+    b.installArtifact(bootstrap);
 
     const lexexe = b.addExecutable(.{ .name = "lexdump", .root_module = lex_mod });
     lexexe.root_module.addCSourceFiles(.{ .files = &.{"src/driver/lex_main.c"}, .flags = &CFLAGS });
@@ -105,7 +107,7 @@ pub fn build(b: *std.Build) void {
 
     const dr_files = collectDrSources(b);
     const compile_step =
-        addCompileDrStep(b, bootstrap, target, optimize, dr_files);
+        addCompileDrStep(b, bootstrap, dr_files);
 
     const exe =
         b.addExecutable(.{ .name = "DreamCompiler", .root_module = exe_mod });
@@ -114,6 +116,9 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
     for (compile_step.files) |gen| {
         exe.root_module.addCSourceFile(.{ .file = gen, .flags = cflags });
+    }
+    for ([_][]const u8{ "io", "extensions", "memory", "exceptions", "system" }) |part| {
+        exe.root_module.addIncludePath(b.path(b.fmt("src/runtime/{s}", .{part})));
     }
     exe.root_module.link_libc = true;
     b.installArtifact(exe);
@@ -154,6 +159,7 @@ pub fn build(b: *std.Build) void {
         }
     }
     runtime_lib.root_module.link_libc = true;
+    exe.root_module.linkLibrary(runtime_lib);
     b.installArtifact(runtime_lib);
 
     // Multi-file compilation step
@@ -208,36 +214,23 @@ fn collectDrSources(b: *std.Build) []const []const u8 {
 ///
 /// @param b The build context.
 /// @param bootstrap The bootstrap compiler step.
-/// @param target The resolved target configuration.
-/// @param optimize The optimization mode.
 /// @param sources The list of `.dr` source files to compile.
 /// @return A struct containing the compilation step and the generated file
 /// paths.
 fn addCompileDrStep(
     b: *std.Build,
     bootstrap: *std.Build.Step.Compile,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.Optimize,
     sources: []const []const u8,
 ) struct { step: *std.Build.Step, files: []const std.Build.LazyPath } {
     const step = b.step("compile-dr", "Compile .dr sources");
     var generated: std.ArrayList(std.Build.LazyPath) = .empty;
 
-    const triple = target.query.zigTriple(b.allocator) catch @panic("OOM");
-    const mode_str = switch (optimize) {
-        .Debug => "debug",
-        .ReleaseSafe => "release-safe",
-        .ReleaseFast => "release-fast",
-        .ReleaseSmall => "release-small",
-    };
-
     for (sources) |src| {
         const run = b.addRunArtifact(bootstrap);
-        run.addArgs(&.{ "--emit-c", "--target", triple, "--build-mode", mode_str });
-        run.addFileArg(b.path(src));
-        run.addFileInput(b.path("src/lexer/tokens.def"));
+        run.addArg("--emit-library-c");
         const out =
-            run.addOutputFileArg(b.fmt("{s}.c", .{std.fs.path.stem(src)}));
+            run.addOutputFileArg(b.fmt("{s}.c", .{src}));
+        run.addFileArg(b.path(src));
         generated.append(b.allocator, out) catch @panic("OOM");
         step.dependOn(&run.step);
     }

@@ -13,6 +13,15 @@ They require no cgo library or downloaded Go dependencies. Use `-count=1` when
 running these Go tests directly:
 Go's cache does not track changes to the external compiler executable.
 
+`TestCompiler_Dogfood` checks the production Dream source normalizer and the
+function-only `--emit-library-c` mode. Separately linked C checks 97,912 inputs
+against the C bootstrap seed and independent expected output, buffer boundaries,
+repeated calls and forward function linkage. It also checks bootstrap/production
+emission equality, invalid-source/output handling, preservation of existing output,
+and production LF/CRLF/CRCRLF entry sources. Windows cross-links the harness for
+Linux; native Linux execution is checked by CI. See the
+[dogfooding contract](../../docs/development/compiler-dogfooding.md).
+
 `TestCompiler_MethodArguments` checks all primitive type mismatches plus receiver
 resolution, arity, nested expressions, and artifact-free diagnostics in ordinary
 and module-entry sources. Valid calls require exact runtime output. Pointer/array

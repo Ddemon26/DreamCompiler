@@ -55,6 +55,11 @@ The steps below show how to build and use Dream on Linux **or Windows**.
 
 The resulting compiler binary is placed under `zig-out/bin`.
 
+The compiler now uses a Dream-written source newline normalizer. A C-only host
+bootstrap builds this helper before linking the production compiler; see the
+[dogfooding checkpoint](docs/development/compiler-dogfooding.md) for the build
+stages, library emission command, and remaining self-hosting work.
+
 ## Using the Compiler
 
 Compile a `.dr` file directly:

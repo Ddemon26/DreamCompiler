@@ -2,6 +2,49 @@
 
 **Date:** November 14, 2026 UTC
 
+**Pass:** P0025 - first production compiler dogfooding (Dream source normalizer)
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0024 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43647310315):
+  Linux/Windows checks and suites **passed** for the exact parent SHA.
+- Baseline `zig build test`: **154 discovered, 136 passed, 18 skipped, zero
+  failures/errors**, 47.17s; `test_results/test_results_20261114_153454_windows.json`.
+- Pre-rebuild `TestCompiler_Dogfood`: **failed as expected**, 0.536s; old compiler
+  did not support the library-emission request.
+- `zig build`: **passed**, including C-only host bootstrap, emitted Dream helper
+  and production compiler link without the C seed.
+- Initial harness assumed idempotence incorrectly; the unchanged seed also maps
+  CRCRLF to CRLF, then LF. Repeated-call seed equivalence replaced that assumption;
+  independent expected bytes, complete-buffer and boundary assertions remain.
+- Focused `go test -count=1 -v -run '^TestCompiler_Dogfood$' .`: **passed**, 2.747s,
+  including 97,912 native cases and Linux cross-link. Expanded final forward-call,
+  rejection/output-preservation and production-newline checks passed in quick.
+- Final `zig build test`: **154 discovered, 136 passed, 18 skipped, zero
+  failures/errors**, 46.69s; `test_results/test_results_20261114_154100_windows.json`.
+- Windows Go quick protocol: **all twenty-two groups passed**, 45.446s; new group
+  1.62s. External compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.058s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**, with a
+  Windows host bootstrap and Linux production compiler. Linux binaries were not
+  executed locally; native P0025 runtime awaits CI.
+
+Same 18 skips/exclusions. This qualifies one production helper and function-only
+library emission, not a self-hosted lexer/parser/emitter, general C FFI, new ownership
+contracts or whole-compiler stage-two/stage-three equality. Prior T011/shape/operator
+limits remain. Compiler checks ran sequentially with approved SDK/cache access and
+no SDK/cache changes. See [P0025](passes/P0025-compiler-dogfooding.md).
+Ignored logs: `build/P0025-*.log`.
+
+---
+
+## Historical P0024 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
 **Pass:** P0024 - owned scalar string cleanup on break/continue
 
 **Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows

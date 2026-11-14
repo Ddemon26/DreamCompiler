@@ -21,7 +21,7 @@ Node *cg_function(Slice name) {
 }
 
 static void emit_func_impl(COut *b, Slice prefix, Node *n,
-                           const char *src_file);
+                           const char *src_file, bool external);
 
 /**
  * Emits a #line directive for enhanced debugging if the node has position info.
@@ -132,9 +132,9 @@ static void emit_type_with_pointer(COut *b, TokenKind k, Slice name, int is_poin
   }
 }
 
-void emit_func_prototype(COut *b, Node *n) {
+void emit_func_prototype(COut *b, Node *n, bool external) {
   bool main_function = n->as.func.name.len == 4 && memcmp(n->as.func.name.start, "main", 4) == 0;
-  c_out_write(b, "%s%s %.*s(", main_function ? "" : "static ",
+  c_out_write(b, "%s%s %.*s(", (main_function || external) ? "" : "static ",
               n->as.func.is_async ? "Task*" : type_to_c(n->as.func.ret_type),
               (int)n->as.func.name.len, n->as.func.name.start);
   if (!n->as.func.param_len) c_out_write(b, "void");
@@ -210,7 +210,7 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
     Node *m = n->as.type_decl.members[i];
     if (m->kind == ND_FUNC) {
       if (m->as.func.is_static)
-        emit_func_impl(b, n->as.type_decl.name, m, src_file);
+        emit_func_impl(b, n->as.type_decl.name, m, src_file, false);
       else
         emit_method(b, n->as.type_decl.name, m, src_file);
     }
@@ -250,7 +250,7 @@ void emit_enum_decl(COut *b, Node *n, const char *src_file) {
 }
 
 static void emit_func_impl(COut *b, Slice prefix, Node *n,
-                           const char *src_file) {
+                           const char *src_file, bool external) {
   if (n->pos.line)
     c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
   c_out_write(b, "/* Dream function %.*s", (int)n->as.func.name.len,
@@ -333,8 +333,8 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
       c_out_write(b, "static %s %.*s_%.*s(", type_to_c(n->as.func.ret_type),
                   (int)prefix.len, prefix.start, (int)n->as.func.name.len,
                   n->as.func.name.start);
-    else if (n->as.func.name.len == 4 &&
-             strncmp(n->as.func.name.start, "main", 4) == 0)
+    else if (external || (n->as.func.name.len == 4 &&
+             strncmp(n->as.func.name.start, "main", 4) == 0))
       c_out_write(b, "%s %.*s(", type_to_c(n->as.func.ret_type),
                   (int)n->as.func.name.len, n->as.func.name.start);
     else
@@ -396,8 +396,8 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
   c_out_newline(b);
 }
 
-void emit_func(COut *b, Node *n, const char *src_file) {
-  emit_func_impl(b, (Slice){NULL, 0}, n, src_file);
+void emit_func(COut *b, Node *n, const char *src_file, bool external) {
+  emit_func_impl(b, (Slice){NULL, 0}, n, src_file, external);
 }
 
 void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
@@ -589,7 +589,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_newline(b);
     break;
   case ND_FUNC:
-    emit_func(b, n, src_file);
+    emit_func(b, n, src_file, false);
     break;
   case ND_IF:
     c_out_write(b, "if (");

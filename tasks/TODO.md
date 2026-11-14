@@ -356,6 +356,23 @@ return ownership and exception/finally unwinding remain separate work.
 
 ## Later work
 
+### Compiler dogfooding (explicit user priority, first slice in P0025)
+
+P0025 migrates production entry-file newline normalization to Dream. A C-only
+host seed emits function-library C; the target compiler links the Dream helper
+without the seed. The repaired build tracks source/output dependencies and keeps
+the bootstrap executable runnable on the host during cross-builds. The focused
+Go/CI group checks differential bytes, linkage, output handling and both stages.
+See the [contract](../docs/development/compiler-dogfooding.md) and
+[pass](passes/P0025-compiler-dogfooding.md) for measured validation and limits.
+
+This is one helper, not a self-hosted frontend. Lexer migration needs a selected
+token/storage interface and equivalence tests; custom-type parameters, shared
+module types, compiler containers/ownership and host I/O remain larger prerequisites.
+Do not expand to a lexer/parser rewrite inside this pass. The bounded T011
+conditional-string initializer task above remains the next stabilization item
+after P0025 publication/native CI verification.
+
 - Extend T005 to pointer/array and other method argument shapes later; analyze
   class field declaration initializers. P0006 covers receiver/access diagnostics only.
 - Extend constructor argument shapes beyond T006's scalar boundary only after

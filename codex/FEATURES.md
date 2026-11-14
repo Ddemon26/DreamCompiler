@@ -58,6 +58,14 @@ success is recorded separately from native runtime verification.
 - **Object emission**: Uses the common AST emitter with runtime include directories; failures return nonzero. Run from the project directory, as with C/native emission
 - **Runtime library**: Memory management, console I/O, and exception handling
 - **Build integration**: Zig build system with cross-platform support
+- **First production compiler dogfooding**: Entry-file CRLF normalization is
+  implemented in `src/driver/source_text.dr`. A C-only host bootstrap emits its C
+  library translation unit; the production compiler links that implementation
+  instead of the C seed, including cross-builds. `--emit-library-c OUTPUT SOURCE`
+  accepts synchronous function-only sources without `main`, exposes external C
+  functions and omits the entry point. Modules, global storage, top-level statements,
+  type declarations and async are rejected. This does not establish full self-hosting
+  or general C interop; see the [checkpoint](../docs/development/compiler-dogfooding.md).
 
 ## 🚧 Partially Implemented Features
 

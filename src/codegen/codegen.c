@@ -53,7 +53,8 @@ static bool has_async_functions(Node *n) {
   return false;
 }
 
-static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode) {
+static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode,
+                   bool library_mode) {
   COut builder;
   c_out_init(&builder);
 
@@ -134,7 +135,7 @@ static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode
     c_out_write(&builder, "struct %.*s;\n", (int)tinfo[i].name.len, tinfo[i].name.start);
   for (size_t i = 0; i < root->as.block.len; ++i) {
     Node *node = root->as.block.items[i];
-    if (node->kind == ND_FUNC) emit_func_prototype(&builder, node);
+    if (node->kind == ND_FUNC) emit_func_prototype(&builder, node, library_mode);
   }
 
   for (size_t i = 0; i < root->as.block.len; i++) {
@@ -147,7 +148,7 @@ static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_FUNC)
-      emit_func(&builder, it, it->source_file ? it->source_file : src_norm);
+      emit_func(&builder, it, it->source_file ? it->source_file : src_norm, library_mode);
   }
 
   Slice main_class = {NULL, 0};
@@ -170,7 +171,7 @@ static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode
     }
   }
 
-  if (has_main != 1) {
+  if (!library_mode && has_main != 1) {
     c_out_write(&builder, "int main(void){\n");
     c_out_indent(&builder);
     c_out_write(&builder, "dream_init_runtime();\n");
@@ -205,7 +206,11 @@ static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode
 }
 
 void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
-  emit_c(root, out, src_file, false);
+  emit_c(root, out, src_file, false, false);
+}
+
+void codegen_emit_library_c(Node *root, FILE *out, const char *src_file) {
+  emit_c(root, out, src_file, true, true);
 }
 
 int codegen_emit_obj(Node *root, const char *path, const char *src_file) {
@@ -236,7 +241,7 @@ int codegen_emit_obj(Node *root, const char *path, const char *src_file) {
     return 0;
   }
 #endif
-  emit_c(root, f, src_file, true);
+  emit_c(root, f, src_file, true, false);
   int write_failed = ferror(f);
   if (fclose(f) != 0) write_failed = 1;
   if (write_failed) {

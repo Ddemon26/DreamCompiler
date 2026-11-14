@@ -1,5 +1,11 @@
 # Build System Documentation
 
+The current Zig 0.17.1 build includes a C-only host bootstrap and a Dream-written
+production source normalizer. See the [dogfooding checkpoint](../compiler-dogfooding.md)
+for the implemented stages and library emission command. The older architecture
+examples below are illustrative; `build.zig` and the current checkpoint define
+the available commands and sources.
+
 The Dream Compiler uses Zig as its build system, providing cross-platform compilation, fast builds, and flexible configuration. This document covers the complete build system architecture and usage.
 
 ## Overview
