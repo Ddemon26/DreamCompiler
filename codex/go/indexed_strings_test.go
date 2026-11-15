@@ -463,6 +463,34 @@ func checkStorageOwnership(t *testing.T, fixture string, releases int, emittedCh
 	checkStorageOwnershipWithLiveCount(t, fixture, releases, emittedChecks, want, liveCount, forbiddenChecks...)
 }
 
+func TestCompiler_ConditionalLocalReturn(t *testing.T) {
+	// Fourteen selected nonnull allocations keep their original reference;
+	// the sixty-four other allocations must be released before shutdown.
+	checkStorageOwnershipWithLiveCount(t, "conditional_local_return.dr", 64, []string{
+		`{constchar*__dream_return_0=(@entry@chooseLocal(left,effects,a)?(@entry@chooseLocal(inner,effects,b)?left:right):(@entry@chooseLocal("other",effects,b)?inner:"literal"));if(inner!=__dream_return_0)dr_release(inner);dr_release(innerOwner);dr_release(empty);dr_release(absent);if(right!=__dream_return_0)dr_release(right);if(left!=__dream_return_0)dr_release(left);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(a?left:"fallback");dr_release(empty);dr_release(absent);dr_release(right);if(left!=__dream_return_0)dr_release(left);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(@entry@chooseLocal(header,effects,headerResult)?header:body);if(body!=__dream_return_0)dr_release(body);dr_release(bodyOwner);if(header!=__dream_return_0)dr_release(header);dr_release(outer);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=((i>0)?"after":outer);if(outer!=__dream_return_0)dr_release(outer);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(choice?result:"static-literal");dr_release(discard);if(result!=__dream_return_0)dr_release(result);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=((((structConditionalLocalReader*)this)->value>0)?result:"never");dr_release(owner);if(result!=__dream_return_0)dr_release(result);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(choice?absent:empty);dr_release(discard);if(empty!=__dream_return_0)dr_release(empty);if(absent!=__dream_return_0)dr_release(absent);return__dream_return_0;}`,
+		`{constchar*__dream_return_2=(@entry@__dream_return_1(effects)?__dream_return_0:"never");dr_release(discard);if(__dream_return_0!=__dream_return_2)dr_release(__dream_return_0);return__dream_return_2;}`,
+		`{constchar*__dream_return_0=(1?result:"never");dr_release(discard);if(result!=__dream_return_0)dr_release(result);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(@entry@chooseLocal(result,effects,1)?result:result);dr_release(discard);if(result!=__dream_return_0)dr_release(result);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(@entry@chooseLocal(__dream_string_append(&result,"x"),effects,1)?result:other);if(other!=__dream_return_0)dr_release(other);if(result!=__dream_return_0)dr_release(result);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(0?left:right);if(right!=__dream_return_0)dr_release(right);if(left!=__dream_return_0)dr_release(left);return__dream_return_0;}`,
+		`return(choice?owned:source);dr_release(owned);`,
+		`return(a?(b?owned:"literal"):source);dr_release(owned);`,
+		`return(choice?owned:@entry@completedLocal());dr_release(owned);`,
+		`return(choice?text:"try-literal");dr_release(text);`,
+		`return(choice?text:"catch-literal");dr_release(text);`,
+		`return(choice?text:"finally-literal");dr_release(text);`,
+	},
+		"backing\ninner\nbacking\nbacking\ninner\nright\nbacking\nother\ninner\nbacking\nother\nliteral\nbacking\nfallback\nheader\nheader\nheader\nbody\nafter\nstatic\nstatic-literal\nbacking\nnull\n\ncollision\ncollision\ncompleted\nsame\nsame\nmutatex\nmutatex\nequal\n13\nbacking\nbacking\nchanged\n", 14,
+		`dr_release(this);`, `dr_release(source);`, `dr_release(effects);`, `dr_retain(`,
+		`dream_string_copy((`, `dream_string_copy(__dream_return_`)
+}
+
 func TestCompiler_ConditionalLiteralReturn(t *testing.T) {
 	// Static leaves need no retained result; conditions must run before cleanup.
 	checkStorageOwnership(t, "conditional_literal_return.dr", 55, []string{
@@ -479,7 +507,7 @@ func TestCompiler_ConditionalLiteralReturn(t *testing.T) {
 		`return(choice?"literal":source);dr_release(elseDiscard);`,
 		`return(a?(b?"literal":source):"other");dr_release(nestedDiscard);`,
 		`return(a?"other":(b?source:"literal"));dr_release(nestedElseDiscard);`,
-		`return(choice?"literal":ownedLeaf);dr_release(ownedLeaf);`,
+		`{constchar*__dream_return_0=(choice?"literal":ownedLeaf);if(ownedLeaf!=__dream_return_0)dr_release(ownedLeaf);return__dream_return_0;}`,
 		`return(choice?@entry@noConditionalLocals(1):"literal");dr_release(callDiscard);`,
 		`return(choice?"try-a":"try-b");dr_release(pendingTry);`,
 		`return(choice?"catch-a":"catch-b");dr_release(pendingCatch);`,
@@ -546,7 +574,7 @@ func TestCompiler_LocalStringReturn(t *testing.T) {
 		`returnpendingFinally;dr_release(pendingFinally);`,
 		`returnsource;dr_release(borrowedDiscard);`,
 		`{constchar*__dream_return_0="literal";dr_release(literalDiscard);return__dream_return_0;}`,
-		`return(choice?left:right);dr_release(right);dr_release(left);`,
+		`{constchar*__dream_return_0=(choice?left:right);if(right!=__dream_return_0)dr_release(right);if(left!=__dream_return_0)dr_release(left);return__dream_return_0;}`,
 	},
 		"backing value\nbacking value\nloop\nfallback\ncase\nswitch\nnull\nempty\nbacking value suffix\nstatic\nbacking value\nbacking value\nbacking value\ncompleted\nzero\nwhile\ndo\nreader\nbacking value\nbacking value\nchanged\n", 17,
 		`dr_release(this);`, `dr_release(source);`, `dr_release(pointer);`,

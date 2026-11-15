@@ -465,10 +465,23 @@ passed, 18 skipped, zero failures/errors; 32 Go quick groups, five runner tests 
 Linux cross-build passed. See
 [P0039](passes/P0039-conditional-literal-return.md) for validation and limits.
 
-Broader T011 remains open. Verify P0039 publication/native CI and repair failures
-first. Next reproduce conditional returns selecting known-owned locals and literals;
-define preservation of the selected allocation and cleanup of unselected owners
-before extending support.
+P0040 reproduces 57 live allocations instead of 12 on conditional owned-local
+returns in both modes. It qualifies literal/known-owned-local value trees, captures
+once, then compares candidate slot pointers during reverse cleanup to preserve
+only the selected allocation. The strengthened matrix checks 64 nonnull releases
+(18 classes, 46 strings), 36 output lines, exactly 14 selected allocations with
+original references before shutdown, and an empty registry afterward. Nested/
+repeated/null/const/empty leaves, equal-content independent slots, append in a
+condition, header updates, unbraced paths, methods, collisions, normal exception
+completion and caller survival execute. Exact C preserves unsupported leaves and
+active exception exits. Full Windows: 149 passed, 18 skipped, zero failures/errors;
+33 quick groups, five runner tests and Linux cross-build passed. See
+[P0040](passes/P0040-conditional-local-return.md).
+
+Broader T011 remains open. Verify P0040 publication/native CI and repair failures
+first. Next reproduce retained independent locals on direct borrowed scalar string-
+parameter returns; audit caller backing lifetime before qualifying cleanup without
+copy/retain. General member/index/call/compound lifetimes remain separate.
 Keep general borrowed/compound result lifetime,
 general caller consumption, pointer/class result transfer, aliases/containers/
 destructors/fields, async and exception unwinding separate. String-index return

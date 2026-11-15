@@ -430,13 +430,14 @@ locals; it does not introduce an owning return ABI or eliminate retained results
 The returned string is independent of the locals being released, including a
 caller copy of an earlier returned allocation. Allocation failure remains null.
 
-This rule deliberately requires a direct known-owned identifier. Borrowed parameter,
+P0037's rule requires a direct known-owned identifier. Borrowed parameter,
 member, indexed, call, assignment, concatenation and conditional *return
 expressions* retain prior emission, even when they mention owned locals. Their
 source/alias lifetime needs separate qualification; a universal release could free
 the result's backing, while universally copying results would add retained storage.
 Active try/catch/finally returns and async exits also keep their prior emission.
-P0038 separately qualifies direct literals below. Borrowed-source and result-
+P0038 separately qualifies direct literals below; P0040 additionally qualifies
+conditional owned-local/literal trees below. Borrowed-source and result-
 consumption policies remain open; never apply this predicate to an arbitrary
 string expression.
 
@@ -489,9 +490,8 @@ protocols and CI select the group. Existing allocator/refcount assertions remain
 A synchronous string return also qualifies when its expression is a `?:` tree
 whose value leaves are all string literals. Both branches are checked recursively,
 including branches that a constant condition would not select. Parenthesized,
-empty and escaped literals qualify. Any nonliteral value leaf leaves the entire
-return on its prior path; this includes borrowed parameters, owned locals and
-calls that happen to return literals.
+empty and escaped literals qualify. P0039 preserved prior emission for every
+nonliteral value leaf; P0040 additionally qualifies owned-local leaves below.
 
 Conditions may call functions, mutate state and read owned local strings, class
 fields or loop headers. The existing collision-safe temporary captures the selected
@@ -511,9 +511,51 @@ selected-only, once-only condition evaluation. Null/const/empty locals, later
 declarations, unbraced true/false paths, loop/header updates, static/instance methods,
 temporary-name collisions, caller backing/snapshot/receiver survival and normal
 exception completion are covered. Exact C checks require evaluation before reverse
-cleanup and unchanged emission for nonliteral leaves in either recursive branch
-and active exception exits. Both quick protocols and CI select the group. Earlier
-allocator/refcount, retained-result and shutdown assertions remain intact.
+cleanup and unchanged emission for unsupported leaves in either recursive branch
+and active exception exits. The unused owned-local control now checks P0040
+cleanup; its runtime counts remain unchanged. Both quick protocols and CI select
+the group. Earlier allocator/refcount, retained-result and shutdown assertions
+remain intact.
+
+## Conditional owned-local string returns (P0040)
+
+Synchronous string returns outside active exception contexts now qualify nested
+`?:` trees when every value leaf is a literal or a known-owned scalar string local
+under P0037's binding predicate. Every branch must qualify, including branches
+under constant conditions. Parameters, top-level bindings, arrays, explicit
+pointers, members, indexes, calls and other compound value leaves do not qualify;
+one unsupported leaf preserves the entire return's previous emission.
+
+The collision-safe temporary captures the selected pointer once before cleanup.
+For each owned binding that occurs as a value leaf, reverse-order cleanup emits a
+pointer comparison and releases it only when its current pointer differs from
+the result. Other qualified strings and scalar classes are released normally.
+Independently owned local slots have distinct live allocations even when contents
+match. Conditions can replace a candidate before selection; comparisons use the
+current slot and never evaluate conditions again. Repeated leaves do not duplicate
+releases. A selected null omits only no-op null releases; a selected literal keeps
+no allocation. All-literal trees retain P0039 emission. Binding metadata and
+unbraced conditional control flow remain intact.
+
+The selected owned allocation retains its original reference/lifetime until
+shutdown, matching P0037. No result allocation, copy, retain or consumption is
+introduced; caller declarations still make independent copies. General result
+ownership and retained-result accumulation remain unresolved.
+
+The [regression](../../tests/basics/memory/conditional_local_return.dr) and
+`TestCompiler_ConditionalLocalReturn` check both ordinary/module-entry modes:
+**64 nonnull releases** (18 classes, 46 strings), **36 output lines**, and exactly
+**14 selected allocations** with one reference before shutdown, then an empty
+registry. The initial fixture reproduced **57 live allocations instead of 12**
+before the fix; later cases strengthen candidate replacement/equal-content checks.
+All four nested leaves, selected-only condition effects, body/header scopes,
+normal/early loop paths and header updates, null/const/empty candidates, repeated
+leaves, equal-content independent slots, append in a condition, later declarations,
+unbraced paths, static/instance methods, name collisions, caller snapshots/backing
+and normal exception completion execute. Exact C checks require evaluation before
+reverse cleanup and preserve unsupported/active-exception emission. P0037/P0039's
+unused owned-conditional controls check the new emission with unchanged runtime
+assertions. Both quick protocols and CI select the new group.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

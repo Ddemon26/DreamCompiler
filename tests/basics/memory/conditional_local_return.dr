@@ -1,0 +1,173 @@
+// Expected: backing
+// Expected: inner
+// Expected: backing
+// Expected: backing
+// Expected: inner
+// Expected: right
+// Expected: backing
+// Expected: other
+// Expected: inner
+// Expected: backing
+// Expected: other
+// Expected: literal
+// Expected: backing
+// Expected: fallback
+// Expected: header
+// Expected: header
+// Expected: header
+// Expected: body
+// Expected: after
+// Expected: static
+// Expected: static-literal
+// Expected: backing
+// Expected: null
+// Expected:
+// Expected: collision
+// Expected: collision
+// Expected: completed
+// Expected: same
+// Expected: same
+// Expected: mutatex
+// Expected: mutatex
+// Expected: equal
+// Expected: 13
+// Expected: backing
+// Expected: backing
+// Expected: changed
+class ConditionalLocalToken {
+    int value;
+    func init(int value) { this.value = value; }
+}
+func bool chooseLocal(string label, int *effects, bool value) {
+    effects[0]++;
+    Console.WriteLine(label);
+    return value;
+}
+func string nestedLocal(bool stop, bool a, bool b, int *effects, string source) {
+    ConditionalLocalToken outerOwner = new ConditionalLocalToken(1);
+    string left = source;
+    string right = "right";
+    string absent;
+    const string empty = "";
+    {
+        ConditionalLocalToken innerOwner = new ConditionalLocalToken(2);
+        string inner = "inner";
+        if (stop) return chooseLocal(left, effects, a)
+            ? (chooseLocal(inner, effects, b) ? left : right)
+            : (chooseLocal("other", effects, b) ? inner : "literal");
+        string late = "late";
+    }
+    return a ? left : "fallback";
+}
+func string loopLocal(bool stop, bool headerResult, int *effects) {
+    string outer = "outer";
+    int i = 0;
+    for (string header = "header"; i < 1; header += "x") {
+        ConditionalLocalToken bodyOwner = new ConditionalLocalToken(i);
+        string body = "body";
+        if (stop) return chooseLocal(header, effects, headerResult) ? header : body;
+        i++;
+    }
+    return i > 0 ? "after" : outer;
+}
+class ConditionalLocalReader {
+    int value;
+    func init() { this.value = 1; }
+    static func string readStatic(bool choice) {
+        string result = "static";
+        string discard = "discard";
+        return choice ? result : "static-literal";
+    }
+    func string readInstance(string source) {
+        string result = source;
+        ConditionalLocalToken owner = new ConditionalLocalToken(1);
+        return this.value > 0 ? result : "never";
+    }
+}
+func string nullOrEmpty(bool choice) {
+    string absent;
+    const string empty = "";
+    string discard = "discard";
+    return choice ? absent : empty;
+}
+func bool __dream_return_1(int *effects) { return chooseLocal("collision", effects, true); }
+func string collisionLocal(int *effects) {
+    string __dream_return_0 = "collision";
+    string discard = "discard";
+    return __dream_return_1(effects) ? __dream_return_0 : "never";
+}
+func string completedLocal() {
+    string result = "completed";
+    string discard = "discard";
+    try { string tryText = "try"; }
+    catch { }
+    finally { ConditionalLocalToken owner = new ConditionalLocalToken(1); }
+    return true ? result : "never";
+}
+func string repeatedLocal(int *effects) {
+    string result = "same";
+    string discard = "discard";
+    return chooseLocal(result, effects, true) ? result : result;
+}
+func string changedLocal(int *effects) {
+    string result = "mutate";
+    string other = "other";
+    return chooseLocal((result += "x"), effects, true) ? result : other;
+}
+func string equalLocal() {
+    string left = "equal";
+    string right = "equal";
+    return false ? left : right;
+}
+// These uncalled controls must retain their complete previous emission.
+func string borrowedLocal(bool choice, string source) {
+    string owned = "owned";
+    return choice ? owned : source;
+}
+func string nestedBorrowedLocal(bool a, bool b, string source) {
+    string owned = "owned";
+    return a ? (b ? owned : "literal") : source;
+}
+func string callLocal(bool choice) {
+    string owned = "owned";
+    return choice ? owned : completedLocal();
+}
+func string pendingLocal(bool choice) {
+    string outer = "outer";
+    try { string text = "try"; return choice ? text : "try-literal"; }
+    catch { string text = "catch"; return choice ? text : "catch-literal"; }
+    finally { string text = "finally"; return choice ? text : "finally-literal"; }
+    return outer;
+}
+func void exerciseLocal() {
+    string backing = "backing";
+    int effects[1];
+    effects[0] = 0;
+    string snapshot = nestedLocal(true, true, true, effects, backing);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(nestedLocal(true, true, false, effects, backing));
+    Console.WriteLine(nestedLocal(true, false, true, effects, backing));
+    Console.WriteLine(nestedLocal(true, false, false, effects, backing));
+    Console.WriteLine(nestedLocal(false, true, false, effects, backing));
+    Console.WriteLine(nestedLocal(false, false, false, effects, backing));
+    Console.WriteLine(loopLocal(true, true, effects));
+    Console.WriteLine(loopLocal(true, false, effects));
+    Console.WriteLine(loopLocal(false, false, effects));
+    Console.WriteLine(ConditionalLocalReader.readStatic(true));
+    Console.WriteLine(ConditionalLocalReader.readStatic(false));
+    ConditionalLocalReader reader = new ConditionalLocalReader();
+    Console.WriteLine(reader.readInstance(backing));
+    if (nullOrEmpty(true) == null) Console.WriteLine("null");
+    Console.WriteLine(nullOrEmpty(false));
+    Console.WriteLine(collisionLocal(effects));
+    Console.WriteLine(completedLocal());
+    Console.WriteLine(repeatedLocal(effects));
+    Console.WriteLine(changedLocal(effects));
+    Console.WriteLine(equalLocal());
+    Console.WriteLine(effects[0]);
+    Console.WriteLine(backing);
+    backing = "changed";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(backing);
+}
+exerciseLocal();

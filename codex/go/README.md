@@ -213,9 +213,21 @@ P0039. All four value leaves execute, with labels and counters checking selected
 once-only condition evaluation before cleanup of local strings/classes and headers.
 Unbraced paths, later declarations, null/const/empty locals, loop updates, methods,
 temporary collisions, caller survival and normal exception completion are covered.
-Exact C checks preserve nonliteral leaves in either recursive branch and active
+Exact C checks preserve unsupported leaves in either recursive branch and active
 exception exits. No returned copy or retain is added. Both quick protocols and CI
 select the group; earlier allocator/refcount/shutdown assertions remain intact.
+
+`TestCompiler_ConditionalLocalReturn` checks literal/owned-local conditional trees
+in both modes: 64 nonnull releases (18 classes, 46 strings), 36 output lines and
+exactly 14 selected allocations with their original reference before shutdown.
+The initial fixture reproduced 57 live allocations instead of 12 before P0040.
+Exact C sequences require once-only selection before reverse cleanup; candidate
+pointer comparisons preserve only the selected allocation. Nested/repeated leaves,
+null/const/empty slots, equal-content independent allocations, append in a condition,
+headers/updates, unbraced paths, methods, name collisions and caller snapshots are
+covered. Unsupported borrowed/call leaves and active exception returns keep their
+emission. P0037/P0039 unused owned-conditional controls check the new cleanup with
+unchanged runtime assertions. Both quick protocols and CI select this group.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

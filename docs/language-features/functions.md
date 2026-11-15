@@ -110,8 +110,16 @@ No result allocation or retain is needed; caller declarations still copy results
 The same conditional block and temporary-name rules apply. P0039 also qualifies
 nested `?:` results when every value leaf is a string literal. Reached conditions
 evaluate once before cleanup, preserving local/header/field reads and side effects;
-unselected branches do not execute. Any nonliteral leaf keeps the entire return on
-its previous path, including borrowed parameters, owned locals and call results.
+unselected branches do not execute.
+
+P0040 additionally qualifies conditional trees whose leaves are literals or known-
+owned scalar string locals. After capturing the result once, cleanup releases an
+owned candidate only when its current pointer differs from the selected pointer;
+all other qualified locals are released in reverse order. This preserves exactly
+one selected allocation with its original reference, including after condition
+effects replace a local. Null selection retains no allocation. No result copy,
+retain or consumption is added. Any borrowed parameter, member, index, call or
+other unsupported value leaf keeps the whole return on its previous path.
 
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership

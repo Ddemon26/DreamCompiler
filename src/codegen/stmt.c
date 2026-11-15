@@ -503,6 +503,36 @@ static int is_static_string_result(const Node *expr) {
          is_static_string_result(expr->as.cond.else_expr);
 }
 
+static int is_local_string_result(CGCtx *ctx, Node *expr) {
+  if (!expr) return 0;
+  if (expr->kind == ND_COND)
+    return is_local_string_result(ctx, expr->as.cond.then_expr) &&
+           is_local_string_result(ctx, expr->as.cond.else_expr);
+  return expr->kind == ND_STRING || owned_string_result(ctx, expr);
+}
+
+static int result_mentions_binding(CGCtx *ctx, Node *expr,
+                                   const VarBinding *v) {
+  if (expr->kind == ND_COND)
+    return result_mentions_binding(ctx, expr->as.cond.then_expr, v) ||
+           result_mentions_binding(ctx, expr->as.cond.else_expr, v);
+  return owned_string_result(ctx, expr) == v;
+}
+
+static void emit_conditional_return_cleanup(CGCtx *ctx, COut *b,
+                                            Node *expr, const char *temporary) {
+  for (size_t i = ctx->len; i-- > 0;) {
+    VarBinding *v = &ctx->vars[i];
+    if (!return_releases_binding(v)) continue;
+    // Independently owned local slots cannot share a live allocation. Compare
+    // after evaluating the result: conditions may have changed a slot, and must
+    // never be evaluated again. Null comparisons only omit a no-op release.
+    if (result_mentions_binding(ctx, expr, v))
+      c_out_write(b, "if (%.*s != %s) ", (int)v->len, v->start, temporary);
+    c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
+  }
+}
+
 static int copies_string_initializer(Node *init) {
   return init && (init->kind == ND_INDEX || init->kind == ND_STRING ||
                   init->kind == ND_IDENT || init->kind == ND_FIELD ||
@@ -735,6 +765,10 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     break;
   case ND_RETURN: {
     const VarBinding *preserved = owned_string_result(ctx, n->as.ret.expr);
+    int conditional_local = ctx->ret_type == TK_KW_STRING &&
+                            n->as.ret.expr && n->as.ret.expr->kind == ND_COND &&
+                            !is_static_string_result(n->as.ret.expr) &&
+                            is_local_string_result(ctx, n->as.ret.expr);
     if (ctx->is_async_worker) {
       // In async worker, set task result instead of returning directly
       if (n->as.ret.expr) {
@@ -780,6 +814,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_write(b, "}");
     } else if (ctx->is_sync_function && n->as.ret.expr &&
                (is_primitive_scalar_result(ctx->ret_type) || preserved ||
+                conditional_local ||
                 (ctx->ret_type == TK_KW_STRING &&
                  is_static_string_result(n->as.ret.expr))) &&
                ctx->exception_depth == 0 && has_return_cleanup(ctx)) {
@@ -797,14 +832,17 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_free(&value);
 
       // Evaluate exactly once before freeing any storage read by the result.
-      // Literal-only result branches have storage independent of every local.
+      // Static leaves are independent; owned-local leaves preserve their slot.
       // Keep bindings for other branches; keep unbraced returns conditional.
       c_out_write(b, "{\n");
       c_out_indent(b);
       c_out_write(b, "%s %s = ", type_to_c(ctx->ret_type), temporary);
       cg_emit_expr(ctx, b, n->as.ret.expr);
       c_out_write(b, ";\n");
-      emit_return_cleanup(ctx, b, preserved);
+      if (conditional_local)
+        emit_conditional_return_cleanup(ctx, b, n->as.ret.expr, temporary);
+      else
+        emit_return_cleanup(ctx, b, preserved);
       c_out_write(b, "return %s;\n", temporary);
       c_out_dedent(b);
       c_out_write(b, "}");
