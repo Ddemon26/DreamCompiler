@@ -40,7 +40,7 @@ Existing restrictions on shadowing an enclosing binding remain unchanged.
 
 Header storage is released once on normal termination or a break targeting that
 loop. Continue preserves it through the update and subsequent iterations. This
-also applies at top level, before shutdown. Return and exception exits can bypass
+also applies at top level, before shutdown. Value-return and exception exits can bypass
 this cleanup. P0024 qualifies owned scalar body-local cleanup on break/continue
 as described below.
 
@@ -54,7 +54,7 @@ not a return-transfer ABI: a fresh managed result, or a local whose return bypas
 cleanup, remains in the allocation registry until shutdown unless otherwise
 released by its owner. This can retain storage and adds an extra allocation.
 The callee must return storage that is still readable when the caller copies it.
-No return cleanup, dangling-result repair or ownership inference is introduced.
+No value-return cleanup, dangling-result repair or ownership inference is introduced.
 
 P0022 qualifies plain `=` when the destination is an identifier bound to a known
 owned scalar declaration. The emitter records this for the copied initializer
@@ -159,6 +159,20 @@ scalar replacement and break/continue cleanup. Source replacement and copy
 replacement leave the other allocation readable. Null results remain null.
 Fresh managed assignment operands can still remain registered until shutdown;
 compound assignment and destination ownership beyond P0022 remain separate.
+
+P0034 releases qualified owned scalar string locals before a bare `return;` in
+synchronous void functions and static/instance methods. Cleanup runs in reverse
+declaration order across all active local scopes, including for headers, and stays
+inside unbraced conditional returns. Parameters, `this`, borrowed arrays/pointers
+and declarations not yet reached receive no release. Fall-through paths retain
+their existing cleanup; a taken return bypasses it, avoiding repeated release.
+
+Returns inside an active try, catch or finally retain their previous emission:
+they require exception-context unwinding before this cleanup can be qualified.
+A return after the context has completed uses the new path. Async functions,
+value returns, class locals on return and temporary/result ownership remain
+outside this boundary. In particular, returning a string local still leaves its
+existing storage readable for the caller; this pass does not add value transfer.
 
 ## Storage contract
 
@@ -336,10 +350,22 @@ not establish alias retention, class pointer/array ownership, destructors or fie
 destruction. Return and exception/finally exits remain separate. Both quick protocols
 and CI select the new matrix; all prior allocator assertions remain intact.
 
+The [void-return regression](../../tests/basics/memory/void_return_strings.dr)
+and `TestCompiler_VoidReturnStrings` require exact reverse-order return sequences,
+40 nonnull checked releases (39 strings and one normally cleaned class instance),
+13 output lines and an empty registry before shutdown in both modes. Both modes
+failed that pre-shutdown assertion before P0034. Nested/const/null/empty locals,
+later declarations, true/false unbraced paths, while/do/for/switch returns,
+zero/multiple iterations, header updates, recursion, methods and borrowed caller
+survival are covered. An unused function checks that return emission inside
+try/catch/finally remains unchanged; these unsafe exit paths are not executed or
+qualified. A normally completed exception context followed by a return is executed.
+Both quick protocols and CI select the matrix; existing allocator assertions remain.
+
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,
-owning arrays/pointers and automatic element destruction, function returns,
-early return/exception cleanup, class alias/container ownership,
+owning arrays/pointers and automatic element destruction, value returns,
+class-local return and exception cleanup, class alias/container ownership,
 compound expressions and field ownership remain unqualified. Concatenation and
 read-line initializers keep their existing managed allocation; as replacements
 they are copied, leaving temporary/result ownership unchanged.

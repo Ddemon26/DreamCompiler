@@ -80,6 +80,19 @@ This checks explicit primitive returns, not whether every control-flow path retu
 Pointer/array shape checking and broader operator validation remain separate work;
 async and non-primitive return contracts are outside this supported subset.
 
+### Owned strings on bare void return
+
+In synchronous void functions and static/instance methods, `return;` releases
+qualified owned scalar string locals in reverse declaration order, including
+active nested scopes and for headers. Borrowed parameters, arrays and explicit
+pointers stay borrowed; a caller's backing string survives. Unbraced conditional
+returns keep cleanup conditional, and normal completion keeps existing cleanup.
+
+Returns inside active try/catch/finally contexts retain their previous behavior;
+exception unwinding, async exits, class-local return cleanup and value-return
+ownership remain unqualified. See the bounded
+[ownership checkpoint](../development/string-ownership.md).
+
 ## Parameters
 
 ### Declaration syntax and recovery
@@ -172,7 +185,7 @@ into independent managed storage. Literal, borrowed, managed and null results
 follow this rule for free functions and static/instance/base methods, including
 const declarations and for headers. Normal declaration cleanup releases the copy.
 The caller does not take ownership of the returned pointer: a fresh managed result
-can remain registered until shutdown. Return transfer, early-exit cleanup and
+can remain registered until shutdown. Return transfer, value-return cleanup and
 dangling results remain unqualified; see the
 [ownership checkpoint](../development/string-ownership.md).
 

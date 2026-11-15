@@ -2,6 +2,55 @@
 
 **Date:** November 15, 2026 UTC (local reports November 14, America/Vancouver)
 
+**Pass:** P0034 - owned scalar strings on bare void return
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0033 publication matched parent `376b74402d038c9d55aa2b790c1facdd785675a6`;
+  [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43677590309)
+  passed Linux and Windows jobs before implementation.
+- Restricted fetch failed DNS and restricted baseline could not locate the Zig
+  installation. Normal approved network/toolchain access succeeded without any
+  toolchain/cache/permission configuration change.
+- Baseline `zig build test`: **160 discovered, 142 passed, 18 skipped, zero
+  failures/errors**, 54.54s; `test_results_20261114_230800_windows.json`.
+- Before fix, focused `go test -count=1 -v -run
+  '^TestCompiler_VoidReturnStrings$' .` from `codex/go`: **both modes failed**
+  the empty-registry-before-shutdown assertion, 3.097s (group 2.58s).
+- `zig build`: **passed**, exit 0. Initial focused regression: **both modes
+  passed**, 3.554s (group 3.01s). Each requires **40 nonnull releases** (39
+  strings, one normal class release), **13 exact output lines**, reverse-order
+  cleanup, borrowed caller survival, pre-shutdown emptiness, native UBSan/live
+  registry/refcounts/shutdown, Linux harness cross-linking and direct linked output.
+- Final `zig build test` with synchronous-function gating: **161 discovered,
+  143 passed, 18 skipped, zero failures/errors**, 49.14s;
+  `test_results/test_results_20261114_231035_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.043s.
+- From `codex/go`, `powershell -NoProfile -ExecutionPolicy Bypass -File
+  ./build_and_test.ps1 quick`: **all 27 groups passed**, 53.977s;
+  void-return group **2.38s**, both modes. Compiler invocations use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Linux executables were not run locally;
+  cross-building/cross-linking is not native P0034 Linux runtime evidence.
+- Quick/CI selector equality, PowerShell BOM, gofmt, **134 local Markdown paths resolved**,
+  complete scope/diff review and `git diff --check` checked before commit.
+  Precommit fetch and remote SHA still matched the parent; no divergence.
+
+Same eighteen skips and prior shape/operator limits. Value-return transfer,
+class-local return cleanup, async and exception/finally unwinding remain
+unqualified. Unused active exception-return paths have emission checks only;
+normal exception completion followed by a return executes. Class aliases,
+containers/destructors/fields and temporary/result ownership remain separate.
+See [P0034](passes/P0034-void-return-strings.md). Next: verify publication/native
+CI, then qualify fresh independent class locals on bare synchronous void return.
+
+---
+
+## Historical P0033 checkpoint - DreamCompiler
+
+**Date:** November 15, 2026 UTC (local reports November 14, America/Vancouver)
+
 **Pass:** P0033 - owned scalar string append
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

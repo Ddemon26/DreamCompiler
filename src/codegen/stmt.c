@@ -384,6 +384,7 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
     // Regular function - emit the function body
     CGCtx ctx = {0};
     ctx.ret_type = n->as.func.ret_type;
+    ctx.is_sync_function = 1;
     cgctx_scope_enter(&ctx);
     for (size_t i = 0; i < n->as.func.param_len; i++) {
       Node *p = n->as.func.params[i];
@@ -429,6 +430,7 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
   c_out_write(b, ") ");
   CGCtx ctx = {0};
   ctx.ret_type = n->as.func.ret_type;
+  ctx.is_sync_function = !n->as.func.is_async;
   cgctx_scope_enter(&ctx);
   cgctx_push(&ctx, "this", 4, TK_IDENT, class_name);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
@@ -716,8 +718,23 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         }
       }
       c_out_write(b, "\nreturn NULL;");
+    } else if (ctx->is_sync_function && !n->as.ret.expr &&
+               ctx->ret_type == TK_KW_VOID &&
+               ctx->exception_depth == 0) {
+      // Keep cleanup inside an unbraced conditional return. Bindings remain
+      // available to emit other branches and unreachable fall-through cleanup.
+      c_out_write(b, "{\n");
+      c_out_indent(b);
+      for (size_t i = ctx->len; i-- > 0;) {
+        VarBinding *v = &ctx->vars[i];
+        if (v->owns_string)
+          c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
+      }
+      c_out_write(b, "return;\n");
+      c_out_dedent(b);
+      c_out_write(b, "}");
     } else {
-      // Regular function return
+      // Value returns and exception unwinding retain their existing emission.
       c_out_write(b, "return");
       if (n->as.ret.expr) {
         c_out_write(b, " ");
@@ -809,6 +826,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     break;
   case ND_TRY: {
     int has_finally = n->as.try_stmt.finally_body != NULL;
+    ctx->exception_depth++;
     
     c_out_write(b, "{\n");
     c_out_indent(b);
@@ -864,6 +882,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     
     // Pop exception context
     c_out_write(b, "dream_exception_pop();\n");
+    ctx->exception_depth--;
     
     c_out_dedent(b);
     c_out_write(b, "}\n");

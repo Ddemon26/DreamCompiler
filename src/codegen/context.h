@@ -31,8 +31,10 @@ typedef struct CGCtx {
   int depth;
   TokenKind ret_type;
   int is_async_worker;
+  int is_sync_function;
   Slice async_func_name;
   CGControlTarget *control_target;
+  int exception_depth; /* Returns crossing an exception context need unwinding. */
 } CGCtx;
 
 void cgctx_push(CGCtx *ctx, const char *start, size_t len, TokenKind ty,

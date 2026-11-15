@@ -1,0 +1,154 @@
+// Expected: fall
+// Expected: backing value
+// Expected: do
+// Expected: early
+// Expected: backing value
+// Expected: backing valuex
+// Expected: normal
+// Expected: after
+// Expected: static
+// Expected: instance
+// Expected: try
+// Expected: finally
+// Expected: backing value
+func void nested(string source, string* values, bool stop) {
+    string outer = source;
+    string empty = "";
+    string absent;
+    string borrowed[1];
+    borrowed[0] = source;
+    string* alias = borrowed;
+    {
+        const string inner = values[0];
+        if (stop) return;
+        string late = "fall";
+        Console.WriteLine(late);
+    }
+    Console.WriteLine(outer);
+}
+func void whileExit(string source) {
+    string whileOuter = source;
+    int i = 0;
+    while (i < 3) {
+        string whileBody = source;
+        i++;
+        if (i == 2) return;
+        continue;
+    }
+}
+func void doExit(string source) {
+    string doOuter = source;
+    do {
+        string doBody = "do";
+        Console.WriteLine(doBody);
+        return;
+    } while (true);
+}
+func void forExit(string source, bool stop) {
+    string forOuter = source;
+    int i = 0;
+    for (string header = source; i < 2; header += "x") {
+        string forBody = header;
+        if (stop) {
+            string deep = "early";
+            Console.WriteLine(deep);
+            return;
+        }
+        Console.WriteLine(header);
+        i++;
+    }
+}
+func void switchExit(string source, int choice) {
+    string switchOuter = source;
+    switch (choice) {
+        case 1:
+            string caseText = source;
+            if (choice == 1) return;
+            break;
+        default:
+            string normal = "normal";
+            Console.WriteLine(normal);
+    }
+    string after = "after";
+    Console.WriteLine(after);
+}
+func void zeroExit(string source) {
+    string zeroOuter = source;
+    for (string zeroHeader = source; false;) {
+        string never = "never";
+        return;
+    }
+    return;
+}
+func void recurse(string source, int depth) {
+    string recursive = source;
+    if (depth > 0) recurse(source, depth - 1);
+    return;
+}
+func void borrowedOnly(string parameter, string* pointer) { return; }
+func void noLocals() { return; }
+class ReturnReader {
+    static func void runStatic(string source) {
+        string staticText = source;
+        Console.WriteLine("static");
+        return;
+    }
+    func void runInstance(string source) {
+        string instanceText = source;
+        {
+            string methodDeep = "instance";
+            Console.WriteLine(methodDeep);
+            return;
+        }
+    }
+}
+// These unused paths retain existing exception-return emission; unwinding is
+// intentionally outside this pass. The Go matrix checks this boundary.
+func void pendingException(string source) {
+    string pendingOuter = source;
+    try {
+        string pendingTry = source;
+        return;
+    } catch {
+        string pendingCatch = source;
+        return;
+    } finally {
+        string pendingFinally = source;
+        return;
+    }
+}
+func void completedException(string source) {
+    string completedOuter = source;
+    try {
+        string completedTry = "try";
+        Console.WriteLine(completedTry);
+    } catch {
+    } finally {
+        string completedFinally = "finally";
+        Console.WriteLine(completedFinally);
+    }
+    return;
+}
+func void exercise() {
+    string backing = "backing" + " value";
+    string values[1];
+    values[0] = backing;
+    nested(backing, values, true);
+    nested(backing, values, false);
+    whileExit(backing);
+    doExit(backing);
+    forExit(backing, true);
+    forExit(backing, false);
+    switchExit(backing, 1);
+    switchExit(backing, 2);
+    zeroExit(backing);
+    recurse(backing, 2);
+    borrowedOnly(backing, values);
+    noLocals();
+    ReturnReader.runStatic(backing);
+    ReturnReader reader = new ReturnReader();
+    reader.runInstance(backing);
+    completedException(backing);
+    Console.WriteLine(backing);
+}
+exercise();

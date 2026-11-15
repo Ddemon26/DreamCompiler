@@ -256,7 +256,8 @@ scalar identifiers; P0023 excludes borrowed array/pointer bindings from scalar
 block cleanup; P0024 qualifies owned scalar cleanup on break/continue; P0030
 adds scalar conditional initializer copies; P0031 adds class-local jump cleanup;
 P0032 adds plain assignment-expression initializer copies; P0033 qualifies owned
-scalar string `+=`. Source audit still finds plain C assignment elsewhere. Other
+scalar string `+=`; P0034 qualifies owned scalar cleanup on bare synchronous
+void return. Source audit still finds plain C assignment elsewhere. Other
 compound operators, owning containers, return transfer, other early exits and
 field ownership remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
@@ -393,12 +394,24 @@ Full Windows suite: 142 passed, 18 skipped, zero failures/errors; all 26 Go quic
 groups, five runner tests and Linux cross-build passed. See
 [P0033](passes/P0033-owned-string-append.md) for exact validation and limits.
 
-Broader T011 remains open. Verify P0033 publication/native CI and repair failures
-first. Next reproduce owned scalar locals retained by bare `return;` in void
-functions/methods. Qualify a bounded cleanup path with checked pre-shutdown
-allocations, borrowed parameters and nested/header scopes; keep value-return
-transfer and exception/finally unwinding separate.
-Class aliases/containers/destructors and field ownership remain separate.
+P0034 reproduces retained scoped allocations on bare void return in both modes,
+then releases qualified owned scalar strings in reverse declaration order across
+active local/header scopes. Each mode checks 40 nonnull releases (39 strings and
+one normal class release), 13 output lines and an empty registry before shutdown.
+Nested/const/null/empty locals, later declarations, true/false unbraced paths,
+while/do/for/switch returns, header updates, zero/multiple iterations, recursion,
+methods and borrowed caller survival are covered. Active try/catch/finally returns
+retain their emission and are not executed/qualified; return after a completed
+context executes. Full Windows suite: 143 passed, 18 skipped, zero failures/errors;
+27 Go quick groups, five runner tests and Linux cross-build passed. See
+[P0034](passes/P0034-void-return-strings.md).
+
+Broader T011 remains open. Verify P0034 publication/native CI and repair failures
+first. Next reproduce fresh independent class locals retained by bare `return;`
+in synchronous void functions/methods. Qualify bounded cleanup with checked
+pre-shutdown allocations, preserving borrowed `this`, owned string locals and
+nested/header scopes. Class aliases/containers/destructors/fields, value-return
+transfer, async and exception/finally unwinding remain separate.
 T012/T013 pruning and T014 website/release work are completed maintenance history;
 do not repeat those tasks from stale scheduled-run memory.
 
