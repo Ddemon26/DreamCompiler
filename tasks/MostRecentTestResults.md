@@ -1,5 +1,53 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 15, 2026 UTC
+
+**Pass:** P0035 - scalar class locals on bare void return
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0034 publication matched parent `d85bfb4b48fd5d560b0ccacbdffbd80f3dcdde26`;
+  [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43684568487)
+  passed Linux and Windows jobs before implementation.
+- Restricted fetch failed DNS; restricted baseline could not find Zig's installed
+  directory. Approved normal network/toolchain access succeeded without changing
+  toolchain, caches or permissions.
+- Baseline `zig build test`: **161 discovered, 143 passed, 18 skipped, zero
+  failures/errors**, 56.08s; `test_results_20261115_000721_windows.json`.
+- Before fix, focused `TestCompiler_VoidReturnClasses`: **both modes failed**
+  the empty-registry-before-shutdown assertion, 2.855s (group 2.30s).
+  Earlier fixture probes rejected unsupported class for headers and null initializers.
+- `zig build`: **passed**, exit 0. Initial focused test: **both modes passed**,
+  3.466s (group 2.91s). Each checks **40 nonnull releases** (30 class instances,
+  ten strings), **ten exact output lines**, native UBSan/live registry/refcounts/
+  shutdown, empty pre-shutdown registry, Linux harness cross-linking and direct
+  linked output. Final exact reverse-order C assertions passed in the quick run.
+- `zig build test`: **162 discovered, 144 passed, 18 skipped, zero failures/
+  errors**, 48.56s; `test_results/test_results_20261115_001002_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.038s.
+- Supported Windows Go quick protocol: **all 28 groups passed**, 59.076s;
+  class void-return group **2.67s**, both modes. Compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. No local Linux execution; cross-build/cross-link success
+  is not native P0035 runtime evidence.
+- **139 local Markdown paths resolved**, 28-group quick/CI selector equality,
+  PowerShell BOM, gofmt, scope/
+  diff review and `git diff --check` verified before commit. Precommit fetch and
+  remote SHA still matched the parent; no divergence.
+
+Same eighteen skips and previous shape/operator limits. Fresh independent scalar
+class locals are qualified; class alias/container ownership, destructors/fields,
+value-return transfer, async and exception unwinding remain separate. Unused active
+exception-return paths have emission checks only. Direct class null initialization
+and custom-type for headers remain unsupported. See
+[P0035](passes/P0035-void-return-classes.md). Next verify publication/native CI,
+then qualify bounded primitive scalar value-return cleanup with once-only evaluation.
+
+---
+
+## Historical P0034 checkpoint - DreamCompiler
+
 **Date:** November 15, 2026 UTC (local reports November 14, America/Vancouver)
 
 **Pass:** P0034 - owned scalar strings on bare void return

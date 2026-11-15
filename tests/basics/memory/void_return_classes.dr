@@ -1,0 +1,147 @@
+// Expected: 2
+// Expected: 1
+// Expected: 4
+// Expected: 5
+// Expected: 6
+// Expected: 7
+// Expected: 8
+// Expected: 9
+// Expected: 9
+// Expected: backing
+class ReturnToken {
+    int value;
+    func init(int value) { this.value = value; }
+}
+func void nested(bool stop) {
+    ReturnToken outer = new ReturnToken(1);
+    string text = "text";
+    {
+        ReturnToken inner = new ReturnToken(2);
+        if (stop) return;
+        ReturnToken late = new ReturnToken(3);
+        Console.WriteLine(inner.value);
+    }
+    Console.WriteLine(outer.value);
+}
+func void whileExit() {
+    ReturnToken whileOuter = new ReturnToken(0);
+    int i = 0;
+    while (i < 3) {
+        ReturnToken whileBody = new ReturnToken(i);
+        i++;
+        if (i == 2) return;
+        continue;
+    }
+}
+func void doExit() {
+    ReturnToken doOuter = new ReturnToken(0);
+    do {
+        ReturnToken doBody = new ReturnToken(4);
+        Console.WriteLine(doBody.value);
+        return;
+    } while (true);
+}
+func void forExit(bool stop) {
+    ReturnToken forOuter = new ReturnToken(0);
+    int i = 0;
+    for (string header = "header"; i < 2; i++) {
+        string bodyText = "body";
+        ReturnToken forBody = new ReturnToken(i);
+        if (stop) {
+            ReturnToken deep = new ReturnToken(0);
+            Console.WriteLine(5);
+            return;
+        }
+    }
+}
+func void switchExit(int choice) {
+    ReturnToken switchOuter = new ReturnToken(0);
+    switch (choice) {
+        case 1:
+            ReturnToken caseOwner = new ReturnToken(0);
+            if (choice == 1) return;
+            break;
+        default:
+            ReturnToken normal = new ReturnToken(6);
+            Console.WriteLine(normal.value);
+    }
+    return;
+}
+func void zeroExit() {
+    ReturnToken zeroOuter = new ReturnToken(0);
+    for (string zeroHeader = "zero"; false;) {
+        ReturnToken never = new ReturnToken(0);
+        return;
+    }
+    return;
+}
+func void recurse(int depth) {
+    ReturnToken recursive = new ReturnToken(depth);
+    if (depth > 0) recurse(depth - 1);
+    return;
+}
+class ReturnMethods {
+    int value;
+    func init(int value) { this.value = value; return; }
+    static func void runStatic() {
+        ReturnToken staticOwner = new ReturnToken(7);
+        Console.WriteLine(staticOwner.value);
+        return;
+    }
+    func void runInstance() {
+        ReturnToken instanceOwner = new ReturnToken(8);
+        {
+            string methodText = "method";
+            Console.WriteLine(instanceOwner.value);
+            return;
+        }
+    }
+    func void borrowedOnly() { return; }
+}
+// Active exception returns remain emission-only checks, never executed here.
+func void pendingException() {
+    ReturnToken pendingOuter = new ReturnToken(0);
+    try {
+        ReturnToken pendingTry = new ReturnToken(0);
+        return;
+    } catch {
+        ReturnToken pendingCatch = new ReturnToken(0);
+        return;
+    } finally {
+        ReturnToken pendingFinally = new ReturnToken(0);
+        return;
+    }
+}
+func void completedException() {
+    ReturnToken completedOuter = new ReturnToken(0);
+    try {
+        ReturnToken completedTry = new ReturnToken(0);
+    } catch {
+    } finally {
+        ReturnToken completedFinally = new ReturnToken(0);
+    }
+    return;
+}
+func void exercise() {
+    string backing = "backing";
+    nested(true);
+    nested(false);
+    whileExit();
+    doExit();
+    forExit(true);
+    forExit(false);
+    switchExit(1);
+    switchExit(2);
+    zeroExit();
+    recurse(2);
+    ReturnMethods.runStatic();
+    ReturnMethods reader = new ReturnMethods(9);
+    reader.runInstance();
+    Console.WriteLine(reader.value);
+    reader.borrowedOnly();
+    Console.WriteLine(reader.value);
+    completedException();
+    Console.WriteLine(backing);
+    return;
+}
+exercise();

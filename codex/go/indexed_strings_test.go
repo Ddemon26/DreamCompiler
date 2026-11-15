@@ -380,6 +380,28 @@ func TestCompiler_VoidReturnStrings(t *testing.T) {
 		`dr_release(pendingFinally);dr_release(pendingOuter);return;`)
 }
 
+func TestCompiler_VoidReturnClasses(t *testing.T) {
+	checkStorageOwnership(t, "void_return_classes.dr", 40, []string{
+		`{dr_release(inner);dr_release(text);dr_release(outer);return;}`,
+		`{dr_release(whileBody);dr_release(whileOuter);return;}`,
+		`{dr_release(doBody);dr_release(doOuter);return;}`,
+		`{dr_release(deep);dr_release(forBody);dr_release(bodyText);dr_release(header);dr_release(forOuter);return;}`,
+		`{dr_release(caseOwner);dr_release(switchOuter);return;}`,
+		`{dr_release(switchOuter);return;}`,
+		`{dr_release(never);dr_release(zeroHeader);dr_release(zeroOuter);return;}`,
+		`{dr_release(zeroOuter);return;}`, `{dr_release(recursive);return;}`,
+		`{dr_release(staticOwner);return;}`,
+		`{dr_release(methodText);dr_release(instanceOwner);return;}`,
+		`{dr_release(completedOuter);return;}`,
+		`{dr_release(reader);dr_release(backing);return;}`,
+	},
+		"2\n1\n4\n5\n6\n7\n8\n9\n9\nbacking\n", true,
+		`dr_release(this);`,
+		`dr_release(pendingTry);dr_release(pendingOuter);return;`,
+		`dr_release(pendingCatch);dr_release(pendingOuter);return;`,
+		`dr_release(pendingFinally);dr_release(pendingOuter);return;`)
+}
+
 func TestCompiler_LoopExitClasses(t *testing.T) {
 	checkStorageOwnership(t, "loop_exit_classes.dr", 33, []string{
 		`{dr_release(deep);dr_release(text);dr_release(whileBody);continue;}`,

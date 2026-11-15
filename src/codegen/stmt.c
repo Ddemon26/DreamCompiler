@@ -727,7 +727,11 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_indent(b);
       for (size_t i = ctx->len; i-- > 0;) {
         VarBinding *v = &ctx->vars[i];
-        if (v->owns_string)
+        // Parameters and implicit this occupy depth 1; body/header locals are
+        // deeper. Preserve borrowed receivers and leave class containers separate.
+        if (v->owns_string ||
+            (v->depth > 1 && v->indirections == 0 &&
+             v->type == TK_IDENT && cg_is_class_type(v->type_name)))
           c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
       }
       c_out_write(b, "return;\n");

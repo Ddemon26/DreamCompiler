@@ -170,9 +170,18 @@ their existing cleanup; a taken return bypasses it, avoiding repeated release.
 Returns inside an active try, catch or finally retain their previous emission:
 they require exception-context unwinding before this cleanup can be qualified.
 A return after the context has completed uses the new path. Async functions,
-value returns, class locals on return and temporary/result ownership remain
+value returns and temporary/result ownership remain
 outside this boundary. In particular, returning a string local still leaves its
 existing storage readable for the caller; this pass does not add value transfer.
+
+P0035 adds scalar class locals to this bare-return path, interleaving class and
+owned-string releases in reverse declaration order. Body/header locals occupy
+scopes deeper than the function parameter scope; this excludes borrowed `this`
+and parameters. Class arrays and explicit pointers are excluded from this new
+path. This qualifies fresh independent class instances, matching their normal
+block releases, without adding alias retention, field destruction or destructors.
+The compiler still rejects custom-type for-header declarations and direct class
+null initializers; the regression uses supported string headers and fresh instances.
 
 ## Storage contract
 
@@ -347,7 +356,7 @@ mixed class/string scopes, later declarations, nested loop/switch targets, survi
 outer instances, string headers, normal exits, static/instance methods and top-level
 loops are covered. The fixture uses fresh, independent class allocations; it does
 not establish alias retention, class pointer/array ownership, destructors or field
-destruction. Return and exception/finally exits remain separate. Both quick protocols
+destruction. Value-return and exception/finally exits remain separate. Both quick protocols
 and CI select the new matrix; all prior allocator assertions remain intact.
 
 The [void-return regression](../../tests/basics/memory/void_return_strings.dr)
@@ -362,10 +371,21 @@ try/catch/finally remains unchanged; these unsafe exit paths are not executed or
 qualified. A normally completed exception context followed by a return is executed.
 Both quick protocols and CI select the matrix; existing allocator assertions remain.
 
+The [class void-return regression](../../tests/basics/memory/void_return_classes.dr)
+and `TestCompiler_VoidReturnClasses` require 40 nonnull releases (30 class
+instances and ten strings), ten exact output lines, reverse-order C sequences and
+an empty registry before shutdown in both modes. Both modes reproduced retained
+allocations before P0035. Nested mixed scopes, later declarations, true/false
+unbraced returns, while/do/for/switch exits, zero/multiple iterations, recursion,
+static/instance methods, a constructor's bare return, caller receiver survival and
+normal exception completion are covered. Unused active exception-return paths
+are checked only for unchanged emission. Both quick protocols and CI select the
+matrix; all existing allocator/refcount/shutdown assertions remain unchanged.
+
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,
 owning arrays/pointers and automatic element destruction, value returns,
-class-local return and exception cleanup, class alias/container ownership,
+exception cleanup, class alias/container ownership,
 compound expressions and field ownership remain unqualified. Concatenation and
 read-line initializers keep their existing managed allocation; as replacements
 they are copied, leaving temporary/result ownership unchanged.

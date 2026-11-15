@@ -257,8 +257,8 @@ block cleanup; P0024 qualifies owned scalar cleanup on break/continue; P0030
 adds scalar conditional initializer copies; P0031 adds class-local jump cleanup;
 P0032 adds plain assignment-expression initializer copies; P0033 qualifies owned
 scalar string `+=`; P0034 qualifies owned scalar cleanup on bare synchronous
-void return. Source audit still finds plain C assignment elsewhere. Other
-compound operators, owning containers, return transfer, other early exits and
+void return; P0035 adds scalar class locals. Source audit still finds plain C
+assignment elsewhere. Other compound operators, owning containers, return transfer, other early exits and
 field ownership remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
 
@@ -406,12 +406,25 @@ context executes. Full Windows suite: 143 passed, 18 skipped, zero failures/erro
 27 Go quick groups, five runner tests and Linux cross-build passed. See
 [P0034](passes/P0034-void-return-strings.md).
 
-Broader T011 remains open. Verify P0034 publication/native CI and repair failures
-first. Next reproduce fresh independent class locals retained by bare `return;`
-in synchronous void functions/methods. Qualify bounded cleanup with checked
-pre-shutdown allocations, preserving borrowed `this`, owned string locals and
-nested/header scopes. Class aliases/containers/destructors/fields, value-return
-transfer, async and exception/finally unwinding remain separate.
+P0035 reproduces retained class locals on bare void return in both modes, then
+adds scalar class releases to the synchronous void-return path. Parameter-scope
+bindings, including borrowed `this`, and class pointers/arrays are excluded.
+Each mode requires 40 nonnull releases (30 class instances, ten strings), ten
+output lines, reverse-order C sequences and an empty pre-shutdown registry.
+Mixed/nested scopes, later declarations, unbraced true/false returns, loops,
+switches, string headers, zero/multiple iterations, recursion, methods, constructor
+return and normal exception completion are covered. Active exception returns have
+emission checks only. Full Windows: 144 passed, 18 skipped, no failures/errors;
+28 quick groups, five runner tests and Linux cross-build passed. See
+[P0035](passes/P0035-void-return-classes.md).
+
+Broader T011 remains open. Verify P0035 publication/native CI and repair failures
+first. Next reproduce scoped allocations retained on primitive numeric/bool/char
+value returns; qualify one bounded scalar-result temporary before local cleanup,
+with once-only evaluation, field-read and side-effect evidence. Keep string/pointer/
+class result transfer, aliases/containers/destructors/fields, async and exception
+unwinding separate. Custom-type for headers and direct class null initializers
+remain unsupported; fixture probes did not broaden their grammar or semantics.
 T012/T013 pruning and T014 website/release work are completed maintenance history;
 do not repeat those tasks from stale scheduled-run memory.
 
