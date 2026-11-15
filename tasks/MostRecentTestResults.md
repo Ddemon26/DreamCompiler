@@ -1,5 +1,41 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 15, 2026 UTC (local reports November 14, America/Vancouver)
+
+**Pass:** P0031 - class-local cleanup on break/continue
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0030 remote SHA matched parent `d11cc7b280fe1da60122790d1634756a7aac03af`;
+  [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43665107774)
+  passed Linux and Windows jobs during this run.
+- Baseline `zig build test`: **155 discovered, 137 passed, 18 skipped, zero
+  failures/errors**, 62.50s; `test_results_20261114_185801_windows.json`.
+- Before the fix, both class modes failed the **empty registry before shutdown**
+  assertion. Final focused class and existing string jump groups passed, 19.529s;
+  class group 3.58s. Each class mode checks **33 nonnull releases** (27 class,
+  six strings), **13 output lines**, exact C sequences, UBSan/live registry/refcounts,
+  Linux harness cross-linking, pre-shutdown reclamation and direct linked output.
+- Final `zig build test`: **156 discovered, 138 passed, 18 skipped, zero failures/
+  errors**, 66.91s; `test_results/test_results_20261114_190311_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.061s.
+- Supported Windows Go quick protocol: **24 groups passed**, 51.358s; class
+  group 2.48s. External compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed**. Linux executables were not run locally; P0031 native CI awaits push.
+- Local links, quick/CI selector equality, PowerShell BOM, scope/diff review and
+  `git diff --check` checked before commit.
+
+Same 18 skips and shape/operator limits. Class alias/container ownership,
+destructors/field destruction, return transfer and exception/finally exits remain
+unqualified. See [P0031](passes/P0031-loop-exit-classes.md). Next: verify publication/
+native CI, then T011 scalar string assignment-expression initializers.
+
+---
+
+## Historical P0030 checkpoint - DreamCompiler
+
 **Date:** November 14, 2026 (America/Vancouver)
 
 **Pass:** P0030 - conditional scalar string initializer ownership

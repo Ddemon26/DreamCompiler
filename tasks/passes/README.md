@@ -32,8 +32,9 @@
 | [P0028](P0028-docs-website.md) | 2026-11-14 | Approved square-edged homepage/reader; 21 routes, 8 checks, browser QA and exact-output examples; live main:/docs release awaits owner instruction | `Pass-ID: P0028` |
 | [P0029](P0029-docs-release-verification.md) | 2026-11-15 | Existing Pages release verified: merged PR, passing native CI/deployment, 27 exact live responses and 8 Node checks; T011 unblocked | `Pass-ID: P0029` |
 | [P0030](P0030-conditional-string-ownership.md) | 2026-11-14 | Conditional scalar strings own selected-value copies; both checked modes and full/23-group quick/cross checks pass; compiler handoff restored | `Pass-ID: P0030` |
+| [P0031](P0031-loop-exit-classes.md) | 2026-11-15 | Class locals released before break/continue; both checked modes, 138 Dream passes and 24 quick groups; cross-build passed | `Pass-ID: P0031` |
 
-**P0030 resumes compiler stabilization after completed maintenance. Verify its publication/native CI, then take T011 class-instance break/continue cleanup.**
+**Verify P0031 publication/native CI, then qualify T011 scalar string assignment-expression initializers.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

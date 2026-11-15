@@ -254,7 +254,31 @@ func TestCompiler_ConditionalStrings(t *testing.T) {
 	}, "literal\nempty\nbacking value\nbacking value\nnull then\nnull else\nbacking value\ncondition\nselected\ncall\nbacking value\n1\ninner value\ninner value\nowned then\nowned else\nchanged\nbacking value\nbacking value\nbacking value\nbacking value\nstatic\ninstance\nbacking value\n")
 }
 
+func TestCompiler_LoopExitClasses(t *testing.T) {
+	checkStorageOwnership(t, "loop_exit_classes.dr", 33, []string{
+		`{dr_release(deep);dr_release(text);dr_release(whileBody);continue;}`,
+		`{dr_release(deep);dr_release(text);dr_release(whileBody);break;}`,
+		`{dr_release(doBody);continue;}`, `{dr_release(doBody);break;}`,
+		`{dr_release(switchContinue);dr_release(forBody);continue;}`,
+		`{dr_release(switchBreak);break;}`, `{dr_release(forBody);break;}`,
+		`{dr_release(innerBody);continue;}`, `{dr_release(innerBody);break;}`,
+		`}dr_release(innerHeader);}`, `{dr_release(outerBody);break;}`,
+		`{dr_release(loopInSwitch);break;}`, `{dr_release(caseOwner);break;}`,
+		`{dr_release(staticToken);continue;}`, `{dr_release(instanceToken);break;}`,
+		`{dr_release(topBody);continue;}`, `{dr_release(topBody);break;}`,
+		`}dr_release(header);}`, `}dr_release(topHeader);}`,
+		`dr_release(late);`, `dr_release(switchNormal);`,
+		`dr_release(survivor);`, `dr_release(reader);`,
+	},
+		"2\n9\n3\n1\nheader\n2\nheader\n7\n8\n10\n11\n12\ntop\n", true)
+}
+
 func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string, forbiddenChecks ...string) {
+	t.Helper()
+	checkStorageOwnership(t, fixture, releases, emittedChecks, want, false, forbiddenChecks...)
+}
+
+func checkStorageOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string, emptyBeforeShutdown bool, forbiddenChecks ...string) {
 	t.Helper()
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
@@ -345,6 +369,9 @@ func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChe
 				filepath.Join(tr.projectRoot, "src", "runtime", "extensions", "custom.c"),
 				filepath.Join(tr.projectRoot, "src", "runtime", "io", "console.c"),
 				filepath.Join(tr.projectRoot, "src", "runtime", "exceptions", "exception.c")}
+			if emptyBeforeShutdown {
+				compileArgs = append(compileArgs, "-DDREAM_EMPTY_BEFORE_SHUTDOWN")
+			}
 			if runtime.GOOS == "windows" {
 				// Exercise Linux's headers and linker here as well: a native Windows
 				// build alone does not detect missing POSIX feature-test macros.

@@ -16,10 +16,20 @@ static void checked_release(void *ptr) {
 }
 
 #define dr_release checked_release
+#ifdef DREAM_EMPTY_BEFORE_SHUTDOWN
+static void checked_shutdown(void) {
+    assert(dr_head == NULL && "all scoped allocations must be reclaimed before shutdown");
+    dr_release_all();
+}
+#define dr_release_all checked_shutdown
+#endif
 #define main dream_entry_main
 #include DREAM_STRING_PROGRAM
 #undef main
 #undef dr_release
+#ifdef DREAM_EMPTY_BEFORE_SHUTDOWN
+#undef dr_release_all
+#endif
 
 int main(void) {
     // Check independent ownership for literal, empty, interior and managed

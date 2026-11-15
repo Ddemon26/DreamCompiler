@@ -5,7 +5,8 @@
 Qualified scalar string initialization from literals, indexing, identifiers, members and calls,
 including supported for-header declarations, is
 described in the [ownership checkpoint](../development/string-ownership.md)
-(P0014/P0017/P0018/P0019/P0020/P0021/P0022/P0023/P0024). Calls copy their readable result without
+(P0014/P0017/P0018/P0019/P0020/P0021/P0022/P0023/P0024/P0030/P0031). Conditional initializers copy only
+the selected value. Calls copy their readable result without
 transferring ownership; fresh managed results can remain registered until shutdown.
 Plain `=` on qualified owned scalar bindings copies a readable replacement before
 releasing the old allocation. Self-assignment is safe; uninitialized scalar strings
@@ -14,10 +15,11 @@ and target storage; normal block exit releases neither those bindings nor their
 elements. Managed backing must outlive alias use. Scalar copies and class-instance
 cleanup remain intact. This does not establish parameter, field, owning-container
 or array-element ownership.
-Break/continue release qualified owned scalar strings in the scopes they leave.
+Break/continue release qualified owned scalar strings and class locals in the scopes they leave.
 Loop headers survive continue/update and are released after the loop; switch
 breaks preserve enclosing loop locals, and switch continues target the enclosing
-loop. Class-instance early-exit cleanup, return ownership and exception/finally
+loop. Independent class allocations are qualified; class alias/container ownership,
+destructors, field destruction, return ownership and exception/finally
 unwinding across jumps remain unqualified.
 The sections below are historical design material, not
 evidence that all examples or APIs

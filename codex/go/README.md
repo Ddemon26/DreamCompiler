@@ -133,9 +133,18 @@ borrowed containers/parameters and for headers. While/do/for, expression for
 initializers, unbraced conditional jumps, nested loop/switch targets, null/empty
 strings, header replacement updates, free/static/instance paths and top-level
 loops are covered. The prior allocator/refcount/shutdown assertions and ownership
-matrices remain intact. Both quick protocols and CI select this group. Class
-early-exit cleanup, unsupported string initializers and return/exception/finally
+matrices remain intact. Both quick protocols and CI select this group. Unsupported
+string initializers and return/exception/finally
 unwinding remain unqualified.
+
+`TestCompiler_LoopExitClasses` extends jump cleanup evidence to independent class
+locals: 27 class and six string releases, thirteen output lines and an empty live
+registry before shutdown in both modes. Exact C sequences check mixed reverse
+order, nested loop/switch targets, later declarations and surviving outer/header
+storage. While/do/for, normal exits, methods and top-level loops are covered.
+Both modes failed pre-shutdown reclamation before P0031. Class aliases, pointers,
+arrays, destructors/field ownership and return/exception exits remain unqualified.
+Both quick protocols and CI select this group.
 
 `TestCompiler_ConditionalStrings` qualifies scalar `?:` declaration copying in
 ordinary/module-entry modes: nineteen emitted copy sites, twenty-two nonnull

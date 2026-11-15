@@ -246,7 +246,7 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump/conditional slices completed)
+## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump/conditional/class-jump slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
 P0017/P0018/P0019 add literals, identifiers and members; P0020 scopes for-header
@@ -254,7 +254,7 @@ declarations and qualifies their loop-exit cleanup; P0021 copies direct call res
 without transferring ownership; P0022 qualifies plain replacement on known-owned
 scalar identifiers; P0023 excludes borrowed array/pointer bindings from scalar
 block cleanup; P0024 qualifies owned scalar cleanup on break/continue; P0030
-adds scalar conditional initializer copies. Source
+adds scalar conditional initializer copies; P0031 adds class-local jump cleanup. Source
 audit still finds plain C assignment elsewhere. Compound assignment, owning
 containers, return transfer, other early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
@@ -361,13 +361,23 @@ Go quick groups, five runner tests and Linux cross-build passed. See
 results can remain registered until shutdown. Literal null/string branch typing
 is still rejected; return transfer and general expression ownership remain open.
 
-Broader T011 remains open. Verify P0030 integration publication/native CI and repair
-failures first. Next take the bounded class-instance cleanup on break/continue
-slice: reproduce retained body-local class allocations with checked live-registry
-and pre-shutdown release evidence; preserve outer/header storage, nested loop/switch
-targets, normal cleanup and existing owned-string behavior in ordinary/module-entry
-modes. Keep destructors/field ownership, return ownership and exception/finally
-unwinding separate. T012/T013 pruning and T014 website/release work are completed
+P0031 reproduces retained class locals before shutdown in both modes, then applies
+normal class-local cleanup to the existing break/continue scope boundaries.
+Exact C sequences, 27 class and six string releases, thirteen output lines and
+an empty pre-shutdown registry cover mixed scopes, later declarations, while/do/for,
+nested loop/switch targets, surviving outer instances/string headers, normal exits,
+methods and top-level loops. Full Windows suite: 138 passed, 18 skipped, no failures/
+errors; 24 Go quick groups, five runner tests and Linux cross-build passed. See
+[P0031](passes/P0031-loop-exit-classes.md). Class alias/container ownership,
+destructors/field destruction and return/exception exits remain unqualified.
+
+Broader T011 remains open. Verify P0031 publication/native CI and repair failures
+first. Next reproduce scalar string assignment-expression initializer ownership,
+e.g. `string copy = (source = "next")`, with checked live allocations. Qualify
+independent storage, replacement/source lifetime and once-only assignment effects
+in both modes; `ND_BINOP`/`TK_EQ` is outside the current initializer-copy predicate.
+Keep return transfer, class aliases/containers/destructors, field ownership and
+exception/finally unwinding separate. T012/T013 pruning and T014 website/release work are completed
 maintenance history; do not repeat those tasks from stale scheduled-run memory.
 
 ## T012 - Prune obsolete repository tooling and operational docs (completed in P0026)
@@ -438,9 +448,8 @@ See the [contract](../docs/development/compiler-dogfooding.md) and
 This is one helper, not a self-hosted frontend. Lexer migration needs a selected
 token/storage interface and equivalence tests; custom-type parameters, shared
 module types, compiler containers/ownership and host I/O remain larger prerequisites.
-Do not expand to a lexer/parser rewrite inside this pass. The bounded T011
-conditional-string initializer task above remains the next stabilization item
-after P0025 publication/native CI verification.
+Do not expand to a lexer/parser rewrite inside this pass. Continue the current bounded T011
+ownership task above after the latest pass publication/native CI verification.
 
 - Extend T005 to pointer/array and other method argument shapes later; analyze
   class field declaration initializers. P0006 covers receiver/access diagnostics only.

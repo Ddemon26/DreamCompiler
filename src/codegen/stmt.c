@@ -478,7 +478,9 @@ static void emit_control_jump(CGCtx *ctx, COut *b, int is_continue) {
   if (target) {
     for (size_t i = ctx->len; i-- > target->binding_start;) {
       VarBinding *v = &ctx->vars[i];
-      if (v->owns_string)
+      // Match normal class-local cleanup at the same exited scope boundary.
+      if (v->owns_string ||
+          (v->type == TK_IDENT && cg_is_class_type(v->type_name)))
         c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
     }
   }

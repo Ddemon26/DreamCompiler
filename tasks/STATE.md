@@ -1,45 +1,38 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0030 - conditional scalar string initializer ownership**.
-- Record: [P0030](passes/P0030-conditional-string-ownership.md).
-- Parent/fetched approved remote: `f1d61a75fcfe23c3cdb013809f0f55ffed705aff` (P0029).
-- Resolve this pass commit by its exact `Pass-ID: P0030` trailer.
-- Delivery requires push and matching `git ls-remote`; verify native CI next.
+- Current pass: **P0031 - class-local cleanup on break/continue**.
+- Record: [P0031](passes/P0031-loop-exit-classes.md).
+- Parent/fetched approved remote: `d11cc7b280fe1da60122790d1634756a7aac03af` (P0030).
+- Resolve this pass commit by its exact `Pass-ID: P0031` trailer.
+- Delivery requires push and matching `git ls-remote`; inspect native CI next.
 
-**Compiler stabilization has resumed.** P0026/P0027 pruning and P0028/P0029
-website/release work are completed maintenance history. Do not repeat them from
-older scheduled-run memory. The repository handoff, ordered backlog and verified
-pass trailers define the current checkpoint. The reusable daily prompt now makes
-this precedence explicit; no schedule configuration or hosting settings changed.
+P0031 extends `emit_control_jump` to release class locals using the existing normal
+block-cleanup classification and loop/switch binding boundaries. Reverse order,
+conditional jumps, surviving outer instances, string headers, nested targets and
+existing scalar-string behavior are preserved. The new ordinary/module-entry
+matrix checks 27 class and six string releases, thirteen output lines and an empty
+live-allocation registry before shutdown. Both modes failed that pre-shutdown
+assertion before the fix. Independent fresh class allocations are qualified;
+alias retention, class pointers/arrays, destructors and field destruction are not.
 
-P0030 adds conditional (`?:`) scalar string declarations to the existing copy
-boundary in `src/codegen/stmt.c`. One copy wraps the entire conditional, preserving
-once-only condition and selected-branch evaluation. The declaration owns its copy
-and uses existing scalar replacement, block/header and break/continue cleanup.
-Literal/empty/borrowed/managed/typed-null and nested branches are covered. Fresh
-selected managed results can remain registered until shutdown; no result ownership
-transfer or literal null/string branch type expansion is claimed.
-
-P0029 publication was verified at the parent SHA. Its
-[native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43661838320)
-passed both Linux and Windows jobs. This pass started clean in the approved
-attached checkout, one worktree, with no competing active project writer. Full
-Windows checks now pass: **155 discovered, 137 passed, 18 skipped, zero failures/
-errors**, **23 Go quick groups**, **5 runner tests**, and Linux cross-build.
-The new ordinary/module-entry checked-runtime matrix requires **19 conditional
-copy sites, 22 nonnull releases and 24 exact output lines** per mode. Both modes
-failed live-registry cleanup before the fix. See [results](MostRecentTestResults.md).
-Cross-build/harness cross-linking does not prove native Linux runtime behavior.
+The approved checkout started clean, attached, with one registered worktree and
+no competing active project writer. P0030 publication matched the parent; its
+[native Linux and Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43665107774)
+passed during this run. Windows validation: **156 discovered, 138 passed, 18 skipped,
+zero failures/errors**, **24 Go quick groups**, **5 runner tests**, Linux cross-build.
+See [results](MostRecentTestResults.md). Linux cross-build/harness cross-linking does
+not establish native P0031 runtime behavior; inspect CI after publication.
 
 Next invocation:
 
-1. Verify P0030 publication by trailer and remote SHA, then inspect its native CI.
+1. Verify P0031 publication by trailer and remote SHA, then inspect native CI.
    Repair failed checks before new work.
-2. Continue T011 with **class-instance cleanup on break/continue**. Reproduce
-   body-local class allocations retained until shutdown with checked live-registry
-   and pre-shutdown release evidence. Audit `emit_control_jump` against normal
-   class cleanup, preserving outer/header bindings, nested loop/switch targets
-   and all existing scalar-string behavior in ordinary/module-entry modes.
-3. Keep destructors/field ownership, return ownership and exception/finally
-   unwinding separate. Preserve all 18 existing skips and shape/operator limits.
+2. Continue T011 with **scalar string assignment-expression initializers**, for
+   example `string copy = (source = "next")`. Reproduce alias/replacement cleanup
+   with the checked live registry, then qualify independent storage and once-only
+   assignment effects in ordinary/module-entry modes. The assignment expression
+   is an `ND_BINOP` with `TK_EQ`, outside the current initializer-copy predicate.
+3. Keep return ownership, class aliases/containers/destructors, field ownership and
+   exception/finally unwinding separate. Preserve all 18 existing skips and shape/
+   operator limits. P0026-P0029 maintenance work is complete; do not repeat it.

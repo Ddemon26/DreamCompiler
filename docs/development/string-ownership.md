@@ -267,10 +267,23 @@ P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 both modes for Linux before executing the native harness. Cross-linking checks
 headers and linking; Linux runtime evidence still requires native CI.
 
+P0031 extends the same jump boundaries to class locals, matching their normal
+block cleanup. The [class regression](../../tests/basics/memory/loop_exit_classes.dr)
+and `TestCompiler_LoopExitClasses` require reverse-order cleanup at each jump,
+thirty-three nonnull releases (27 class instances and six strings), thirteen output
+lines and an empty live-allocation registry **before** `dr_release_all`. Both modes
+failed that pre-shutdown assertion before the fix. Repeated while/do/for bodies,
+mixed class/string scopes, later declarations, nested loop/switch targets, surviving
+outer instances, string headers, normal exits, static/instance methods and top-level
+loops are covered. The fixture uses fresh, independent class allocations; it does
+not establish alias retention, class pointer/array ownership, destructors or field
+destruction. Return and exception/finally exits remain separate. Both quick protocols
+and CI select the new matrix; all prior allocator assertions remain intact.
+
 This is not a complete string ownership system. Other initializer forms, compound
 assignment, parameter/field/index destination ownership, alias retention,
 owning arrays/pointers and automatic element destruction, function returns,
-early return/exception cleanup, class-instance cleanup on break/continue,
+early return/exception cleanup, class alias/container ownership,
 compound expressions and field ownership remain unqualified. Concatenation and
 read-line initializers keep their existing managed allocation; as replacements
 they are copied, leaving temporary/result ownership unchanged.
