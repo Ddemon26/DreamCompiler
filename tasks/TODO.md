@@ -246,7 +246,7 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump/conditional/class-jump slices completed)
+## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump/conditional/class-jump/assignment-initializer slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
 P0017/P0018/P0019 add literals, identifiers and members; P0020 scopes for-header
@@ -254,7 +254,8 @@ declarations and qualifies their loop-exit cleanup; P0021 copies direct call res
 without transferring ownership; P0022 qualifies plain replacement on known-owned
 scalar identifiers; P0023 excludes borrowed array/pointer bindings from scalar
 block cleanup; P0024 qualifies owned scalar cleanup on break/continue; P0030
-adds scalar conditional initializer copies; P0031 adds class-local jump cleanup. Source
+adds scalar conditional initializer copies; P0031 adds class-local jump cleanup;
+P0032 adds plain assignment-expression initializer copies. Source
 audit still finds plain C assignment elsewhere. Compound assignment, owning
 containers, return transfer, other early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
@@ -371,11 +372,23 @@ errors; 24 Go quick groups, five runner tests and Linux cross-build passed. See
 [P0031](passes/P0031-loop-exit-classes.md). Class alias/container ownership,
 destructors/field destruction and return/exception exits remain unqualified.
 
-Broader T011 remains open. Verify P0031 publication/native CI and repair failures
-first. Next reproduce scalar string assignment-expression initializer ownership,
-e.g. `string copy = (source = "next")`, with checked live allocations. Qualify
-independent storage, replacement/source lifetime and once-only assignment effects
-in both modes; `ND_BINOP`/`TK_EQ` is outside the current initializer-copy predicate.
+P0032 reproduces invalid assignment-result cleanup in both modes and copies the
+result of plain `=` scalar string declaration initializers. Seventeen emitted
+copy sites, thirty nonnull checked releases and twenty-three exact output lines
+cover self/nested assignment, source/copy replacement, borrowed parameter/field/
+index destinations, null/empty values, managed operands, const bindings,
+once-only call/index effects, methods, top-level snapshots and loop/header/jump
+cleanup. Full Windows suite: 139 passed, 18 skipped, no failures/errors;
+25 Go quick groups, five runner tests and Linux cross-build passed. See
+[P0032](passes/P0032-assignment-initializer-ownership.md). Destination ownership
+is unchanged; fresh managed operands can remain registered until shutdown.
+
+Broader T011 remains open. Verify P0032 publication/native CI and repair failures
+first. Next reproduce owned scalar string `+=` through the real compiler and
+checked live allocations. The emitter currently uses generic C operator emission
+for `TK_PLUSEQ`. Qualify a bounded string/string replacement contract, once-only
+RHS effects, self-append and expression results in both modes; preserve numeric
+compound operators and document null/temporary ownership policy explicitly.
 Keep return transfer, class aliases/containers/destructors, field ownership and
 exception/finally unwinding separate. T012/T013 pruning and T014 website/release work are completed
 maintenance history; do not repeat those tasks from stale scheduled-run memory.

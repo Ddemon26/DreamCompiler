@@ -1,0 +1,98 @@
+// Expected: next
+// Expected: next
+// Expected: copy changed
+// Expected: next
+// Expected: chain
+// Expected: once
+// Expected: 1
+// Expected: backing value
+// Expected: backing value
+// Expected: parameter
+// Expected: parameter
+// Expected: null field
+// Expected: empty
+// Expected: null copy
+// Expected: next
+// Expected: replaced
+// Expected: header
+// Expected: header
+// Expected: break
+// Expected: fresh value
+// Expected: static
+// Expected: instance
+// Expected: top
+func string once(string input) { Console.WriteLine("once"); return input; }
+class Reader {
+    static string shared;
+    string field;
+    static func void readStatic(string input) {
+        string staticText = (input = "static");
+        Console.WriteLine(staticText);
+    }
+    func void readInstance() {
+        string instanceText = (this.field = "instance");
+        Console.WriteLine(instanceText);
+    }
+}
+func void exercise(string backing, string absent) {
+    string source = "old";
+    {
+        string copy = (source = "next");
+        Console.WriteLine(copy);
+        copy = "copy changed";
+        Console.WriteLine(source);
+        Console.WriteLine(copy);
+    }
+    string self = (source = source);
+    Console.WriteLine(self);
+    const string chain = (source = (source = "chain"));
+    Console.WriteLine(chain);
+    string values[2];
+    int index = 0;
+    string indexed = (values[index++] = once(backing));
+    Console.WriteLine(index);
+    Console.WriteLine(indexed);
+    values[0] = "changed element";
+    Console.WriteLine(indexed);
+    string parameter = (backing = "parameter");
+    Console.WriteLine(parameter);
+    Console.WriteLine(backing);
+    string field = (Reader.shared = absent);
+    if (field == null) { Console.WriteLine("null field"); }
+    string empty = (values[1] = "");
+    Console.Write(empty);
+    Console.WriteLine("empty");
+    string nullCopy = (source = absent);
+    if (nullCopy == null) { Console.WriteLine("null copy"); }
+    Console.WriteLine(self);
+    string pending = (values[0] = backing);
+    pending = "replaced";
+    Console.WriteLine(pending);
+    int i = 0;
+    for (string header = (source = "header"); i < 2; i++) {
+        string repeated = (source = header);
+        Console.WriteLine(repeated);
+        continue;
+    }
+    for (string zero = (source = "zero"); false; ) {
+        Console.WriteLine("unexpected");
+    }
+    while (true) {
+        string stopped = (source = "break");
+        Console.WriteLine(stopped);
+        break;
+    }
+    string freshCopy = (source = "fresh" + " value");
+    Console.WriteLine(freshCopy);
+}
+string globalBacking = "backing" + " value";
+string nullValues[1];
+nullValues[0] = null;
+exercise(globalBacking, nullValues[0]);
+Reader.readStatic(globalBacking);
+Reader reader = new Reader();
+reader.readInstance();
+string globalSource = "global";
+string globalCopy = (globalSource = "top");
+globalSource = "changed";
+Console.WriteLine(globalCopy);

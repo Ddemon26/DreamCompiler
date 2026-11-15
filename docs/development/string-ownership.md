@@ -126,6 +126,19 @@ paired with a string is currently rejected. A typed string parameter or indexed
 string element carrying null is covered. No conditional type-policy expansion,
 return transfer or dangling-source repair is introduced.
 
+P0032 extends declaration copying to plain assignment expressions, for example
+`string copy = (source = "next")`. The complete assignment evaluates once, then
+the declaration copies its readable result into independent managed storage.
+Owned scalar identifier destinations retain P0022's replacement copy/release
+ordering; parameter, field and indexed destinations retain their existing borrowed
+assignment behavior. Their ownership does not transfer to the new declaration.
+Self/nested assignment, parentheses, const declarations, methods, top-level and
+for-header declarations use this path. These declarations also receive owned
+scalar replacement and break/continue cleanup. Source replacement and copy
+replacement leave the other allocation readable. Null results remain null.
+Fresh managed assignment operands can still remain registered until shutdown;
+compound assignment and destination ownership beyond P0022 remain separate.
+
 ## Storage contract
 
 | Storage | Current implementation | Indexed scalar initializer |
@@ -261,6 +274,17 @@ source replacement, independent snapshots, scalar replacement, header cleanup,
 continue/break and static/instance/top-level paths are covered. Both quick
 protocols and CI select the group. The harness now prints actual/expected release
 counts on mismatch while preserving every lifetime/refcount/shutdown assertion.
+
+The [assignment-initializer regression](../../tests/basics/memory/assignment_initializer_copy.dr)
+and `TestCompiler_AssignmentInitializers` check seventeen emitted assignment-copy
+sites, thirty nonnull checked releases and twenty-three exact output lines in
+ordinary/module-entry modes. Both modes failed the live-registry assertion before
+P0032. Self/nested assignment, source/copy replacement, const bindings, borrowed
+parameter/static/instance-field/index destinations, null/empty results, managed
+operands, zero/multiple loop iterations, header cleanup, break/continue and
+top-level snapshots are covered. A call marker and index increment require
+once-only effects. The existing allocator/refcount/shutdown assertions remain
+unchanged. Both quick protocols and CI select this group.
 
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link

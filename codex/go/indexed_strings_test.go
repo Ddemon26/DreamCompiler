@@ -254,6 +254,41 @@ func TestCompiler_ConditionalStrings(t *testing.T) {
 	}, "literal\nempty\nbacking value\nbacking value\nnull then\nnull else\nbacking value\ncondition\nselected\ncall\nbacking value\n1\ninner value\ninner value\nowned then\nowned else\nchanged\nbacking value\nbacking value\nbacking value\nbacking value\nstatic\ninstance\nbacking value\n")
 }
 
+func TestCompiler_AssignmentInitializers(t *testing.T) {
+	// 26 exercise releases, two method copies and two top-level replacements.
+	checkStringOwnership(t, "assignment_initializer_copy.dr", 30, []string{
+		`copy=dream_string_copy(__dream_string_assign(&source,"next"));`,
+		`__dream_string_assign(&copy,"copychanged");`,
+		`self=dream_string_copy(__dream_string_assign(&source,source));`,
+		`chain=dream_string_copy(__dream_string_assign(&source,__dream_string_assign(&source,"chain")));`,
+		`indexed=dream_string_copy(((values[(index++)])=@entry@once(backing)));`,
+		`parameter=dream_string_copy((backing="parameter"));`,
+		`field=dream_string_copy((Reader_shared=absent));`,
+		`empty=dream_string_copy(((values[1])=""));`,
+		`nullCopy=dream_string_copy(__dream_string_assign(&source,absent));`,
+		`pending=dream_string_copy(((values[0])=backing));`,
+		`__dream_string_assign(&pending,"replaced");`,
+		`header=dream_string_copy(__dream_string_assign(&source,"header"));`,
+		`repeated=dream_string_copy(__dream_string_assign(&source,header));`,
+		`dr_release(repeated);continue;`, `}dr_release(header);}`,
+		`zero=dream_string_copy(__dream_string_assign(&source,"zero"));`,
+		`}dr_release(zero);}`,
+		`stopped=dream_string_copy(__dream_string_assign(&source,"break"));`,
+		`dr_release(stopped);break;`,
+		`freshCopy=dream_string_copy(__dream_string_assign(&source,(dream_concat("fresh","value"))));`,
+		`staticText=dream_string_copy((input="static"));`,
+		`instanceText=dream_string_copy((((structReader*)this)->field="instance"));`,
+		`globalCopy=dream_string_copy(__dream_string_assign(&globalSource,"top"));`,
+		`__dream_string_assign(&globalSource,"changed");`,
+		`dr_release(copy);`, `dr_release(source);`, `dr_release(self);`,
+		`dr_release(chain);`, `dr_release(indexed);`, `dr_release(parameter);`,
+		`dr_release(field);`, `dr_release(empty);`, `dr_release(nullCopy);`,
+		`dr_release(pending);`, `dr_release(freshCopy);`,
+		`dr_release(staticText);`, `dr_release(instanceText);`,
+	},
+		"next\nnext\ncopy changed\nnext\nchain\nonce\n1\nbacking value\nbacking value\nparameter\nparameter\nnull field\nempty\nnull copy\nnext\nreplaced\nheader\nheader\nbreak\nfresh value\nstatic\ninstance\ntop\n")
+}
+
 func TestCompiler_LoopExitClasses(t *testing.T) {
 	checkStorageOwnership(t, "loop_exit_classes.dr", 33, []string{
 		`{dr_release(deep);dr_release(text);dr_release(whileBody);continue;}`,

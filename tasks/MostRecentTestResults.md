@@ -2,6 +2,44 @@
 
 **Date:** November 15, 2026 UTC (local reports November 14, America/Vancouver)
 
+**Pass:** P0032 - scalar string assignment-initializer ownership
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0031 publication matched parent `f028fc63f48cbc93723b9a11c3438e7619900189`;
+  [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43666265892)
+  passed both Linux and Windows jobs before implementation.
+- Baseline `zig build test`: **156 discovered, 138 passed, 18 skipped, zero
+  failures/errors**, 59.43s; `test_results_20261114_205040_windows.json`.
+- Both new modes failed checked live-registry cleanup before the fix. Final
+  focused `TestCompiler_AssignmentInitializers`: **both modes passed**, 3.798s;
+  group 3.22s. Each checks **17 assignment-copy sites, 30 nonnull releases and
+  23 output lines**, native UBSan/registry/refcounts/shutdown, exact generated C,
+  once-only call/index effects, Linux harness cross-linking and direct linked output.
+- Final `zig build test`: **157 discovered, 139 passed, 18 skipped, zero failures/
+  errors**, 47.27s; `test_results/test_results_20261114_205330_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.040s.
+- Supported Windows Go quick protocol: **25 groups passed**, 47.174s;
+  assignment-initializer group 2.26s. Compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed**. Linux executables were not run locally; native P0032 CI awaits push.
+- Local links, quick/CI selector equality, PowerShell BOM, gofmt, scope/diff review
+  and `git diff --check` checked before commit.
+
+Same eighteen skips and shape/operator limits. Assignment destination ownership
+and temporary ownership transfer remain unchanged; fresh managed operands can
+remain registered until shutdown. Compound assignment, owning containers,
+class aliases/destructors/fields and return/exception/finally unwinding remain
+unqualified. See [P0032](passes/P0032-assignment-initializer-ownership.md).
+Next: verify publication/native CI, then T011 owned scalar string `+=`.
+
+---
+
+## Historical P0031 checkpoint - DreamCompiler
+
+**Date:** November 15, 2026 UTC (local reports November 14, America/Vancouver)
+
 **Pass:** P0031 - class-local cleanup on break/continue
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

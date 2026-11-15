@@ -154,6 +154,15 @@ Both quick protocols and CI select it. Literal null/string branch typing and
 result ownership transfer remain outside this boundary; see the
 [ownership contract](../../docs/development/string-ownership.md).
 
+`TestCompiler_AssignmentInitializers` qualifies plain `=` scalar declaration
+initializers in both modes: seventeen emitted copy sites, thirty nonnull checked
+releases and twenty-three exact output lines. Source/copy replacement, self/nested
+assignment, borrowed destinations, null/empty results, managed operands, methods,
+top-level snapshots and loop/header/jump cleanup are covered. Call/index effects
+run once. Both modes failed live-registry cleanup before P0032; prior allocator
+assertions remain unchanged. Both quick protocols and CI select this group.
+Compound assignment and return ownership remain unqualified.
+
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element
 types, local arrays, numeric aliases, free functions/static methods, inherited member

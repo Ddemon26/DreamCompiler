@@ -5,8 +5,12 @@
 Qualified scalar string initialization from literals, indexing, identifiers, members and calls,
 including supported for-header declarations, is
 described in the [ownership checkpoint](../development/string-ownership.md)
-(P0014/P0017/P0018/P0019/P0020/P0021/P0022/P0023/P0024/P0030/P0031). Conditional initializers copy only
-the selected value. Calls copy their readable result without
+(P0014/P0017/P0018/P0019/P0020/P0021/P0022/P0023/P0024/P0030/P0031/P0032). Conditional initializers copy only
+the selected value. Plain assignment initializers such as
+`string copy = (source = "next")` evaluate the assignment once and copy its result;
+source and declaration have independent storage. The new declaration receives
+owned replacement and jump cleanup. Parameter, field and indexed assignment
+destinations retain their existing borrowed behavior. Calls copy their readable result without
 transferring ownership; fresh managed results can remain registered until shutdown.
 Plain `=` on qualified owned scalar bindings copies a readable replacement before
 releasing the old allocation. Self-assignment is safe; uninitialized scalar strings
