@@ -246,14 +246,15 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump slices completed)
+## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump/conditional slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
 P0017/P0018/P0019 add literals, identifiers and members; P0020 scopes for-header
 declarations and qualifies their loop-exit cleanup; P0021 copies direct call results
 without transferring ownership; P0022 qualifies plain replacement on known-owned
 scalar identifiers; P0023 excludes borrowed array/pointer bindings from scalar
-block cleanup; P0024 qualifies owned scalar cleanup on break/continue. Source
+block cleanup; P0024 qualifies owned scalar cleanup on break/continue; P0030
+adds scalar conditional initializer copies. Source
 audit still finds plain C assignment elsewhere. Compound assignment, owning
 containers, return transfer, other early exits and field ownership
 remain unqualified; do not infer these from indexed-copy success. The memory
@@ -348,13 +349,26 @@ allocator/refcount/shutdown assertions remain. Full suite: 136 passed, 18 skippe
 no failures/errors; twenty-one Go quick groups, five Python tests and Linux
 cross-build passed. See [P0024](passes/P0024-loop-exit-strings.md).
 
-Broader T011 remains open. P0029 verified P0028 publication/native CI and resolved
-the T014 live-release gate. Verify the latest integration pass's publication/CI,
-repairing failures first. Next qualify
-scalar conditional (`?:`) string initializers using checked lifetime evidence for
-literal/borrowed/managed/null branches, once-only branch evaluation and independent
-storage in ordinary/module-entry modes. Class-instance cleanup on break/continue,
-return ownership and exception/finally unwinding remain separate work.
+P0030 reproduces invalid conditional-result cleanup in ordinary/module-entry modes
+and copies the selected result of scalar `?:` declaration initializers. Nineteen
+emitted copy sites, twenty-two nonnull checked releases and twenty-four output
+lines cover literal/empty/borrowed/managed/typed-null branches, nested/const forms,
+once-only condition/branch/index evaluation, source replacement and independent
+snapshots, scalar replacement, header cleanup, break/continue and method/top-level
+paths. Full Windows suite: 137 passed, 18 skipped, no failures/errors; twenty-three
+Go quick groups, five runner tests and Linux cross-build passed. See
+[P0030](passes/P0030-conditional-string-ownership.md). Fresh selected managed
+results can remain registered until shutdown. Literal null/string branch typing
+is still rejected; return transfer and general expression ownership remain open.
+
+Broader T011 remains open. Verify P0030 integration publication/native CI and repair
+failures first. Next take the bounded class-instance cleanup on break/continue
+slice: reproduce retained body-local class allocations with checked live-registry
+and pre-shutdown release evidence; preserve outer/header storage, nested loop/switch
+targets, normal cleanup and existing owned-string behavior in ordinary/module-entry
+modes. Keep destructors/field ownership, return ownership and exception/finally
+unwinding separate. T012/T013 pruning and T014 website/release work are completed
+maintenance history; do not repeat those tasks from stale scheduled-run memory.
 
 ## T012 - Prune obsolete repository tooling and operational docs (completed in P0026)
 

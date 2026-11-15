@@ -1,0 +1,100 @@
+// Expected: literal
+// Expected: empty
+// Expected: backing value
+// Expected: backing value
+// Expected: null then
+// Expected: null else
+// Expected: backing value
+// Expected: condition
+// Expected: selected
+// Expected: call
+// Expected: backing value
+// Expected: 1
+// Expected: inner value
+// Expected: inner value
+// Expected: owned then
+// Expected: owned else
+// Expected: changed
+// Expected: backing value
+// Expected: backing value
+// Expected: backing value
+// Expected: backing value
+// Expected: static
+// Expected: instance
+// Expected: backing value
+func bool condition() { Console.WriteLine("condition"); return true; }
+func string selected() { Console.WriteLine("selected"); return "call"; }
+func string forbidden() { Console.WriteLine("unexpected"); return "bad"; }
+class Reader {
+    static func void readStatic() {
+        string staticText = false ? forbidden() : "static";
+        Console.WriteLine(staticText);
+    }
+    func void readInstance() {
+        string instanceText = true ? "instance" : forbidden();
+        Console.WriteLine(instanceText);
+    }
+}
+func void exercise(string backing, string absent) {
+    string literal = true ? "literal" : forbidden();
+    Console.WriteLine(literal);
+    const string empty = (false ? forbidden() : "");
+    Console.Write(empty);
+    Console.WriteLine("empty");
+    string borrowed = false ? forbidden() : backing;
+    string reverse = true ? backing : forbidden();
+    Console.WriteLine(borrowed);
+    Console.WriteLine(reverse);
+    string nullThen = true ? absent : forbidden();
+    string nullElse = false ? forbidden() : absent;
+    if (nullThen == null) { Console.WriteLine("null then"); }
+    if (nullElse == null) { Console.WriteLine("null else"); }
+    string nested = true ? (false ? forbidden() : backing) : forbidden();
+    Console.WriteLine(nested);
+    string effects = condition() ? selected() : forbidden();
+    Console.WriteLine(effects);
+    string values[1];
+    values[0] = backing;
+    int index = 0;
+    string indexed = true ? values[index++] : values[index++];
+    Console.WriteLine(indexed);
+    Console.WriteLine(index);
+    string snapshot;
+    {
+        string source = "inner" + " value";
+        snapshot = true ? source : absent;
+        string selectedCopy = true ? source : absent;
+        source = "replaced";
+        Console.WriteLine(selectedCopy);
+    }
+    Console.WriteLine(snapshot);
+    string managedThen = true ? "owned" + " then" : forbidden();
+    string managedElse = false ? forbidden() : "owned" + " else";
+    Console.WriteLine(managedThen);
+    Console.WriteLine(managedElse);
+    string replaced = true ? backing : absent;
+    replaced = "changed";
+    Console.WriteLine(replaced);
+    int i = 0;
+    for (string header = true ? backing : absent; i < 2; i++) {
+        string repeated = i == 0 ? backing : header;
+        Console.WriteLine(repeated);
+        continue;
+    }
+    while (true) {
+        string stopped = false ? absent : backing;
+        Console.WriteLine(stopped);
+        break;
+    }
+    Console.WriteLine(backing);
+}
+string globalBacking = "backing" + " value";
+string nullValues[1];
+nullValues[0] = null;
+exercise(globalBacking, nullValues[0]);
+Reader.readStatic();
+Reader reader = new Reader();
+reader.readInstance();
+string globalSnapshot = false ? forbidden() : globalBacking;
+globalBacking = "changed";
+Console.WriteLine(globalSnapshot);

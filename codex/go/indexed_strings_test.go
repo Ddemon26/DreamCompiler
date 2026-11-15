@@ -222,6 +222,38 @@ func TestCompiler_LoopExitStrings(t *testing.T) {
 		`dr_release(input);`)
 }
 
+func TestCompiler_ConditionalStrings(t *testing.T) {
+	checkStringOwnership(t, "conditional_string_copy.dr", 22, []string{
+		// 19 exercise releases + two method locals + replaced top-level backing.
+		// Wrapping the complete conditional preserves C's selected-branch evaluation.
+		`literal=dream_string_copy((1?"literal":@entry@forbidden()));`,
+		`empty=dream_string_copy((0?@entry@forbidden():""));`,
+		`borrowed=dream_string_copy((0?@entry@forbidden():backing));`,
+		`reverse=dream_string_copy((1?backing:@entry@forbidden()));`,
+		`nullThen=dream_string_copy((1?absent:@entry@forbidden()));`,
+		`nullElse=dream_string_copy((0?@entry@forbidden():absent));`,
+		`nested=dream_string_copy((1?(0?@entry@forbidden():backing):@entry@forbidden()));`,
+		`effects=dream_string_copy((@entry@condition()?@entry@selected():@entry@forbidden()));`,
+		`indexed=dream_string_copy((1?(values[(index++)]):(values[(index++)])));`,
+		`selectedCopy=dream_string_copy((1?source:absent));`,
+		`managedThen=dream_string_copy((1?(dream_concat("owned","then")):@entry@forbidden()));`,
+		`managedElse=dream_string_copy((0?@entry@forbidden():(dream_concat("owned","else"))));`,
+		`replaced=dream_string_copy((1?backing:absent));`,
+		`__dream_string_assign(&replaced,"changed");`,
+		`header=dream_string_copy((1?backing:absent));`,
+		`repeated=dream_string_copy(((i==0)?backing:header));`,
+		`stopped=dream_string_copy((0?absent:backing));`,
+		`dr_release(repeated);continue;`, `dr_release(stopped);break;`,
+		`}dr_release(header);}`, `dr_release(selectedCopy);`,
+		`staticText=dream_string_copy((0?@entry@forbidden():"static"));`,
+		`instanceText=dream_string_copy((1?"instance":@entry@forbidden()));`,
+		`globalSnapshot=dream_string_copy((0?@entry@forbidden():globalBacking));`,
+		`dr_release(literal);`, `dr_release(borrowed);`, `dr_release(reverse);`,
+		`dr_release(nullThen);`, `dr_release(nullElse);`, `dr_release(nested);`,
+		`dr_release(effects);`, `dr_release(indexed);`, `dr_release(snapshot);`,
+	}, "literal\nempty\nbacking value\nbacking value\nnull then\nnull else\nbacking value\ncondition\nselected\ncall\nbacking value\n1\ninner value\ninner value\nowned then\nowned else\nchanged\nbacking value\nbacking value\nbacking value\nbacking value\nstatic\ninstance\nbacking value\n")
+}
+
 func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string, forbiddenChecks ...string) {
 	t.Helper()
 	tr := NewTestRunner(t)

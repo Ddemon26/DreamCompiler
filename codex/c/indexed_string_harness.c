@@ -47,6 +47,9 @@ int main(void) {
 
     int result = dream_entry_main();
     assert(result == 0);
+    if (releases != DREAM_STRING_RELEASES)
+        fprintf(stderr, "checked string releases: got %zu, expected %d\n",
+                releases, DREAM_STRING_RELEASES);
     assert(releases == DREAM_STRING_RELEASES && "each owned scalar local must be released once");
     assert(dr_head == NULL && "program shutdown must reclaim remaining storage");
     return result;

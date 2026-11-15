@@ -111,6 +111,21 @@ programs. It does not qualify class-instance early-exit cleanup, unsupported
 string initializer forms, return ownership, or exception/finally unwinding when
 a jump crosses an exception context.
 
+P0030 extends declaration copying to scalar conditional (`?:`) initializers.
+The emitter wraps the complete conditional in one `dream_string_copy`, so the
+condition runs once and only its selected branch evaluates. Literal, borrowed,
+managed and null-valued string branches all produce independent declaration
+storage (or null). Nested/parenthesized/const declarations, free/static/instance
+functions, loop bodies, for headers and top-level declarations follow this rule.
+These declarations also receive the existing owned-scalar replacement and
+break/continue cleanup. Replacing or releasing the selected source leaves the
+copy readable. Source ownership does not transfer: fresh concatenation/call
+results selected inside a conditional can remain registered until shutdown.
+Both branches must satisfy the existing semantic type rules; literal `null`
+paired with a string is currently rejected. A typed string parameter or indexed
+string element carrying null is covered. No conditional type-policy expansion,
+return transfer or dangling-source repair is introduced.
+
 ## Storage contract
 
 | Storage | Current implementation | Indexed scalar initializer |
@@ -235,6 +250,17 @@ null/empty strings, borrowed containers, unbraced conditionals, for-header
 replacement updates, free/static/instance methods and top-level loops are covered.
 The existing allocator/refcount/shutdown assertions and all prior ownership
 matrices remain intact. Both quick protocols and CI select this group.
+
+The [conditional regression](../../tests/basics/memory/conditional_string_copy.dr)
+and `TestCompiler_ConditionalStrings` check nineteen emitted conditional-copy
+sites, twenty-two nonnull checked releases and twenty-four exact output lines in
+each mode. Both modes failed the live-registry assertion before the fix. Branch
+markers and an index increment require once-only selected evaluation and no
+unselected call; nested branches, empty/null strings, borrowed/managed sources,
+source replacement, independent snapshots, scalar replacement, header cleanup,
+continue/break and static/instance/top-level paths are covered. Both quick
+protocols and CI select the group. The harness now prints actual/expected release
+counts on mismatch while preserving every lifetime/refcount/shutdown assertion.
 
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link

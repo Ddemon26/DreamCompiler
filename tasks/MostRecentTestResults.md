@@ -1,5 +1,42 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 14, 2026 (America/Vancouver)
+
+**Pass:** P0030 - conditional scalar string initializer ownership
+
+**Branch/platform:** `codex/compiler-stabilization`, approved local checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Parent P0029 publication matched `f1d61a75fcfe23c3cdb013809f0f55ffed705aff`;
+  [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43661838320) passed
+  native Linux and Windows jobs before implementation.
+- Baseline: **154 discovered, 136 passed, 18 skipped, zero failures/errors**,
+  51.37s. Before the fix both conditional modes failed checked live-registry cleanup.
+- Final focused matrix: **both modes passed**, 3.533s, with **19 conditional-copy
+  sites, 22 checked nonnull releases and 24 output lines** each. Generated C,
+  selected-branch effects, independent lifetime, replacement/jump/header cleanup,
+  Linux harness cross-linking, UBSan/refcounts/shutdown and direct output passed.
+- `zig build test`: **155 discovered, 137 passed, 18 skipped, zero failures/errors**,
+  52.30s; `test_results/test_results_20261114_184830_windows.json`.
+- Python runner regressions: **5 passed**, 0.058s.
+- Supported Windows Go quick protocol: **all 23 groups passed**, 47.492s,
+  including conditional group 2.49s. Compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed**; Linux runtime awaits native CI after publication.
+- Changed-doc links, selector consistency, PowerShell BOM, scope/diff review and
+  `git diff --check` checked before commit.
+
+Same 18 skips. Typed null-valued branches are covered; literal null/string branch
+typing remains rejected. Fresh selected managed results can remain registered
+until shutdown; return transfer and class/exception early exits remain separate.
+See [P0030](passes/P0030-conditional-string-ownership.md). Next: verify native CI,
+then T011 class-instance cleanup on break/continue. Pruning/site tasks are complete.
+
+---
+
+## Historical P0029 checkpoint - November 15, 2026 UTC
+
 **Date:** November 15, 2026 UTC
 
 **Pass:** P0029 - deployed documentation release verification

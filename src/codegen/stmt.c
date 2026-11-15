@@ -456,7 +456,8 @@ static void emit_scope_cleanup(CGCtx *ctx, COut *b, size_t start) {
 static int copies_string_initializer(Node *init) {
   return init && (init->kind == ND_INDEX || init->kind == ND_STRING ||
                   init->kind == ND_IDENT || init->kind == ND_FIELD ||
-                  init->kind == ND_BASE || init->kind == ND_CALL);
+                  init->kind == ND_BASE || init->kind == ND_CALL ||
+                  init->kind == ND_COND);
 }
 
 static void emit_loop_body(CGCtx *ctx, COut *b, Node *body,
@@ -561,7 +562,8 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       if (n->as.var_decl.init) {
         c_out_write(b, " = ");
         // Literals have static storage; indexed, identifier, member and call
-        // values may be borrowed. Calls do not transfer ownership here.
+        // values may be borrowed, including a conditional's selected branch.
+        // Calls and conditional branches do not transfer ownership here.
         // Give these scalar declarations their own allocation for block cleanup.
         int copy_string = n->as.var_decl.type == TK_KW_STRING &&
                           !n->as.var_decl.is_pointer &&

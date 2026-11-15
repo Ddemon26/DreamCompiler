@@ -137,6 +137,14 @@ matrices remain intact. Both quick protocols and CI select this group. Class
 early-exit cleanup, unsupported string initializers and return/exception/finally
 unwinding remain unqualified.
 
+`TestCompiler_ConditionalStrings` qualifies scalar `?:` declaration copying in
+ordinary/module-entry modes: nineteen emitted copy sites, twenty-two nonnull
+checked releases and twenty-four exact output lines, selected-branch effects,
+source/copy lifetime, typed null values, replacement and loop-exit cleanup.
+Both quick protocols and CI select it. Literal null/string branch typing and
+result ownership transfer remain outside this boundary; see the
+[ownership contract](../../docs/development/string-ownership.md).
+
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element
 types, local arrays, numeric aliases, free functions/static methods, inherited member

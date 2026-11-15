@@ -20,7 +20,10 @@ agent pass before allocating a new ID; recover or report it rather than duplicat
 
 Read AGENTS.md, tasks/STATE.md, tasks/TODO.md, the latest tasks/passes/ record,
 tasks/MostRecentTestResults.md, and docs/development/agent-workflow.md. Follow applicable
-nested instructions. Fix failed baseline/CI checks first; otherwise take the first ready
+nested instructions. Use the current repository handoff and verified pass trailers to
+advance beyond older scheduled-run memory. Completed maintenance or website passes
+remain history; resume the handoff's next compiler task unless checks fail or the
+owner explicitly changes priority. Fix failed baseline/CI checks first; otherwise take the first ready
 backlog item and complete one bounded, useful slice with its acceptance criteria.
 
 Implement real behavior and meaningful regressions. Run the required checks, record exact
