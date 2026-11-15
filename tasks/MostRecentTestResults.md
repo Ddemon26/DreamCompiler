@@ -2,6 +2,51 @@
 
 **Date:** November 15, 2026 UTC
 
+**Pass:** P0036 - scoped cleanup on primitive scalar return
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0035 publication matched parent `1dce40c55e4b9166fa73c28b9435c9b1d49997cd`;
+  [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43689021933)
+  passed Linux and Windows build, runner, quick and full-suite steps before work.
+- Restricted fetch failed DNS; restricted baseline could not locate Zig's installed
+  directory. Approved normal network/toolchain access succeeded without toolchain,
+  cache or permission changes.
+- Baseline `zig build test`: **162 discovered, 144 passed, 18 skipped, zero
+  failures/errors**, 51.34s; `test_results_20261115_011055_windows.json`.
+- Before fix, `TestCompiler_ScalarReturnCleanup` **failed both modes** at the empty-
+  registry-before-shutdown assertion, 2.796s (group 2.31s). Earlier fixture probes
+  hit existing name-conflict/string-index return typing rules; no rules were weakened.
+- `zig build`: **passed**, exit 0. Initial focused regression: **both modes passed**,
+  3.349s (group 2.86s). Each checks **47 nonnull releases** (21 classes, 26 strings),
+  **23 exact output lines**, native UBSan/live registry/refcounts/shutdown,
+  pre-shutdown emptiness, Linux harness cross-linking and direct linked output.
+- `zig build test`: **163 discovered, 145 passed, 18 skipped, zero failures/
+  errors**, 48.85s; `test_results/test_results_20261115_011545_windows.json`.
+- Python runner unit tests: **5 passed**, 0.046s.
+- Supported Windows Go quick protocol: **all 29 groups passed**, 55.924s; new
+  group **2.58s**, both modes including exact evaluation/cleanup/name-collision
+  sequences and string-result/active-exception emission controls. Compiler tests
+  use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Cross-build/cross-link success is not native P0036
+  Linux runtime evidence; inspect CI after publication.
+- **150 local Markdown paths resolved**, 29-group quick/CI selector equality,
+  PowerShell BOM, gofmt, scope/diff review and `git diff --check` passed.
+  Precommit fetch and remote SHA matched the parent; no divergence.
+
+Same eighteen skips and prior shape/operator limits. String/pointer/class result
+transfer, aliases/containers/destructors/fields, async and active exception unwinding
+remain separate. String-index return typing remains limited. See
+[P0036](passes/P0036-scalar-return-cleanup.md). Next verify publication/native CI,
+then design bounded string-result lifetime/cleanup before implementation.
+
+---
+
+## Historical P0035 checkpoint - DreamCompiler
+
+**Date:** November 15, 2026 UTC
+
 **Pass:** P0035 - scalar class locals on bare void return
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

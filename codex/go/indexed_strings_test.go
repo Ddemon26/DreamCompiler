@@ -358,6 +358,33 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 	}
 }
 
+func TestCompiler_ScalarReturnCleanup(t *testing.T) {
+	checkStorageOwnership(t, "scalar_return_cleanup.dr", 47, []string{
+		`{int__dream_return_0=((structScalarToken*)inner)->value;dr_release(inner);dr_release(empty);dr_release(absent);dr_release(text);dr_release(outer);return__dream_return_0;}`,
+		`{int__dream_return_0=((structScalarToken*)outer)->value;dr_release(empty);dr_release(absent);dr_release(text);dr_release(outer);return__dream_return_0;}`,
+		`{int__dream_return_0=((structScalarToken*)whileBody)->value;dr_release(whileBody);dr_release(whileOuter);return__dream_return_0;}`,
+		`{int__dream_return_0=((structScalarToken*)doOuter)->value;dr_release(doBody);dr_release(doOuter);return__dream_return_0;}`,
+		`{int__dream_return_0=((structScalarToken*)forBody)->value;dr_release(deep);dr_release(forBody);dr_release(header);dr_release(forOuter);return__dream_return_0;}`,
+		`{int__dream_return_0=((structScalarToken*)caseOwner)->value;dr_release(caseOwner);dr_release(switchOuter);return__dream_return_0;}`,
+		`{int__dream_return_0=((structScalarToken*)never)->value;dr_release(never);dr_release(zeroHeader);dr_release(zeroOuter);return__dream_return_0;}`,
+		`{int__dream_return_0=((structScalarToken*)zeroOuter)->value;dr_release(zeroOuter);return__dream_return_0;}`,
+		`{int__dream_return_0=(@entry@recurse((depth-1))+1);dr_release(recursive);return__dream_return_0;}`,
+		`{float__dream_return_0=1.5;dr_release(staticText);return__dream_return_0;}`,
+		`{int__dream_return_0=(((structScalarReader*)this)->value+=1);dr_release(methodText);dr_release(instanceOwner);return__dream_return_0;}`,
+		`{char__dream_return_0=(characters[(((structScalarReader*)this)->hits++)]);dr_release(charText);return__dream_return_0;}`,
+		`{int__dream_return_0=(stop?(((structScalarToken*)boolOwner)->value==1):0);dr_release(boolText);dr_release(boolOwner);return__dream_return_0;}`,
+		`{int__dream_return_2=((structScalarToken*)__dream_return_0)->value;dr_release(__dream_return_0);return__dream_return_2;}`,
+		`{int__dream_return_3=@entry@__dream_return_2();dr_release(callText);return__dream_return_3;}`,
+		`{int__dream_return_0=((structScalarToken*)completedOuter)->value;dr_release(completedOuter);return__dream_return_0;}`,
+		`return1;dr_release(pendingTry);`, `return2;dr_release(pendingCatch);`,
+		`return3;dr_release(pendingFinally);`, `returnresult;dr_release(result);`,
+		`returnsource;`, `returnletter;`, `return15;`,
+	}, "2\n1\n1\n4\n5\n6\n7\n8\n9\n2\n1.500000\n11\n11\nA\nZ\n2\n1\n0\n12\n13\n14\n15\nbacking\n", true,
+		`dr_release(this);`, `dr_release(parameter);`, `dr_release(pointer);`,
+		`dr_release(source);`, `dr_release(values);`, `dr_release(characters);`,
+		`constchar*__dream_return_`)
+}
+
 func TestCompiler_VoidReturnStrings(t *testing.T) {
 	checkStorageOwnership(t, "void_return_strings.dr", 40, []string{
 		`{dr_release(inner);dr_release(absent);dr_release(empty);dr_release(outer);return;}`,

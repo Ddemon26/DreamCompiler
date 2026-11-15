@@ -455,6 +455,32 @@ static void emit_scope_cleanup(CGCtx *ctx, COut *b, size_t start) {
   }
 }
 
+static int return_releases_binding(const VarBinding *v) {
+  // Depth 1 holds borrowed parameters and this. Class containers stay separate.
+  return v->owns_string ||
+         (v->depth > 1 && v->indirections == 0 && v->type == TK_IDENT &&
+          cg_is_class_type(v->type_name));
+}
+
+static int has_return_cleanup(CGCtx *ctx) {
+  for (size_t i = 0; i < ctx->len; i++)
+    if (return_releases_binding(&ctx->vars[i])) return 1;
+  return 0;
+}
+
+static void emit_return_cleanup(CGCtx *ctx, COut *b) {
+  for (size_t i = ctx->len; i-- > 0;) {
+    VarBinding *v = &ctx->vars[i];
+    if (return_releases_binding(v))
+      c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
+  }
+}
+
+static int is_primitive_scalar_result(TokenKind type) {
+  return type == TK_KW_INT || type == TK_KW_FLOAT ||
+         type == TK_KW_BOOL || type == TK_KW_CHAR;
+}
+
 static int copies_string_initializer(Node *init) {
   return init && (init->kind == ND_INDEX || init->kind == ND_STRING ||
                   init->kind == ND_IDENT || init->kind == ND_FIELD ||
@@ -725,20 +751,39 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       // available to emit other branches and unreachable fall-through cleanup.
       c_out_write(b, "{\n");
       c_out_indent(b);
-      for (size_t i = ctx->len; i-- > 0;) {
-        VarBinding *v = &ctx->vars[i];
-        // Parameters and implicit this occupy depth 1; body/header locals are
-        // deeper. Preserve borrowed receivers and leave class containers separate.
-        if (v->owns_string ||
-            (v->depth > 1 && v->indirections == 0 &&
-             v->type == TK_IDENT && cg_is_class_type(v->type_name)))
-          c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
-      }
+      emit_return_cleanup(ctx, b);
       c_out_write(b, "return;\n");
       c_out_dedent(b);
       c_out_write(b, "}");
+    } else if (ctx->is_sync_function && n->as.ret.expr &&
+               is_primitive_scalar_result(ctx->ret_type) &&
+               ctx->exception_depth == 0 && has_return_cleanup(ctx)) {
+      // Preflight lowered names as well as bindings: a C initializer is already
+      // inside its declarator's scope, so the temporary must not shadow a call.
+      COut value;
+      c_out_init(&value);
+      cg_emit_expr(ctx, &value, n->as.ret.expr);
+      char temporary[64];
+      size_t suffix = 0;
+      do {
+        snprintf(temporary, sizeof temporary, "__dream_return_%zu", suffix++);
+      } while (cgctx_has_var(ctx, temporary, strlen(temporary)) ||
+               (value.data && strstr(value.data, temporary)));
+      c_out_free(&value);
+
+      // Evaluate exactly once before freeing any storage read by the result.
+      // Keep bindings for other branches; keep unbraced returns conditional.
+      c_out_write(b, "{\n");
+      c_out_indent(b);
+      c_out_write(b, "%s %s = ", type_to_c(ctx->ret_type), temporary);
+      cg_emit_expr(ctx, b, n->as.ret.expr);
+      c_out_write(b, ";\n");
+      emit_return_cleanup(ctx, b);
+      c_out_write(b, "return %s;\n", temporary);
+      c_out_dedent(b);
+      c_out_write(b, "}");
     } else {
-      // Value returns and exception unwinding retain their existing emission.
+      // Owning result transfer and exception unwinding remain separate.
       c_out_write(b, "return");
       if (n->as.ret.expr) {
         c_out_write(b, " ");

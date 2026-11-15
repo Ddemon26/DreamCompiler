@@ -40,9 +40,9 @@ Existing restrictions on shadowing an enclosing binding remain unchanged.
 
 Header storage is released once on normal termination or a break targeting that
 loop. Continue preserves it through the update and subsequent iterations. This
-also applies at top level, before shutdown. Value-return and exception exits can bypass
-this cleanup. P0024 qualifies owned scalar body-local cleanup on break/continue
-as described below.
+also applies at top level, before shutdown. Owning-result and exception exits can
+bypass this cleanup; P0036 qualifies primitive scalar returns below. P0024 qualifies
+owned scalar body-local cleanup on break/continue as described below.
 
 P0021 extends scalar declaration copying to direct function and method calls:
 `string text = getText()` evaluates the call once and copies its readable result.
@@ -54,7 +54,8 @@ not a return-transfer ABI: a fresh managed result, or a local whose return bypas
 cleanup, remains in the allocation registry until shutdown unless otherwise
 released by its owner. This can retain storage and adds an extra allocation.
 The callee must return storage that is still readable when the caller copies it.
-No value-return cleanup, dangling-result repair or ownership inference is introduced.
+This string-result path has no return cleanup, dangling-result repair or ownership
+inference.
 
 P0022 qualifies plain `=` when the destination is an identifier bound to a known
 owned scalar declaration. The emitter records this for the copied initializer
@@ -382,9 +383,31 @@ normal exception completion are covered. Unused active exception-return paths
 are checked only for unchanged emission. Both quick protocols and CI select the
 matrix; all existing allocator/refcount/shutdown assertions remain unchanged.
 
+P0036 adds cleanup for synchronous `int`, `float`, `bool` and `char` returns
+outside active exception contexts. The result is evaluated once into a temporary
+of the declared C return type before reverse-order owned-string/scalar-class
+cleanup. This preserves local field reads and expression effects; no primitive
+result ownership transfer is required. Only returns with qualified locals need
+a temporary. Name selection avoids active bindings and identifiers in the lowered
+expression, including module-lowered function names. Borrowed parameters/receivers
+and containers retain their existing lifetime; emitter bindings remain available
+to other branches. This uses the same cleanup predicate as bare void returns.
+
+The [scalar-return regression](../../tests/basics/memory/scalar_return_cleanup.dr)
+and `TestCompiler_ScalarReturnCleanup` require 47 nonnull releases (21 class
+instances and 26 strings), 23 output lines, evaluation-before-cleanup C sequences
+and an empty registry before shutdown in both modes. Both modes reproduced live
+allocations before the fix. Mixed/nested scopes, null/const/empty strings, later
+declarations, true/false unbraced paths, while/do/for/switch exits, zero/multiple
+iterations, recursion, primitive result types, methods, receiver survival,
+index/assignment effects, temporary-name collisions and normal exception
+completion are checked. Unused active exception returns and an owning string
+result have unchanged-emission checks only. Both quick protocols and CI select
+the group; existing allocator/refcount/shutdown assertions remain intact.
+
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,
-owning arrays/pointers and automatic element destruction, value returns,
+owning arrays/pointers and automatic element destruction, string/pointer/class result transfer,
 exception cleanup, class alias/container ownership,
 compound expressions and field ownership remain unqualified. Concatenation and
 read-line initializers keep their existing managed allocation; as replacements

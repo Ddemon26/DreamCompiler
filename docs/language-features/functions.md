@@ -80,7 +80,7 @@ This checks explicit primitive returns, not whether every control-flow path retu
 Pointer/array shape checking and broader operator validation remain separate work;
 async and non-primitive return contracts are outside this supported subset.
 
-### Scoped cleanup on bare void return
+### Scoped cleanup on synchronous returns
 
 In synchronous void functions and static/instance methods, `return;` releases
 qualified owned scalar strings and scalar class locals in reverse declaration
@@ -89,8 +89,17 @@ and explicit pointers stay borrowed; a caller's backing string and method receiv
 survive. Unbraced returns keep cleanup conditional; normal completion keeps its
 existing cleanup.
 
+For `int`, `float`, `bool` and `char` results, P0036 evaluates the return
+expression once into a temporary of the declared C result type, then performs
+the same cleanup and returns the saved value. This preserves reads from local
+class fields and side effects before their storage is released. A temporary is
+needed only when there are qualified locals to release; its name avoids active
+bindings and names in the lowered expression. No ownership transfer is needed
+for these primitive values.
+
 Returns inside active try/catch/finally contexts retain their previous behavior;
-exception unwinding, async exits and value-return ownership remain unqualified.
+exception unwinding, async exits and string/pointer/class result ownership remain
+unqualified. Primitive return shape checking remains a separate limitation.
 Class cleanup is qualified for fresh independent instances; aliases, class
 containers, destructors and field destruction remain separate. See the bounded
 [ownership checkpoint](../development/string-ownership.md).

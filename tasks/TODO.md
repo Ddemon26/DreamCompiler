@@ -257,8 +257,8 @@ block cleanup; P0024 qualifies owned scalar cleanup on break/continue; P0030
 adds scalar conditional initializer copies; P0031 adds class-local jump cleanup;
 P0032 adds plain assignment-expression initializer copies; P0033 qualifies owned
 scalar string `+=`; P0034 qualifies owned scalar cleanup on bare synchronous
-void return; P0035 adds scalar class locals. Source audit still finds plain C
-assignment elsewhere. Other compound operators, owning containers, return transfer, other early exits and
+void return; P0035 adds scalar class locals; P0036 qualifies primitive scalar
+returns. Source audit still finds plain C assignment elsewhere. Other compound operators, owning containers, return transfer, other early exits and
 field ownership remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
 
@@ -418,13 +418,24 @@ emission checks only. Full Windows: 144 passed, 18 skipped, no failures/errors;
 28 quick groups, five runner tests and Linux cross-build passed. See
 [P0035](passes/P0035-void-return-classes.md).
 
-Broader T011 remains open. Verify P0035 publication/native CI and repair failures
-first. Next reproduce scoped allocations retained on primitive numeric/bool/char
-value returns; qualify one bounded scalar-result temporary before local cleanup,
-with once-only evaluation, field-read and side-effect evidence. Keep string/pointer/
-class result transfer, aliases/containers/destructors/fields, async and exception
-unwinding separate. Custom-type for headers and direct class null initializers
-remain unsupported; fixture probes did not broaden their grammar or semantics.
+P0036 reproduces retained scoped allocations on primitive value returns in both
+modes, then evaluates synchronous int/float/bool/char results once into typed
+temporaries before reverse-order string/scalar-class cleanup. Each mode requires
+47 nonnull releases (21 classes, 26 strings), 23 output lines, exact evaluation/
+cleanup sequences and an empty pre-shutdown registry. Nested scopes, headers,
+loops/switches, recursion, methods, field/index reads, effects, caller survival,
+temporary-name collisions and normal exception completion are covered. Active
+exception exits and owning string results have unchanged-emission controls only.
+Full Windows: 145 passed, 18 skipped, no failures/errors; 29 quick groups, five
+runner tests and Linux cross-build passed. See [P0036](passes/P0036-scalar-return-cleanup.md).
+
+Broader T011 remains open. Verify P0036 publication/native CI and repair failures
+first. Next reproduce string-valued returns retaining owned locals; design one
+bounded result-lifetime contract before adding cleanup, preserving borrowed and
+local result sources. Keep pointer/class result transfer, aliases/containers/
+destructors/fields, async and exception unwinding separate. String-index return
+typing remains limited; custom-type for headers and direct class null initializers
+remain unsupported. Fixture probes did not broaden grammar or semantics.
 T012/T013 pruning and T014 website/release work are completed maintenance history;
 do not repeat those tasks from stale scheduled-run memory.
 

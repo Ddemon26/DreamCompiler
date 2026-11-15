@@ -171,6 +171,16 @@ Ten positioned, artifact-free cases reject const updates and int/float/bool/char
 operands. Before P0033, both modes failed harness C compilation on pointer `+=`.
 Both quick protocols and CI select it; temporary/result ownership is unchanged.
 
+`TestCompiler_ScalarReturnCleanup` checks synchronous primitive scalar returns
+in both modes: 47 nonnull releases (21 classes, 26 strings), 23 output lines,
+evaluation-before-cleanup sequences and an empty registry before shutdown.
+Nested locals, string headers, unbraced conditionals, loops/switches, recursion,
+methods, all four result types, field/index reads, once-only effects, borrowed
+caller survival, temporary-name collisions and normal exception completion are
+covered. Active exception exits and owning string results retain emission-only
+checks. Both quick protocols and CI select it; result transfer and exception
+unwinding remain separate. See the [ownership contract](../../docs/development/string-ownership.md).
+
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element
 types, local arrays, numeric aliases, free functions/static methods, inherited member

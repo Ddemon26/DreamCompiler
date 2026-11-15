@@ -1,0 +1,187 @@
+// Expected: 2
+// Expected: 1
+// Expected: 1
+// Expected: 4
+// Expected: 5
+// Expected: 6
+// Expected: 7
+// Expected: 8
+// Expected: 9
+// Expected: 2
+// Expected: 1.500000
+// Expected: 11
+// Expected: 11
+// Expected: A
+// Expected: Z
+// Expected: 2
+// Expected: 1
+// Expected: 0
+// Expected: 12
+// Expected: 13
+// Expected: 14
+// Expected: 15
+// Expected: backing
+class ScalarToken {
+    int value;
+    func init(int value) { this.value = value; }
+}
+func int nested(bool stop, string parameter, string *pointer) {
+    ScalarToken outer = new ScalarToken(1);
+    string text = parameter;
+    string absent;
+    const string empty = "";
+    {
+        ScalarToken inner = new ScalarToken(2);
+        if (stop) return inner.value;
+        ScalarToken late = new ScalarToken(3);
+    }
+    return outer.value;
+}
+func int whileExit() {
+    string whileOuter = "while";
+    int i = 0;
+    while (i < 3) {
+        ScalarToken whileBody = new ScalarToken(i);
+        i++;
+        if (i == 2) return whileBody.value;
+        continue;
+    }
+    return 0;
+}
+func int doExit() {
+    ScalarToken doOuter = new ScalarToken(4);
+    do {
+        string doBody = "do";
+        return doOuter.value;
+    } while (true);
+}
+func int forExit(bool stop) {
+    ScalarToken forOuter = new ScalarToken(6);
+    int i = 0;
+    for (string header = "header"; i < 2; i++) {
+        ScalarToken forBody = new ScalarToken(5);
+        if (stop) {
+            string deep = "deep";
+            return forBody.value;
+        }
+    }
+    return forOuter.value;
+}
+func int switchExit(int choice) {
+    string switchOuter = "switch";
+    switch (choice) {
+        case 1:
+            ScalarToken caseOwner = new ScalarToken(7);
+            if (choice == 1) return caseOwner.value;
+            break;
+        default:
+            string normal = "normal";
+    }
+    return 8;
+}
+func int zeroExit() {
+    ScalarToken zeroOuter = new ScalarToken(9);
+    for (string zeroHeader = "zero"; false;) {
+        ScalarToken never = new ScalarToken(0);
+        return never.value;
+    }
+    return zeroOuter.value;
+}
+func int recurse(int depth) {
+    string recursive = "recursive";
+    if (depth > 0) return recurse(depth - 1) + 1;
+    return 0;
+}
+class ScalarReader {
+    int value;
+    int hits;
+    func init() { this.value = 10; this.hits = 0; }
+    static func float runStatic() {
+        string staticText = "static";
+        return 1.5;
+    }
+    func int runInstance() {
+        ScalarToken instanceOwner = new ScalarToken(0);
+        string methodText = "method";
+        return this.value += 1;
+    }
+    func char nextChar() {
+        string charText = "characters";
+        char characters[2];
+        characters[0] = 'A';
+        characters[1] = 'Z';
+        return characters[this.hits++];
+    }
+    func char borrowedChar(char letter, string parameter, string *pointer) {
+        return letter;
+    }
+}
+func bool booleanExit(bool stop) {
+    ScalarToken boolOwner = new ScalarToken(1);
+    string boolText = "bool";
+    return stop ? boolOwner.value == 1 : false;
+}
+// User identifiers must not be shadowed by the generated result temporary.
+func int collisionLocal() {
+    ScalarToken __dream_return_0 = new ScalarToken(12);
+    int __dream_return_1 = 1;
+    return __dream_return_0.value;
+}
+func int __dream_return_2() { return 13; }
+func int collisionCall() {
+    string callText = "call";
+    int __dream_return_0 = 0;
+    int __dream_return_1 = 1;
+    return __dream_return_2();
+}
+func int completedException() {
+    ScalarToken completedOuter = new ScalarToken(14);
+    try { string completedTry = "try"; }
+    catch { }
+    finally { string completedFinally = "finally"; }
+    return completedOuter.value;
+}
+// Active exception returns and string results keep their prior emission.
+// These exception exits are checked only in C and are never called here.
+func int pendingException() {
+    string pendingOuter = "outer";
+    try { string pendingTry = "try"; return 1; }
+    catch { string pendingCatch = "catch"; return 2; }
+    finally { string pendingFinally = "finally"; return 3; }
+    return 4;
+}
+func string borrowedResult(string source) { return source; }
+func string ownedResult() { string result = "owned"; return result; }
+func int noLocals() { return 15; }
+func void exercise() {
+    string backing = "backing";
+    string values[1];
+    values[0] = backing;
+    Console.WriteLine(nested(true, backing, values));
+    Console.WriteLine(nested(false, backing, values));
+    Console.WriteLine(whileExit());
+    Console.WriteLine(doExit());
+    Console.WriteLine(forExit(true));
+    Console.WriteLine(forExit(false));
+    Console.WriteLine(switchExit(1));
+    Console.WriteLine(switchExit(2));
+    Console.WriteLine(zeroExit());
+    Console.WriteLine(recurse(2));
+    Console.WriteLine(ScalarReader.runStatic());
+    ScalarReader reader = new ScalarReader();
+    Console.WriteLine(reader.runInstance());
+    Console.WriteLine(reader.value);
+    Console.WriteLine(reader.nextChar());
+    Console.WriteLine(reader.nextChar());
+    Console.WriteLine(reader.hits);
+    Console.WriteLine(booleanExit(true));
+    Console.WriteLine(booleanExit(false));
+    Console.WriteLine(collisionLocal());
+    Console.WriteLine(collisionCall());
+    Console.WriteLine(completedException());
+    Console.WriteLine(noLocals());
+    borrowedResult(backing);
+    reader.borrowedChar('B', backing, values);
+    Console.WriteLine(backing);
+}
+exercise();
