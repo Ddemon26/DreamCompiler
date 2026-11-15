@@ -1,0 +1,2 @@
+// Expected error: undefined variable 'missing'
+int value = missing + 1;

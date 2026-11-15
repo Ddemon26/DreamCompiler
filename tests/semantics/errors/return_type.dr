@@ -1,0 +1,2 @@
+// Expected error: return expression has incompatible type: expected 'int', got 'string'
+func int value() { return "bad"; }

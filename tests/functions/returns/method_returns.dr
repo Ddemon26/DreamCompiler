@@ -1,0 +1,23 @@
+// Expected: label
+// Expected: 1
+// Expected: 7
+// Expected: 8
+class Reader {
+    string label;
+    func init(string text) { this.label = text; }
+    func string caption() { return this.label; }
+    static func bool ready() { return true; }
+    func void nothing() { return; }
+    func int choose(int n) {
+        switch (n) {
+            case 1: return 7;
+            default: return 8;
+        }
+    }
+}
+Reader reader = new Reader("label");
+Console.WriteLine(reader.caption());
+Console.WriteLine(Reader.ready());
+reader.nothing();
+Console.WriteLine(reader.choose(1));
+Console.WriteLine(reader.choose(2));

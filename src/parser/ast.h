@@ -6,13 +6,14 @@
 /**
  * @brief Represents a memory arena for dynamic memory allocation.
  *
- * This structure is used to manage a resizable memory buffer,
- * including its pointer, current length, and capacity.
+ * Blocks never move, so AST pointers remain valid when the arena grows.
  */
+typedef struct ArenaBlock ArenaBlock;
 typedef struct {
   char *ptr;
   size_t len;
   size_t cap;
+  ArenaBlock *blocks;
 } Arena;
 
 /**
@@ -22,6 +23,9 @@ typedef struct {
  */
 void arena_init(Arena *a);
 
+/** Releases every block owned by the arena and resets it. */
+void arena_free(Arena *a);
+
 /**
  * @brief Allocates memory from the memory arena.
  *
@@ -30,6 +34,9 @@ void arena_init(Arena *a);
  * @return Pointer to the allocated memory block.
  */
 void *arena_alloc(Arena *a, size_t size);
+
+/* Recoverable allocation for compiler stages that report their own errors. */
+void *arena_try_alloc(Arena *a, size_t size);
 
 /**
  * @brief Enumerates the different kinds of nodes in the abstract syntax tree
@@ -129,6 +136,8 @@ typedef struct {
 struct Node {
   NodeKind kind; /**< The type of the node. */
   Pos pos;       /**< Source position of this node. */
+  const char *source_file; /**< Optional origin for multi-file compilation. */
+  const char *source_text;
   union {
     Slice lit;   /**< Literal value for ND_* literal nodes. */
     Slice ident; /**< Identifier for ND_IDENT nodes. */
@@ -230,6 +239,8 @@ struct Node {
     struct {
       Slice name;     /**< Name of the struct or class. */
       Slice base_name; /**< Name of the base class (empty if no inheritance). */
+      Node *base_decl; /**< Resolved by semantic analysis; null for a root type. */
+      unsigned char inheritance_state; /**< 0 unresolved, 1 visiting, 2 valid, 3 invalid. */
       Node **members; /**< Array of member declarations. */
       size_t len;     /**< Number of members. */
     } type_decl;

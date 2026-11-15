@@ -1,5 +1,1070 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 14, 2026 (America/Vancouver)
+
+**Pass:** P0028 - square-edged homepage and documentation reader
+
+**Scope/platform:** static documentation website, Windows; compiler inputs unchanged
+
+- `node --check docs/site.js`: **passed**.
+- `node --test docs/site.test.mjs`: **8 passed, 0 failed/skipped**.
+- Actual browser rendering of **all 21 sidebar documents passed**. Homepage example
+  selection by click/keyboard, search including no results, internal navigation,
+  browser back, heading/deep-link reload, clipboard success, saved light theme and
+  restored dark theme, archives and 404/retry recovery passed.
+- Mobile **320px** homepage/table article and tablet **768px** homepage had no
+  page horizontal overflow. Mobile menu and table containment passed. Desktop
+  **1280px** homepage and article visually checked; viewport reset afterward.
+- Temporary Markdown QA: script/event-handler/unsafe-link removal, no injected
+  DOM attribute, distinct duplicate heading IDs and table wrapping passed. The
+  temporary fixture was removed before commit.
+- Browser initially exposed Windows Python serving `.mjs` as text/plain; runtime
+  modules now use `.js`. Subsequent module loading and interactions passed.
+- `zig version`: **0.17.1**. The two homepage examples were extracted into ignored
+  `build/P0028-example-{0,1}.dr`, compiled through **`zig build run -- ...`** and
+  executed sequentially: exact **`Hello, Dream!`** and **`8`**, exit zero. Initial
+  direct compiler invocations failed launching default GCC; the documented Zig
+  entry point sets `CC=zig cc` and passed.
+- **408 protected hashes unchanged**: compiler/runtime, fixtures, runner/Go tooling,
+  plugins, build graph and CI. **48 new/revised guide links resolved** before pass
+  metadata; final handoff/index links and diff checks precede commit.
+- Reused compiler evidence, **P0027 / November 14, 2026 UTC**, not rerun here:
+  **136 Dream passes, 18 skips, no failures**, **22 quick groups**, **5 runner tests**.
+  Both exact-parent native Linux/Windows [CI jobs](https://github.com/Ddemon26/DreamCompiler/actions/runs/43654089255)
+  passed before edits. No new cross-build or native Linux runtime claim.
+- Pages metadata read: **built**, **legacy source `main:/docs`**. No live deployment
+  performed. Integration publication requires verified push; live release requires
+  explicit owner instruction before a `main` merge or Pages-setting change.
+
+No compiler behavior or skipped cases were requalified. Legacy tutorial/API accuracy,
+browser forward and disabled-script/storage/clipboard environments were not separately
+tested. See [P0028](passes/P0028-docs-website.md) for scope and handoff.
+
+---
+
+## Historical P0027 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0027 - unsupported Go build entry-point cleanup
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0026 [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43652638299):
+  native Linux/Windows jobs **passed** before edits began.
+- **474 protected hashes unchanged**, including compiler, fixtures, docs/Pages,
+  plugins, unique Go test/legacy sources and supported build/runner/CI inputs.
+- Both launchers and CI preserve the same **22-group selector** and `-count=1`.
+- Controlled launcher probes: **seven passed**, including default/help, build/test
+  exit propagation, directories, retired action and missing prerequisite behavior.
+  PowerShell parsing/BOM and GNU Make help/default/explicit dry-runs passed;
+  retired Make target rejection passed. Native Linux Make was not executed here.
+- `zig build test`: **154 discovered, 136 passed, 18 skipped, zero failures/errors**,
+  48.74s; `test_results/test_results_20261114_163145_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.029s.
+- Pruned Windows Go quick launcher: **all twenty-two groups passed**, 36.863s.
+- Removed-entry searches, **95 local Markdown links**, paths and diff checked before commit. No C/build
+  input changed; no cross-build was required or rerun. Native P0027 CI awaits
+  publication. Prior P0026 native evidence is dated above.
+
+Compiler checks ran sequentially with approved SDK/cache access and no content or
+permission changes. Same 18 skips and prior language/ownership limits remain.
+Legacy unique cgo sources/checksums and the active Pages assets remain; no coverage
+is claimed for them. See [P0027](passes/P0027-go-tooling-cleanup.md).
+Ignored evidence: `build/P0027-*`.
+
+---
+
+## Historical P0026 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0026 - obsolete tooling and operational documentation cleanup
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0025 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43649932934):
+  Linux/Windows jobs and suites **passed** for the exact parent SHA.
+- Before/after cleanup: **367 protected source/build/fixture/plugin/runner hashes
+  unchanged**; `python codex/test_cli.py list` returns the same **154 entries and
+  categories**. CLI `--help` passed. No tests or exclusions were removed.
+- `zig build test`: **154 discovered, 136 passed, 18 skipped, zero failures/errors**,
+  51.72s; `test_results/test_results_20261114_161430_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.044s.
+- Windows Go quick protocol: **all twenty-two groups passed**, 41.955s;
+  external compiler tests use `-count=1`.
+- Revised operational docs: **101 local links resolved** before pass metadata,
+  **184** across all revised/new Markdown in the final check;
+  added handoff links, literal paths, inbound fragments, retired-entry references,
+  the installer ignore rule and diff were also checked.
+- No C/build inputs changed: no new cross-build was required or claimed. Native
+  P0026 CI awaits publication. Prior P0025 native evidence is dated above.
+
+Compiler checks ran sequentially with approved SDK/cache access and no SDK/cache
+changes. Same 18 skips and existing language/ownership limits remain. Retired
+scripts had no active consumers; the supported runner is unchanged. See
+[P0026](passes/P0026-repository-cleanup.md) for the deletion inventory and retained
+legacy/experimental boundaries. Ignored evidence: `build/P0026-*`.
+
+---
+
+## Historical P0025 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0025 - first production compiler dogfooding (Dream source normalizer)
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0024 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43647310315):
+  Linux/Windows checks and suites **passed** for the exact parent SHA.
+- Baseline `zig build test`: **154 discovered, 136 passed, 18 skipped, zero
+  failures/errors**, 47.17s; `test_results/test_results_20261114_153454_windows.json`.
+- Pre-rebuild `TestCompiler_Dogfood`: **failed as expected**, 0.536s; old compiler
+  did not support the library-emission request.
+- `zig build`: **passed**, including C-only host bootstrap, emitted Dream helper
+  and production compiler link without the C seed.
+- Initial harness assumed idempotence incorrectly; the unchanged seed also maps
+  CRCRLF to CRLF, then LF. Repeated-call seed equivalence replaced that assumption;
+  independent expected bytes, complete-buffer and boundary assertions remain.
+- Focused `go test -count=1 -v -run '^TestCompiler_Dogfood$' .`: **passed**, 2.747s,
+  including 97,912 native cases and Linux cross-link. Expanded final forward-call,
+  rejection/output-preservation and production-newline checks passed in quick.
+- Final `zig build test`: **154 discovered, 136 passed, 18 skipped, zero
+  failures/errors**, 46.69s; `test_results/test_results_20261114_154100_windows.json`.
+- Windows Go quick protocol: **all twenty-two groups passed**, 45.446s; new group
+  1.62s. External compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.058s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**, with a
+  Windows host bootstrap and Linux production compiler. Linux binaries were not
+  executed locally; native P0025 runtime awaits CI.
+
+Same 18 skips/exclusions. This qualifies one production helper and function-only
+library emission, not a self-hosted lexer/parser/emitter, general C FFI, new ownership
+contracts or whole-compiler stage-two/stage-three equality. Prior T011/shape/operator
+limits remain. Compiler checks ran sequentially with approved SDK/cache access and
+no SDK/cache changes. See [P0025](passes/P0025-compiler-dogfooding.md).
+Ignored logs: `build/P0025-*.log`.
+
+---
+
+## Historical P0024 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0024 - owned scalar string cleanup on break/continue
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0023 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43630813439):
+  Linux/Windows checks and full suites **passed** for the exact parent SHA.
+- Baseline `zig build test`: **153 discovered, 135 passed, 18 skipped, zero
+  failures/errors**, 43.62s; `test_results/test_results_20261114_150829_windows.json`.
+- Before implementation, `TestCompiler_LoopExitStrings` **failed both modes** at
+  the exact release total before shutdown, 2.676s. Linux harness cross-links passed
+  before native execution; skipped body cleanup deferred storage until shutdown.
+- `zig build`: **passed** after target-aware cleanup; initial new group **passed
+  both modes**, 3.144s.
+- Final focused ownership matrix: **all twenty modes passed**, 24.888s; new group
+  body 2.37s. Exact generated-C cleanup sequences, Linux harness cross-links,
+  checked native lifetime and exact direct-linked output passed. The new fixture
+  requires thirty-seven nonnull releases and sixteen output lines per mode;
+  prior allocator/refcount/shutdown assertions and eighteen modes are unchanged.
+- Final `zig build test`: **154 discovered, 136 passed, 18 skipped, zero
+  failures/errors**, 42.93s; `test_results/test_results_20261114_151212_windows.json`.
+- Windows Go quick protocol: **all twenty-one groups passed**, 35.530s;
+  external compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.043s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0024 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK discovery failed, without content/permission changes. Same 18 unannotated
+skips/exclusions. Jump cleanup releases qualified owned strings in exited scopes,
+leaving outer locals and for headers live through continue/update. Class-instance
+early exits, unsupported initializers, compound assignment, parameter/field/index
+destinations, owning containers, return ownership and return/exception/finally
+unwinding remain unqualified. See [P0024](passes/P0024-loop-exit-strings.md).
+Ignored evidence: `build/P0024-*.log`.
+
+---
+
+## Historical P0023 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0023 - borrowed string array/pointer block cleanup
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0022 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43598710643):
+  Linux/Windows checks and full suite **passed** for the exact parent SHA.
+- Baseline `zig build test`: **151 discovered, 133 passed, 18 skipped, zero
+  failures/errors**, 34.07s; `test_results/test_results_20261114_120336_windows.json`.
+- Before implementation, `TestCompiler_StringContainers` **failed all four
+  array/pointer ordinary/module-entry modes** at the live-allocation release
+  assertion, 3.717s. Linux harness cross-links passed before native execution.
+- `zig build`: **passed** after normal block cleanup began checking existing
+  string binding indirection metadata. Owned scalar/class releases remain intact.
+- Focused ownership matrix: **all eighteen modes passed**, 18.221s; new group body
+  3.93s. Generated-C positive/negative checks, Linux cross-links, checked native
+  lifetime and exact direct-linked output passed. New array/pointer fixtures
+  require eight/seven nonnull releases and thirteen/eleven output lines per mode;
+  prior allocator/refcount/shutdown assertions are unchanged.
+- Final `zig build test`: **153 discovered, 135 passed, 18 skipped, zero
+  failures/errors**, 35.23s; `test_results/test_results_20261114_120718_windows.json`.
+- Windows Go quick protocol: **all twenty groups passed**, 32.398s;
+  external compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.032s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0023 runtime awaits CI.
+
+Compiler tests ran sequentially with approved SDK/cache access after restricted
+SDK discovery failed, without content/permission changes. Same 18 unannotated
+skips/exclusions. String arrays and explicit pointers borrow their elements/targets;
+backing must outlive alias use. Owning containers, automatic element destruction,
+other scalar initializers, compound assignment, parameter/field/index destination
+ownership, return transfer and early-exit cleanup remain unqualified. See
+[P0023](passes/P0023-borrowed-string-containers.md). Ignored evidence:
+`build/P0023-*.log`.
+
+---
+
+## Historical P0022 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0022 - owned scalar string replacement copies and old-value release
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0021 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43569739018):
+  Linux/Windows checks and full suite **passed** for the exact parent SHA.
+- Baseline `zig build test`: **150 discovered, 132 passed, 18 skipped, zero
+  failures/errors**, 37.38s; `test_results/test_results_20261114_060342_windows.json`.
+- Before implementation, focused replacement tests **failed both modes** on invalid
+  live-allocation cleanup, 2.438s. Linux harness cross-links passed first.
+- `zig build`: **passed** after replacement repair. Initial fixture adjustments
+  replaced unsupported direct null initialization with a typed borrowed-null value
+  and moved array backing outside local cleanup, whose separate scalar-style
+  release remains a known next task. The old call fixture now requires fifteen
+  releases, including reclamation of its replaced top-level backing.
+- Final focused ownership check: **all fourteen modes passed**, 14.707s;
+  assignment body 2.00s. Generated copy/release ordering, null defaults, assignment
+  results, Linux cross-links, checked native lifetime and exact linked output
+  passed. Existing allocator/refcount/shutdown assertions remain.
+- Final `zig build test`: **151 discovered, 133 passed, 18 skipped, zero
+  failures/errors**, 33.90s; `test_results/test_results_20261114_060854_windows.json`.
+- Windows Go quick protocol: **all nineteen groups passed**, 28.582s;
+  external compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.038s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0022 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Replacement copies readable input before releasing the current
+owned scalar value; temporary managed results can remain registered until shutdown.
+Other initializers, compound assignment, parameter/field/index destinations,
+array/pointer-local cleanup, return transfer, return/exception and skipped body-local
+cleanup remain unqualified. See [P0022](passes/P0022-assigned-string-ownership.md).
+Ignored evidence: `build/P0022-*.log`.
+
+---
+
+## Historical P0021 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0021 - scalar string call-initializer copies
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0020 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43539278761):
+  Linux/Windows stability checks and full suite **passed**.
+- Baseline `zig build test`: **149 discovered, 131 passed, 18 skipped, zero
+  failures/errors**, 34.69s; `test_results/test_results_20261114_000133_windows.json`.
+- Before implementation, focused call tests **failed both modes** on invalid
+  live-allocation cleanup, 2.511s. Linux harness cross-links passed first.
+- `zig build`: **passed** after adding call copying. The empty-result fixture was
+  corrected to check output rather than pointer equality against a literal;
+  no existing assertion or compiler equality behavior was changed.
+- Final focused ownership check: **all twelve modes passed**, 12.745s; call body
+  1.97s. Generated copies/releases, Linux cross-links, checked native lifetime and
+  exact direct-linked output passed, retaining all previous ownership checks.
+- Final `zig build test`: **150 discovered, 132 passed, 18 skipped, zero
+  failures/errors**, 33.46s; `test_results/test_results_20261114_000525_windows.json`.
+- Windows Go quick protocol: **all eighteen groups passed**, 27.077s.
+  Existing groups/assertions remain; external compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.046s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0021 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Calls copy readable results without ownership transfer; original
+managed results can remain registered until shutdown. Return/exception and skipped
+body-local cleanup, reassignment, fields and array/pointer-local cleanup remain
+unqualified. See [P0021](passes/P0021-call-string-ownership.md). Ignored evidence:
+`build/P0021-*.log`.
+
+---
+
+## Historical P0020 checkpoint - November 14, 2026
+
+**Date:** November 14, 2026 UTC
+
+**Pass:** P0020 - for-header string declaration scope and cleanup
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0019 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43526977205):
+  Linux/Windows jobs **passed**, including stability checks and full suite.
+- Unchanged `zig build test`: **148 discovered, 130 passed, 18 skipped, zero
+  failures/errors**, 40.26s; `test_results/test_results_20261113_180507_windows.json`.
+- Before implementation, focused for-header tests **failed both modes** on leaked
+  binding redefinition, 0.535s. After semantic scope repair and a successful build,
+  both failed Linux harness C compilation on nine out-of-scope cleanup operands,
+  1.245s. Runtime lifetime checks could not run before emission repair.
+- `zig build`: **passed** after code generation repair.
+- Final focused ownership/diagnostic check: **all ten ownership modes and driver
+  diagnostics passed**, 12.118s; for-header body 2.15s. Generated-C copy/cleanup,
+  Linux cross-links, native checked lifetime, exact direct-linked output and four
+  positioned/artifact-free scope rejections passed.
+- Final `zig build test`: **149 discovered, 131 passed, 18 skipped, zero
+  failures/errors**, 33.93s; `test_results/test_results_20261113_180919_windows.json`.
+- Windows Go quick protocol: **all seventeen groups passed**, 25.622s; for-header
+  body 2.06s. Existing groups/assertions remain; compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.043s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0020 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Return/exception exits can bypass header cleanup; owned body locals
+skipped by break/continue, call/other initializers, reassignment, return/field
+ownership and array/pointer-local cleanup remain unqualified. See
+[P0020](passes/P0020-for-header-string-ownership.md). Ignored evidence: `build/P0020-*.log`.
+
+---
+
+## Historical P0019 checkpoint - November 13, 2026
+
+**Date:** November 13, 2026 UTC
+
+**Pass:** P0019 - scalar member string declaration ownership
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0018 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43515951800):
+  Linux and Windows jobs **passed**, including stability checks and full suite.
+- Unchanged `zig build test`: **147 discovered, 129 passed, 18 skipped, zero
+  failures/errors**, 39.15s; `test_results/test_results_20261113_161704_windows.json`.
+- Pre-change `go test -count=1 -v -run '^TestCompiler_MemberStrings$' .`:
+  **both modes failed** the live-allocation cleanup assertion, 3.405s (body 2.84s).
+  Linux harness cross-links passed before native execution failed.
+- `zig build`: **passed** after implementation.
+- `go test -count=1 -v -run
+  '^TestCompiler_(MemberStrings|IdentifierStrings|LiteralStrings|IndexedStrings)$' .`:
+  **all eight modes passed**, 11.646s; generated-C, Linux cross-link, native checked
+  lifetime and exact output through the harness and direct linker.
+- Final `zig build test`: **148 discovered, 130 passed, 18 skipped, zero
+  failures/errors**, 36.98s; `test_results/test_results_20261113_162034_windows.json`.
+- Windows Go quick protocol: **all sixteen groups passed**, 29.766s; member
+  body 3.08s. Existing groups/assertions remain selected; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.043s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0019 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Call/for-header initializers, reassignment, return/field ownership,
+array/pointer-local and early-exit cleanup remain unqualified. See
+[P0019](passes/P0019-member-string-ownership.md). Ignored evidence: `build/P0019-*.log`.
+
+---
+
+## Historical P0018 checkpoint - November 13, 2026
+
+**Date:** November 13, 2026 UTC
+
+**Pass:** P0018 - scalar identifier string declaration ownership
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0017 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43489193804):
+  Linux and Windows jobs **passed**, including full suite and stability checks.
+- Unchanged `zig build test`: **146 discovered, 128 passed, 18 skipped, zero
+  failures/errors**, 41.44s; `test_results/test_results_20261113_145511_windows.json`.
+- Pre-change `go test -count=1 -v -run '^TestCompiler_IdentifierStrings$' .`:
+  **both modes failed** the live-allocation cleanup assertion, 2.703s (body 2.25s).
+  Linux harness cross-links passed before native execution failed.
+- `zig build`: **passed** after implementation.
+- `go test -count=1 -v -run
+  '^TestCompiler_(IdentifierStrings|LiteralStrings|IndexedStrings)$' .`:
+  **all six modes passed**, 9.195s; generated-C, Linux cross-link, native checked
+  allocation lifetime and exact output through the harness and direct linker.
+- Final `zig build test`: **147 discovered, 129 passed, 18 skipped, zero
+  failures/errors**, 47.33s; `test_results/test_results_20261113_145812_windows.json`.
+- Windows Go quick protocol: **all fifteen groups passed**, 23.940s; identifier
+  body 2.41s. Existing checks remain selected; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.047s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0018 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions. Call/member/for-header initializers, reassignment, return/field
+ownership and early-exit cleanup remain unqualified. See
+[P0018](passes/P0018-identifier-string-ownership.md). Ignored evidence:
+`build/P0018-*.log`.
+
+---
+
+## Historical P0017 checkpoint - November 13, 2026
+
+**Date:** November 13, 2026 UTC
+
+**Pass:** P0017 - literal string declaration ownership
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0016 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43431180404):
+  Linux and Windows jobs **passed**, including full suite and stability checks.
+- Unchanged `zig build test`: **145 discovered, 127 passed, 18 skipped, zero
+  failures/errors**, 33.24s; `test_results/test_results_20261113_120005_windows.json`.
+- Pre-change `go test -count=1 -v -run '^TestCompiler_LiteralStrings$' .`:
+  **both modes failed** the checked live-allocation assertion, 2.367s.
+  An unrelated direct-null fixture declaration was removed before reproduction.
+- `zig build`: **passed**. First focused post-change run caught omitted existing
+  parentheses in a new C-emission assertion; corrected that assertion.
+- `go test -count=1 -v -run '^TestCompiler_(LiteralStrings|IndexedStrings)$' .`:
+  **four modes passed**, 5.214s; emitted C, Linux cross-links, checked lifetime,
+  exact output from both harness and direct compiler linking.
+- Final `zig build test`: **146 discovered, 128 passed, 18 skipped, zero failures/
+  errors**, 36.68s; `test_results/test_results_20261113_120323_windows.json`.
+- Windows Go quick protocol: **all fourteen groups passed**, 18.349s; literal
+  group 2.05s, indexed group 1.91s, including final single-reference assertion.
+  Existing groups/assertions remain selected; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.056s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0017 runtime awaits CI.
+
+Compiler checks ran sequentially with approved SDK/cache access after restricted
+SDK lookup failed, without content/permission changes. Same 18 unannotated skips
+and exclusions; identifier/call/for-header/alias/reassignment/return/early-exit/field
+ownership remain unqualified. See [P0017](passes/P0017-literal-string-ownership.md).
+Ignored evidence: `build/P0017-*.log`.
+
+---
+
+## Historical P0016 checkpoint - November 13, 2026
+
+**Date:** November 13, 2026 UTC
+
+**Pass:** P0016 - preserve indexed primitive console formats
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0015 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43389722344):
+  Windows and Linux jobs **passed**, including stability checks and full suite.
+- Unchanged `zig build test`: **144 discovered, 126 passed, 18 skipped, zero
+  failures/errors**, 31.41s; `test_results/test_results_20261113_060253_windows.json`.
+- Focused pre-change backend reproduction: **both modes failed ten format checks**,
+  0.466s. Prior unsupported shadowing in the new fixture was corrected separately.
+- After implementation, `go test -count=1 -v -run '^TestCompiler_IndexedConsole$' .`
+  from `codex/go`: **both modes passed**, 1.218s; generated-C and 41 output lines.
+- Final `zig build test`: **145 discovered, 127 passed, 18 skipped, zero failures/
+  errors**, 29.57s; `test_results/test_results_20261113_060617_windows.json`.
+- Windows Go quick protocol: **all thirteen groups passed**, 15.509s; indexed
+  console group 0.63s, final 18 generated format checks and exact output per mode.
+  All previous groups/assertions remain selected; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.041s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not run locally; native P0016 runtime awaits CI.
+
+Compiler checks ran sequentially. Normal approved SDK/cache access used after
+restricted Zig lookup failed; no SDK/cache content or permission changes. Same
+18 unannotated skips/exclusions remain. Backend formatting does not qualify
+semantic shapes, bounds, null safety, general operators or broader ownership.
+See [P0016](passes/P0016-indexed-console.md). Ignored logs: `build/P0016-*.log`.
+
+---
+
+## Historical P0015 checkpoint - November 13, 2026
+
+**Date:** November 13, 2026 UTC
+
+**Pass:** P0015 - restore Linux indexed-string harness builds
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Prior P0014 [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43326685373):
+  Linux failed on undeclared `strdup` in both harness builds; Windows cancelled.
+- Linux C11 object compilation and both newly added harness cross-links reproduced
+  the same four errors before adding `_GNU_SOURCE` to match `build.zig`.
+- Focused `go test -count=1 -v -run '^TestCompiler_IndexedStrings$' .`: **both modes
+  passed** Linux cross-link, native checked lifetime and exact direct-linked output,
+  2.846s (body 2.39s).
+- Final isolated `zig build test`: **144 discovered, 126 passed, 18 skipped, zero
+  failures/errors**, 34.21s; `test_results/test_results_20261113_005631_windows.json`.
+- Windows Go quick protocol: **all twelve groups passed**, 17.419s; indexed-string
+  group 2.19s. All previous assertions/groups remain; external tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.045s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux compiler/harness binaries were not run locally; native P0015 CI awaits push.
+
+Initial baseline reported 126 passes/18 skips/no failures, 38.93s, but briefly
+shared generated output with the focused reproduction; final isolated validation
+above supersedes it. See [P0015](passes/P0015-linux-string-harness.md) for exact
+commands, setup errors and limits. Approved SDK/cache access used without content
+or permission changes. Same 18 unannotated skips and exclusions; no language or
+ownership behavior changes. Ignored evidence: `build/P0015-*.log`.
+
+---
+
+## Historical P0014 checkpoint - November 12, 2026
+
+**Date:** November 12, 2026 UTC
+
+**Pass:** P0014 - indexed scalar string ownership
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Unchanged `zig build test`: **143 discovered, 125 passed, 18 skipped, zero
+  failures/errors**, 35.84s; `test_results/test_results_20261112_160128_windows.json`.
+- Uninstrumented pre-change execution happened to pass; the checked allocator
+  reproduced invalid literal cleanup deterministically in ordinary/module-entry
+  modes, 1.663s. See the pass record for fixture setup failures and corrections.
+- `zig build`: **passed** after implementation.
+- Final `go test -count=1 -v -run '^TestCompiler_IndexedStrings$' .`: **two modes
+  passed** generated-C, checked allocation lifetime and direct linked exact output,
+  2.317s (body 1.82s). Null, nested blocks, literal/dynamic backing, top-level copies
+  and once-only indexing included. Helper lifetime survives backing deallocation.
+- First full suite: 144 discovered, 125 passed, 18 skipped, **one output failure**,
+  zero errors, 32.50s. Fixed new fixture metadata line ordering to the established
+  Go oracle; no implementation or runtime assertion changes. Report:
+  `test_results/test_results_20261112_160632_windows.json`.
+- Final `zig build test`: **144 discovered, 126 passed, 18 skipped, zero failures/
+  errors**, 33.45s; `test_results/test_results_20261112_160736_windows.json`.
+- Windows Go quick protocol: **all twelve groups passed**, 15.706s; indexed string
+  group 1.52s. All existing groups remain selected; external compiler tests use
+  `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.040s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; native P0014 runtime awaits CI.
+- Full diff review and `git diff --check`, 57 local Markdown link occurrences,
+  metadata/Go oracle agreement, Go formatting, quick/CI selection and PowerShell
+  UTF-8 BOM checks: **passed**.
+
+Restricted Zig SDK lookup failed; normal approved SDK/cache access passed without
+content or permission changes. Restricted fetch failed DNS; approved fetch matched
+HEAD. Prior P0013 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43265683253)
+passed on Windows and Linux. The same 18 unannotated skips and exclusions remain.
+Only indexed scalar string declarations gain copied ownership; other ownership,
+shape/lifetime, early-exit and scalar string indexing paths remain unqualified.
+See [P0014](passes/P0014-indexed-string-ownership.md), [STATE.md](STATE.md) and the
+[ownership contract](../docs/development/string-ownership.md).
+Ignored evidence: `build/P0014-*.log`.
+
+---
+
+## Historical P0013 checkpoint - November 12, 2026
+
+**Date:** November 12, 2026 UTC
+
+**Pass:** P0013 - primitive pointer parameter signature emission
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Unchanged `zig build test`: **142 discovered, 124 passed, 18 skipped, zero
+  failures/errors**, 38.12s; `test_results/test_results_20261112_095735_windows.json`.
+- Pre-change `go test -count=1 -v -run '^TestCompiler_PointerParameters$' .`:
+  **failed as intended**, 0.483s. All ten pointer signature expectations failed
+  in each of ordinary/module-entry emission; no host compilation was attempted.
+- `zig build`: **passed** after the three parameter-emission paths were repaired.
+- Final focused pointer matrix: **two modes passed**, ten C signature checks per
+  mode plus exact runtime output, 1.232s (body 0.80s).
+- Final `zig build test`: **143 discovered, 125 passed, 18 skipped, zero failures/
+  errors**, 35.34s; `test_results/test_results_20261112_100109_windows.json`.
+- Windows Go quick protocol: **all eleven groups passed**, 13.567s; pointer
+  group 0.74s. Existing scalar argument/constructor diagnostics, parser recovery,
+  modules, driver, loop and literal-emission checks remain selected. External
+  compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.037s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; inspect native P0013 CI after push.
+- Full diff review, `git diff --check`, all 42 local Markdown link occurrences,
+  new parameter anchor, source/fixture paths, Go formatting, quick/CI selection
+  and PowerShell UTF-8 BOM checks **passed**.
+
+Initial focused attempts exposed direct indexed float/char console formatting
+(`0`/`90` instead of `2.500000`/`Z`) and borrowed indexed string local cleanup
+(panic in `dr_release` on misaligned `DrRef`, both modes). Final fixture reads
+numeric elements through typed locals and prints the string element directly,
+retaining all exact output assertions and all five primitive pointer types.
+Module free-function signature expectations now use the actual lowered prefix.
+These fixture changes bound the signature objective; they do not fix or qualify
+those separate defects. T009/T010 preserve their triggers and acceptance criteria.
+
+Restricted baseline could not locate Zig's installed SDK; approved SDK/cache
+access passed all required checks without content/permission/cache changes.
+Restricted fetch failed DNS; approved fetch succeeded and matched HEAD. Prior
+P0012 [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43208505371)
+passed. The same 18 unannotated skips and existing exclusions remain unchanged.
+Pointer shape, lifetime, bounds, return and async paths remain unqualified.
+See [P0013](passes/P0013-pointer-parameter-emission.md) and [STATE.md](STATE.md).
+Ignored evidence: `build/P0013-*.log`.
+
+---
+
+## Historical P0012 checkpoint - November 12, 2026
+
+**Date:** November 12, 2026 UTC
+
+**Pass:** P0012 - parser parameter recovery and statement progress
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+## Current measured state
+
+- Unchanged `zig build test`: **141 discovered, 123 passed, 18 skipped, zero
+  failures/errors**, 43.58s. Report: `test_results/test_results_20261112_041227_windows.json`.
+- Pre-change focused original-trigger regression: **two ten-second timeouts**,
+  ordinary and module-entry paths, as expected. Go total 21.348s (body 20.88s).
+- `zig build`: **passed** after implementation.
+- Final `go test -count=1 -v -run '^TestCompiler_ParserRecovery$' .` from `codex/go`:
+  **75 bounded rejections passed**, 1.907s. Covers ordinary/module-entry/dependency
+  parsing, useful positions, following declarations and no generated artifacts.
+- Final `zig build test`: **142 discovered, 124 passed, 18 skipped, zero failures/
+  errors**, 38.82s. New custom-parameter rejection passed. Report:
+  `test_results/test_results_20261112_041748_windows.json`.
+- Windows Go quick protocol from `codex/go`: **all ten groups passed**, 12.752s.
+  Includes 75 parser rejections (0.99s), 80 constructor rejections/two programs,
+  82 method rejections/two programs, 38 diagnostics, arena growth, warnings,
+  four loop settings, 25 module cases and literal emission/failure checks.
+  Compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.044s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not run locally; inspect P0012 native CI after publication.
+- Full diff review, `git diff --check`, all 36 local Markdown link occurrences,
+  Go formatting, source/regression paths, quick/CI selections and PowerShell BOM
+  checks **passed**.
+
+Initial focused failures were test position expectations: the enclosing brace was
+on line 4, then EOF name positions differed because the entry driver appends a
+newline and the dependency loader does not. The fixtures now explicitly place the
+brace on line 3 and EOF on line 4, retaining strict positions and all cases. No
+assertion/exclusion was weakened. Restricted baseline could not locate Zig's SDK;
+compiler checks used approved SDK/cache access without changing SDK/cache contents
+or permissions. Restricted fetch failed DNS; approved fetch succeeded. P0011
+[CI run 43022236461](https://github.com/Ddemon26/DreamCompiler/actions/runs/43022236461)
+passed native Windows/Linux jobs. No intermittent SDK/cache errors recurred in
+this pass's approved baseline or final checks.
+
+The same 18 unannotated skips and existing module/graphics/concurrency exclusions
+remain. Custom-type/array parameters and pointer emission/shape compatibility remain
+unsupported/unqualified. Recovery does not qualify every malformed construct or
+unbounded nesting. See [P0012](passes/P0012-parser-parameter-recovery.md) and
+[STATE.md](STATE.md). Publication requires a matching remote SHA. Ignored evidence:
+`build/P0012-*.log` includes all attempts and required checks.
+
+---
+
+## Historical P0011 checkpoint - November 11, 2026
+
+**Date:** November 11, 2026 UTC
+
+**Pass:** P0011 - primitive scalar constructor arguments and arity
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+## Current measured state
+
+- Unchanged baseline `zig build test`: **139 discovered, 121 passed, 18 skipped,
+  zero failures/errors**, 47.96s; `test_results/test_results_20261111_052841_windows.json`.
+- Pre-change constructor float-to-int rejection failed as intended: compiler
+  returned 0 and generated C rather than diagnosing the mismatch.
+- `zig build`: passed after implementation.
+- Focused `go test -count=1 -v -run '^TestCompiler_ConstructorArguments$' .`:
+  **80 rejection cases and two exact-output programs passed**, 2.830s (body 2.41s).
+- First final `zig build test`: **141 discovered, 122 passed, 18 skipped, zero
+  assertion failures, one compile error**, 44.34s. Unchanged `semantics/basic.dr`
+  hit a Zig cache FileNotFound opening SDK
+  `lib/libc/mingw/lib64/api-ms-win-crt-private-l1-1-0.def`. That path was absent
+  when checked. Focused `python codex/test_cli.py run --pattern
+  '**/semantics/basic.dr'` then passed **1/1**, 0.80s. Report:
+  `test_results/test_results_20261111_053344_windows.json`.
+- Full retry: **141 discovered, 122 passed, 18 skipped, zero assertion failures,
+  one compile error**, 44.21s. Unchanged `inheritance_basic.dr` hit libzigc
+  `file_open Unexpected` on SDK `lib/std/math/big.zig`; that path exists.
+  Report: `test_results/test_results_20261111_053501_windows.json`.
+- Windows Go quick from `codex/go`, `powershell -NoProfile -ExecutionPolicy Bypass
+  -File ./build_and_test.ps1 quick`: **all nine groups passed**, 12.690s. Includes
+  80 constructor rejections/two exact-output programs (1.85s), 82 method rejections/
+  two programs, 38 diagnostic cases, arena growth, warnings, four loop settings,
+  25 modules, and literal emission/failure checks. Compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, 0.038s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; inspect native P0011 CI after publication.
+- Final unchanged `zig build test` after quick/cross-build: **141 discovered,
+  123 passed, 18 skipped, zero failures/errors**, 43.93s. Both new Dream entries
+  passed. Report: `test_results/test_results_20261111_053712_windows.json`.
+- Full diff review, local links, new constructor anchor, source paths, Go formatting,
+  quick/CI selection, PowerShell BOM and `git diff --check` passed. Twelve pre-existing
+  broken type-system links are unchanged from the parent.
+
+The earlier full attempts did not pass; the changing SDK/cache failures did not
+recur in the final run, and their cause remains unproven. No SDK/cache content or
+permissions, assertions, exclusions, implementation or fixtures changed between
+full attempts and the final pass. Restricted execution could not locate Zig's SDK;
+compiler checks used approved installed-toolchain/cache access. Restricted fetch
+failed DNS; approved fetch passed. P0010 Linux/Windows CI run 42816446088 passed.
+
+The initial new focused fixtures exposed unsupported custom-type parameter syntax
+that stalls parsing, and module/function/import name collisions. The nested test
+now uses the supported primitive expression `new Child(1.5).value`; diagnostic and
+once-only assertions remain intact. Positive names were corrected, with no weakened
+assertions or exclusions. T007 records parser recovery as the next task.
+
+The same 18 unannotated skips and existing module/graphics/concurrency exclusions
+remain. Pointer/array shapes, custom-type compatibility, primitive pointer parameter
+emission, field initializers and implicit inherited construction remain unqualified/
+unsupported. See [P0011](passes/P0011-constructor-arguments.md) and [STATE.md](STATE.md).
+Publication requires the pass commit and matching remote SHA. Ignored evidence:
+`build/P0011-*.log`, including baseline, pre-change, focused attempts, full-suite
+attempts, quick, Python and cross-build.
+
+---
+
+## Historical P0010 recovery checkpoint - November 10, 2026
+
+**Date:** November 10, 2026 UTC
+
+**Pass:** P0010 - primitive scalar method arguments; validation recovered
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+
+## Current measured state
+
+- `zig build test`: **139 discovered, 121 passed, 18 skipped, zero failures/errors**,
+  47.48s. Report: `test_results/test_results_20261110_052829_windows.json`.
+  Both new annotated method-argument entries passed.
+- From `codex/go`, `powershell -NoProfile -ExecutionPolicy Bypass -File
+  ./build_and_test.ps1 quick`: **all eight groups passed**, 10.964s. The protocol
+  rebuilds the compiler and uses `-count=1`. It includes **82 method argument
+  rejections and two exact-output programs** (2.19s focused group), 38 diagnostic
+  cases, arena growth, nonfatal warnings, four loop optimization settings,
+  25 module cases, and literal emission/failure checks.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.052s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; inspect native CI after publication.
+- Full diff review and `git diff --check` passed. All **29 local link occurrences**
+  resolve; 12 legacy broken links in the type-system guide are unchanged from HEAD.
+  The method anchor, regression paths, quick/CI selection, PowerShell BOM, and Go
+  formatting were verified. Publication requires a matching remote SHA.
+
+This recovers the existing P0010 pass; no new feature or pass ID was started.
+Restricted fetch failed DNS; approved fetch passed and the remote still matched
+P0009. Restricted `zig build test` could not locate the installed SDK; compiler
+checks used approved SDK/cache access. Earlier changing SDK/cache file-open errors
+did not recur. Their cause remains unproven. No SDK/cache content or permissions,
+tests, assertions, exclusions, or implementation changed during recovery.
+Ignored evidence: `build/P0010-recovery-{full-suite,full-suite-approved,go-quick,
+python,linux-cross-build}.log`.
+
+The same 18 unannotated entries remain skipped/unverified; supporting module fixtures
+and graphics/concurrency exclusions are unchanged. Pointer/array/custom method
+argument shapes, implicit constructor checks, and pointer parameter C emission remain
+unqualified. See [P0010](passes/P0010-method-arguments.md) and [STATE.md](STATE.md)
+for historical failures, scope, and next steps. P0009 CI run 42481471439 remains
+successful; P0010 native CI must be inspected after publication.
+
+---
+
+## Historical P0010 implementation checkpoint - November 9, 2026
+
+**Date:** November 9, 2026 UTC
+
+**Pass:** P0010 - primitive scalar method arguments; **validation/delivery blocked**
+
+**Branch/platform:** `codex/compiler-stabilization`, primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+
+## Current measured state
+
+- Unchanged `zig build test`: **137 discovered, 119 passed, 18 skipped, zero
+  failures/errors**, 47.31s.
+- Pre-change focused Go float-to-int rejection failed: compiler returned 0 and
+  created C instead of issuing a Dream argument diagnostic.
+- `zig build`: **passed** after implementation.
+- Focused `go test -count=1 -v -run '^TestCompiler_MethodArguments$' .`: **80
+  rejections and two exact-output programs passed**, 2.925s. Final quick adds a
+  nested-invalid-argument case in each mode for **82 rejections**.
+- First final `zig build test`: **139 discovered, 120 passed, 18 skipped, zero
+  assertion failures, one compile error**, 44.64s. Unchanged `test_debug_simple.dr`
+  failed Zig mingw cache `file_open Unexpected` on SDK `misc/__winitenv.c`.
+- Referenced SDK file exists. Focused `python codex/test_cli.py run --pattern
+  '**/test_debug_simple.dr'`: **1 passed**, no skips/failures/errors, 0.81s.
+- Full-suite retry: **139 discovered, 119 passed, 18 skipped, zero assertion
+  failures, two compile errors**, 50.37s. Unchanged `string_array.dr` and
+  `global_release.dr` hit the same mingw error on SDK `libsrc/power-uuid.c` and
+  `gdtoa/g_xfmt.c`; both files exist. **Neither full run passed.** Latest report:
+  `test_results/test_results_20261109_053831_windows.json`.
+- Windows Go quick protocol: **failed**, 11.233s. Default loop compilation hit
+  Zig `libzigc` cache `file_open Unexpected` on SDK `std/zig/string_literal.zig`.
+  The `-O1`/`-O2`/`-O3` loop cases passed. Seven other groups passed: 38 diagnostics,
+  arena growth, warnings, 25 module cases, literal emission/failures, and method
+  arguments (**82 rejections and two exact-output programs**). All external
+  compiler tests use `-count=1`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.045s.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally; no P0010 commit/native CI exists.
+
+Both new annotated entries passed in both complete runs. The initial new positive
+fixture failed because existing `int*` method parameters emit C `int`, so null was
+rejected by the host compiler. That deferred pointer assumption was removed from
+the scalar fixture; a separate negative case with a pointer parameter and mismatched
+second scalar requires exactly one scalar diagnostic. Pointer/array emission and
+shape compatibility are not qualified by this pass. No existing test was removed,
+excluded, or weakened.
+
+Restricted baseline could not locate Zig's installation; compiler checks used
+approved toolchain/cache access. SDK/cache contents and permissions were unchanged.
+The changing file-open failures resemble earlier checkpoints but their cause is
+unproven. Required full/quick validation must pass before P0010 commit/publication.
+Preserve the uncommitted work; recover this pass instead of allocating another ID.
+Ignored evidence: `build/P0010-{baseline,baseline-approved,rejection-before,build,
+focused-go,focused-go-fixed,full-suite,focused-debug,full-suite-retry,python,
+go-quick,linux-cross-build}.log`.
+
+P0009 [CI run 42481471439](https://github.com/Ddemon26/DreamCompiler/actions/runs/42481471439)
+passed on Linux and Windows before this pass. The same 18 entry skips, supporting
+modules, and graphics/concurrency exclusions remain. See
+[P0010](passes/P0010-method-arguments.md) for recovery and scope limits.
+
+---
+
+## Historical P0009 test checkpoint
+
+**Date:** November 8, 2026 UTC
+
+**Pass:** P0009 - checked literal arithmetic reaches emitted C/object code
+
+**Branch/platform:** `codex/compiler-stabilization`, attached primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+
+## Current measured state
+
+- Unchanged baseline `zig build test`: **136 discovered, 118 passed, 18 skipped,
+  zero failures/errors**, 42.56s.
+- Final `zig build test`: **137 discovered, 119 passed, 18 skipped, zero failures/
+  errors**, 39.12s. New annotated literal regression checks 49, 65, 2147483646, 0.
+  Report: `test_results/test_results_20261108_053647_windows.json`.
+- Focused `python codex/test_cli.py run --pattern '**/literal_arithmetic.dr'`:
+  **1 passed**, zero skips/failures/errors, 0.79s.
+- Focused Go `go test -count=1 -v -run 'TestCompiler_Literal(Emission|Failures)$' .`
+  from `codex/go`: **passed**, 3.508s after the object header fix.
+- Windows Go quick protocol from `codex/go`, `powershell -NoProfile -ExecutionPolicy
+  Bypass -File ./build_and_test.ps1 quick`: **all seven groups passed**, 9.343s,
+  including 38 diagnostic cases, arena growth, warnings, four loop settings,
+  25 module cases, literal emission, and literal internal failures.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.046s.
+- `zig build` and `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`:
+  **passed**. Linux executables were not run locally; P0009 native behavior awaits CI.
+
+The emission matrix inspects generated C before host compilation and then compares
+exact output at default/`-O1`/`-O2`/`-O3`. It covers nested/zero/boundary arithmetic,
+free functions, methods, imported functions/source mapping, side effects, unsupported
+whole-tree fallback, accepted/rejected operation/depth bounds, and object success/
+nonzero host failure. Undefined overflow/division-by-zero examples are inspected
+only. The UBSan C harness checks controlled SCCP/arena allocation failures, a
+transformed-root mismatch, bounded nonconvergence, metadata, and atomic replacement.
+Fault controls exist only in test code, with no production bypass paths.
+
+Initial focused checks passed C/runtime settings and the allocation harness but
+failed object compilation on missing `../libs/console.h` from temporary C. The common
+emitter's header paths and object status propagation were fixed; final focused and
+quick checks passed. No test exclusions or assertions were weakened.
+Restricted baseline could not access Zig's installation directory; approved installed
+toolchain/cache access passed. No SDK/cache repair or deletion was performed.
+
+Ignored logs: `build/P0009-{baseline,baseline-approved,build,focused-go,
+focused-go-fixed,focused-dream,full-suite,python,go-quick,linux-cross-build}.log`.
+
+P0008 CI run [42373515160](https://github.com/Ddemon26/DreamCompiler/actions/runs/42373515160)
+succeeded on Linux and Windows before this pass. P0009's local Linux cross-build
+is separate evidence. The same 18 unannotated entries remain skipped/unverified;
+supporting modules and graphics/concurrency exclusions are unchanged. General IR
+emission/SSA and loop transformations remain unqualified. See
+[P0009](passes/P0009-literal-emission.md) for limits and the delivery handoff.
+
+---
+
+## Historical P0007 test checkpoint
+
+**Date:** November 6, 2026 UTC (local reports also use November 6)
+
+**Pass:** P0007 - optimized loop compilation stability and one checked skipped entry
+
+**Branch/platform:** `codex/compiler-stabilization`, attached primary checkout, Windows
+
+**Toolchain:** Zig 0.17.1, re2c 3.0, Python 3.13.15, Go 1.27.0
+
+## Current measured state
+
+- Unchanged baseline `zig build test`: **136 discovered, 117 passed, 19 skipped,
+  zero failures/errors** (49.32s). The loop fixture was skipped for missing metadata.
+- Final `zig build test`: **136 discovered, 118 passed, 18 skipped, zero failures/
+  errors** (42.32s). The same loop source now checks results 112 and 8 at `-O2`.
+  Report: `test_results/test_results_20261106_053355_windows.json`.
+- Focused `python codex/test_cli.py run --pattern '**/test_loop_opt.dr'`: **1 passed**,
+  zero skips/failures/errors (0.85s).
+- Focused Go `go test -count=1 -v -run '^TestCompiler_LoopsAtOptimizationLevels$' .`
+  from `codex/go`: **default, -O1, -O2, -O3 all passed**, printing exactly 112 and 8
+  (7.60s test body, 8.141s Go result).
+- Windows Go quick protocol from `codex/go`, `powershell -NoProfile -ExecutionPolicy
+  Bypass -File ./build_and_test.ps1 quick`: **all five groups passed**, including
+  38 diagnostic cases, arena growth, nonfatal warnings, four loop optimization settings,
+  and 25 module cases (`-count=1`, 7.065s).
+- `python -m unittest discover -s codex/python -p test_test_manager.py`: **5 passed**
+  (0.045s).
+- `zig build` and `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **passed**.
+  Linux binaries were not executed locally. P0007 native Linux behavior awaits CI.
+- Diff review, local handoff links, quick/CI selection, PowerShell BOM preservation,
+  and `git diff --check` checked before commit.
+
+The new Go matrix initially failed at `-O1`/`-O2`/`-O3` with heap corruption exit
+`0xc0000374`; default succeeded. SCCP negative table indices and LICM shared instruction
+ownership were repaired. Intermediate `-O2` runs stalled because LICM/loop analysis
+reported changes without transformations; only this run's identified processes were
+stopped. An intermediate rebuild hit AccessDenied while its executable was still
+running; it passed after that process stopped. The final checks above all passed.
+No test exclusions or assertions were weakened. Full details and the remaining 18
+unannotated entries are in [P0007](passes/P0007-loop-optimization-stability.md).
+
+Restricted execution could not locate Zig's installation; compiler checks used approved
+installed-toolchain/cache access. No SDK/cache repair or deletion was performed. Logs:
+`build/P0007-{baseline,build,focused-go,focused-go-sccp,focused-go-fixed,focused-dream,
+full-suite,go-quick,python,linux-cross-build}.log`. Intermediate failures are diagnostic
+evidence, not successful validation. Optimized IR still does not feed C emission, so
+these results do not prove optimizer transformations or performance gains.
+
+Supporting modules remain fixtures; four graphics and four concurrency examples remain
+outside the suite. Recursive legacy Go/cgo tests remain unsupported. P0006 CI run
+42135769585 succeeded on Linux and Windows before this pass began. P0006 recovery
+results were 117 passes, 19 skips, zero failures/errors (46.57s), all four then-current
+Go quick groups, five runner tests, and a Linux cross-build; those historical recovery
+results are recorded in [P0006](passes/P0006-member-access-diagnostics.md).
+
+## Historical P0006 implementation checks - November 5, 2026
+
+- Unchanged baseline `zig build test`: **133 discovered, 114 passed, 19 skipped,
+  0 failed, 0 errors** (41.39s).
+- First post-change `zig build test`: **136 discovered, 115 passed, 19 skipped,
+  0 assertion failures, 2 compile errors** (37.85s). Unchanged `method.dr` and
+  `multi_decl.dr` hit Zig libubsan/cache `file_open Unexpected` errors referencing
+  SDK files `lib/std/os/linux/powerpc.zig` and `lib/std/array_hash_map.zig`.
+- Full-suite retry: **136 discovered, 116 passed, 19 skipped, 0 assertion failures,
+  1 compile error** (37.06s). Unchanged `bool_array.dr` hit a libubsan/cache file-open
+  error referencing `lib/std/Build/Step/CheckFile.zig`. Report:
+  `test_results/test_results_20261105_053133_windows.json`. **Neither attempt passed.**
+- From `codex/go`, `go test -count=1 -v -run
+  'TestCompiler_(DiagnosticExitStatus|Modules)$' .`: **38 diagnostic and 25 module
+  cases passed**, including useful source locations and no artifacts for rejections.
+- Windows Go quick protocol from `codex/go`,
+  `powershell -NoProfile -ExecutionPolicy Bypass -File ./build_and_test.ps1 quick`:
+  first run failed in unchanged module case `entry_class` with a mingw-w64 crt2.o
+  cache file-open error referencing `lib/include/avx512vlbf16intrin.h`.
+  **Retry passed all four groups** (38 diagnostics, arena growth, nonfatal warnings,
+  25 modules; compiler tests use `-count=1`).
+- `python codex/test_cli.py run --pattern '**/*member*.dr'`: **6 discovered, 6 passed,
+  0 skipped, 0 failed, 0 errors** (1.51s).
+- `python -m unittest discover -s codex/python -p test_test_manager.py`: **5 passed**.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux`: **succeeded**.
+  Linux executables were not run locally. P0005 CI run 41833228164 succeeded;
+  P0006 has not been published or checked by CI.
+- Diff review, local handoff link checks, and `git diff --check` passed.
+
+Compiler checks used approved installed-toolchain access after the initial restricted
+`zig build test` could not locate Zig's installation directory. Restricted fetch first
+failed DNS resolution; approved fetch succeeded. The first three referenced SDK files
+were present when checked. The changing file-open errors resemble P0005's earlier
+errors; their root cause remains unproven. No SDK/cache repair, deletion, or override
+was performed. No tests were excluded or assertions weakened.
+
+Ignored logs: `build/P0006-baseline.log`, `build/P0006-focused-go.log`,
+`build/P0006-full-suite.log`, `build/P0006-full-suite-retry.log`,
+`build/P0006-go-quick.log`, `build/P0006-go-quick-retry.log`,
+`build/P0006-focused-dream.log`, and `build/P0006-linux-cross-build.log`.
+
+The same 19 unannotated entries remain skipped; supporting modules remain fixtures.
+Four graphics and four concurrency fixtures remain outside the regular suite.
+Legacy recursive cgo tests remain unsupported; use the Go quick protocol.
+Method argument type/shape checking and class field declaration initializer analysis
+remain incomplete. See [P0006](passes/P0006-member-access-diagnostics.md) and
+[STATE.md](STATE.md) for the recovered validation and publication handoff.
+
+## Historical Windows report - July 20, 2025
+
 **Date:** July 20, 2025  
 **Platform:** Windows  
 **Test Runner:** Python test_cli.py  

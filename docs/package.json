@@ -1,0 +1,8 @@
+{
+  "name": "dreamcompiler-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test site.test.mjs"
+  }
+}

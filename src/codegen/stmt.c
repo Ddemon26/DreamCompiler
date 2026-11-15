@@ -1,13 +1,27 @@
 #include "stmt.h"
+#include "../sem/analysis.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static CGTypeInfo *g_types = NULL;
 static size_t g_type_len = 0;
+static Node *g_program = NULL;
+
+void cg_register_program(Node *program) { g_program = program; }
+
+Node *cg_function(Slice name) {
+  if (!g_program) return NULL;
+  for (size_t i = 0; i < g_program->as.block.len; ++i) {
+    Node *node = g_program->as.block.items[i];
+    if (node->kind == ND_FUNC && node->as.func.name.len == name.len &&
+        memcmp(node->as.func.name.start, name.start, name.len) == 0) return node;
+  }
+  return NULL;
+}
 
 static void emit_func_impl(COut *b, Slice prefix, Node *n,
-                           const char *src_file);
+                           const char *src_file, bool external);
 
 /**
  * Emits a #line directive for enhanced debugging if the node has position info.
@@ -32,6 +46,18 @@ static void emit_debug_line(COut *b, Node *n, const char *src_file, const char *
 void cg_register_types(CGTypeInfo *types, size_t n) {
   g_types = types;
   g_type_len = n;
+}
+
+Node *cg_type_decl(Slice name) {
+  for (size_t i = 0; i < g_type_len; ++i) {
+    if (g_types[i].name.len == name.len &&
+        strncmp(g_types[i].name.start, name.start, name.len) == 0) return g_types[i].decl;
+  }
+  return NULL;
+}
+
+Node *cg_member(Slice type, Slice name, Node **owner) {
+  return sem_find_member(cg_type_decl(type), name, owner);
 }
 
 int cg_is_class_type(Slice name) {
@@ -106,7 +132,30 @@ static void emit_type_with_pointer(COut *b, TokenKind k, Slice name, int is_poin
   }
 }
 
+void emit_func_prototype(COut *b, Node *n, bool external) {
+  bool main_function = n->as.func.name.len == 4 && memcmp(n->as.func.name.start, "main", 4) == 0;
+  c_out_write(b, "%s%s %.*s(", (main_function || external) ? "" : "static ",
+              n->as.func.is_async ? "Task*" : type_to_c(n->as.func.ret_type),
+              (int)n->as.func.name.len, n->as.func.name.start);
+  if (!n->as.func.param_len) c_out_write(b, "void");
+  for (size_t i = 0; i < n->as.func.param_len; ++i) {
+    if (i) c_out_write(b, ", ");
+    Node *p = n->as.func.params[i];
+    emit_type_with_pointer(b, p->as.var_decl.type, p->as.var_decl.type_name,
+                           p->as.var_decl.is_pointer);
+  }
+  c_out_write(b, ");\n");
+}
+
 void emit_type_decl(COut *b, Node *n, const char *src_file) {
+  for (size_t i = 0; i < g_type_len; ++i) {
+    if (g_types[i].decl == n) {
+      if (g_types[i].emitted) return;
+      g_types[i].emitted = 1;
+      break;
+    }
+  }
+  if (n->as.type_decl.base_decl) emit_type_decl(b, n->as.type_decl.base_decl, src_file);
   const char *type_kind = (n->kind == ND_CLASS_DECL) ? "class" : "struct";
   c_out_write(b, "/* Dream %s %.*s", type_kind, (int)n->as.type_decl.name.len,
               n->as.type_decl.name.start);
@@ -122,60 +171,20 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
   c_out_newline(b);
   c_out_indent(b);
   
-  // If this is a class with inheritance, inline the base class fields  
-  // This allows direct access to inherited fields without base.field indirection
-  if (n->kind == ND_CLASS_DECL && n->as.type_decl.base_name.len > 0) {
-    c_out_write(b, "/* Inherited fields from %.*s: */",
-                (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start);
-    c_out_newline(b);
-    
-    // TODO: This is a simplified implementation
-    // In a complete implementation, we would need to:
-    // 1. Look up the base class AST node during compilation
-    // 2. Recursively inline all its fields (including its base class fields)
-    // 3. Handle potential name conflicts and method overrides
-    
-    // For now, manually inline common base class fields
-    // This is a temporary workaround - the proper solution requires
-    // semantic analysis improvements to track class definitions
-    
-    // Hardcoded common fields for testing - TODO: Make this dynamic
-    char base_name[256];
-    snprintf(base_name, sizeof(base_name), "%.*s", (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start);
-    
-    if (strcmp(base_name, "Animal") == 0) {
-      // Manually inline Animal fields for testing
-      c_out_write(b, "int age; /* inherited from Animal */");
-      c_out_newline(b);
-      c_out_write(b, "const char * name; /* inherited from Animal */");
-      c_out_newline(b);
-    } else if (strcmp(base_name, "Mammal") == 0) {
-      // Manually inline Mammal fields (which includes Animal fields)
-      c_out_write(b, "int age; /* inherited from Animal via Mammal */");
-      c_out_newline(b);
-      c_out_write(b, "const char * name; /* inherited from Animal via Mammal */");
-      c_out_newline(b);
-      c_out_write(b, "const char * furColor; /* inherited from Mammal */");
-      c_out_newline(b);
-    } else if (strcmp(base_name, "Vehicle") == 0) {
-      // Manually inline Vehicle fields for assignment compatibility test
-      c_out_write(b, "int wheels; /* inherited from Vehicle */");
-      c_out_newline(b);
-    } else {
-      // For unknown base classes, fall back to embedding
-      c_out_write(b, "struct %.*s base; /* inherited from %.*s - dynamic flattening not implemented */",
-                  (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start,
-                  (int)n->as.type_decl.base_name.len, n->as.type_decl.base_name.start);
-      c_out_newline(b);
-    }
+  // An actual base subobject preserves its layout and makes upcasts well-defined.
+  if (n->as.type_decl.base_decl) {
+    Slice base_name = n->as.type_decl.base_decl->as.type_decl.name;
+    c_out_write(b, "struct %.*s base;\n", (int)base_name.len, base_name.start);
   }
   
   for (size_t i = 0; i < n->as.type_decl.len; i++) {
     Node *m = n->as.type_decl.members[i];
     if (m->kind == ND_VAR_DECL && !m->as.var_decl.is_static) {
-      emit_type(b, m->as.var_decl.type, m->as.var_decl.type_name);
-      c_out_write(b, " %.*s;", (int)m->as.var_decl.name.len,
+      emit_type_with_pointer(b, m->as.var_decl.type, m->as.var_decl.type_name, m->as.var_decl.is_pointer);
+      c_out_write(b, " %.*s", (int)m->as.var_decl.name.len,
                   m->as.var_decl.name.start);
+      if (m->as.var_decl.array_len) c_out_write(b, "[%zu]", m->as.var_decl.array_len);
+      c_out_write(b, ";");
       c_out_newline(b);
     }
   }
@@ -201,7 +210,7 @@ void emit_type_decl(COut *b, Node *n, const char *src_file) {
     Node *m = n->as.type_decl.members[i];
     if (m->kind == ND_FUNC) {
       if (m->as.func.is_static)
-        emit_func_impl(b, n->as.type_decl.name, m, src_file);
+        emit_func_impl(b, n->as.type_decl.name, m, src_file, false);
       else
         emit_method(b, n->as.type_decl.name, m, src_file);
     }
@@ -241,7 +250,7 @@ void emit_enum_decl(COut *b, Node *n, const char *src_file) {
 }
 
 static void emit_func_impl(COut *b, Slice prefix, Node *n,
-                           const char *src_file) {
+                           const char *src_file, bool external) {
   if (n->pos.line)
     c_out_write(b, "#line %zu \"%s\"\n", n->pos.line, src_file);
   c_out_write(b, "/* Dream function %.*s", (int)n->as.func.name.len,
@@ -324,8 +333,8 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
       c_out_write(b, "static %s %.*s_%.*s(", type_to_c(n->as.func.ret_type),
                   (int)prefix.len, prefix.start, (int)n->as.func.name.len,
                   n->as.func.name.start);
-    else if (n->as.func.name.len == 4 &&
-             strncmp(n->as.func.name.start, "main", 4) == 0)
+    else if (external || (n->as.func.name.len == 4 &&
+             strncmp(n->as.func.name.start, "main", 4) == 0))
       c_out_write(b, "%s %.*s(", type_to_c(n->as.func.ret_type),
                   (int)n->as.func.name.len, n->as.func.name.start);
     else
@@ -336,7 +345,9 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
     Node *p = n->as.func.params[i];
     if (i)
       c_out_write(b, ", ");
-    c_out_write(b, "%s %.*s", type_to_c(p->as.var_decl.type),
+    emit_type_with_pointer(b, p->as.var_decl.type, p->as.var_decl.type_name,
+                           p->as.var_decl.is_pointer);
+    c_out_write(b, " %.*s",
                 (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
   }
   c_out_write(b, ") ");
@@ -376,10 +387,7 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
     cgctx_scope_enter(&ctx);
     for (size_t i = 0; i < n->as.func.param_len; i++) {
       Node *p = n->as.func.params[i];
-      cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
-                 p->as.var_decl.type,
-                 p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
-                                                 : (Slice){NULL, 0});
+      cgctx_push_decl(&ctx, p);
     }
     cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
     cgctx_scope_leave(&ctx);
@@ -388,8 +396,8 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
   c_out_newline(b);
 }
 
-void emit_func(COut *b, Node *n, const char *src_file) {
-  emit_func_impl(b, (Slice){NULL, 0}, n, src_file);
+void emit_func(COut *b, Node *n, const char *src_file, bool external) {
+  emit_func_impl(b, (Slice){NULL, 0}, n, src_file, external);
 }
 
 void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
@@ -412,7 +420,10 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
               (int)class_name.len, class_name.start);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
-    c_out_write(b, ", %s %.*s", type_to_c(p->as.var_decl.type),
+    c_out_write(b, ", ");
+    emit_type_with_pointer(b, p->as.var_decl.type, p->as.var_decl.type_name,
+                           p->as.var_decl.is_pointer);
+    c_out_write(b, " %.*s",
                 (int)p->as.var_decl.name.len, p->as.var_decl.name.start);
   }
   c_out_write(b, ") ");
@@ -422,15 +433,57 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
   cgctx_push(&ctx, "this", 4, TK_IDENT, class_name);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
     Node *p = n->as.func.params[i];
-    cgctx_push(&ctx, p->as.var_decl.name.start, p->as.var_decl.name.len,
-               p->as.var_decl.type,
-               p->as.var_decl.type == TK_IDENT ? p->as.var_decl.type_name
-                                               : (Slice){NULL, 0});
+    cgctx_push_decl(&ctx, p);
   }
   cg_emit_stmt(&ctx, b, n->as.func.body, src_file);
   cgctx_scope_leave(&ctx);
   free(ctx.vars);
   c_out_newline(b);
+}
+
+static void emit_scope_cleanup(CGCtx *ctx, COut *b, size_t start) {
+  for (size_t i = ctx->len; i-- > start;) {
+    VarBinding *v = &ctx->vars[i];
+    // String arrays are C storage and explicit pointers borrow their target.
+    // Neither binding owns a scalar string allocation or its borrowed elements.
+    if ((v->type == TK_KW_STRING && v->indirections == 0) ||
+        (v->type == TK_IDENT && cg_is_class_type(v->type_name))) {
+      c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
+    }
+  }
+}
+
+static int copies_string_initializer(Node *init) {
+  return init && (init->kind == ND_INDEX || init->kind == ND_STRING ||
+                  init->kind == ND_IDENT || init->kind == ND_FIELD ||
+                  init->kind == ND_BASE || init->kind == ND_CALL);
+}
+
+static void emit_loop_body(CGCtx *ctx, COut *b, Node *body,
+                           const char *src_file) {
+  CGControlTarget target = {ctx->len, 1, ctx->control_target};
+  ctx->control_target = &target;
+  cg_emit_stmt(ctx, b, body, src_file);
+  ctx->control_target = target.parent;
+}
+
+static void emit_control_jump(CGCtx *ctx, COut *b, int is_continue) {
+  CGControlTarget *target = ctx->control_target;
+  while (target && is_continue && !target->is_loop) target = target->parent;
+  // A compound statement keeps cleanup conditional for an unbraced if body.
+  // Do not pop emitter bindings: other branches still need their scope metadata.
+  c_out_write(b, "{\n");
+  c_out_indent(b);
+  if (target) {
+    for (size_t i = ctx->len; i-- > target->binding_start;) {
+      VarBinding *v = &ctx->vars[i];
+      if (v->owns_string)
+        c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
+    }
+  }
+  c_out_write(b, "%s;\n", is_continue ? "continue" : "break");
+  c_out_dedent(b);
+  c_out_write(b, "}\n");
 }
 
 void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
@@ -507,18 +560,36 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
                   n->as.var_decl.name.start);
       if (n->as.var_decl.init) {
         c_out_write(b, " = ");
-        cg_emit_expr(ctx, b, n->as.var_decl.init);
+        // Literals have static storage; indexed, identifier, member and call
+        // values may be borrowed. Calls do not transfer ownership here.
+        // Give these scalar declarations their own allocation for block cleanup.
+        int copy_string = n->as.var_decl.type == TK_KW_STRING &&
+                          !n->as.var_decl.is_pointer &&
+                          copies_string_initializer(n->as.var_decl.init);
+        if (copy_string) c_out_write(b, "dream_string_copy(");
+        cg_emit_value_as(ctx, b, n->as.var_decl.type_name, n->as.var_decl.init);
+        if (copy_string) c_out_write(b, ")");
+      } else if (n->as.var_decl.type == TK_KW_STRING &&
+                 !n->as.var_decl.is_pointer) {
+        // An empty scalar slot must be safe to replace and clean up.
+        c_out_write(b, " = NULL");
       }
     }
-    cgctx_push(ctx, n->as.var_decl.name.start, n->as.var_decl.name.len,
-               n->as.var_decl.type,
-               n->as.var_decl.type == TK_IDENT ? n->as.var_decl.type_name
-                                               : (Slice){NULL, 0});
+    cgctx_push_decl(ctx, n);
+    if (n->as.var_decl.type == TK_KW_STRING &&
+        !n->as.var_decl.array_len && !n->as.var_decl.is_pointer) {
+      Node *init = n->as.var_decl.init;
+      ctx->vars[ctx->len - 1].owns_string =
+          !init || copies_string_initializer(init) || init->kind == ND_NULL ||
+          (init->kind == ND_CONSOLE_CALL && init->as.console.read) ||
+          (init->kind == ND_BINOP && init->as.bin.op == TK_PLUS &&
+           cg_is_string_expr(ctx, init));
+    }
     c_out_write(b, ";");
     c_out_newline(b);
     break;
   case ND_FUNC:
-    emit_func(b, n, src_file);
+    emit_func(b, n, src_file, false);
     break;
   case ND_IF:
     c_out_write(b, "if (");
@@ -534,52 +605,30 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_write(b, "while (");
     cg_emit_expr(ctx, b, n->as.while_stmt.cond);
     c_out_write(b, ") ");
-    cg_emit_stmt(ctx, b, n->as.while_stmt.body, src_file);
+    emit_loop_body(ctx, b, n->as.while_stmt.body, src_file);
     break;
   case ND_DO_WHILE:
     c_out_write(b, "do ");
-    cg_emit_stmt(ctx, b, n->as.do_while_stmt.body, src_file);
+    emit_loop_body(ctx, b, n->as.do_while_stmt.body, src_file);
     c_out_write(b, " while (");
     cg_emit_expr(ctx, b, n->as.do_while_stmt.cond);
     c_out_write(b, ");");
     c_out_newline(b);
     break;
-  case ND_FOR:
-    c_out_write(b, "for (");
-    if (n->as.for_stmt.init) {
-      if (n->as.for_stmt.init->kind == ND_VAR_DECL) {
-        Node *vd = n->as.for_stmt.init;
-        if (vd->as.var_decl.array_len > 0) {
-          if (vd->as.var_decl.is_const) {
-            c_out_write(b, "const ");
-          }
-          emit_type(b, vd->as.var_decl.type, vd->as.var_decl.type_name);
-          c_out_write(b, " %.*s[%zu]", (int)vd->as.var_decl.name.len,
-                      vd->as.var_decl.name.start, vd->as.var_decl.array_len);
-          if (vd->as.var_decl.init) {
-            c_out_write(b, " = ");
-            cg_emit_expr(ctx, b, vd->as.var_decl.init);
-          }
-        } else {
-          if (vd->as.var_decl.is_const) {
-            c_out_write(b, "const ");
-          }
-          emit_type(b, vd->as.var_decl.type, vd->as.var_decl.type_name);
-          c_out_write(b, " %.*s", (int)vd->as.var_decl.name.len,
-                      vd->as.var_decl.name.start);
-          if (vd->as.var_decl.init) {
-            c_out_write(b, " = ");
-            cg_emit_expr(ctx, b, vd->as.var_decl.init);
-          }
-        }
-        cgctx_push(ctx, vd->as.var_decl.name.start, vd->as.var_decl.name.len,
-                   vd->as.var_decl.type,
-                   vd->as.var_decl.type == TK_IDENT ? vd->as.var_decl.type_name
-                                                    : (Slice){NULL, 0});
-      } else {
-        cg_emit_expr(ctx, b, n->as.for_stmt.init);
-      }
+  case ND_FOR: {
+    Node *init = n->as.for_stmt.init;
+    int declaration = init && init->kind == ND_VAR_DECL;
+    size_t loop_start = ctx->len;
+    if (declaration) {
+      // Keep the binding alive through condition/body/update and release it
+      // after the loop, including zero iterations and a loop-targeting break.
+      c_out_write(b, "{\n");
+      c_out_indent(b);
+      cgctx_scope_enter(ctx);
+      cg_emit_stmt(ctx, b, init, src_file);
     }
+    c_out_write(b, "for (");
+    if (init && !declaration) cg_emit_expr(ctx, b, init);
     c_out_write(b, "; ");
     if (n->as.for_stmt.cond)
       cg_emit_expr(ctx, b, n->as.for_stmt.cond);
@@ -587,9 +636,18 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     if (n->as.for_stmt.update)
       cg_emit_expr(ctx, b, n->as.for_stmt.update);
     c_out_write(b, ") ");
-    cg_emit_stmt(ctx, b, n->as.for_stmt.body, src_file);
+    emit_loop_body(ctx, b, n->as.for_stmt.body, src_file);
+    if (declaration) {
+      emit_scope_cleanup(ctx, b, loop_start);
+      cgctx_scope_leave(ctx);
+      c_out_dedent(b);
+      c_out_write(b, "}\n");
+    }
     break;
-  case ND_SWITCH:
+  }
+  case ND_SWITCH: {
+    CGControlTarget target = {ctx->len, 0, ctx->control_target};
+    ctx->control_target = &target;
     c_out_write(b, "switch (");
     cg_emit_expr(ctx, b, n->as.switch_stmt.expr);
     c_out_write(b, ") {");
@@ -610,14 +668,14 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_dedent(b);
     c_out_write(b, "}");
     c_out_newline(b);
+    ctx->control_target = target.parent;
     break;
+  }
   case ND_BREAK:
-    c_out_write(b, "break;");
-    c_out_newline(b);
+    emit_control_jump(ctx, b, 0);
     break;
   case ND_CONTINUE:
-    c_out_write(b, "continue;");
-    c_out_newline(b);
+    emit_control_jump(ctx, b, 1);
     break;
   case ND_RETURN:
     if (ctx->is_async_worker) {
@@ -689,13 +747,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     cgctx_scope_enter(ctx);
     for (size_t i = 0; i < n->as.block.len; i++)
       cg_emit_stmt(ctx, b, n->as.block.items[i], src_file);
-    for (size_t i = ctx->len; i-- > block_start;) {
-      VarBinding *v = &ctx->vars[i];
-      if (v->type == TK_KW_STRING ||
-          (v->type == TK_IDENT && cg_is_class_type(v->type_name))) {
-        c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
-      }
-    }
+    emit_scope_cleanup(ctx, b, block_start);
     cgctx_scope_leave(ctx);
     c_out_dedent(b);
     c_out_write(b, "}");

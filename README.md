@@ -17,8 +17,9 @@ The compiler currently supports:
 - Increment/decrement and compound assignment operators
 - Ternary operator `?:` and string concatenation with `+`
 - Console input/output via `Console.ReadLine`, `Console.Write` and `Console.WriteLine`
+- Function imports across sibling source files with `--multi-file` ([module guide](docs/advanced-topics/modules.md))
 See [codex/FEATURES.md](codex/FEATURES.md) for the full list of implemented language features.
-See the [changelog](docs/v1.1/changelog.md) for details on recent additions.
+See the [changelog](docs/reference/changelog.md) for details on recent additions.
 
 ## Getting Started
 
@@ -30,8 +31,8 @@ The steps below show how to build and use Dream on Linux **or Windows**.
      sudo apt update && sudo apt install -y build-essential gcc git
      ```
    - On Windows run `codex\_startup.ps1` from an elevated PowerShell (requires Chocolatey). The script installs MinGW (with `gdb`) and other tools automatically.
-   - Install [Zig 0.15.0 or newer](https://ziglang.org/download/) and add `zig` to your `PATH`.
-   - Install the [Vulkan SDK](https://vulkan.lunarg.com/) and set the `VULKAN_SDK` environment variable to its install path so the build can locate the headers and loader.
+   - Install [Zig 0.17.1](https://ziglang.org/download/) and add `zig` to your `PATH`. CI and setup scripts use this version.
+   - The Vulkan SDK is optional and only needed for experimental graphics support.
 2. **Clone the repository**
    ```bash
    git clone https://github.com/Ddemon26/DreamCompiler.git
@@ -49,10 +50,15 @@ The steps below show how to build and use Dream on Linux **or Windows**.
    ```
 5. **Run the tests**
    ```bash
-   python codex/python/test_runner
+   python codex/test_cli.py run
    ```
 
 The resulting compiler binary is placed under `zig-out/bin`.
+
+The compiler now uses a Dream-written source newline normalizer. A C-only host
+bootstrap builds this helper before linking the production compiler; see the
+[dogfooding checkpoint](docs/development/compiler-dogfooding.md) for the build
+stages, library emission command, and remaining self-hosting work.
 
 ## Using the Compiler
 
@@ -72,9 +78,19 @@ Example programs can be found in the [tests](tests) directory.
 
 ## Documentation
 
-Documentation lives under [`docs`](docs). Open [docs/index.html](docs/index.html) in a browser or read [docs/index.md](docs/index.md) directly.
+Start with the maintained [documentation index](docs/index.md),
+[build guide](docs/development/compiler/build.md), and [testing guide](codex/TEST_GUIDE.md).
 
-See [Compiler Docs](docs/compiler/index.md) for compiler information and [Dream.dr Language](docs/language/index.md) for language guides.
+See [Compiler Docs](docs/development/compiler/index.md) for compiler information and [Dream.dr Language](docs/reference/language/index.md) for language guides.
+
+## Agent development
+
+Start with [AGENTS.md](AGENTS.md) and the [current handoff](tasks/STATE.md).
+The [daily workflow](docs/development/agent-workflow.md) explains one-pass development,
+numbered records, validation, and mandatory commit/push verification. Paste the
+[daily progress prompt](codex/prompts/daily-progress.md) into a project-scoped daily
+schedule using this existing local checkout, as required by the workflow. Completed passes are indexed in
+[tasks/passes](tasks/passes/README.md).
 
 # Ownership
 

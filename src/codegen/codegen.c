@@ -53,7 +53,8 @@ static bool has_async_functions(Node *n) {
   return false;
 }
 
-void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
+static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode,
+                   bool library_mode) {
   COut builder;
   c_out_init(&builder);
 
@@ -64,16 +65,24 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_write(&builder, "#include <setjmp.h>\n");
 
   // Include runtime headers from build/libs for distribution
-  c_out_write(&builder, "#include \"../libs/console.h\"\n");
-  c_out_write(&builder, "#include \"../libs/custom.h\"\n");
-  c_out_write(&builder, "#include \"../libs/memory.h\"\n");
-  c_out_write(&builder, "#include \"../libs/exception.h\"\n");
+  const char *prefix = object_mode ? "" : "../libs/";
+  c_out_write(&builder, "#include \"%sconsole.h\"\n", prefix);
+  c_out_write(&builder, "#include \"%scustom.h\"\n", prefix);
+  c_out_write(&builder, "#include \"%smemory.h\"\n", prefix);
+  c_out_write(&builder, "#include \"%sexception.h\"\n", prefix);
   
   // Only include task.h when async functions are used
   if (has_async_functions(root)) {
-    c_out_write(&builder, "#include \"../libs/task.h\"\n");
+    c_out_write(&builder, "#include \"%stask.h\"\n", prefix);
   }
   c_out_newline(&builder);
+
+  // Evaluate/copy the replacement before releasing the slot's current value.
+  // In particular, self-assignment and borrowed results can read that value.
+  c_out_write(&builder, "static char *__dream_string_assign(char **slot, const char *text) {\n");
+  c_out_write(&builder, "    char *copy = dream_string_copy(text);\n");
+  c_out_write(&builder, "    dr_release(*slot);\n");
+  c_out_write(&builder, "    *slot = copy;\n    return copy;\n}\n\n");
 
   // Initialize exception handling system
   c_out_write(&builder, "static void dream_init_runtime(void) {\n");
@@ -105,11 +114,13 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
             strncmp(m->as.func.name.start, "init", 4) == 0)
           has_init = 1;
       }
-      tinfo[tlen++] = (CGTypeInfo){it->as.type_decl.name,
-                                   it->kind == ND_CLASS_DECL, has_init};
+      tinfo[tlen++] = (CGTypeInfo){.name = it->as.type_decl.name,
+                                   .is_class = it->kind == ND_CLASS_DECL,
+                                   .has_init = has_init, .decl = it};
     }
   }
   cg_register_types(tinfo, tlen);
+  cg_register_program(root);
 
   char src_buf[512];
   size_t i = 0;
@@ -119,6 +130,13 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   src_buf[i] = 0;
   const char *src_norm = src_buf;
   c_out_write(&builder, "#line 1 \"%s\"\n", src_norm);
+
+  for (size_t i = 0; i < tlen; ++i)
+    c_out_write(&builder, "struct %.*s;\n", (int)tinfo[i].name.len, tinfo[i].name.start);
+  for (size_t i = 0; i < root->as.block.len; ++i) {
+    Node *node = root->as.block.items[i];
+    if (node->kind == ND_FUNC) emit_func_prototype(&builder, node, library_mode);
+  }
 
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
@@ -130,7 +148,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   for (size_t i = 0; i < root->as.block.len; i++) {
     Node *it = root->as.block.items[i];
     if (it->kind == ND_FUNC)
-      emit_func(&builder, it, src_norm);
+      emit_func(&builder, it, it->source_file ? it->source_file : src_norm, library_mode);
   }
 
   Slice main_class = {NULL, 0};
@@ -153,7 +171,7 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
     }
   }
 
-  if (has_main != 1) {
+  if (!library_mode && has_main != 1) {
     c_out_write(&builder, "int main(void){\n");
     c_out_indent(&builder);
     c_out_write(&builder, "dream_init_runtime();\n");
@@ -184,46 +202,62 @@ void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
   c_out_free(&builder);
   free(tinfo);
   cg_register_types(NULL, 0);
+  cg_register_program(NULL);
 }
 
-void codegen_emit_obj(Node *root, const char *path, const char *src_file) {
+void codegen_emit_c(Node *root, FILE *out, const char *src_file) {
+  emit_c(root, out, src_file, false, false);
+}
+
+void codegen_emit_library_c(Node *root, FILE *out, const char *src_file) {
+  emit_c(root, out, src_file, true, true);
+}
+
+int codegen_emit_obj(Node *root, const char *path, const char *src_file) {
 #ifdef _WIN32
   char tmp[L_tmpnam] = {0};
   if (tmpnam_s(tmp, L_tmpnam) != 0) {
     perror("tmpnam_s");
-    return;
+    return 0;
   }
   strcat(tmp, ".c");
   FILE *f = fopen(tmp, "w");
   if (!f) {
     perror("fopen");
-    return;
+    return 0;
   }
 #else
   char tmp[] = "/tmp/dreamXXXXXX.c";
   int fd = mkstemps(tmp, 2);
   if (fd == -1) {
     perror("mkstemps");
-    return;
+    return 0;
   }
   FILE *f = fdopen(fd, "w");
   if (!f) {
     perror("fdopen");
     close(fd);
     dr_unlink(tmp);
-    return;
+    return 0;
   }
 #endif
-  codegen_emit_c(root, f, src_file);
-  fclose(f);
-  char cmd[512];
-  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -g -c \"%s\" -o \"%s\"", tmp,
+  emit_c(root, f, src_file, true, false);
+  int write_failed = ferror(f);
+  if (fclose(f) != 0) write_failed = 1;
+  if (write_failed) {
+    fprintf(stderr, "failed to write object C source\n");
+    dr_unlink(tmp);
+    return 0;
+  }
+  char cmd[1024];
+  snprintf(cmd, sizeof(cmd), "zig cc -std=c11 -g -Isrc/runtime/io -Isrc/runtime/extensions -Isrc/runtime/memory -Isrc/runtime/exceptions -Isrc/runtime/system -c \"%s\" -o \"%s\"", tmp,
            path);
   int res = system(cmd);
   if (res != 0) {
     fprintf(stderr, "failed to run: %s\n", cmd);
     dr_unlink(tmp);
-    return;
+    return 0;
   }
   dr_unlink(tmp);
+  return 1;
 }

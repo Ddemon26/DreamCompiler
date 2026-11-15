@@ -1,267 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dream Compiler Documentation</title>
-    <link rel="stylesheet" href="index.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dream is an experimental language and compiler. Explore familiar syntax, readable C output, and a clear path to native code.">
+  <meta name="theme-color" content="#10141c">
+  <title>Dream — a language taking shape</title>
+  <link rel="stylesheet" href="index.css">
+  <script type="module" src="site.js"></script>
 </head>
 <body>
-<button id="theme-toggle" class="theme-toggle">Dark Mode</button>
-<div class="layout">
-    <aside class="sidebar">
-        <nav class="nav">
-            <h2>Documentation</h2>
-            <label for="version-select" class="version-label">Version:</label>
-            <select id="version-select">
-                <option value="v1.0">v1.0 (Stable)</option>
-                <option value="v1.1" selected>v1.1 (Current - v1.1.12)</option>
-            </select>
-            <ul>
-                <li><a href="#" data-md="index.md" class="nav-overview">Overview</a></li>
-                
-                <li class="category"><span>Getting Started</span>
-                    <ul>
-                        <li><a href="#" data-md="intro.md">Quick Start</a></li>
-                        <li><a href="#" data-md="usage.md">Installation & Usage</a></li>
-                    </ul>
-                </li>
-                
-                <li class="category"><span>Compiler</span>
-                    <ul>
-                        <li><a href="#" data-md="compiler/index.md">Architecture</a></li>
-                        <li><a href="#" data-md="compiler/intellisense.md">IDE Integration</a></li>
-                        <li><a href="#" data-md="compiler/build.md">Build System</a></li>
-                        <li><a href="#" data-md="compiler/testing.md">Testing Framework</a></li>
-                    </ul>
-                </li>
-                
-                <li class="category"><span>Language Reference</span>
-                    <ul>
-                        <li><a href="#" data-md="language-reference.md" class="nav-overview">Complete Reference</a></li>
-                        
-                        <li class="subcategory"><span>Type System</span>
-                            <ul>
-                                <li><a href="#" data-md="type-system.md">Type System Overview</a></li>
-                                <li><a href="#" data-md="variables.md">Variables & Types</a></li>
-                                <li><a href="#" data-md="arrays.md">Arrays</a></li>
-                                <li><a href="#" data-md="strings.md">Strings</a></li>
-                                <li><a href="#" data-md="classes.md">Classes & Structs</a></li>
-                            </ul>
-                        </li>
-                        
-                        <li class="subcategory"><span>Operators</span>
-                            <ul>
-                                <li><a href="#" data-md="operators.md">Operators Overview</a></li>
-                                <li><a href="#" data-md="arithmetic.md">Arithmetic</a></li>
-                                <li><a href="#" data-md="comparison.md">Comparison</a></li>
-                                <li><a href="#" data-md="logical.md">Logical</a></li>
-                                <li><a href="#" data-md="bitwise.md">Bitwise</a></li>
-                                <li><a href="#" data-md="conditional.md">Conditional</a></li>
-                            </ul>
-                        </li>
-                        
-                        <li class="subcategory"><span>Control Flow</span>
-                            <ul>
-                                <li><a href="#" data-md="control-flow.md">Control Flow Overview</a></li>
-                                <li><a href="#" data-md="if.md">If Statements</a></li>
-                                <li><a href="#" data-md="loops.md">Loops</a></li>
-                                <li><a href="#" data-md="switch.md">Switch Statements</a></li>
-                                <li><a href="#" data-md="exceptions.md">Exception Handling</a></li>
-                            </ul>
-                        </li>
-                        
-                        <li class="subcategory"><span>Functions</span>
-                            <ul>
-                                <li><a href="#" data-md="functions-overview.md">Functions Overview</a></li>
-                                <li><a href="#" data-md="functions.md">Function Definitions</a></li>
-                                <li><a href="#" data-md="return.md">Return Values</a></li>
-                                <li><a href="#" data-md="parameters.md">Parameters</a></li>
-                            </ul>
-                        </li>
-                        
-                        <li class="subcategory"><span>I/O & Console</span>
-                            <ul>
-                                <li><a href="#" data-md="console.md">Console Operations</a></li>
-                                <li><a href="#" data-md="input-output.md">Input/Output</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </li>
-                
-                <li class="category"><span>Advanced Features</span>
-                    <ul>
-                        <li><a href="#" data-md="modules.md">Multi-file Compilation</a></li>
-                        <li><a href="#" data-md="memory.md">Memory Management</a></li>
-                        <li><a href="#" data-md="interop.md">C Interoperability</a></li>
-                        <li><a href="#" data-md="vulkan.md">Vulkan Types</a></li>
-                    </ul>
-                </li>
-                
-                <li class="category"><span>Reference</span>
-                    <ul>
-                        <li><a href="#" data-md="grammar/Grammar.md">Grammar Specification</a></li>
-                        <li><a href="#" data-md="keywords.md">Keywords & Operators</a></li>
-                        <li><a href="#" data-md="runtime.md">Runtime Library</a></li>
-                        <li><a href="#" data-md="changelog.md">Changelog</a></li>
-                    </ul>
-                </li>
-                
-                <li class="category"><span>Examples</span>
-                    <ul>
-                        <li><a href="#" data-md="examples/basic.md">Basic Programs</a></li>
-                        <li><a href="#" data-md="examples/functions.md">Functions</a></li>
-                        <li><a href="#" data-md="examples/classes.md">Object-Oriented</a></li>
-                        <li><a href="#" data-md="examples/multifile.md">Multi-file Projects</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-    </aside>
-    <main class="main-content">
-        <div id="content">
-            <header>
-                <h1>Dream Compiler Documentation</h1>
-                <p>Welcome to the documentation for the Dream language and compiler. Use the sidebar to explore the available guides and features.</p>
-            </header>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="Dream home"><span class="brand-mark" aria-hidden="true">d</span>dream<span class="brand-context" id="brand-context" hidden>Documentation</span></a>
+    <nav class="header-nav" aria-label="Site navigation">
+      <a href="?doc=index.md" id="docs-link">Documentation</a>
+      <a href="./#home-examples" id="examples-link">Examples</a>
+      <a href="https://github.com/Ddemon26/DreamCompiler">GitHub <span aria-hidden="true">↗</span></a>
+      <button type="button" id="theme-toggle" aria-label="Switch to light theme">Light theme</button>
+    </nav>
+  </header>
+  <main id="main" tabindex="-1">
+    <div id="home-view" class="home-view">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">An experimental programming language</p>
+          <h1 id="hero-title">A small language.<br>A clear path<br>to <span class="accent-text">native.</span></h1>
+          <p class="lead">Familiar, C#-style syntax. Readable C output. Dream is a language and compiler you can build, explore, and help shape.</p>
+          <div class="actions"><a class="button button-primary" href="?doc=getting-started/quick-start.md">Get started <span aria-hidden="true">→</span></a><a class="button" href="?doc=index.md">Read the docs</a></div>
+          <p class="prerequisites">Built from source · Zig 0.17.1 · re2c</p>
         </div>
-    </main>
-</div>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const contentDiv = document.getElementById('content');
-        const navLinks = document.querySelectorAll('.nav a');
-        const themeToggle = document.getElementById('theme-toggle');
-        const themeLink = document.querySelector('link[rel="stylesheet"]');
-        const categories = document.querySelectorAll('.category');
-        const versionSelect = document.getElementById('version-select');
+        <div class="code-window" id="home-examples">
+          <div class="code-toolbar"><span id="example-filename">hello.dr</span><span>Dream</span></div>
+          <div class="example-tabs" role="tablist" aria-label="Dream examples">
+            <button type="button" id="hello-tab" role="tab" aria-selected="true" aria-controls="hello-panel">Hello, Dream</button>
+            <button type="button" id="functions-tab" role="tab" aria-selected="false" aria-controls="functions-panel" tabindex="-1">Functions</button>
+          </div>
+          <section id="hello-panel" role="tabpanel" aria-labelledby="hello-tab">
+            <pre><code class="language-dream"><span class="syntax-comment">// Every idea starts somewhere.</span>
+<span class="syntax-keyword">string</span> message = <span class="syntax-string">"Hello, Dream!"</span>;
+Console.WriteLine(message);</code></pre>
+            <div class="example-output"><span>Example output</span><pre>Hello, Dream!</pre></div>
+          </section>
+          <section id="functions-panel" role="tabpanel" aria-labelledby="functions-tab" hidden>
+            <pre><code class="language-dream"><span class="syntax-keyword">func int</span> add(<span class="syntax-keyword">int</span> a, <span class="syntax-keyword">int</span> b) {
+    <span class="syntax-keyword">return</span> a + b;
+}
 
-        // Apply saved theme
-        if (localStorage.getItem('theme') === 'dark') {
-            themeLink.setAttribute('href', 'index-dark.css');
-            themeToggle.textContent = 'Light Mode';
-        }
-
-        // Apply saved version
-        const savedVersion = localStorage.getItem('version') || 'v1.1';
-        versionSelect.value = savedVersion;
-
-        // Function to load and render markdown
-        async function loadMarkdown(file) {
-            try {
-                const response = await fetch(file);
-                if (!response.ok) throw new Error('Failed to load markdown file');
-                const markdown = await response.text();
-                contentDiv.innerHTML = marked.parse(markdown);
-                
-                // Add copy buttons to code blocks
-                addCopyButtons();
-            } catch (error) {
-                contentDiv.innerHTML = '<h1>Error</h1><p>Could not load the documentation page: ' + file + '</p>';
-            }
-        }
-
-        function addCopyButtons() {
-            const codeBlocks = contentDiv.querySelectorAll('pre');
-            codeBlocks.forEach(block => {
-                if (!block.querySelector('.copy-btn')) {
-                    const copyBtn = document.createElement('button');
-                    copyBtn.className = 'copy-btn';
-                    copyBtn.textContent = 'Copy';
-                    copyBtn.onclick = () => {
-                        const code = block.querySelector('code').textContent;
-                        navigator.clipboard.writeText(code).then(() => {
-                            copyBtn.textContent = 'Copied!';
-                            setTimeout(() => copyBtn.textContent = 'Copy', 2000);
-                        });
-                    };
-                    block.appendChild(copyBtn);
-                }
-            });
-        }
-
-        function resolvePath(mdFile) {
-            const version = versionSelect.value;
-            
-            // Files that should use version-specific paths
-            const versionedFiles = [
-                'variables.md', 'arrays.md', 'strings.md', 'classes.md',
-                'arithmetic.md', 'comparison.md', 'logical.md', 'conditional.md', 'bitwise.md',
-                'if.md', 'loops.md', 'switch.md', 'return.md',
-                'functions.md', 'console.md', 'comments.md',
-                'changelog.md', 'architecture.md', 'parentheses.md', 'vulkan.md'
-            ];
-            
-            // Version-independent index pages
-            const indexFiles = [
-                'language-reference.md', 'type-system.md', 'operators.md', 
-                'control-flow.md', 'functions-overview.md', 'modules.md',
-                'exceptions.md', 'memory.md', 'interop.md'
-            ];
-            
-            // Check if this file should use version-specific path
-            const fileName = mdFile.split('/').pop();
-            if (versionedFiles.includes(fileName)) {
-                return `${version}/${mdFile}`;
-            }
-            
-            // Files that are version-independent
-            return mdFile;
-        }
-
-        // Handle nav link clicks
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const mdFile = link.getAttribute('data-md');
-                loadMarkdown(resolvePath(mdFile));
-                // Update active link
-                navLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-            });
-        });
-
-        // Handle category toggle
-        categories.forEach(category => {
-            const span = category.querySelector('span');
-            span.addEventListener('click', () => {
-                category.classList.toggle('open');
-            });
-        });
-
-        // Handle version change
-        versionSelect.addEventListener('change', () => {
-            localStorage.setItem('version', versionSelect.value);
-            // Reload current page with new version
-            const activeLink = document.querySelector('.nav a.active');
-            if (activeLink) {
-                const mdFile = activeLink.getAttribute('data-md');
-                loadMarkdown(resolvePath(mdFile));
-            }
-        });
-
-        // Toggle light/dark mode
-        themeToggle.addEventListener('click', () => {
-            const current = themeLink.getAttribute('href');
-            if (current === 'index.css') {
-                themeLink.setAttribute('href', 'index-dark.css');
-                themeToggle.textContent = 'Light Mode';
-                localStorage.setItem('theme', 'dark');
-            } else {
-                themeLink.setAttribute('href', 'index.css');
-                themeToggle.textContent = 'Dark Mode';
-                localStorage.setItem('theme', 'light');
-            }
-        });
-
-        // Load default page
-        const defaultLink = document.querySelector('.nav a[data-md="index.md"]');
-        if (defaultLink) {
-            defaultLink.classList.add('active');
-            loadMarkdown(resolvePath('index.md'));
-        }
-    });
-</script>
+Console.WriteLine(add(5, 3));</code></pre>
+            <div class="example-output"><span>Example output</span><pre>8</pre></div>
+          </section>
+        </div>
+      </section>
+      <section class="features" aria-label="About Dream">
+        <div><span class="section-index">01 / Write</span><h2>Syntax that feels familiar</h2><p>Typed variables, functions and braced blocks. Start with the essentials and learn through small examples.</p></div>
+        <div><span class="section-index">02 / Inspect</span><h2>A compiler you can follow</h2><p>Dream source becomes C before native compilation. Explore the pipeline and the code it produces.</p></div>
+        <div><span class="section-index">03 / Explore</span><h2>Built in the open</h2><p>Read the source, check current implementation boundaries, and contribute a verified change.</p></div>
+      </section>
+      <div class="pipeline" aria-label="Dream source is translated to C, then built into a native executable with Zig"><strong>Dream .dr</strong><span aria-hidden="true">→</span><strong>Generated C</strong><span aria-hidden="true">→</span><strong>Native executable</strong><span>Built with Zig</span></div>
+      <section class="start-section"><div><h2>Start with the guide.</h2><p>Set up the toolchain, build the compiler, and write your first program. Check the supported behavior as you explore.</p></div><a class="button" href="?doc=getting-started/quick-start.md">Build from source <span aria-hidden="true">→</span></a></section>
+    </div>
+    <div id="docs-view" class="docs-layout" hidden>
+      <aside class="sidebar" aria-label="Documentation navigation">
+        <button type="button" class="mobile-menu" id="menu-toggle" aria-controls="docs-menu" aria-expanded="false">Browse documentation <span aria-hidden="true">+</span></button>
+        <div id="docs-menu">
+          <label class="search-label" for="topic-search">Find a topic</label>
+          <input id="topic-search" type="search" placeholder="Search topics…" autocomplete="off">
+          <nav id="topic-nav" aria-label="Documentation topics"></nav>
+          <p id="search-status" class="search-status" role="status" aria-live="polite"></p>
+          <p class="sidebar-note">Current development<br>Dream is experimental.<br><a href="?doc=development/implementation-status.md">Check verified behavior →</a></p>
+        </div>
+      </aside>
+      <div class="article-column">
+        <nav class="breadcrumb" aria-label="Breadcrumb"><a href="./">Home</a><span aria-hidden="true">/</span><a href="?doc=index.md">Docs</a><span aria-hidden="true">/</span><span id="breadcrumb-section">Getting started</span></nav>
+        <p class="eyebrow" id="article-section">Getting started</p>
+        <div id="article-status" role="status" aria-live="polite"></div>
+        <article id="article" class="prose" aria-label="Documentation article"></article>
+        <nav id="page-pagination" class="page-pagination" aria-label="Previous and next documentation pages"></nav>
+        <div class="article-tools"><a id="source-link" href="index.md">View Markdown source ↗</a><a id="github-source-link" href="https://github.com/Ddemon26/DreamCompiler/tree/codex/compiler-stabilization/docs">View on GitHub ↗</a></div>
+      </div>
+      <aside class="page-outline" aria-label="On this page"><p>On this page</p><nav id="toc" aria-label="Article sections"></nav><a href="?doc=development/implementation-status.md" class="outline-status">Implementation notes →</a></aside>
+    </div>
+    <noscript><div class="noscript-note">The documentation reader needs JavaScript. You can also read the <a href="index.md">Markdown index</a>, <a href="getting-started/quick-start.md">quick start</a>, or <a href="https://github.com/Ddemon26/DreamCompiler/tree/codex/compiler-stabilization/docs">docs on GitHub</a>.</div></noscript>
+  </main>
+  <footer class="site-footer"><span>dream / A language taking shape.</span><a href="?doc=development/implementation-status.md">Implementation status <span aria-hidden="true">↗</span></a><a href="https://github.com/Ddemon26/DreamCompiler/blob/codex/compiler-stabilization/LICENSE">MIT License</a></footer>
 </body>
 </html>

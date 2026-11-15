@@ -13,19 +13,26 @@ extern "C" {
 void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file);
 void emit_type_decl(COut *b, Node *n, const char *src_file);
 void emit_enum_decl(COut *b, Node *n, const char *src_file);
-void emit_func(COut *b, Node *n, const char *src_file);
+void emit_func(COut *b, Node *n, const char *src_file, bool external);
+void emit_func_prototype(COut *b, Node *n, bool external);
 void emit_method(COut *b, Slice class_name, Node *n, const char *src_file);
 
 typedef struct {
   Slice name;
   int is_class;
   int has_init;
+  Node *decl;
+  int emitted;
 } CGTypeInfo;
 
 void cg_register_types(CGTypeInfo *types, size_t n);
 int cg_is_class_type(Slice name);
 int cg_is_known_type(Slice name);
 int cg_has_init(Slice name);
+Node *cg_type_decl(Slice name);
+Node *cg_member(Slice type, Slice name, Node **owner);
+void cg_register_program(Node *program);
+Node *cg_function(Slice name);
 
 #ifdef __cplusplus
 }

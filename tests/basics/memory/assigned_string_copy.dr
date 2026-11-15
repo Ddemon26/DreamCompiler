@@ -1,0 +1,143 @@
+// Expected: literal
+// Expected: backing value
+// Expected: backing value
+// Expected: backing value
+// Expected: nested value
+// Expected: backing value
+// Expected: 1
+// Expected: null
+// Expected: still null
+// Expected: empty
+// Expected: once
+// Expected: backing value
+// Expected: backing value appended
+// Expected: fresh value
+// Expected: expression
+// Expected: chain
+// Expected: chain
+// Expected: nested assignment
+// Expected: pending
+// Expected: backing value
+// Expected: cleared
+// Expected: header
+// Expected: header
+// Expected: backing value
+// Expected: backing value
+// Expected: static
+// Expected: instance
+// Expected: base
+// Expected: parameter
+// Expected: backing value
+// Expected: top literal
+// Expected: backing value
+// Expected: backing value
+func string borrow(string input) { return input; }
+func string once(string input) { Console.WriteLine("once"); return input; }
+func string fresh() { return "fresh" + " value"; }
+func void replaceLiteral() {
+    string replaced = "old";
+    replaced = "literal";
+    Console.WriteLine(replaced);
+}
+class Base {
+    string field;
+}
+class Reader : Base {
+    func init() { this.field = "base"; }
+    static func void readStatic() {
+        string staticText = "old";
+        staticText = "static";
+        Console.WriteLine(staticText);
+    }
+    func void readInstance() {
+        string instanceText = "old";
+        instanceText = "instance";
+        Console.WriteLine(instanceText);
+    }
+    func void inherited() {
+        string baseText = "old";
+        baseText = base.field;
+        Console.WriteLine(baseText);
+    }
+}
+func void rebindParameter(string input) {
+    input = "parameter";
+    Console.WriteLine(input);
+}
+func void exercise(string backing, string absent, string* values) {
+    string text = "old";
+    text = backing;
+    Console.WriteLine(text);
+    text = text;
+    Console.WriteLine(text);
+    text = borrow(text);
+    Console.WriteLine(text);
+    {
+        string source = "nested" + " value";
+        text = source;
+    }
+    Console.WriteLine(text);
+    int index = 0;
+    text = values[index++];
+    Console.WriteLine(text);
+    Console.WriteLine(index);
+    text = absent;
+    if (text == null) { Console.WriteLine("null"); }
+    text = null;
+    if (text == null) { Console.WriteLine("still null"); }
+    text = "";
+    Console.Write(text);
+    Console.WriteLine("empty");
+    text = once(backing);
+    Console.WriteLine(text);
+    text = text + " appended";
+    Console.WriteLine(text);
+    text = fresh();
+    Console.WriteLine(text);
+    Console.WriteLine(borrow(text = "expression"));
+    string other = "other";
+    text = other = "chain";
+    Console.WriteLine(text);
+    Console.WriteLine(other);
+    text = (text = "nested assignment");
+    Console.WriteLine(text);
+    string pending;
+    pending = "pending";
+    Console.WriteLine(pending);
+    string untouched;
+    string managed = "managed" + " old";
+    managed = backing;
+    Console.WriteLine(managed);
+    string nullStart = absent;
+    nullStart = backing;
+    nullStart = null;
+    if (nullStart == null) { Console.WriteLine("cleared"); }
+    int i = 0;
+    for (string header = "header"; i < 2; header = borrow(header)) {
+        Console.WriteLine(header);
+        i++;
+    }
+    for (int j = 0; j < 2; j++) {
+        string repeated = "tick";
+        repeated = backing;
+        Console.WriteLine(repeated);
+    }
+    Reader.readStatic();
+    Reader reader = new Reader();
+    reader.readInstance();
+    reader.inherited();
+    rebindParameter(backing);
+    Console.WriteLine(backing);
+}
+replaceLiteral();
+string globalBacking = "backing" + " value";
+string nullable[2];
+nullable[0] = globalBacking;
+nullable[1] = null;
+exercise(globalBacking, nullable[1], nullable);
+string globalText = "old";
+globalText = "top literal";
+Console.WriteLine(globalText);
+globalText = globalBacking;
+Console.WriteLine(globalText);
+Console.WriteLine(globalBacking);

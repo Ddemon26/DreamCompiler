@@ -1,0 +1,2 @@
+// Expected error: expected expression
+int value = ;

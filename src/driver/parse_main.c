@@ -172,8 +172,10 @@ int main(int argc, char **argv) {
         printf("]\n");
     }
     print_diagnostics(src, &p.diags);
+    int status = diagnostics_have_errors(&p.diags) ? 1 : 0;
     free(src);
     free(p.diags.data);
-    free(arena.ptr);
-    return 0;
+    free(p.types);
+    arena_free(&arena);
+    return status;
 }

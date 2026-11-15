@@ -249,18 +249,33 @@ bool z = true;
 
 ## Memory Management
 
-Dream uses automatic reference counting for memory management:
+Qualified scalar string declarations own independent managed storage. Plain `=`
+on these bindings copies the readable replacement before releasing the old value;
+self-assignment is safe. A scalar string declared without an initializer starts as
+null. For example:
 
 ```dream
-// String memory is automatically managed
 string text1 = "Hello";
-string text2 = text1;      // Reference count increases
-text1 = "World";            // Original "Hello" reference count decreases
-
-// Arrays are also automatically managed
-int numbers[100];           // Automatically allocated
-// Automatically freed when out of scope
+string text2 = text1;      // Independent copy; text1's reference count is unchanged
+text1 = "World";          // Copy "World", release text1's old allocation
+// text2 still contains "Hello"
+string pending;           // Null until assigned
+pending = text2;          // Independent copy
 ```
+
+Normal block cleanup releases each owned scalar's current value. Supported
+for-header strings are released after their loop; final top-level storage is
+reclaimed at shutdown. Local string arrays contain borrowed element pointers;
+local `string*` bindings borrow their target storage. Normal block exit releases
+neither the container/alias nor its elements. Keep managed backing live while
+using these aliases; copying an element into a scalar still gives it independent
+storage. Break/continue release qualified owned scalar strings in the scopes
+they leave, preserving outer locals and for headers through continue/update.
+Switch breaks leave enclosing loop locals live; switch continues clean through
+the enclosing loop body. Parameters, fields, owning containers, compound assignment,
+class-instance early exits and return/exception cleanup remain unqualified.
+See the [string storage checkpoint](../development/string-ownership.md) for the
+qualified initializer forms and remaining limits.
 
 ## Best Practices
 

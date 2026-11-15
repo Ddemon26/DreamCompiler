@@ -1,0 +1,2 @@
+// Expected error: return requires a value
+func int value() { return; }

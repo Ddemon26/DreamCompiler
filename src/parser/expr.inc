@@ -102,6 +102,7 @@ static Node *parse_primary(Parser *p) {
     else
       diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
     n = node_new(p->arena, ND_NEW);
+    n->pos = t.pos;
     n->as.new_expr.type_name = type_name;
     n->as.new_expr.args = args;
     n->as.new_expr.arg_len = alen;
@@ -119,6 +120,7 @@ static Node *parse_primary(Parser *p) {
       return node_new(p->arena, ND_ERROR);
     }
     n = node_new(p->arena, ND_BASE);
+    n->pos = t.pos;
     n->as.base.name = (Slice){p->tok.start, p->tok.len};
     next(p);
     return n;
@@ -156,6 +158,7 @@ static Node *parse_primary(Parser *p) {
     // fallthrough
   case TK_IDENT:
     n = node_new(p->arena, ND_IDENT);
+    n->pos = t.pos;
     n->as.ident.start = t.start;
     n->as.ident.len = t.len;
     next(p);
@@ -214,6 +217,7 @@ static Node *parse_postfix(Parser *p) {
       else
         diag_push(p, p->tok.pos, DIAG_ERROR, "expected ')'");
       Node *call = node_new(p->arena, ND_CALL);
+      call->pos = n->pos;
       call->as.call.callee = n;
       call->as.call.args = args;
       call->as.call.len = len;
@@ -243,6 +247,7 @@ static Node *parse_postfix(Parser *p) {
         return node_new(p->arena, ND_ERROR);
       }
       Node *fld = node_new(p->arena, ND_FIELD);
+      fld->pos = p->tok.pos;
       fld->as.field.object = n;
       fld->as.field.name.start = p->tok.start;
       fld->as.field.name.len = p->tok.len;
@@ -461,6 +466,7 @@ static Node *parse_expr_prec(Parser *p, int min_prec) {
   Node *lhs = parse_unary(p);
   for (;;) {
     if (p->tok.kind == TK_QUESTION && min_prec <= 1) {
+      Pos question_pos = p->tok.pos;
       next(p);
       Node *then_expr = parse_expr_prec(p, 0);
       if (p->tok.kind != TK_COLON) {
@@ -470,6 +476,7 @@ static Node *parse_expr_prec(Parser *p, int min_prec) {
       }
       Node *else_expr = parse_expr_prec(p, 1);
       Node *tern = node_new(p->arena, ND_COND);
+      tern->pos = question_pos;
       tern->as.cond.cond = lhs;
       tern->as.cond.then_expr = then_expr;
       tern->as.cond.else_expr = else_expr;

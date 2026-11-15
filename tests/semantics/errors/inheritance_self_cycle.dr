@@ -1,0 +1,2 @@
+// Expected error: inheritance cycle involving 'Recursive'
+class Recursive : Recursive { int value; }

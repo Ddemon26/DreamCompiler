@@ -1,0 +1,2 @@
+// Expected error: duplicate member 'value'
+class Root { int value; int value; }

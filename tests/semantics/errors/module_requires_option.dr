@@ -1,0 +1,2 @@
+// Expected error: module directives require --multi-file
+import math_utils;

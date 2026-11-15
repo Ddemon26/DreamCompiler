@@ -2,22 +2,20 @@ const std = @import("std");
 
 /// A list of all C source files used in the project.
 const AllCSources = [_][]const u8{
-    "src/driver/main.c",         "src/parser/ast.c",        "src/parser/parser.c",
-    "src/parser/error.c",        "src/parser/diagnostic.c", "src/parser/warnings.c",
-    "src/sem/scope.c",           "src/sem/symbol.c",        "src/sem/type.c",
-    "src/sem/infer.c",           "src/sem/analysis.c",      "src/ir/ir.c",
-    "src/ir/lower.c",            "src/cfg/cfg.c",           "src/ssa/ssa.c",
-    "src/opt/pipeline.c",        "src/opt/sccp.c",          "src/opt/dce.c",
-    "src/opt/value_numbering.c", "src/opt/licm.c",          "src/opt/copy_prop.c",
-    "src/opt/cse.c",             "src/opt/peephole.c",      "src/opt/inline.c",
-    "src/opt/loop_opt.c",        "src/codegen/c_emit.c",    "src/codegen/context.c",
-    "src/codegen/expr.c",        "src/codegen/stmt.c",      "src/codegen/codegen.c",
-    "src/codegen/backend.c",     "src/codegen/module.c",
+    "src/driver/main.c",    "src/driver/modules.c",    "src/parser/ast.c",      "src/parser/parser.c",
+    "src/parser/error.c",   "src/parser/diagnostic.c", "src/parser/warnings.c", "src/sem/scope.c",
+    "src/sem/symbol.c",     "src/sem/type.c",          "src/sem/infer.c",       "src/sem/analysis.c",
+    "src/ir/ir.c",          "src/ir/lower.c",          "src/cfg/cfg.c",         "src/ssa/ssa.c",
+    "src/opt/pipeline.c",   "src/opt/sccp.c",          "src/opt/dce.c",         "src/opt/value_numbering.c",
+    "src/opt/licm.c",       "src/opt/copy_prop.c",     "src/opt/cse.c",         "src/opt/peephole.c",
+    "src/opt/inline.c",     "src/opt/loop_opt.c",      "src/codegen/c_emit.c",  "src/codegen/context.c",
+    "src/codegen/expr.c",   "src/codegen/stmt.c",      "src/codegen/codegen.c", "src/codegen/backend.c",
+    "src/codegen/module.c", "src/opt/literal_fold.c",
 };
 
 /// Baseline runtime sources always compiled
 const BaseRuntimeSources = [_][]const u8{
-    "src/runtime/memory/memory.c", "src/runtime/io/console.c",   "src/runtime/extensions/custom.c",
+    "src/runtime/memory/memory.c", "src/runtime/io/console.c",           "src/runtime/extensions/custom.c",
     "src/runtime/system/task.c",   "src/runtime/exceptions/exception.c",
 };
 
@@ -38,8 +36,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // Detect Vulkan SDK paths from environment
-    const vulkan_sdk =
-        std.process.getEnvVarOwned(b.allocator, "VULKAN_SDK") catch null;
+    const vulkan_sdk = b.graph.environ_map.get("VULKAN_SDK");
     var vk_include: ?[]const u8 = null;
     var vk_lib: ?[]const u8 = null;
     if (vulkan_sdk) |sdk| {
@@ -52,12 +49,12 @@ pub fn build(b: *std.Build) void {
     }
 
     // Collect runtime sources, adding Vulkan stub if available
-    var runtime_sources = std.ArrayList([]const u8).init(b.allocator);
-    for (BaseRuntimeSources) |s| runtime_sources.append(s) catch unreachable;
+    var runtime_sources: std.ArrayList([]const u8) = .empty;
+    for (BaseRuntimeSources) |s| runtime_sources.append(b.allocator, s) catch unreachable;
     if (vk_include != null) {
-        runtime_sources.append("src/runtime/graphics/vulkan/vulkan_stub.c") catch unreachable;
-        runtime_sources.append("src/runtime/graphics/vulkan/vulkan_helpers.c") catch unreachable;
-        runtime_sources.append("src/runtime/graphics/vulkan/vulkan.c") catch unreachable;
+        runtime_sources.append(b.allocator, "src/runtime/graphics/vulkan/vulkan_stub.c") catch unreachable;
+        runtime_sources.append(b.allocator, "src/runtime/graphics/vulkan/vulkan_helpers.c") catch unreachable;
+        runtime_sources.append(b.allocator, "src/runtime/graphics/vulkan/vulkan.c") catch unreachable;
     }
 
     // Add debug mode option for enhanced debugging support
@@ -66,7 +63,7 @@ pub fn build(b: *std.Build) void {
 
     const exe_mod = b.createModule(.{ .target = target, .optimize = optimize });
     const bootstrap_mod =
-        b.createModule(.{ .target = target, .optimize = optimize });
+        b.createModule(.{ .target = b.graph.host, .optimize = optimize });
     const lex_mod = b.createModule(.{ .target = target, .optimize = optimize });
     const parse_mod = b.createModule(.{ .target = target, .optimize = optimize });
 
@@ -78,19 +75,22 @@ pub fn build(b: *std.Build) void {
     const bootstrap = b.addExecutable(.{ .name = "dreamc-bootstrap", .root_module = bootstrap_mod });
     bootstrap.step.dependOn(&re2c_step.step);
     const cflags = if (debug_mode) &DEBUG_CFLAGS else &CFLAGS;
-    bootstrap.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
-    bootstrap.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
+    bootstrap.root_module.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
+    bootstrap.root_module.addCSourceFile(.{ .file = b.path("src/driver/source_text_bootstrap.c"), .flags = cflags });
+    bootstrap.root_module.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
+    bootstrap.root_module.link_libc = true;
+    b.installArtifact(bootstrap);
 
     const lexexe = b.addExecutable(.{ .name = "lexdump", .root_module = lex_mod });
-    lexexe.addCSourceFiles(.{ .files = &.{"src/driver/lex_main.c"}, .flags = &CFLAGS });
-    lexexe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
-    lexexe.linkLibC();
+    lexexe.root_module.addCSourceFiles(.{ .files = &.{"src/driver/lex_main.c"}, .flags = &CFLAGS });
+    lexexe.root_module.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
+    lexexe.root_module.link_libc = true;
     lexexe.step.dependOn(&re2c_step.step);
     b.installArtifact(lexexe);
 
     const parseexe =
         b.addExecutable(.{ .name = "parse", .root_module = parse_mod });
-    parseexe.addCSourceFiles(.{ .files = &.{
+    parseexe.root_module.addCSourceFiles(.{ .files = &.{
         "src/driver/parse_main.c",
         "src/parser/ast.c",
         "src/parser/parser.c",
@@ -100,32 +100,33 @@ pub fn build(b: *std.Build) void {
         "src/sem/type.c",
         "src/sem/infer.c",
     }, .flags = &CFLAGS });
-    parseexe.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
-    parseexe.linkLibC();
+    parseexe.root_module.addCSourceFile(.{ .file = lexer_c, .flags = &CFLAGS });
+    parseexe.root_module.link_libc = true;
     parseexe.step.dependOn(&re2c_step.step);
     b.installArtifact(parseexe);
 
     const dr_files = collectDrSources(b);
     const compile_step =
-        addCompileDrStep(b, bootstrap, target, optimize, dr_files);
+        addCompileDrStep(b, bootstrap, dr_files);
 
     const exe =
         b.addExecutable(.{ .name = "DreamCompiler", .root_module = exe_mod });
     exe.step.dependOn(compile_step.step);
-    exe.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
-    exe.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
+    exe.root_module.addCSourceFiles(.{ .files = &AllCSources, .flags = cflags });
+    exe.root_module.addCSourceFile(.{ .file = lexer_c, .flags = cflags });
     for (compile_step.files) |gen| {
-        exe.addCSourceFile(.{ .file = gen, .flags = cflags });
+        exe.root_module.addCSourceFile(.{ .file = gen, .flags = cflags });
     }
-    exe.linkLibC();
+    for ([_][]const u8{ "io", "extensions", "memory", "exceptions", "system" }) |part| {
+        exe.root_module.addIncludePath(b.path(b.fmt("src/runtime/{s}", .{part})));
+    }
+    exe.root_module.link_libc = true;
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.setEnvironmentVariable("CC", "zig cc");
     run_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
+    run_cmd.addPassthruArgs();
 
     const run_step = b.step("run", "Build and run DreamCompiler");
     run_step.dependOn(&run_cmd.step);
@@ -145,19 +146,20 @@ pub fn build(b: *std.Build) void {
         .root_module = runtime_mod,
         .linkage = .static,
     });
-    const runtime_files = runtime_sources.toOwnedSlice() catch unreachable;
-    runtime_lib.addCSourceFiles(.{ .files = runtime_files, .flags = cflags });
+    const runtime_files = runtime_sources.toOwnedSlice(b.allocator) catch unreachable;
+    runtime_lib.root_module.addCSourceFiles(.{ .files = runtime_files, .flags = cflags });
     if (vk_include) |p| {
-        runtime_lib.addIncludePath(.{ .cwd_relative = p });
-        if (vk_lib) |lib| runtime_lib.addLibraryPath(.{ .cwd_relative = lib });
-        runtime_lib.linkSystemLibrary(if (target.result.os.tag == .windows) "vulkan-1" else "vulkan");
+        runtime_lib.root_module.addIncludePath(.{ .cwd_relative = p });
+        if (vk_lib) |lib| runtime_lib.root_module.addLibraryPath(.{ .cwd_relative = lib });
+        runtime_lib.root_module.linkSystemLibrary(if (target.result.os.tag == .windows) "vulkan-1" else "vulkan", .{});
         if (target.result.os.tag == .windows) {
-            runtime_lib.linkSystemLibrary("user32");
+            runtime_lib.root_module.linkSystemLibrary("user32", .{});
         } else if (target.result.os.tag == .linux) {
-            runtime_lib.linkSystemLibrary("xcb");
+            runtime_lib.root_module.linkSystemLibrary("xcb", .{});
         }
     }
-    runtime_lib.linkLibC();
+    runtime_lib.root_module.link_libc = true;
+    exe.root_module.linkLibrary(runtime_lib);
     b.installArtifact(runtime_lib);
 
     // Multi-file compilation step
@@ -168,10 +170,15 @@ pub fn build(b: *std.Build) void {
     multifile_step.dependOn(multifile_cmd);
 
     const test_step = b.step("test", "Run compiler tests");
-    test_step.dependOn(&lexexe.step);
-    test_step.dependOn(&parseexe.step);
+    const tests = b.addSystemCommand(&.{
+        if (b.graph.host.result.os.tag == .windows) "python" else "python3",
+        "codex/test_cli.py",
+        "run",
+    });
+    tests.step.dependOn(b.getInstallStep());
+    test_step.dependOn(&tests.step);
 
-    const fmt_zig = b.addFmt(.{ .paths = &.{"build.zig"} });
+    const fmt_zig = b.addFmt(.{ .paths = &.{b.path("build.zig")} });
     const fmt_c = b.addSystemCommand(&.{ "clang-format", "-i" });
     for (AllCSources) |cfile| fmt_c.addFileArg(b.path(cfile));
     fmt_c.addFileArg(b.path("src/driver/lex_main.c"));
@@ -188,13 +195,16 @@ pub fn build(b: *std.Build) void {
 fn collectDrSources(b: *std.Build) []const []const u8 {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
-    var list = std.ArrayList([]const u8).init(arena.allocator());
-    var dir = std.fs.cwd().openDir("src", .{ .iterate = true }) catch return &.{};
+    var list: std.ArrayList([]const u8) = .empty;
+    const io = b.graph.io;
+    var dir = std.Io.Dir.cwd().openDir(io, "src", .{ .iterate = true }) catch return &.{};
+    defer dir.close(io);
     var walker = dir.walk(arena.allocator()) catch return &.{};
-    while (walker.next() catch null) |entry| {
+    defer walker.deinit();
+    while (walker.next(io) catch null) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".dr")) {
             const p = b.pathJoin(&.{ "src", entry.path });
-            list.append(p) catch {};
+            list.append(arena.allocator(), p) catch @panic("OOM");
         }
     }
     return b.dupeStrings(list.items);
@@ -204,41 +214,28 @@ fn collectDrSources(b: *std.Build) []const []const u8 {
 ///
 /// @param b The build context.
 /// @param bootstrap The bootstrap compiler step.
-/// @param target The resolved target configuration.
-/// @param optimize The optimization mode.
 /// @param sources The list of `.dr` source files to compile.
 /// @return A struct containing the compilation step and the generated file
 /// paths.
 fn addCompileDrStep(
     b: *std.Build,
     bootstrap: *std.Build.Step.Compile,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
     sources: []const []const u8,
 ) struct { step: *std.Build.Step, files: []const std.Build.LazyPath } {
     const step = b.step("compile-dr", "Compile .dr sources");
-    var generated = std.ArrayList(std.Build.LazyPath).init(b.allocator);
-
-    const triple = target.query.zigTriple(b.allocator) catch @panic("OOM");
-    const mode_str = switch (optimize) {
-        .Debug => "debug",
-        .ReleaseSafe => "release-safe",
-        .ReleaseFast => "release-fast",
-        .ReleaseSmall => "release-small",
-    };
+    var generated: std.ArrayList(std.Build.LazyPath) = .empty;
 
     for (sources) |src| {
         const run = b.addRunArtifact(bootstrap);
-        run.addArgs(&.{ "--emit-c", "--target", triple, "--build-mode", mode_str });
-        run.addFileArg(b.path(src));
-        run.addFileInput(b.path("src/lexer/tokens.def"));
+        run.addArg("--emit-library-c");
         const out =
-            run.addOutputFileArg(b.fmt("{s}.c", .{std.fs.path.stem(src)}));
-        generated.append(out) catch @panic("OOM");
+            run.addOutputFileArg(b.fmt("{s}.c", .{src}));
+        run.addFileArg(b.path(src));
+        generated.append(b.allocator, out) catch @panic("OOM");
         step.dependOn(&run.step);
     }
 
-    return .{ .step = step, .files = generated.toOwnedSlice() catch @panic("OOM") };
+    return .{ .step = step, .files = generated.toOwnedSlice(b.allocator) catch @panic("OOM") };
 }
 
 /// Adds a multi-file compilation and linking step
@@ -257,7 +254,7 @@ fn addMultiFileCompileStep(
     compiler: *std.Build.Step.Compile,
     runtime_lib: *std.Build.Step.Compile,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.builtin.Optimize,
 ) *std.Build.Step {
     _ = target; // Suppress unused parameter warning
     _ = optimize; // Suppress unused parameter warning
@@ -268,10 +265,13 @@ fn addMultiFileCompileStep(
     // This step will be enhanced to accept command-line arguments for input files
     // For now, it demonstrates the framework for multi-file compilation
     const run_cmd = b.addRunArtifact(compiler);
+    run_cmd.setEnvironmentVariable("CC", "zig cc");
     run_cmd.addArgs(&.{"--multi-file"});
+    run_cmd.addPassthruArgs();
 
     // Add runtime library dependency
     run_cmd.step.dependOn(&runtime_lib.step);
+    run_cmd.step.dependOn(b.getInstallStep());
 
     step.dependOn(&run_cmd.step);
     return step;
@@ -285,19 +285,20 @@ fn addMultiFileCompileStep(
 fn collectDrSourcesFromDir(b: *std.Build, dir_path: []const u8) []const []const u8 {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
-    var list = std.ArrayList([]const u8).init(arena.allocator());
+    var list: std.ArrayList([]const u8) = .empty;
 
+    const io = b.graph.io;
     var dir =
-        std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return &.{};
-    defer dir.close();
+        std.Io.Dir.cwd().openDir(io, dir_path, .{ .iterate = true }) catch return &.{};
+    defer dir.close(io);
 
     var walker = dir.walk(arena.allocator()) catch return &.{};
     defer walker.deinit();
 
-    while (walker.next() catch null) |entry| {
+    while (walker.next(io) catch null) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".dr")) {
             const full_path = b.pathJoin(&.{ dir_path, entry.path });
-            list.append(full_path) catch {};
+            list.append(arena.allocator(), full_path) catch @panic("OOM");
         }
     }
 

@@ -13,4 +13,7 @@ extern bool diag_verbose;
 
 void print_diagnostics(const char *src, DiagnosticVec *vec);
 
+/** Returns true when diagnostics contain an error, including promoted warnings. */
+bool diagnostics_have_errors(const DiagnosticVec *vec);
+
 #endif

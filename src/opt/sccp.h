@@ -18,4 +18,8 @@
  */
 bool sccp(CFG *cfg);
 
+/* Same pass, with allocation failure distinguished from no change.
+ * Returns -1 on failure, 0 when unchanged, and 1 when changed. */
+int sccp_checked(CFG *cfg);
+
 #endif

@@ -1,5 +1,38 @@
 # Type System
 
+## Implemented single inheritance
+
+Classes can inherit from one class with `class Child : Parent`. Base classes
+may appear later in the same source file. Inherited fields retain their declared
+types, including arrays and struct fields. Instance methods and static members
+are found through the base hierarchy. `base.field` and `base.method()` select
+members beginning at the immediate base class.
+
+A derived object can be assigned to a variable of its base class; the variable
+refers to the same object. Unrelated class assignments, unknown bases, inheritance
+cycles, duplicate members within one class, and invalid `base` access are errors.
+Derived fields may hide base fields; the two fields keep separate storage.
+
+Method calls use the receiver's declared type. Virtual dispatch, access-control
+enforcement, interfaces, and implicit base-constructor calls remain unsupported.
+Constructors can call `base.init(...)` explicitly.
+
+Member calls analyze the receiver and arguments before C emission. Undefined receivers,
+non-object receivers, unknown methods/fields, and instance methods or fields accessed
+through a type name are Dream errors with source locations. These checks also apply
+to classes in a multi-file entry source and expressions in imported functions.
+Use an object for instance members (`reader.read()`, `reader.number`) and a type
+name for static members (`Reader.increment()`, `Reader.count`). Existing static
+access through a simple object variable remains supported, including inherited
+members. `this` and `base` require an instance method. Primitive scalar method
+arguments require exact types, including inherited/static/instance and explicit
+`init` calls; see [checked method arguments](../language-features/functions.md#checked-primitive-method-arguments).
+Implicit `new Type(...)` calls check arity and primitive scalar types against the
+class's own instance `init`; see [checked constructor arguments](../language-features/functions.md#checked-constructor-arguments).
+Classes without a local `init` and structs take zero construction arguments.
+Pointer/array shapes, custom-type arguments, and class field declaration
+initializer analysis remain incomplete.
+
 Dream features a comprehensive static type system with type inference capabilities. This section covers all aspects of working with types, from basic primitives to complex data structures.
 
 ## Overview

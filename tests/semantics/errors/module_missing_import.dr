@@ -1,0 +1,3 @@
+// Options: --multi-file
+// Expected error: cannot load module 'nonexistent_dependency'
+import nonexistent_dependency;

@@ -1,0 +1,44 @@
+// Expected: literal
+// Expected: empty
+// Expected: quote: "ok"
+// Expected: literal
+// Expected: dynamic value
+// Expected: static
+// Expected: instance
+// Expected: loop
+// Expected: loop
+// Expected: global
+func void read() {
+    string text = "literal";
+    Console.WriteLine(text);
+    {
+        const string empty = "";
+        string escaped = "quote: \"ok\"";
+        Console.Write(empty);
+        Console.WriteLine("empty");
+        Console.WriteLine(escaped);
+    }
+    Console.WriteLine(text);
+    string managed = "dynamic" + " value";
+    Console.WriteLine(managed);
+}
+class Reader {
+    static func void readStatic() {
+        string staticText = ("static");
+        Console.WriteLine(staticText);
+    }
+    func void readInstance() {
+        string instanceText = "instance";
+        Console.WriteLine(instanceText);
+    }
+}
+string globalText = "global";
+read();
+Reader.readStatic();
+Reader reader = new Reader();
+reader.readInstance();
+for (int i = 0; i < 2; i++) {
+    string repeated = "loop";
+    Console.WriteLine(repeated);
+}
+Console.WriteLine(globalText);

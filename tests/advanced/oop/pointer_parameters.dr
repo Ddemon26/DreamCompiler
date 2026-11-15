@@ -1,0 +1,52 @@
+// Expected: 42
+// Expected: 2.500000
+// Expected: 1
+// Expected: Z
+// Expected: label
+// Expected: 42
+// Expected: 43
+// Expected: 44
+// Expected: 45
+// Expected: 46
+// Expected: 47
+// Expected: 48
+class Buffer {
+    int value;
+    func init(int* n, float* r, bool* f, char* c, string* s, int offset) {
+        n[0] = n[0] + offset;
+        r[0] = 2.5; f[0] = true; c[0] = 'Z'; s[0] = "label";
+        this.value = n[0];
+    }
+    func int read(int* n, int index) { return n[index]; }
+    static func void update(int* n, float* r, bool* f, char* c, string* s) {
+        n[0] = n[0] + 1;
+        float realValue = r[0]; bool flagValue = f[0];
+        char markerValue = c[0];
+        Console.WriteLine(realValue); Console.WriteLine(flagValue);
+        Console.WriteLine(markerValue); Console.WriteLine(s[0]);
+    }
+    func int throughThis(int* n) { return this.read(n, 0); }
+}
+class Child : Buffer {
+    func init(int* n, float* r, bool* f, char* c, string* s, int offset) {
+        base.init(n, r, f, c, s, offset);
+    }
+    func int throughBase(int* n) { return base.read(n, 0); }
+}
+// A forward free-function call checks that prototype and definition agree.
+func int forward(int* n) { return readFree(n); }
+func int readFree(int* n) { return n[0]; }
+int numbers[1]; float reals[1]; bool flags[1]; char markers[1]; string texts[1];
+numbers[0] = 40;
+Child child = new Child(numbers, reals, flags, markers, texts, 2);
+Console.WriteLine(child.value);
+Child.update(numbers, reals, flags, markers, texts);
+Console.WriteLine(child.value);
+Console.WriteLine(child.read(numbers, 0));
+numbers[0] = 44; Console.WriteLine(child.throughThis(numbers));
+numbers[0] = 45; Console.WriteLine(child.throughBase(numbers));
+numbers[0] = 46; Console.WriteLine(forward(numbers));
+int* alias = numbers;
+alias[0] = 47; Console.WriteLine(child.read(alias, 0));
+child.init(alias, reals, flags, markers, texts, 1);
+Console.WriteLine(child.value);

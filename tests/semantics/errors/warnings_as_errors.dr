@@ -1,0 +1,3 @@
+// Options: -Werror
+// Expected error: variable might be unused
+int unusedValue = 42;

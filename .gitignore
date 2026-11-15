@@ -18,6 +18,7 @@
 
 # Fortran module files
 *.mod
+!codex/go/go.mod
 *.smod
 
 # Compiled Static libraries
@@ -55,6 +56,10 @@ src/lexer/lexer.c
 .claude/settings.local.json
 CLAUDE.md
 /codex/python/__pycache__
+/codex/__pycache__
 /test_results
 /assets/vscode/node_modules
 /codex/go/build
+
+# Downloaded toolchain installers do not belong in the checkout.
+/go[0-9]*.tar.gz

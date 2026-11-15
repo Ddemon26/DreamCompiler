@@ -1,0 +1,3 @@
+// Options: -Werror -w
+// Expected: (no output)
+int unusedValue = 42;

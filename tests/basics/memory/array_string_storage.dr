@@ -1,0 +1,67 @@
+// Expected: owned array
+// Expected: literal
+// Expected: backing value
+// Expected: owned array
+// Expected: null element
+// Expected: backing value
+// Expected: owned array
+// Expected: changed
+// Expected: changed
+// Expected: changed
+// Expected: static
+// Expected: instance
+// Expected: backing value
+class ArrayReader {
+    static func void readStatic() {
+        string staticValues[1];
+        staticValues[0] = "static";
+        string staticCopy = staticValues[0];
+        Console.WriteLine(staticCopy);
+    }
+    func void readInstance(string text) {
+        string instanceValues[1];
+        instanceValues[0] = text;
+        string instanceCopy = instanceValues[0];
+        Console.WriteLine(instanceCopy);
+    }
+}
+func void exercise(string source, string absent) {
+    string owner = "owned" + " array";
+    {
+        string localValues[4];
+        localValues[0] = "literal";
+        localValues[1] = source;
+        localValues[2] = owner;
+        localValues[3] = absent;
+        {
+            string nestedValues[1];
+            nestedValues[0] = localValues[2];
+            string nestedCopy = nestedValues[0];
+            Console.WriteLine(nestedCopy);
+        }
+        Console.WriteLine(localValues[0]);
+        Console.WriteLine(localValues[1]);
+        Console.WriteLine(localValues[2]);
+        if (localValues[3] == null) { Console.WriteLine("null element"); }
+        localValues[1] = "replacement";
+        Console.WriteLine(source);
+    }
+    Console.WriteLine(owner);
+    owner = "changed";
+    Console.WriteLine(owner);
+    for (int i = 0; i < 2; i++) {
+        string repeatedValues[1];
+        repeatedValues[0] = owner;
+        string repeatedCopy = repeatedValues[0];
+        Console.WriteLine(repeatedCopy);
+    }
+    string unusedValues[1];
+    ArrayReader.readStatic();
+    ArrayReader reader = new ArrayReader();
+    reader.readInstance("instance");
+}
+string backing = "backing" + " value";
+string nullable[1];
+nullable[0] = null;
+exercise(backing, nullable[0]);
+Console.WriteLine(backing);

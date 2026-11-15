@@ -1,0 +1,75 @@
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: literal
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: static
+// Expected: instance
+// Expected: owned value
+// Expected: owned value
+// Expected: dynamic value
+// Expected: dynamic value
+// Expected: null
+// Expected: dynamic value
+// Expected: dynamic value
+func void read(string borrowed) {
+    string first = borrowed;
+    Console.WriteLine(first);
+    {
+        const string nested = (first);
+        Console.WriteLine(nested);
+        {
+            string chained = nested;
+            Console.WriteLine(chained);
+        }
+        Console.WriteLine(nested);
+    }
+    Console.WriteLine(first);
+}
+class Reader {
+    static func void readStatic(string staticInput) {
+        string staticText = staticInput;
+        Console.WriteLine(staticText);
+    }
+    func void readInstance(string instanceInput) {
+        string instanceText = instanceInput;
+        Console.WriteLine(instanceText);
+    }
+}
+func void readOwned() {
+    string backing = "owned" + " value";
+    {
+        string snapshot = backing;
+        Console.WriteLine(snapshot);
+    }
+    Console.WriteLine(backing);
+}
+func void readNull(string* values) {
+    string nullable = values[0];
+    string absent = nullable;
+    if (absent == null) {
+        Console.WriteLine("null");
+    }
+}
+string globalBacking = "dynamic" + " value";
+const string globalSnapshot = globalBacking;
+read("literal");
+read(globalBacking);
+Reader.readStatic("static");
+Reader reader = new Reader();
+reader.readInstance("instance");
+readOwned();
+for (int i = 0; i < 2; i++) {
+    string repeated = globalSnapshot;
+    Console.WriteLine(repeated);
+}
+string values[1];
+values[0] = null;
+readNull(values);
+Console.WriteLine(globalSnapshot);
+Console.WriteLine(globalBacking);

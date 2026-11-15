@@ -7,6 +7,7 @@
 // Expected: 6
 // Expected: 7
 // Expected: Result is greater than 5
+// Expected exit: 8
 func int add(int a, int b) {
     return a + b;
 }

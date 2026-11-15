@@ -60,7 +60,121 @@ float area = calculateArea(2.5);        // area ≈ 19.63
 string message = getGreeting("Alice");  // message = "Hello, Alice!"
 ```
 
+## Checked primitive returns
+
+Functions and instance/static methods returning `int`, `float`, `bool`, `char`, or
+`string` require each explicit `return` to provide an expression of that exact type.
+There is no implicit conversion at the return boundary: `func float weight() { return
+1; }` is rejected; use `return 1.0;`. Arithmetic expressions keep their existing
+promotion rules, and an `int`/`float` conditional expression has type `float`.
+Other conditional branches must have matching types; both branches are checked.
+
+A `void` function (including one with no written return type) accepts `return;` and
+rejects `return expression;`, even when the expression calls another void function.
+These checks run before C emission, including inside loops, switches, and
+try/catch/finally blocks and in imported function modules. Dependency diagnostics
+identify the dependency source and return line. Top-level entry-program returns
+retain their existing behavior.
+
+This checks explicit primitive returns, not whether every control-flow path returns.
+Pointer/array shape checking and broader operator validation remain separate work;
+async and non-primitive return contracts are outside this supported subset.
+
 ## Parameters
+
+### Declaration syntax and recovery
+
+The supported scalar parameter types are `int`, `float`, `bool`, `char`, and
+`string`. Custom-type parameters such as `func init(Child child) {}` are not
+supported. They produce an `expected parameter type` error and an explanatory
+hint before generated artifacts, in ordinary sources, module entries and imported
+modules. Malformed parameter names, separators and closing parentheses also fail
+with source positions. Recovery discards the invalid signature and its balanced
+body so parsing can continue at the following declaration.
+
+One primitive pointer marker is preserved in emitted parameter signatures; see
+the bounded pointer contract below. Pointer argument compatibility remains
+unqualified. Array parameter declarations (`int items[]`) are unsupported.
+The parser recovery checks do not qualify arbitrary malformed input or implement
+these additional parameter types.
+
+### Checked primitive method arguments
+
+Calls such as `reader.take(value)`, `Reader.take(value)`, `this.take(value)`, and
+`base.take(value)` check each primitive scalar parameter (`int`, `float`, `bool`,
+`char`, `string`) against the analyzed expression type before generating C. As with
+free-function arguments and primitive returns, types must match exactly: an `int`
+argument does not implicitly widen to a `float` parameter, and `bool`/`char` remain
+distinct from `int`. Existing expression promotions still apply; `2 + 0.5` has type
+`float`. A void result or `null` does not match a scalar parameter.
+
+Resolution follows the receiver's declared type and inherited members, including
+static methods reached through a simple object variable. Rejections identify the
+method, one-based argument index, expected/actual types, and call position. These
+checks also apply to classes in multi-file entry sources; rejected input produces
+no new output artifacts. All supplied arguments are analyzed even on arity errors.
+
+Pointer parameters are outside this rule. Array/pointer expression shapes are not
+represented by the scalar type token and remain unqualified, even when their base
+token matches a scalar parameter. Custom types and broader operator validation
+remain separate work.
+Explicit `object.init(...)` calls use the checked method path.
+
+### Checked constructor arguments
+
+`new Reader(value)` checks arity against the class's own instance `init` method
+and checks its primitive scalar parameters with the same exact-type policy as
+method calls. Diagnostics name the constructed type, argument index and expected/
+actual types, at the `new` expression before output artifacts are created. Every
+supplied argument is analyzed once, including excess arguments and nested calls.
+These checks also apply to classes in multi-file entry sources.
+
+Construction invokes only the class's own `init`. A derived class without one
+takes zero arguments; it does not invoke an inherited `init`. Declare a local
+constructor and call `base.init(...)` explicitly when needed. A class without
+`init` and a zero-initialized struct also take zero arguments. Struct `init`
+methods are not invoked by `new`. Arguments in these cases are errors rather
+than silently ignored. A local static `init` cannot serve as a constructor;
+call that static method explicitly instead.
+
+Pointer/array parameter shapes and custom-type compatibility remain unqualified,
+as with method arguments. Class field declaration initializers remain unresolved.
+
+### Primitive pointer parameter emission
+
+`int*`, `float*`, `bool*`, `char*`, and `string*` parameters retain their pointer
+marker in free-function prototypes and definitions, static/instance methods, and
+instance `init` methods. `string*` maps to C `const char **`, while `bool*` maps to
+`int*`. This works in ordinary and multi-file entry sources, including inherited
+methods, `this`/`base` forwarding, local construction and explicit `init` calls.
+
+The regression borrows live primitive arrays and an `int*` alias, reads/writes
+their elements and checks exact output. Callers must supply compatible storage
+and keep it alive for the entire call. This adds no shape, lifetime, ownership,
+bounds or null-dereference checking. Address-of and unary dereference, custom-type
+parameters, multiple pointer levels, pointer returns and async paths are not
+qualified by these checks.
+
+Direct `Console.Write(p[i])` and `Console.WriteLine(p[i])` select the primitive
+element format, including `%f` for float and `%c` for char parameters. String
+array/pointer elements print as strings; indexing a scalar string prints a
+character. This also applies to local arrays and inherited member storage in
+ordinary and module-entry programs. It adds no semantic shape or bounds checks.
+Scalar `string text = values[i]` declarations copy indexed storage into
+their own managed allocation before normal block cleanup. See the bounded
+[string ownership checkpoint](../development/string-ownership.md); other string
+ownership paths and general pointer safety remain unqualified.
+
+### Scalar string call initializers
+
+`string text = getText()` evaluates the call once and copies its readable result
+into independent managed storage. Literal, borrowed, managed and null results
+follow this rule for free functions and static/instance/base methods, including
+const declarations and for headers. Normal declaration cleanup releases the copy.
+The caller does not take ownership of the returned pointer: a fresh managed result
+can remain registered until shutdown. Return transfer, early-exit cleanup and
+dangling results remain unqualified; see the
+[ownership checkpoint](../development/string-ownership.md).
 
 ### Single Parameters
 ```dream
@@ -151,7 +265,8 @@ int fib8 = fibonacci(8);     // 21
 ```
 
 ### Functions with Arrays
-Functions can accept and return arrays:
+Array parameters and returns are future syntax. The following examples are
+illustrative and do not compile with the current parameter grammar:
 
 ```dream
 func int sum(int numbers[], int length) {

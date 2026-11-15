@@ -1,0 +1,49 @@
+# Pass checkpoints
+
+| ID | Date | Result | Commit identity |
+| --- | --- | --- | --- |
+| [P0001](P0001-baseline.md) | 2026-11-03 | Reproducible compiler baseline | `bec119b` (legacy, no trailer) |
+| [P0002](P0002-zig-inheritance.md) | 2026-11-03 | Zig 0.17.1 and declaration-based inheritance | `e52280a` (legacy, no trailer) |
+| [P0003](P0003-multi-file.md) | 2026-11-03 | Function modules, dependency and export checks | `6fe29c4`, `Pass-ID: P0003` |
+| [P0004](P0004-daily-agent-workflow.md) | 2026-11-03 | Daily-agent contract, handoff, prompt, and delivery gate | `Pass-ID: P0004` |
+| [P0005](P0005-primitive-return-checks.md) | 2026-11-04 | Primitive return checks, recovered checkout, local-only workflow | `Pass-ID: P0005` |
+| [P0006](P0006-member-access-diagnostics.md) | 2026-11-06 | Member receiver/access diagnostics; recovered passing validation | `Pass-ID: P0006` |
+| [P0007](P0007-loop-optimization-stability.md) | 2026-11-06 | Optimized loop compilation no longer crashes/stalls; skipped fixture now checked | `Pass-ID: P0007` |
+| [P0008](P0008-optimization-emission-design.md) | 2026-11-07 | Source-audited literal-arithmetic IR-to-AST design; implementation remains open | `Pass-ID: P0008` |
+| [P0009](P0009-literal-emission.md) | 2026-11-08 | Checked literal SCCP results reach C/object emission; fallback and internal failures verified | `Pass-ID: P0009` |
+| [P0010](P0010-method-arguments.md) | 2026-11-10 | Primitive scalar method checks; recovered passing full/quick validation | `Pass-ID: P0010` |
+| [P0011](P0011-constructor-arguments.md) | 2026-11-11 | Exact primitive constructor types/arity and artifact-free rejection; final full/quick validation passed | `Pass-ID: P0011` |
+| [P0012](P0012-parser-parameter-recovery.md) | 2026-11-12 | Malformed parameter parsing terminates; 75 bounded ordinary/module/dependency rejections and full/quick checks passed | `Pass-ID: P0012` |
+| [P0013](P0013-pointer-parameter-emission.md) | 2026-11-12 | Primitive pointer parameter signatures preserved; generated-C and exact runtime checks, full/quick checks passed | `Pass-ID: P0013` |
+| [P0014](P0014-indexed-string-ownership.md) | 2026-11-12 | Indexed scalar strings own managed copies; checked lifetime and exact output in both modes, full/quick checks passed | `Pass-ID: P0014` |
+| [P0015](P0015-linux-string-harness.md) | 2026-11-13 | Linux ownership harness flags match runtime; both modes cross-link on Windows and full/quick checks pass | `Pass-ID: P0015` |
+| [P0016](P0016-indexed-console.md) | 2026-11-13 | Indexed primitives preserve console formats; string elements/characters distinguished, both modes and full/quick checks pass | `Pass-ID: P0016` |
+| [P0017](P0017-literal-string-ownership.md) | 2026-11-13 | Scalar literal string declarations own managed copies; checked cleanup and exact output in both modes, full/quick checks pass | `Pass-ID: P0017` |
+| [P0018](P0018-identifier-string-ownership.md) | 2026-11-13 | Scalar identifier string declarations own independent copies; nested source lifetime and both modes/full/quick checks pass | `Pass-ID: P0018` |
+| [P0019](P0019-member-string-ownership.md) | 2026-11-13 | Scalar member string declarations own independent copies; inherited/static/temporary receivers and both modes/full/quick checks pass | `Pass-ID: P0019` |
+| [P0020](P0020-for-header-string-ownership.md) | 2026-11-14 | For-header strings use scoped declarations and loop-exit cleanup; both modes/full/quick checks pass | `Pass-ID: P0020` |
+| [P0021](P0021-call-string-ownership.md) | 2026-11-14 | Scalar string call initializers own copies without result transfer; both modes/full/quick checks pass | `Pass-ID: P0021` |
+| [P0022](P0022-assigned-string-ownership.md) | 2026-11-14 | Owned scalar replacements copy before old-value release; self/nested assignment, null defaults, both modes/full/quick checks pass | `Pass-ID: P0022` |
+| [P0023](P0023-borrowed-string-containers.md) | 2026-11-14 | Borrowed string arrays/pointers avoid scalar cleanup; four checked modes preserve owned releases, full/quick checks pass | `Pass-ID: P0023` |
+| [P0024](P0024-loop-exit-strings.md) | 2026-11-14 | Break/continue release exited owned scalar strings; target/header boundaries, both checked modes and full/quick checks pass | `Pass-ID: P0024` |
+| [P0025](P0025-compiler-dogfooding.md) | 2026-11-14 | Production compiler uses Dream source normalizer; host seed, function-library emission, differential bytes and full/quick/cross checks pass | `Pass-ID: P0025` |
+| [P0026](P0026-repository-cleanup.md) | 2026-11-14 | Eleven obsolete files removed; operational docs consolidated; source hashes/discovery unchanged and full/quick checks pass | `Pass-ID: P0026` |
+| [P0027](P0027-go-tooling-cleanup.md) | 2026-11-14 | Obsolete Go builders/modes retired; quick selectors preserved, failure probes and full/quick checks pass | `Pass-ID: P0027` |
+| [P0028](P0028-docs-website.md) | 2026-11-14 | Approved square-edged homepage/reader; 21 routes, 8 checks, browser QA and exact-output examples; live main:/docs release awaits owner instruction | `Pass-ID: P0028` |
+
+**P0028 website validation passed. Verify integration publication/CI; live Pages release awaits explicit main publication instruction.**
+Verify current git history and delivery before allocating another ID.
+Allocate monotonically, never reuse a committed ID, and record a blocked attempt
+without presenting it as a delivered pass. A run that only reports a blocker need not
+make an empty commit. Recover a documented unpublished pass before allocating new work.
+
+Use [TEMPLATE.md](TEMPLATE.md). Records contain a parent SHA, test evidence, limits,
+and next steps. Find a record's own commit through its exact trailer:
+
+```sh
+git log --all --grep='^Pass-ID: P0004$' --format='%h %s' -1
+```
+
+A commit cannot contain its own final SHA. The git history and final remote-ref
+verification supply that identity. Do not amend or rewrite old checkpoints to add IDs.
+Historical records describe their measured state; they are not a current test run.

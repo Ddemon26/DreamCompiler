@@ -1,0 +1,18 @@
+// Expected: 7
+// Expected: 3
+// Expected: 10
+class Ledger {
+    int value;
+    func int readValue() { return this.value; }
+}
+class Account : Ledger {
+    int value;
+    func void fill() { base.value = 3; this.value = 7; }
+    func int total() { return base.readValue() + this.value; }
+}
+Account account = new Account();
+account.fill();
+Console.WriteLine(account.value);
+Ledger ledger = account;
+Console.WriteLine(ledger.readValue());
+Console.WriteLine(account.total());

@@ -1,0 +1,36 @@
+// Expected: 42
+// Expected: 1.500000
+// Expected: 1
+// Expected: Z
+// Expected: label
+// Expected: 7
+// Expected: 8
+// Expected: pair
+// Expected: 9
+// Expected: 10
+// Expected: 2.500000
+class Parent {
+    func int integer(int n) { return n; }
+    static func float real(float n) { return n; }
+    func bool flag(bool n) { return n; }
+    static func char marker(char n) { return n; }
+    func string text(string n) { return n; }
+    func int pair(int first, string second) { Console.WriteLine(second); return first; }
+}
+class Child : Parent {
+    func int throughBase(int n) { return base.integer(n); }
+    func int throughThis(int n) { return this.integer(n); }
+}
+Child child = new Child();
+Parent parent = child;
+int number = 40;
+Console.WriteLine(child.integer(number + 2));
+Console.WriteLine(Child.real(1.5));
+Console.WriteLine(child.flag(number < 42));
+Console.WriteLine(child.marker('Z'));
+Console.WriteLine(child.text("la" + "bel"));
+Console.WriteLine(child.throughBase(7));
+Console.WriteLine(child.throughThis(8));
+Console.WriteLine(child.pair(9, "pair"));
+Console.WriteLine(parent.integer(true ? 10 : 11));
+Console.WriteLine(child.real(2 + 0.5));

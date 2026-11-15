@@ -1,13 +1,12 @@
 #include "../codegen/codegen.h"
-#include "../codegen/module.h"
-#include "../ir/lower.h"
+#include "modules.h"
+#include "source_text.h"
 #include "../lexer/lexer.h"
-#include "../opt/pipeline.h"
+#include "../opt/literal_fold.h"
 #include "../parser/diagnostic.h"
 #include "../parser/parser.h"
 #include "../parser/warnings.h"
 #include "../sem/analysis.h"
-#include "../ssa/ssa.h"
 #include "../util/console_debug.h"
 #include "../util/platform.h"
 #include <stdio.h>
@@ -33,19 +32,6 @@
  * @return char* Pointer to the dynamically allocated buffer containing the
  * file contents, or NULL if the file could not be read.
  */
-static void normalize_newlines(char *buf) {
-  char *r = buf, *w = buf;
-  while (*r) {
-    if (r[0] == '\r' && r[1] == '\n') {
-      *w++ = '\n';
-      r += 2;
-    } else {
-      *w++ = *r++;
-    }
-  }
-  *w = 0;
-}
-
 static char *read_file(const char *path) {
   FILE *f = fopen(path, "rb");
   if (!f)
@@ -85,12 +71,21 @@ int main(int argc, char *argv[]) {
   bool dev_mode = false;    /**< Flag for development mode (no compilation). */
   bool multi_file = false;  /**< Flag for multi-file compilation mode. */
   const char *input = NULL; /**< Path to the input file. */
+  const char *library_output = NULL;
   
   // Warning configuration options
   bool warnings_as_errors = false;
   bool disable_warnings = false;
 
   for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--emit-library-c") == 0) {
+      if (library_output || i + 1 >= argc || argv[i + 1][0] == '-') {
+        fprintf(stderr, "--emit-library-c requires one output path\n");
+        return 1;
+      }
+      library_output = argv[++i];
+      continue;
+    }
     if (strcmp(argv[i], "-O1") == 0 || strcmp(argv[i], "--O1") == 0) {
       opt_level = 1;
       continue;
@@ -133,11 +128,19 @@ int main(int argc, char *argv[]) {
       multi_file = true;
       continue;
     }
+    if (input) {
+      fprintf(stderr, "pass one entry file; --multi-file resolves its imports automatically\n");
+      return 1;
+    }
     input = argv[i];
   }
 
   if (!input) {
     fprintf(stderr, "usage: %s [options] file\n", argv[0]);
+    return 1;
+  }
+  if (library_output && (multi_file || emit_obj)) {
+    fprintf(stderr, "--emit-library-c cannot be combined with --multi-file or --emit-obj\n");
     return 1;
   }
 
@@ -146,7 +149,7 @@ int main(int argc, char *argv[]) {
     perror("read_file");
     return 1;
   }
-  normalize_newlines(src);
+  dream_normalize_newlines(src);
 
   Console.WriteLine("compiling %s", input);
 
@@ -154,6 +157,9 @@ int main(int argc, char *argv[]) {
   arena_init(&arena);
   Parser p;
   parser_init(&p, &arena, src);
+  SemAnalyzer sem;
+  sem_analyzer_init(&sem, &arena);
+  int status = 0;
   
   // Apply warning configuration from command line
   p.warn_config.warnings_as_errors = warnings_as_errors;
@@ -165,18 +171,67 @@ int main(int argc, char *argv[]) {
   analyze_warnings(&p, root);
   
   print_diagnostics(src, &p.diags);
+  if (diagnostics_have_errors(&p.diags)) {
+    status = 1;
+    goto cleanup;
+  }
 
-  SemAnalyzer sem;
-  sem_analyzer_init(&sem, &arena);
+  if (multi_file) {
+    if (!modules_expand_program(&arena, input, root, src, p.warn_config, &root)) {
+      status = 1;
+      goto cleanup;
+    }
+  } else {
+    for (size_t i = 0; i < root->as.block.len; ++i) {
+      NodeKind kind = root->as.block.items[i]->kind;
+      if (kind == ND_MODULE || kind == ND_IMPORT || kind == ND_EXPORT) {
+        fprintf(stderr, "error: module directives require --multi-file\n");
+        status = 1;
+        goto cleanup;
+      }
+    }
+  }
+
   sem_analyze_program(&sem, root);
   print_diagnostics(src, &sem.diags);
+  if (diagnostics_have_errors(&sem.diags)) {
+    status = 1;
+    goto cleanup;
+  }
 
-  int nvars = 0;
-  CFG *cfg = ir_lower_program(root, &nvars);
-  cfg_compute_dominators(cfg);
-  /* SSA construction disabled for now while control-flow lowering evolves */
-  run_pipeline(cfg, opt_level);
-  cfg_free(cfg);
+  if (opt_level > 0 && !fold_literal_arithmetic(&arena, root)) {
+    status = 1;
+    goto cleanup;
+  }
+
+  if (library_output) {
+    /* Never silently discard executable top-level statements or an entry point. */
+    for (size_t i = 0; i < root->as.block.len; ++i) {
+      Node *node = root->as.block.items[i];
+      if (node->kind != ND_FUNC || node->as.func.is_async ||
+          (node->as.func.name.len == 4 &&
+           memcmp(node->as.func.name.start, "main", 4) == 0)) {
+        fprintf(stderr, "%s:%zu:%zu: error: --emit-library-c requires synchronous function declarations without main\n",
+                input, node->pos.line, node->pos.column);
+        status = 1;
+        goto cleanup;
+      }
+    }
+    FILE *out = fopen(library_output, "w");
+    if (!out) {
+      perror("library C output");
+      status = 1;
+      goto cleanup;
+    }
+    codegen_emit_library_c(root, out, input);
+    int write_failed = ferror(out);
+    if (fclose(out) != 0) write_failed = 1;
+    if (write_failed) {
+      fprintf(stderr, "failed to write library C output\n");
+      status = 1;
+    }
+    goto cleanup;
+  }
 
   if (emit_c) {
     dr_mkdir("build");
@@ -216,7 +271,8 @@ int main(int argc, char *argv[]) {
     FILE *out = fopen("build/bin/dream.c", "w");
     if (!out) {
       perror("fopen");
-      return 1;
+      status = 1;
+      goto cleanup;
     }
     codegen_emit_c(root, out, input);
     fclose(out);
@@ -224,7 +280,7 @@ int main(int argc, char *argv[]) {
     // In dev mode, just generate C code and exit
     if (dev_mode) {
       printf("C code generated successfully at build/bin/dream.c\n");
-      return 0;
+      goto cleanup;
     }
     
     const char *cc = getenv("CC");
@@ -235,7 +291,7 @@ int main(int argc, char *argv[]) {
       cc = "gcc";
 #endif
     }
-    char cmd[256];
+    char cmd[1024];
     int res;
     const char *optflag =
         opt_level >= 3 ? "-O3" : (opt_level >= 2 ? "-O2" : "");
@@ -250,15 +306,18 @@ int main(int argc, char *argv[]) {
     res = system(cmd);
     if (res != 0) {
       fprintf(stderr, "failed to run: %s\n", cmd);
-      return 1;
+      status = 1;
+      goto cleanup;
     }
   } else if (emit_obj) {
-    codegen_emit_obj(root, "a.o", input);
+    if (!codegen_emit_obj(root, "a.o", input)) status = 1;
   }
 
+cleanup:
   free(src);
   free(p.diags.data);
+  free(p.types);
   sem_analyzer_free(&sem);
-  free(arena.ptr);
-  return 0;
+  arena_free(&arena);
+  return status;
 }

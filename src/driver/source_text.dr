@@ -1,0 +1,18 @@
+// Production source normalization; the C seed is linked into stage zero only.
+// ASCII CR = 13, LF = 10, NUL = 0. Borrow the writable input without allocation.
+func void dream_normalize_newlines(char* buffer) {
+    char* read = buffer;
+    char* write = buffer;
+    while (read[0] != 0) {
+        if (read[0] == 13 && read[1] == 10) {
+            write[0] = 10;
+            write++;
+            read += 2;
+        } else {
+            write[0] = read[0];
+            write++;
+            read++;
+        }
+    }
+    write[0] = 0;
+}
