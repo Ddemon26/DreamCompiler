@@ -102,8 +102,14 @@ local's allocation, releases the other qualified locals, and returns the saved
 pointer. Parentheses and const locals follow the same rule. The returned allocation
 keeps its existing lifetime until shutdown; a caller declaration still copies it
 without consuming the original. This avoids releasing returned storage but does
-not eliminate retained results. Other string return expressions keep their previous
-emission, including borrowed parameters, literals, calls and conditionals.
+not eliminate retained results.
+
+For a direct string-literal result, P0038 releases all qualified locals and returns
+the literal's static pointer. Parenthesized, empty and escaped literals qualify.
+No result allocation or retain is needed; caller declarations still copy results.
+The same conditional block and temporary-name rules apply. Other string return
+expressions keep their previous emission, including borrowed parameters, calls and
+conditionals (even a conditional whose branches are both literals).
 
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership

@@ -769,7 +769,9 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_dedent(b);
       c_out_write(b, "}");
     } else if (ctx->is_sync_function && n->as.ret.expr &&
-               (is_primitive_scalar_result(ctx->ret_type) || preserved) &&
+               (is_primitive_scalar_result(ctx->ret_type) || preserved ||
+                (ctx->ret_type == TK_KW_STRING &&
+                 n->as.ret.expr->kind == ND_STRING)) &&
                ctx->exception_depth == 0 && has_return_cleanup(ctx)) {
       // Preflight lowered names as well as bindings: a C initializer is already
       // inside its declarator's scope, so the temporary must not shadow a call.
@@ -785,6 +787,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_free(&value);
 
       // Evaluate exactly once before freeing any storage read by the result.
+      // Direct string literals have static storage independent of every local.
       // Keep bindings for other branches; keep unbraced returns conditional.
       c_out_write(b, "{\n");
       c_out_indent(b);

@@ -431,14 +431,14 @@ The returned string is independent of the locals being released, including a
 caller copy of an earlier returned allocation. Allocation failure remains null.
 
 This rule deliberately requires a direct known-owned identifier. Borrowed parameter,
-literal, member, indexed, call, assignment, concatenation and conditional *return
+member, indexed, call, assignment, concatenation and conditional *return
 expressions* retain prior emission, even when they mention owned locals. Their
 source/alias lifetime needs separate qualification; a universal release could free
 the result's backing, while universally copying results would add retained storage.
 Active try/catch/finally returns and async exits also keep their prior emission.
-Direct literals are the next bounded candidate because their static storage
-survives local cleanup. General borrowed-source and result-consumption policies
-remain open; never apply this predicate to an arbitrary string expression.
+P0038 separately qualifies direct literals below. Borrowed-source and result-
+consumption policies remain open; never apply this predicate to an arbitrary
+string expression.
 
 The [regression](../../tests/basics/memory/local_string_return.dr) and
 `TestCompiler_LocalStringReturn` reproduce **44 live allocations before shutdown**
@@ -449,9 +449,39 @@ The shutdown registry must still be empty. Mixed/nested scopes, const/empty/null
 results, later declarations, unbraced true/false paths, loops/switches, headers,
 replacement/append, recursion, free/static/instance methods, name collisions and
 normal exception completion are covered. Caller backing and receiver survive;
-a caller snapshot survives backing replacement. Unsupported result forms and active
-exception exits have unchanged-emission controls only and are not executed here.
+a caller snapshot survives backing replacement. Borrowed/compound result forms
+and active exception exits have unchanged-emission controls only and are not
+executed here. The unused literal control now checks P0038 cleanup emission;
+its runtime counts are unchanged.
 The existing empty-before-shutdown checks remain intact for earlier fixtures.
+
+## Direct literal string returns (P0038)
+
+A synchronous string function or static/instance method returning a direct string
+literal now releases all qualified string/scalar-class locals in reverse declaration
+order, including active body/header scopes. Parentheses are transparent. Empty and
+escaped literals follow the same rule. The literal's C storage has static lifetime,
+so cleanup cannot invalidate the result. No result allocation, copy, retain or
+consumption is added. Caller declarations retain their existing copy behavior.
+
+When cleanup is needed, the existing collision-safe temporary captures the literal
+pointer before releases. Unbraced returns remain conditional and emitter metadata
+remains available for other paths. With no qualified locals, emission stays a direct
+return. Only `ND_STRING` results qualify: even a conditional choosing two literals
+keeps its prior emission. Borrowed/member/index/call/assignment/concatenation results,
+async exits and returns inside active try/catch/finally remain separate.
+
+The [literal-return regression](../../tests/basics/memory/literal_string_return.dr)
+and `TestCompiler_LiteralStringReturn` failed the empty-registry-before-shutdown
+assertion in both modes before the fix. Both now require **51 nonnull releases**
+(18 class instances and 33 strings), **19 exact output lines** including an empty
+line, and an empty registry before and after shutdown. Exact C sequences check
+reverse cleanup order, no returned-literal copy, temporary collisions and unchanged
+borrowed/compound/active-exception emission. Mixed/nested/null/const/empty locals,
+later declarations, true/false unbraced paths, while/do/for/switch, header updates,
+zero/multiple iterations, recursion, methods, caller snapshot/backing/receiver
+survival, escaped results and normal exception completion execute. Both quick
+protocols and CI select the group. Existing allocator/refcount assertions remain.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

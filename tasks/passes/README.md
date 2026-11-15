@@ -39,8 +39,9 @@
 | [P0035](P0035-void-return-classes.md) | 2026-11-15 | Scalar class locals released before bare synchronous void return; both checked modes, 144 Dream passes, 28 quick groups and Linux cross-build passed | `Pass-ID: P0035` |
 | [P0036](P0036-scalar-return-cleanup.md) | 2026-11-15 | Primitive scalar returns capture results before scoped string/class cleanup; both checked modes, 145 Dream passes, 29 quick groups and Linux cross-build passed | `Pass-ID: P0036` |
 | [P0037](P0037-local-string-return.md) | 2026-11-15 | Direct owned-local string results survive reverse-order cleanup of other locals; both modes, 146 Dream passes, 30 quick groups and Linux cross-build passed | `Pass-ID: P0037` |
+| [P0038](P0038-literal-string-return.md) | 2026-11-15 | Direct literal string results survive full scoped cleanup; both modes, 147 Dream passes, 31 quick groups and Linux cross-build passed | `Pass-ID: P0038` |
 
-**Verify P0037 publication/native CI, then qualify direct literal string-return cleanup under T011.**
+**Verify P0038 publication/native CI, then qualify conditional string returns with all-literal value branches under T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

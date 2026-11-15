@@ -1,0 +1,159 @@
+// Expected: early
+// Expected: fall
+// Expected: loop
+// Expected: after
+// Expected: case
+// Expected:
+// Expected: while
+// Expected: do
+// Expected: static
+// Expected: instance
+// Expected: recursive
+// Expected: completed
+// Expected: zero
+// Expected: collision
+// Expected: quoted "value"
+// Expected: plain
+// Expected: reader
+// Expected: backing
+// Expected: early
+class LiteralReturnToken { }
+func string nestedLiteral(bool stop, string source, string *pointer) {
+    LiteralReturnToken outerOwner = new LiteralReturnToken();
+    string first = source;
+    string absent;
+    const string empty = "";
+    {
+        LiteralReturnToken innerOwner = new LiteralReturnToken();
+        string innerText = "discard";
+        if (stop) return ("early");
+        string late = "late";
+    }
+    return "fall";
+}
+func string forLiteral(bool stop) {
+    LiteralReturnToken forOwner = new LiteralReturnToken();
+    int i = 0;
+    for (string header = "header"; i < 2; header += "x") {
+        string bodyText = "body";
+        LiteralReturnToken bodyOwner = new LiteralReturnToken();
+        if (stop) return "loop";
+        i++;
+    }
+    return "after";
+}
+func string switchLiteral(int choice) {
+    string switchText = "switch";
+    switch (choice) {
+        case 1:
+            string caseText = "case";
+            LiteralReturnToken caseOwner = new LiteralReturnToken();
+            return "case";
+        default: break;
+    }
+    return "";
+}
+func string whileLiteral() {
+    LiteralReturnToken whileOwner = new LiteralReturnToken();
+    int i = 0;
+    while (i < 2) {
+        string whileText = "while";
+        if (i++ == 1) return "while";
+    }
+    return "unused";
+}
+func string doLiteral() {
+    string doText = "do";
+    do {
+        LiteralReturnToken doOwner = new LiteralReturnToken();
+        return "do";
+    } while (true);
+}
+class LiteralReturnReader {
+    string label;
+    func init() { this.label = "reader"; }
+    static func string readStatic() {
+        string staticText = "discard";
+        return "static";
+    }
+    func string readInstance() {
+        LiteralReturnToken instanceOwner = new LiteralReturnToken();
+        string instanceText = "discard";
+        return "instance";
+    }
+}
+func string recursiveLiteral(int depth) {
+    string recursiveText = "discard";
+    LiteralReturnToken recursiveOwner = new LiteralReturnToken();
+    if (depth > 0) recursiveLiteral(depth - 1);
+    return "recursive";
+}
+func string completedLiteral() {
+    string completedText = "discard";
+    try { string tryText = "try"; }
+    catch { }
+    finally { LiteralReturnToken finallyOwner = new LiteralReturnToken(); }
+    return "completed";
+}
+func string zeroLiteral() {
+    string zeroText = "discard";
+    for (string zeroHeader = "header"; false;) {
+        string neverText = "never";
+        return "never";
+    }
+    return "zero";
+}
+func string collisionLiteral() {
+    string __dream_return_0 = "discard";
+    int __dream_return_1 = 1;
+    return "collision";
+}
+func string escapedLiteral() {
+    string escapedText = "discard";
+    return "quoted \"value\"";
+}
+func string noLocals() { return "plain"; }
+// Active exception exits and borrowed/compound results remain emission-only
+// controls. They are deliberately not executed by this lifetime regression.
+func string pendingLiteral() {
+    string pendingOuter = "discard";
+    try { string pendingTry = "try"; return "try"; }
+    catch { string pendingCatch = "catch"; return "catch"; }
+    finally { string pendingFinally = "finally"; return "finally"; }
+    return "done";
+}
+func string borrowedLiteral(string source) {
+    string borrowedDiscard = "discard";
+    return source;
+}
+func string compoundLiteral(bool choice) {
+    string compoundDiscard = "discard";
+    return choice ? "left" : "right";
+}
+func void exercise() {
+    string backing = "backing";
+    string values[1];
+    values[0] = backing;
+    string snapshot = nestedLiteral(true, backing, values);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(nestedLiteral(false, backing, values));
+    Console.WriteLine(forLiteral(true));
+    Console.WriteLine(forLiteral(false));
+    Console.WriteLine(switchLiteral(1));
+    Console.WriteLine(switchLiteral(2));
+    Console.WriteLine(whileLiteral());
+    Console.WriteLine(doLiteral());
+    Console.WriteLine(LiteralReturnReader.readStatic());
+    LiteralReturnReader reader = new LiteralReturnReader();
+    Console.WriteLine(reader.readInstance());
+    Console.WriteLine(recursiveLiteral(2));
+    Console.WriteLine(completedLiteral());
+    Console.WriteLine(zeroLiteral());
+    Console.WriteLine(collisionLiteral());
+    Console.WriteLine(escapedLiteral());
+    Console.WriteLine(noLocals());
+    Console.WriteLine(reader.label);
+    Console.WriteLine(backing);
+    Console.WriteLine(snapshot);
+}
+exercise();

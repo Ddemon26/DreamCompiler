@@ -134,8 +134,8 @@ func string doResult() {
         return doText;
     } while (true);
 }
-// Emission-only controls: these result forms and active exception exits are
-// outside the direct owned-local boundary and are not called here.
+// Emission-only controls: borrowed/compound results and active exception exits
+// remain unqualified. The unused literal checks P0038 cleanup emission.
 func string pendingResult() {
     string pendingOuter = "outer";
     try { string pendingTry = "try"; return pendingTry; }

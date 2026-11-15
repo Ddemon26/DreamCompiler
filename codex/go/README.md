@@ -189,9 +189,21 @@ reference. Before P0037, 44 allocations remained. Exact C checks preserve the
 returned binding and reverse-order cleanup of the other locals. Nested/const/null/
 empty results, loops/switches, headers, unbraced paths, append/replacement, recursion,
 methods, caller survival, name collisions and normal exception completion are
-covered. Other result forms and active exception exits have emission controls only.
+covered. Borrowed/compound results and active exception exits have emission controls only;
+the unused direct-literal control now checks P0038 cleanup emission.
 No result copy/consumption is introduced; shutdown still reclaims every retained
 result. Both quick protocols and CI select this group.
+
+`TestCompiler_LiteralStringReturn` checks direct string-literal returns in both
+modes: 51 nonnull releases (18 classes, 33 strings), 19 output lines and an empty
+registry before shutdown. Both modes failed that lifetime assertion before P0038.
+Mixed/nested locals, null/const/empty storage, later declarations, unbraced paths,
+loops/switches, headers/updates, zero/multiple iterations, recursion, methods,
+temporary-name collisions and normal exception completion are covered. Results
+include parenthesized, empty and escaped literals; caller backing/receiver/snapshot
+survive. Exact C checks require reverse cleanup order and unchanged borrowed,
+compound and active-exception emission. No literal result allocation or retain is
+added. Both quick protocols and CI select the group.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

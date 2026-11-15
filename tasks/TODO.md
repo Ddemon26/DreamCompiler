@@ -441,9 +441,22 @@ result forms and active exception exits retain their emission. Full Windows:
 146 passed, 18 skipped, no failures/errors; 30 quick groups, five runner tests and
 Linux cross-build passed. See [P0037](passes/P0037-local-string-return.md).
 
-Broader T011 remains open. Verify P0037 publication/native CI and repair failures
-first. Next reproduce locals retained by direct literal string returns and qualify
-cleanup using their static-result lifetime. Keep borrowed/compound result lifetime,
+P0038 reproduces retained scoped allocations before shutdown on direct literal
+string returns in both modes, then releases all qualified string/class locals
+before returning the static pointer. No result allocation or retain is added.
+Each mode requires 51 nonnull releases (18 classes, 33 strings), 19 output lines,
+exact C sequences and an empty pre-shutdown registry. Parenthesized/empty/escaped
+literals, nested/header scopes, unbraced paths, loops/switches, header updates,
+zero/multiple iterations, recursion, methods, collisions, caller survival and normal
+exception completion execute; borrowed/compound/active-exception controls remain
+emission-only. Full Windows: 147 passed, 18 skipped, zero failures/errors;
+31 Go quick groups, five runner tests and Linux cross-build passed. See
+[P0038](passes/P0038-literal-string-return.md).
+
+Broader T011 remains open. Verify P0038 publication/native CI and repair failures
+first. Next reproduce conditional string returns with all-literal value branches;
+qualify static-result lifetime and once-only condition evaluation before cleanup.
+Keep general borrowed/compound result lifetime,
 general caller consumption, pointer/class result transfer, aliases/containers/
 destructors/fields, async and exception unwinding separate. String-index return
 typing remains limited; custom-type for headers and direct class null initializers

@@ -463,6 +463,35 @@ func checkStorageOwnership(t *testing.T, fixture string, releases int, emittedCh
 	checkStorageOwnershipWithLiveCount(t, fixture, releases, emittedChecks, want, liveCount, forbiddenChecks...)
 }
 
+func TestCompiler_LiteralStringReturn(t *testing.T) {
+	// Static results need no retained allocation; every scoped owner is released.
+	checkStorageOwnership(t, "literal_string_return.dr", 51, []string{
+		`{constchar*__dream_return_0="early";dr_release(innerText);dr_release(innerOwner);dr_release(empty);dr_release(absent);dr_release(first);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="fall";dr_release(empty);dr_release(absent);dr_release(first);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="loop";dr_release(bodyOwner);dr_release(bodyText);dr_release(header);dr_release(forOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="after";dr_release(forOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="case";dr_release(caseOwner);dr_release(caseText);dr_release(switchText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="";dr_release(switchText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="while";dr_release(whileText);dr_release(whileOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="do";dr_release(doOwner);dr_release(doText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="static";dr_release(staticText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="instance";dr_release(instanceText);dr_release(instanceOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="recursive";dr_release(recursiveOwner);dr_release(recursiveText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="completed";dr_release(completedText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="never";dr_release(neverText);dr_release(zeroHeader);dr_release(zeroText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0="zero";dr_release(zeroText);return__dream_return_0;}`,
+		`{constchar*__dream_return_2="collision";dr_release(__dream_return_0);return__dream_return_2;}`,
+		`{constchar*__dream_return_0="quoted\"value\"";dr_release(escapedText);return__dream_return_0;}`,
+		`return"plain";`, `return"try";dr_release(pendingTry);`,
+		`return"catch";dr_release(pendingCatch);`, `return"finally";dr_release(pendingFinally);`,
+		`returnsource;dr_release(borrowedDiscard);`,
+		`return(choice?"left":"right");dr_release(compoundDiscard);`,
+	},
+		"early\nfall\nloop\nafter\ncase\n\nwhile\ndo\nstatic\ninstance\nrecursive\ncompleted\nzero\ncollision\nquoted \"value\"\nplain\nreader\nbacking\nearly\n", true,
+		`dr_release(this);`, `dr_release(source);`, `dr_release(pointer);`,
+		`dr_release(values);`, `dream_string_copy("early")`)
+}
+
 func TestCompiler_LocalStringReturn(t *testing.T) {
 	// Seventeen nonnull returned allocations retain their existing lifetime;
 	// all other scoped allocations must be released (20 classes + 25 strings).
@@ -489,7 +518,7 @@ func TestCompiler_LocalStringReturn(t *testing.T) {
 		`returnpendingCatch;dr_release(pendingCatch);`,
 		`returnpendingFinally;dr_release(pendingFinally);`,
 		`returnsource;dr_release(borrowedDiscard);`,
-		`return"literal";dr_release(literalDiscard);`,
+		`{constchar*__dream_return_0="literal";dr_release(literalDiscard);return__dream_return_0;}`,
 		`return(choice?left:right);dr_release(right);dr_release(left);`,
 	},
 		"backing value\nbacking value\nloop\nfallback\ncase\nswitch\nnull\nempty\nbacking value suffix\nstatic\nbacking value\nbacking value\nbacking value\ncompleted\nzero\nwhile\ndo\nreader\nbacking value\nbacking value\nchanged\n", 17,
