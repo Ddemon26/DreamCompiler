@@ -1,5 +1,46 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 15, 2026 UTC
+
+**Pass:** P0029 - deployed documentation release verification
+
+**Scope/platform:** documentation/evidence only, Windows; public Pages HTTPS reads
+
+- P0028 integration publication verified: fetched branch and `git ls-remote`
+  matched `9edc4b9ba0eb636e091ba9a3df9d4e661646d2e5`.
+- [PR #231](https://github.com/Ddemon26/DreamCompiler/pull/231) was already merged
+  outside this run; merge `6b34823f641bdb4585d7f415b6a08acd0074a791`.
+  Pages reports **built, legacy, `main:/docs`**. Its
+  [deployment](https://github.com/Ddemon26/DreamCompiler/actions/runs/43660436390)
+  build/report/deploy jobs **passed**.
+- Native Linux/Windows [P0028 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43658070457)
+  and [merged-main CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43660437950)
+  jobs **passed**, including build, runner, quick and Dream suite steps.
+- `node --check docs/site.js`: **passed**.
+- `node --test docs/site.test.mjs`: **8 passed, 0 failed/skipped**, 118.474 ms.
+- Live HTTPS verification at **01:06:30 UTC**: **27 HTTP 200 responses** matched
+  exact P0028 Git blob bytes: homepage, stylesheet, four JavaScript modules and
+  **all 21 sidebar Markdown documents**. Module/CSS MIME and quick-start query/
+  deep-link shell assertions **passed**. Merge `docs/` tree matched P0028.
+- No browser/app was available to automation. **Live browser rendering and
+  interactions were not rerun**. P0028's dated local browser evidence remains
+  separate; HTTP success alone does not qualify deployed interactions.
+- No compiler/runtime/test/build inputs changed. Local full compiler, Go,
+  runner and cross-build **not rerun**. Reused **P0027 / November 14, 2026 UTC**:
+  **136 Dream passes, 18 skips, no failures**, **22 quick groups**, **5 runner tests**.
+  No skipped fixtures or legacy tutorial/API claims were requalified.
+- **93 local Markdown links resolved** across six revised/new documents;
+  **408 protected tracked compiler/test/plugin/build/CI inputs unchanged**.
+  Change scope, referenced local paths, full diff and `git diff --check` passed.
+
+P0028's release gate is resolved. P0029 changes only documentation/evidence on
+the approved integration branch; no merge or Pages-setting change was performed.
+See [P0029](passes/P0029-docs-release-verification.md) for evidence and handoff.
+
+---
+
+## Historical P0028 checkpoint - November 14, 2026
+
 **Date:** November 14, 2026 (America/Vancouver)
 
 **Pass:** P0028 - square-edged homepage and documentation reader

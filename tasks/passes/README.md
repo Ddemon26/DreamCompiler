@@ -30,8 +30,9 @@
 | [P0026](P0026-repository-cleanup.md) | 2026-11-14 | Eleven obsolete files removed; operational docs consolidated; source hashes/discovery unchanged and full/quick checks pass | `Pass-ID: P0026` |
 | [P0027](P0027-go-tooling-cleanup.md) | 2026-11-14 | Obsolete Go builders/modes retired; quick selectors preserved, failure probes and full/quick checks pass | `Pass-ID: P0027` |
 | [P0028](P0028-docs-website.md) | 2026-11-14 | Approved square-edged homepage/reader; 21 routes, 8 checks, browser QA and exact-output examples; live main:/docs release awaits owner instruction | `Pass-ID: P0028` |
+| [P0029](P0029-docs-release-verification.md) | 2026-11-15 | Existing Pages release verified: merged PR, passing native CI/deployment, 27 exact live responses and 8 Node checks; T011 unblocked | `Pass-ID: P0029` |
 
-**P0028 website validation passed. Verify integration publication/CI; live Pages release awaits explicit main publication instruction.**
+**P0029 verified P0028's existing live release. Verify P0029 integration publication/CI, then resume T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

@@ -348,7 +348,9 @@ allocator/refcount/shutdown assertions remain. Full suite: 136 passed, 18 skippe
 no failures/errors; twenty-one Go quick groups, five Python tests and Linux
 cross-build passed. See [P0024](passes/P0024-loop-exit-strings.md).
 
-Broader T011 remains open. Verify P0024 publication/native CI first. Next qualify
+Broader T011 remains open. P0029 verified P0028 publication/native CI and resolved
+the T014 live-release gate. Verify the latest integration pass's publication/CI,
+repairing failures first. Next qualify
 scalar conditional (`?:`) string initializers using checked lifetime evidence for
 literal/borrowed/managed/null branches, once-only branch evaluation and independent
 storage in ordinary/module-entry modes. Class-instance cleanup on break/continue,
@@ -387,7 +389,7 @@ retained because repository metadata shows an active Pages site from `main:/docs
 they cannot be treated as unused from a local reference scan. Audit their paths
 separately, and qualify replacement coverage before pruning unique cgo fixtures.
 
-## T014 - Modernize the Pages website (implementation completed in P0028; live release pending)
+## T014 - Modernize the Pages website (completed in P0028/P0029)
 
 The owner approved the Source first homepage, Guide page reader, Workbench palette,
 and square corners. P0028 implements them with real Markdown routing, 21 sidebar
@@ -396,11 +398,16 @@ checks, all sidebar renderings, browser interaction/overflow/sanitization checks
 two exact-output examples and protected source hashes passed. See
 [P0028](passes/P0028-docs-website.md) for evidence and untested limits.
 
-Acceptance for live release: verify integration push/CI, obtain explicit owner
-instruction to publish from `main:/docs`, and inspect the deployed homepage/docs.
-The current branch push alone does not update Pages. Do not merge into `main`,
-change Pages settings or publish another hosted copy without new authorization.
-Legacy tutorial/API content and body-link accuracy remain a separate audit.
+P0029 found PR #231 already merged outside the automation, with successful native
+integration/merged-main CI and Pages deployment. The live homepage, stylesheet,
+four modules and all 21 sidebar documents returned HTTP 200 and matched P0028's
+committed bytes; MIME and query/deep-link shell checks passed. Eight Node checks
+also passed. Browser inventory was empty, so deployed rendering/interactions were
+not rerun; P0028's dated local browser qualification remains separate. See
+[P0029](passes/P0029-docs-release-verification.md). The release gate is resolved;
+resume T011 after the latest integration publication/CI verification. Future
+`main` merges, changed Pages settings or another hosted copy still require new
+authorization. Legacy tutorial/API content and body-link accuracy remain separate.
 
 ## Later work
 

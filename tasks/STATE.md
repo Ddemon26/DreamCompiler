@@ -1,48 +1,49 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0028 - square-edged homepage and documentation reader**.
-- Record: [P0028](passes/P0028-docs-website.md).
-- Parent/fetched approved remote: `4f1c24ac6c5e88892666ed0e87066a0ecf01c430` (P0027).
-- Resolve the pass commit by its exact `Pass-ID: P0028` trailer.
+- Current pass: **P0029 - verify the deployed documentation release**.
+- Record: [P0029](passes/P0029-docs-release-verification.md).
+- Parent/fetched approved remote: `9edc4b9ba0eb636e091ba9a3df9d4e661646d2e5` (P0028).
+- Resolve the pass commit by its exact `Pass-ID: P0029` trailer.
 - Integration publication requires push and matching `git ls-remote`.
-- **Live Pages release requires new owner instruction: Pages still serves `main:/docs`.**
+- **P0028's live release gate is resolved. T011 is the next compiler task.**
 
-The owner approved the Source first homepage and Guide page documentation layout,
-with Workbench's dark/lavender styling, then requested square edges throughout.
-P0028 implements those choices with no rounded controls/pills or decorative
-shadows. The same structure supports an optional light theme. The static site
-has no installation/build/CDN requirement. Local Marked and DOMPurify modules
-are pinned, integrity checked and licensed.
+P0028 implemented the approved square-edged homepage and documentation reader.
+Since its handoff, [PR #231](https://github.com/Ddemon26/DreamCompiler/pull/231)
+was merged into `main` outside this run, at
+`6b34823f641bdb4585d7f415b6a08acd0074a791` on November 15, 2026 UTC.
+The [Pages build and deployment](https://github.com/Ddemon26/DreamCompiler/actions/runs/43660436390)
+succeeded. Pages remains **built, legacy, `main:/docs`**; no merge, Pages-setting
+change or new hosting destination was performed by P0029.
 
-The working reader has 21 actual sidebar pages, title/group topic filtering,
-source-relative Markdown links, heading outlines/deep links, code copying,
-previous/next/source navigation, history handling, loading/error/retry states,
-mobile menus and theme persistence. New quick-start and implementation-status
-guides give bounded examples and evidence links; existing tutorial/API accuracy
-remains separate. See [website maintenance and design rules](../docs/development/docs-site.md).
+The [live homepage](https://ddemon26.github.io/DreamCompiler/) and all 21 sidebar
+Markdown documents were checked over HTTPS. **27 responses** (homepage, stylesheet,
+four JavaScript modules and 21 documents) returned HTTP 200 and matched P0028's
+Git blobs byte for byte. Module/CSS MIME types and the quick-start query/deep-link
+shell passed. The merge's `docs/` tree also matches P0028. All **8 Node checks**
+and JavaScript syntax passed. Browser inventory was empty, so this run does not
+claim deployed rendering, clicks, clipboard or viewport checks; P0028's local
+browser evidence remains dated and separate. See [results](MostRecentTestResults.md).
 
-Started clean in the approved checkout/branch/origin, one worktree and no competing
-active writer. Fetch matched HEAD; both native P0027
-[CI jobs](https://github.com/Ddemon26/DreamCompiler/actions/runs/43654089255) passed.
-Website checks: **8 Node checks passed**, all 21 pages rendered in the browser,
-search/back/deep-link/copy/themes/archive/404 recovery passed. A real temporary
-Markdown fixture proved sanitization, duplicate IDs and table rendering; removed
-before commit. Mobile 320px and tablet 768px overflow checks passed; desktop
-1280px homepage/article reviewed. Windows `.mjs` MIME behavior was caught and
-fixed by using `.js` runtime modules. Both homepage examples compiled with
-documented `zig build run` and printed exact output using Zig 0.17.1.
+P0028 [integration CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43658070457)
+and [merged-main CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43660437950)
+both passed native Linux and Windows jobs, including build, runner, quick and
+Dream suite steps. No failed baseline was found. No compiler/runtime/test/build
+inputs changed in P0029. Local compiler suites and cross-build were **not rerun**;
+reuse **P0027 / November 14, 2026 UTC**: 136 Dream passes, 18 skips, no failures,
+22 Go quick groups and 5 runner tests. This pass qualifies release delivery,
+not additional compiler behavior or legacy tutorial/API accuracy.
 
-**408 protected compiler/test/plugin/build/CI hashes unchanged.** Full compiler,
-Go, runner and cross-build checks were not rerun. Reused **P0027 evidence dated
-November 14, 2026 UTC**: 136 Dream passes/18 skips/no failures, 22 quick groups,
-5 runner tests, plus successful native CI above. See
-[results](MostRecentTestResults.md) for the website checks and limits.
+Started clean in the approved checkout/attached branch/origin, one worktree and
+no competing active project writer. Fetch and `git ls-remote` confirmed P0028
+was already published. The schedule already uses the local project directory.
+P0029 records release evidence and updates the handoff; it does not republish
+website assets to `main`.
 
-GitHub Pages metadata is **built**, **legacy**, **`main:/docs`**. Pushing this
-integration pass does not update the live site. Root instructions prohibit a
-`main` merge or changed publishing destination without a new user instruction.
-The next concrete step is owner authorization for the live release, then live
-homepage/docs checks. Do not silently merge/reconfigure Pages or create another
-hosted copy. Existing compiler limits and the T011 conditional-string initializer
-task remain; do not begin a different feature while this delivery is unresolved.
+Next invocation: verify P0029 integration publication and native CI, repairing
+failures first. Otherwise resume T011 scalar conditional (`?:`) string initializer
+ownership. Reproduce literal/borrowed/managed/null branches with the checked live
+registry, then qualify independent selected-value storage and once-only branch
+evaluation in ordinary/module-entry modes. Return ownership, class-instance jump
+cleanup and exception/finally unwinding remain separate. Existing 18 skips and
+shape/operator/ownership limits remain.

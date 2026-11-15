@@ -59,8 +59,11 @@ The quick-start guide contains the same executable examples.
 
 ## Publication
 
-The existing Pages configuration was last reported as `main:/docs`. Publishing
-the pass to `codex/compiler-stabilization` does not change that live website.
+The Pages configuration was verified as `main:/docs` on November 15, 2026 UTC.
+P0028 is live following the merge of PR #231 outside the scheduled verification
+run; [P0029's release evidence](../../tasks/passes/P0029-docs-release-verification.md)
+records the deployment and its checks. Publishing a later pass to
+`codex/compiler-stabilization` does not change that live website.
 Confirm the current Pages source before a live release. The project agreement
 requires a new user instruction before merging into `main` or changing publication
 destinations. Do not silently reconfigure Pages or create another hosted site.
@@ -68,3 +71,17 @@ destinations. Do not silently reconfigure Pages or create another hosted site.
 Check all sidebar targets, relative links, anchors, themes, loading failures, mobile
 navigation, keyboard controls, and code copying before publishing website changes.
 Legacy tutorial/API accuracy remains a separate audit.
+
+After deployment, inspect the Pages workflow for the intended merge SHA and
+confirm the configured source and published URL with
+`gh api repos/Ddemon26/DreamCompiler/pages`. Check the homepage, runtime modules
+and sidebar Markdown responses under the actual repository subpath. Compare
+response bytes with the intended Git blobs, rather than checkout files that
+may have Windows line-ending conversion. Require JavaScript-compatible module
+MIME types and `text/css` for the stylesheet. A query/deep-link request must
+serve the homepage shell. Record the revision and check time so a cached or
+partial release cannot be mistaken for the intended one.
+
+HTTP availability and byte equality qualify delivery of the tested artifacts;
+they do not establish browser rendering or interaction. Run the browser checks
+above when a browser is available, and explicitly record any unavailable checks.
