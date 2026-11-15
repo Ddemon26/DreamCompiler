@@ -1,0 +1,164 @@
+// Expected: backing
+// Expected: nested
+// Expected:
+// Expected: 2
+// Expected: backing
+// Expected: nested
+// Expected: quoted "value"
+// Expected: 2
+// Expected: backing
+// Expected: right
+// Expected: right-yes
+// Expected: 2
+// Expected: backing
+// Expected: right
+// Expected: right-no
+// Expected: 2
+// Expected: fall-yes
+// Expected: fall-no
+// Expected: header
+// Expected: loop-no
+// Expected: 1
+// Expected: after
+// Expected: 1
+// Expected: static-yes
+// Expected: static-no
+// Expected: instance
+// Expected: completed
+// Expected: collision
+// Expected: 2
+// Expected: plain
+// Expected:
+// Expected: 1
+// Expected:
+// Expected: backing
+class ConditionalReturnToken {
+    int value;
+    func init(int value) { this.value = value; }
+}
+func bool chooseLiteral(string label, int *effects, int value) {
+    effects[0]++;
+    Console.WriteLine(label);
+    return value > 0;
+}
+func string nestedConditional(bool stop, int root, int branch, int *effects, string source) {
+    ConditionalReturnToken outerOwner = new ConditionalReturnToken(root);
+    string outerText = source;
+    string absent;
+    const string empty = "";
+    {
+        ConditionalReturnToken innerOwner = new ConditionalReturnToken(branch);
+        string innerText = "nested";
+        if (stop) return chooseLiteral(outerText, effects, outerOwner.value)
+            ? (chooseLiteral(innerText, effects, innerOwner.value) ? ("") : "quoted \"value\"")
+            : (chooseLiteral("right", effects, innerOwner.value) ? "right-yes" : "right-no");
+        string late = "late";
+    }
+    return root > 0 ? "fall-yes" : "fall-no";
+}
+func string loopConditional(bool stop, int *effects) {
+    string loopOuter = "outer";
+    int i = 0;
+    for (string header = "header"; i < 2; header += "x") {
+        ConditionalReturnToken bodyOwner = new ConditionalReturnToken(i);
+        string bodyText = "body";
+        if (stop) return chooseLiteral(header, effects, bodyOwner.value) ? "loop-yes" : "loop-no";
+        i++;
+    }
+    return i > 0 ? "after" : "";
+}
+class ConditionalReturnReader {
+    int value;
+    func init() { this.value = 1; }
+    static func string readStatic(bool choice) {
+        string staticText = "discard";
+        return choice ? "static-yes" : "static-no";
+    }
+    func string readInstance() {
+        ConditionalReturnToken instanceOwner = new ConditionalReturnToken(1);
+        string instanceText = "discard";
+        return this.value > 0 ? "instance" : "unused";
+    }
+}
+func string completedConditional() {
+    string completedText = "discard";
+    try { string tryText = "try"; }
+    catch { }
+    finally { ConditionalReturnToken finallyOwner = new ConditionalReturnToken(1); }
+    return true ? "completed" : "unused";
+}
+func bool __dream_return_1(int *effects) { effects[0]++; return true; }
+func string collisionConditional(int *effects) {
+    string __dream_return_0 = "discard";
+    return __dream_return_1(effects) ? "collision" : "unused";
+}
+func string noConditionalLocals(bool choice) { return choice ? "plain" : ""; }
+// Unqualified leaves and active exception exits are emission-only controls.
+func string borrowedThen(bool choice, string source) {
+    string thenDiscard = "discard";
+    return choice ? source : "literal";
+}
+func string borrowedElse(bool choice, string source) {
+    string elseDiscard = "discard";
+    return choice ? "literal" : source;
+}
+func string nestedBorrowed(bool a, bool b, string source) {
+    string nestedDiscard = "discard";
+    return a ? (b ? "literal" : source) : "other";
+}
+func string ownedConditional(bool choice) {
+    string ownedLeaf = "owned";
+    return choice ? "literal" : ownedLeaf;
+}
+func string nestedElseBorrowed(bool a, bool b, string source) {
+    string nestedElseDiscard = "discard";
+    return a ? "other" : (b ? source : "literal");
+}
+func string callConditional(bool choice) {
+    string callDiscard = "discard";
+    return choice ? noConditionalLocals(true) : "literal";
+}
+func string pendingConditional(bool choice) {
+    string pendingOuter = "discard";
+    try { string pendingTry = "try"; return choice ? "try-a" : "try-b"; }
+    catch { string pendingCatch = "catch"; return choice ? "catch-a" : "catch-b"; }
+    finally { string pendingFinally = "finally"; return choice ? "finally-a" : "finally-b"; }
+    return choice ? "done" : "other";
+}
+func void exerciseConditional() {
+    string backing = "backing";
+    int effects[1];
+    effects[0] = 0;
+    string snapshot = nestedConditional(true, 1, 1, effects, backing);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(effects[0]);
+    effects[0] = 0;
+    Console.WriteLine(nestedConditional(true, 1, 0, effects, backing));
+    Console.WriteLine(effects[0]);
+    effects[0] = 0;
+    Console.WriteLine(nestedConditional(true, 0, 1, effects, backing));
+    Console.WriteLine(effects[0]);
+    effects[0] = 0;
+    Console.WriteLine(nestedConditional(true, 0, 0, effects, backing));
+    Console.WriteLine(effects[0]);
+    Console.WriteLine(nestedConditional(false, 1, 0, effects, backing));
+    Console.WriteLine(nestedConditional(false, 0, 0, effects, backing));
+    effects[0] = 0;
+    Console.WriteLine(loopConditional(true, effects));
+    Console.WriteLine(effects[0]);
+    Console.WriteLine(loopConditional(false, effects));
+    Console.WriteLine(effects[0]);
+    Console.WriteLine(ConditionalReturnReader.readStatic(true));
+    Console.WriteLine(ConditionalReturnReader.readStatic(false));
+    ConditionalReturnReader reader = new ConditionalReturnReader();
+    Console.WriteLine(reader.readInstance());
+    Console.WriteLine(completedConditional());
+    Console.WriteLine(collisionConditional(effects));
+    Console.WriteLine(effects[0]);
+    Console.WriteLine(noConditionalLocals(true));
+    Console.WriteLine(noConditionalLocals(false));
+    Console.WriteLine(reader.value);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(backing);
+}
+exerciseConditional();

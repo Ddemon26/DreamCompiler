@@ -107,9 +107,11 @@ not eliminate retained results.
 For a direct string-literal result, P0038 releases all qualified locals and returns
 the literal's static pointer. Parenthesized, empty and escaped literals qualify.
 No result allocation or retain is needed; caller declarations still copy results.
-The same conditional block and temporary-name rules apply. Other string return
-expressions keep their previous emission, including borrowed parameters, calls and
-conditionals (even a conditional whose branches are both literals).
+The same conditional block and temporary-name rules apply. P0039 also qualifies
+nested `?:` results when every value leaf is a string literal. Reached conditions
+evaluate once before cleanup, preserving local/header/field reads and side effects;
+unselected branches do not execute. Any nonliteral leaf keeps the entire return on
+its previous path, including borrowed parameters, owned locals and call results.
 
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership

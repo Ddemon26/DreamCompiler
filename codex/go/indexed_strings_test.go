@@ -463,6 +463,33 @@ func checkStorageOwnership(t *testing.T, fixture string, releases int, emittedCh
 	checkStorageOwnershipWithLiveCount(t, fixture, releases, emittedChecks, want, liveCount, forbiddenChecks...)
 }
 
+func TestCompiler_ConditionalLiteralReturn(t *testing.T) {
+	// Static leaves need no retained result; conditions must run before cleanup.
+	checkStorageOwnership(t, "conditional_literal_return.dr", 55, []string{
+		`{constchar*__dream_return_0=(@entry@chooseLiteral(outerText,effects,((structConditionalReturnToken*)outerOwner)->value)?(@entry@chooseLiteral(innerText,effects,((structConditionalReturnToken*)innerOwner)->value)?"":"quoted\"value\""):(@entry@chooseLiteral("right",effects,((structConditionalReturnToken*)innerOwner)->value)?"right-yes":"right-no"));dr_release(innerText);dr_release(innerOwner);dr_release(empty);dr_release(absent);dr_release(outerText);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=((root>0)?"fall-yes":"fall-no");dr_release(empty);dr_release(absent);dr_release(outerText);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(@entry@chooseLiteral(header,effects,((structConditionalReturnToken*)bodyOwner)->value)?"loop-yes":"loop-no");dr_release(bodyText);dr_release(bodyOwner);dr_release(header);dr_release(loopOuter);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=((i>0)?"after":"");dr_release(loopOuter);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(choice?"static-yes":"static-no");dr_release(staticText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=((((structConditionalReturnReader*)this)->value>0)?"instance":"unused");dr_release(instanceText);dr_release(instanceOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=(1?"completed":"unused");dr_release(completedText);return__dream_return_0;}`,
+		`{constchar*__dream_return_2=(@entry@__dream_return_1(effects)?"collision":"unused");dr_release(__dream_return_0);return__dream_return_2;}`,
+		`return(choice?"plain":"");`,
+		`return(choice?source:"literal");dr_release(thenDiscard);`,
+		`return(choice?"literal":source);dr_release(elseDiscard);`,
+		`return(a?(b?"literal":source):"other");dr_release(nestedDiscard);`,
+		`return(a?"other":(b?source:"literal"));dr_release(nestedElseDiscard);`,
+		`return(choice?"literal":ownedLeaf);dr_release(ownedLeaf);`,
+		`return(choice?@entry@noConditionalLocals(1):"literal");dr_release(callDiscard);`,
+		`return(choice?"try-a":"try-b");dr_release(pendingTry);`,
+		`return(choice?"catch-a":"catch-b");dr_release(pendingCatch);`,
+		`return(choice?"finally-a":"finally-b");dr_release(pendingFinally);`,
+	},
+		"backing\nnested\n\n2\nbacking\nnested\nquoted \"value\"\n2\nbacking\nright\nright-yes\n2\nbacking\nright\nright-no\n2\nfall-yes\nfall-no\nheader\nloop-no\n1\nafter\n1\nstatic-yes\nstatic-no\ninstance\ncompleted\ncollision\n2\nplain\n\n1\n\nbacking\n", true,
+		`dr_release(this);`, `dr_release(source);`, `dr_release(effects);`,
+		`dream_string_copy((`, `dr_retain(`)
+}
+
 func TestCompiler_LiteralStringReturn(t *testing.T) {
 	// Static results need no retained allocation; every scoped owner is released.
 	checkStorageOwnership(t, "literal_string_return.dr", 51, []string{
@@ -485,7 +512,7 @@ func TestCompiler_LiteralStringReturn(t *testing.T) {
 		`return"plain";`, `return"try";dr_release(pendingTry);`,
 		`return"catch";dr_release(pendingCatch);`, `return"finally";dr_release(pendingFinally);`,
 		`returnsource;dr_release(borrowedDiscard);`,
-		`return(choice?"left":"right");dr_release(compoundDiscard);`,
+		`{constchar*__dream_return_0=(choice?"left":"right");dr_release(compoundDiscard);return__dream_return_0;}`,
 	},
 		"early\nfall\nloop\nafter\ncase\n\nwhile\ndo\nstatic\ninstance\nrecursive\ncompleted\nzero\ncollision\nquoted \"value\"\nplain\nreader\nbacking\nearly\n", true,
 		`dr_release(this);`, `dr_release(source);`, `dr_release(pointer);`,

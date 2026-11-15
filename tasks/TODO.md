@@ -453,9 +453,22 @@ emission-only. Full Windows: 147 passed, 18 skipped, zero failures/errors;
 31 Go quick groups, five runner tests and Linux cross-build passed. See
 [P0038](passes/P0038-literal-string-return.md).
 
-Broader T011 remains open. Verify P0038 publication/native CI and repair failures
-first. Next reproduce conditional string returns with all-literal value branches;
-qualify static-result lifetime and once-only condition evaluation before cleanup.
+P0039 reproduces retained scoped allocations on conditional string returns in both
+modes, then qualifies nested `?:` results only when every value leaf is a literal.
+Reached conditions execute once before reverse cleanup; nonliteral leaves preserve
+the entire return's prior emission. Each mode checks 55 nonnull releases (18 classes,
+37 strings), 34 output lines and an empty pre-shutdown registry. All four nested
+leaves, selected-only effects, owned local/field/header reads, unbraced paths,
+null/const/empty locals, later declarations, loop updates, methods, collisions,
+caller survival and normal exception completion are covered. Full Windows: 148
+passed, 18 skipped, zero failures/errors; 32 Go quick groups, five runner tests and
+Linux cross-build passed. See
+[P0039](passes/P0039-conditional-literal-return.md) for validation and limits.
+
+Broader T011 remains open. Verify P0039 publication/native CI and repair failures
+first. Next reproduce conditional returns selecting known-owned locals and literals;
+define preservation of the selected allocation and cleanup of unselected owners
+before extending support.
 Keep general borrowed/compound result lifetime,
 general caller consumption, pointer/class result transfer, aliases/containers/
 destructors/fields, async and exception unwinding separate. String-index return

@@ -201,9 +201,21 @@ Mixed/nested locals, null/const/empty storage, later declarations, unbraced path
 loops/switches, headers/updates, zero/multiple iterations, recursion, methods,
 temporary-name collisions and normal exception completion are covered. Results
 include parenthesized, empty and escaped literals; caller backing/receiver/snapshot
-survive. Exact C checks require reverse cleanup order and unchanged borrowed,
-compound and active-exception emission. No literal result allocation or retain is
-added. Both quick protocols and CI select the group.
+survive. Exact C checks require reverse cleanup order and unchanged borrowed and
+active-exception emission; the unused all-literal conditional now checks P0039
+cleanup. No literal result allocation or retain is added. Both quick protocols
+and CI select the group.
+
+`TestCompiler_ConditionalLiteralReturn` checks nested literal-only conditional
+returns in both modes: 55 nonnull releases (18 classes, 37 strings), 34 output lines
+and an empty registry before shutdown. Both modes failed that assertion before
+P0039. All four value leaves execute, with labels and counters checking selected-only,
+once-only condition evaluation before cleanup of local strings/classes and headers.
+Unbraced paths, later declarations, null/const/empty locals, loop updates, methods,
+temporary collisions, caller survival and normal exception completion are covered.
+Exact C checks preserve nonliteral leaves in either recursive branch and active
+exception exits. No returned copy or retain is added. Both quick protocols and CI
+select the group; earlier allocator/refcount/shutdown assertions remain intact.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

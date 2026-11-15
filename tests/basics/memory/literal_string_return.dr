@@ -113,8 +113,8 @@ func string escapedLiteral() {
     return "quoted \"value\"";
 }
 func string noLocals() { return "plain"; }
-// Active exception exits and borrowed/compound results remain emission-only
-// controls. They are deliberately not executed by this lifetime regression.
+// Active exception exits and borrowed results remain emission-only controls.
+// The unused all-literal conditional now checks P0039 cleanup emission.
 func string pendingLiteral() {
     string pendingOuter = "discard";
     try { string pendingTry = "try"; return "try"; }

@@ -467,8 +467,8 @@ consumption is added. Caller declarations retain their existing copy behavior.
 When cleanup is needed, the existing collision-safe temporary captures the literal
 pointer before releases. Unbraced returns remain conditional and emitter metadata
 remains available for other paths. With no qualified locals, emission stays a direct
-return. Only `ND_STRING` results qualify: even a conditional choosing two literals
-keeps its prior emission. Borrowed/member/index/call/assignment/concatenation results,
+return. P0038 qualified only `ND_STRING`; P0039 extends this to literal-only
+conditional trees below. Borrowed/member/index/call/assignment/concatenation results,
 async exits and returns inside active try/catch/finally remain separate.
 
 The [literal-return regression](../../tests/basics/memory/literal_string_return.dr)
@@ -477,11 +477,43 @@ assertion in both modes before the fix. Both now require **51 nonnull releases**
 (18 class instances and 33 strings), **19 exact output lines** including an empty
 line, and an empty registry before and after shutdown. Exact C sequences check
 reverse cleanup order, no returned-literal copy, temporary collisions and unchanged
-borrowed/compound/active-exception emission. Mixed/nested/null/const/empty locals,
+borrowed/active-exception emission. Its unused literal-only conditional control now
+checks P0039 cleanup; runtime counts are unchanged. Mixed/nested/null/const/empty locals,
 later declarations, true/false unbraced paths, while/do/for/switch, header updates,
 zero/multiple iterations, recursion, methods, caller snapshot/backing/receiver
 survival, escaped results and normal exception completion execute. Both quick
 protocols and CI select the group. Existing allocator/refcount assertions remain.
+
+## Conditional literal string returns (P0039)
+
+A synchronous string return also qualifies when its expression is a `?:` tree
+whose value leaves are all string literals. Both branches are checked recursively,
+including branches that a constant condition would not select. Parenthesized,
+empty and escaped literals qualify. Any nonliteral value leaf leaves the entire
+return on its prior path; this includes borrowed parameters, owned locals and
+calls that happen to return literals.
+
+Conditions may call functions, mutate state and read owned local strings, class
+fields or loop headers. The existing collision-safe temporary captures the selected
+static pointer before reverse-order cleanup. Each reached condition executes once;
+unselected conditional branches do not execute. No returned allocation, copy,
+retain or consumption is introduced, and caller declarations still copy results.
+Unbraced returns keep cleanup conditional, other paths retain their binding
+metadata, and functions without qualified locals keep a direct return. Async and
+active try/catch/finally returns remain outside this contract.
+
+The [conditional regression](../../tests/basics/memory/conditional_literal_return.dr)
+and `TestCompiler_ConditionalLiteralReturn` failed pre-shutdown registry emptiness
+in both modes before the fix. Each now requires **55 nonnull releases** (18 class
+instances, 37 strings), **34 output lines**, and an empty registry before and after
+shutdown. All four nested literal leaves execute; labels and effect counts check
+selected-only, once-only condition evaluation. Null/const/empty locals, later
+declarations, unbraced true/false paths, loop/header updates, static/instance methods,
+temporary-name collisions, caller backing/snapshot/receiver survival and normal
+exception completion are covered. Exact C checks require evaluation before reverse
+cleanup and unchanged emission for nonliteral leaves in either recursive branch
+and active exception exits. Both quick protocols and CI select the group. Earlier
+allocator/refcount, retained-result and shutdown assertions remain intact.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

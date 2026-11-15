@@ -2,6 +2,57 @@
 
 **Date:** November 15, 2026 UTC
 
+**Pass:** P0039 - cleanup before literal-only conditional string returns
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0038 publication matched parent `ea001f013a7fff6b78b30b065d7012c8ca4d9d2c`;
+  [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43698784933)
+  passed Linux/Windows build, runner, quick and full-suite steps before work.
+- Restricted fetch failed DNS; restricted baseline could not locate Zig's installed
+  directory. Approved normal network/toolchain access succeeded without configuration,
+  cache or permission changes.
+- Baseline `zig build test`: **165 discovered, 147 passed, 18 skipped, zero failures/
+  errors**, 45.65s; `test_results/test_results_20261115_060439_windows.json`.
+- Before fix, `TestCompiler_ConditionalLiteralReturn` **failed both modes** at
+  pre-shutdown registry emptiness, 2.450s (group 2.02s).
+- `zig build`: **passed**, exit 0. Initial focused test **passed both modes**,
+  2.730s. New/P0038/P0037 exact-emission checks **all passed both modes**, 6.967s.
+- First full suite: **166 discovered, 147 passed, 1 failed, 18 skipped, zero errors**,
+  42.15s; `test_results/test_results_20261115_060804_windows.json`. The runner strips
+  trailing whitespace, losing the fixture's final blank line. Moved the checked blank
+  line before final backing output; all 34 lines and exact Go assertions remain.
+- Final `zig build test`: **166 discovered, 148 passed, 18 skipped, zero failures/
+  errors**, 42.01s; `test_results/test_results_20261115_060924_windows.json`.
+- Python runner unit tests: **5 passed**, 0.048s.
+- Supported Windows Go quick protocol: **all 32 groups passed**, 52.655s; new
+  group **1.94s**, both modes including final output ordering and exact C checks.
+  Each requires **55 nonnull releases** (18 classes, 37 strings), **34 output lines**,
+  selected-only once-only effects, and an empty registry before/after shutdown.
+  Native UBSan/live release/reference-count checks, Linux harness cross-linking and
+  directly linked output pass. Earlier ownership/shutdown assertions remain intact;
+  external compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Cross-building/cross-linking is not native P0039 Linux
+  runtime evidence; inspect CI after publication.
+- **166 local Markdown paths resolved**, 32-group quick/CI selector equality,
+  PowerShell BOM, gofmt, scope/diff review and `git diff --check` passed. Precommit
+  fetch/remote SHA matched the parent; publication requires matching remote SHA.
+
+Same eighteen skips and prior shape/operator limits. Literal-only conditional trees
+need no result allocation, copy, retain or consumption. Any nonliteral leaf leaves
+the entire return on its prior path; caller declarations still copy. Direct owned-
+local results retain their P0037 lifetime until shutdown. General result ownership,
+async/active exception exits and aliases/containers/destructors/fields remain separate.
+See [P0039](passes/P0039-conditional-literal-return.md). Next verify publication/native
+CI, then design selected owned-local preservation on conditional returns.
+
+---
+
+# Historical P0038 checkpoint - DreamCompiler
+
+**Date:** November 15, 2026 UTC
+
 **Pass:** P0038 - cleanup before direct literal string returns
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

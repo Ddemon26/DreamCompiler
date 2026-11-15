@@ -493,6 +493,16 @@ static int is_primitive_scalar_result(TokenKind type) {
          type == TK_KW_BOOL || type == TK_KW_CHAR;
 }
 
+static int is_static_string_result(const Node *expr) {
+  if (!expr) return 0;
+  if (expr->kind == ND_STRING) return 1;
+  // Only value branches determine result lifetime. Conditions are evaluated
+  // before cleanup and may read locals or have side effects.
+  return expr->kind == ND_COND &&
+         is_static_string_result(expr->as.cond.then_expr) &&
+         is_static_string_result(expr->as.cond.else_expr);
+}
+
 static int copies_string_initializer(Node *init) {
   return init && (init->kind == ND_INDEX || init->kind == ND_STRING ||
                   init->kind == ND_IDENT || init->kind == ND_FIELD ||
@@ -771,7 +781,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     } else if (ctx->is_sync_function && n->as.ret.expr &&
                (is_primitive_scalar_result(ctx->ret_type) || preserved ||
                 (ctx->ret_type == TK_KW_STRING &&
-                 n->as.ret.expr->kind == ND_STRING)) &&
+                 is_static_string_result(n->as.ret.expr))) &&
                ctx->exception_depth == 0 && has_return_cleanup(ctx)) {
       // Preflight lowered names as well as bindings: a C initializer is already
       // inside its declarator's scope, so the temporary must not shadow a call.
@@ -787,7 +797,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_free(&value);
 
       // Evaluate exactly once before freeing any storage read by the result.
-      // Direct string literals have static storage independent of every local.
+      // Literal-only result branches have storage independent of every local.
       // Keep bindings for other branches; keep unbraced returns conditional.
       c_out_write(b, "{\n");
       c_out_indent(b);
