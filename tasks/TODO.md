@@ -478,15 +478,26 @@ active exception exits. Full Windows: 149 passed, 18 skipped, zero failures/erro
 33 quick groups, five runner tests and Linux cross-build passed. See
 [P0040](passes/P0040-conditional-local-return.md).
 
-Broader T011 remains open. Verify P0040 publication/native CI and repair failures
-first. Next reproduce retained independent locals on direct borrowed scalar string-
-parameter returns; audit caller backing lifetime before qualifying cleanup without
-copy/retain. General member/index/call/compound lifetimes remain separate.
-Keep general borrowed/compound result lifetime,
-general caller consumption, pointer/class result transfer, aliases/containers/
-destructors/fields, async and exception unwinding separate. String-index return
-typing remains limited; custom-type for headers and direct class null initializers
-remain unsupported. Fixture probes did not broaden grammar or semantics.
+P0041 reproduces retained scoped allocations on direct borrowed string-parameter
+returns in both modes. A whole-body unchanged-parameter proof qualifies capture
+before reverse cleanup without a result copy/retain. Each mode requires 58 nonnull
+releases (20 classes, 38 strings), 17 output lines and an empty registry before/
+after shutdown, with caller backing/snapshot survival. Twenty-four additional
+cases preserve prior returns for twelve placements of rebinding, including later
+statements and loop updates. Full Windows: 150 passed, 18 skipped, zero failures/
+errors; 34 quick groups, five runner tests and Linux cross-build passed. See
+[P0041](passes/P0041-borrowed-parameter-return.md).
+
+Broader T011 remains open. Verify P0041 publication/native CI and repair failures
+first. Next qualify conditional string-result trees with literal/known-owned-local/
+unchanged borrowed scalar parameter value leaves. Require once-only selection,
+selected-only effects, selected owned storage preservation and caller backing
+survival; rebound/unsupported leaves must keep the whole previous return.
+Keep general borrowed/member/index/call/compound result lifetime, caller
+consumption, pointer/class result transfer, aliases/containers/destructors/fields,
+async and exception unwinding separate. String-index return typing remains
+limited; custom-type for headers and direct class null initializers remain
+unsupported. Fixture probes did not broaden grammar or semantics.
 T012/T013 pruning and T014 website/release work are completed maintenance history;
 do not repeat those tasks from stale scheduled-run memory.
 

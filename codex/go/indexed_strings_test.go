@@ -463,6 +463,89 @@ func checkStorageOwnership(t *testing.T, fixture string, releases int, emittedCh
 	checkStorageOwnershipWithLiveCount(t, fixture, releases, emittedChecks, want, liveCount, forbiddenChecks...)
 }
 
+func TestCompiler_BorrowedParameterReturn(t *testing.T) {
+	// Caller-backed results introduce no retained allocations. Rebound parameters
+	// remain emission-only controls until their alias lifetime is qualified.
+	checkStorageOwnership(t, "borrowed_parameter_return.dr", 58, []string{
+		`{constchar*__dream_return_0=source;dr_release(innerText);dr_release(innerOwner);dr_release(empty);dr_release(absent);dr_release(first);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=source;dr_release(empty);dr_release(absent);dr_release(first);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=source;dr_release(bodyText);dr_release(bodyOwner);dr_release(header);dr_release(outerText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=source;dr_release(outerText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=source;dr_release(caseOwner);dr_release(caseText);dr_release(outerSwitch);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=source;dr_release(staticText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=source;dr_release(instanceOwner);dr_release(instanceText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=source;dr_release(recursiveOwner);dr_release(recursiveText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=source;dr_release(completedText);return__dream_return_0;}`,
+		`{constchar*__dream_return_1=__dream_return_0;dr_release(collisionText);return__dream_return_1;}`,
+		`{constchar*__dream_return_0=source;dr_release(otherText);return__dream_return_0;}`,
+		`returnsource;dr_release(reboundText);`, `returnsource;dr_release(expressionText);`,
+		`returnsource;dr_release(pendingTry);`, `returnsource;dr_release(pendingCatch);`,
+		`returnsource;dr_release(pendingFinally);`,
+		`return(choice?source:"literal");dr_release(conditionalText);`,
+	},
+		"backing\nbacking\nliteral\n\nnull\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nchanged\n", true,
+		`dr_release(this);`, `dr_release(source);`, `dr_release(pointer);`,
+		`dr_retain(`, `dream_string_copy(__dream_return_`)
+
+	tr := NewTestRunner(t)
+	defer tr.Cleanup()
+	// Later writes can execute before an earlier syntactic return on another
+	// iteration. Nested writes must also block the whole-body lifetime proof.
+	for _, mode := range []bool{false, true} {
+		for _, tc := range []struct{ name, statement string }{
+			{"direct", `source = owned;`},
+			{"branch", `if (stop) source = owned;`},
+			{"conditional", `stop ? (source = owned) : "literal";`},
+			{"initializer", `string snapshot = (source = owned);`},
+			{"argument", `Console.WriteLine(source = owned);`},
+			{"while_condition", `while ((source = owned) == "x") { break; }`},
+			{"do_body", `do { source = owned; } while (false);`},
+			{"for_init", `for (source = owned; false;) { }`},
+			{"for_update", `for (int i = 0; i < 1; source = owned) { i++; }`},
+			{"switch", `switch (1) { case 1: source = owned; break; }`},
+			{"finally", `try { } catch { } finally { source = owned; }`},
+			{"index", `string values[1]; values[(source = owned) == "x" ? 0 : 0] = "value";`},
+		} {
+			t.Run(fmt.Sprintf("rebound_%s/modules=%v", tc.name, mode), func(t *testing.T) {
+				work := t.TempDir()
+				text := `func string probe(bool stop, string source) {
+string owned = "owned";
+if (stop) return source;
+` + tc.statement + `
+return source;
+}`
+				args := []string{"--dev"}
+				if mode {
+					text = "import labels;\n" + text
+					args = append(args, "--multi-file")
+					if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte("module labels;"), 0644); err != nil {
+						t.Fatal(err)
+					}
+				}
+				source := filepath.Join(work, "input.dr")
+				if err := os.WriteFile(source, []byte(text), 0644); err != nil {
+					t.Fatal(err)
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				cmd := exec.CommandContext(ctx, tr.compilerPath, append(args, source)...)
+				cmd.Dir = tr.projectRoot
+				if out, err := cmd.CombinedOutput(); err != nil {
+					t.Fatalf("rebound emission failed: %v\n%s", err, out)
+				}
+				data, err := os.ReadFile(filepath.Join(tr.projectRoot, "build", "bin", "dream.c"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				c := strings.Join(strings.Fields(string(data)), "")
+				if strings.Count(c, "returnsource;") != 2 || strings.Contains(c, "__dream_return_") {
+					t.Fatalf("rebound parameter must retain both original returns:\n%s", data)
+				}
+			})
+		}
+	}
+}
+
 func TestCompiler_ConditionalLocalReturn(t *testing.T) {
 	// Fourteen selected nonnull allocations keep their original reference;
 	// the sixty-four other allocations must be released before shutdown.
@@ -539,7 +622,7 @@ func TestCompiler_LiteralStringReturn(t *testing.T) {
 		`{constchar*__dream_return_0="quoted\"value\"";dr_release(escapedText);return__dream_return_0;}`,
 		`return"plain";`, `return"try";dr_release(pendingTry);`,
 		`return"catch";dr_release(pendingCatch);`, `return"finally";dr_release(pendingFinally);`,
-		`returnsource;dr_release(borrowedDiscard);`,
+		`{constchar*__dream_return_0=source;dr_release(borrowedDiscard);return__dream_return_0;}`,
 		`{constchar*__dream_return_0=(choice?"left":"right");dr_release(compoundDiscard);return__dream_return_0;}`,
 	},
 		"early\nfall\nloop\nafter\ncase\n\nwhile\ndo\nstatic\ninstance\nrecursive\ncompleted\nzero\ncollision\nquoted \"value\"\nplain\nreader\nbacking\nearly\n", true,
@@ -572,7 +655,7 @@ func TestCompiler_LocalStringReturn(t *testing.T) {
 		`returnpendingTry;dr_release(pendingTry);`,
 		`returnpendingCatch;dr_release(pendingCatch);`,
 		`returnpendingFinally;dr_release(pendingFinally);`,
-		`returnsource;dr_release(borrowedDiscard);`,
+		`{constchar*__dream_return_0=source;dr_release(borrowedDiscard);return__dream_return_0;}`,
 		`{constchar*__dream_return_0="literal";dr_release(literalDiscard);return__dream_return_0;}`,
 		`{constchar*__dream_return_0=(choice?left:right);if(right!=__dream_return_0)dr_release(right);if(left!=__dream_return_0)dr_release(left);return__dream_return_0;}`,
 	},

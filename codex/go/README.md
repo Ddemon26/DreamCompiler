@@ -229,6 +229,18 @@ covered. Unsupported borrowed/call leaves and active exception returns keep thei
 emission. P0037/P0039 unused owned-conditional controls check the new cleanup with
 unchanged runtime assertions. Both quick protocols and CI select this group.
 
+`TestCompiler_BorrowedParameterReturn` checks direct unchanged scalar string
+parameter returns in both modes: 58 nonnull releases (20 classes, 38 strings),
+17 output lines, and an empty registry before/after shutdown. Caller backing and
+snapshots survive; no result copy/retain is added. Nested/header/switch scopes,
+unbraced paths, recursion, methods, temporary collisions, null/empty storage and
+normal exception completion execute. Exact C checks require reverse cleanup and
+preserve rebound/conditional/active-exception emission. Twenty-four additional
+cases check twelve placements of parameter rebinding in both modes, including
+later statements and loop updates. Both quick protocols and CI select this group.
+P0037/P0038 unused borrowed controls now check qualified cleanup; their runtime
+counts remain unchanged. Rebound/compound results and alias lifetime stay separate.
+
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element
 types, local arrays, numeric aliases, free functions/static methods, inherited member

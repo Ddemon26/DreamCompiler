@@ -2,6 +2,60 @@
 
 **Date:** November 15, 2026 UTC
 
+**Pass:** P0041 - cleanup on unchanged borrowed scalar string-parameter returns
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Clean approved checkout/branch/origin matched published P0040
+  `df5ddb965d2df77a5a0fe9c84b1191e77171973d`. Its
+  [native Linux/Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43744953713)
+  passed build, runner, quick and full-suite steps before work.
+- Restricted fetch failed DNS and restricted baseline could not locate Zig's
+  installation. Approved normal network/toolchain access succeeded without changing
+  configuration, caches or permissions.
+- Baseline `zig build test`: **167 discovered, 149 passed, 18 skipped, zero failures/
+  errors**, 46.03s; `test_results/test_results_20261115_120617_windows.json`.
+- Before fix, `go test -count=1 -v -run '^TestCompiler_BorrowedParameterReturn$' .`
+  from `codex/go`: **both modes failed** at the empty-before-shutdown registry
+  assertion, 2.505s (group 2.02s).
+- `zig build`: **passed**, exit 0. Initial focused check: **both modes passed**,
+  2.923s (group 2.47s), with 58 checked releases and an empty registry.
+- Final focused new/P0037/P0038 checks: **all three groups passed both modes**,
+  8.451s; new group 3.33s including **24 rebound-parameter cases**. Exact C requires
+  result capture before reverse cleanup; unused earlier borrowed controls now
+  require P0041 emission with unchanged runtime assertions.
+- `zig build test`: **168 discovered, 150 passed, 18 skipped, zero failures/errors**,
+  44.16s; `test_results/test_results_20261115_121123_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.035s.
+- Supported Windows Go quick protocol: **all 34 groups passed**, 70.423s; new
+  group **2.76s**, both modes with final exact C, native UBSan, checked live release
+  operands/refcounts, Linux harness cross-linking and directly linked exact output.
+  Each mode checks **58 nonnull releases** (20 classes, 38 strings), **17 output
+  lines**, and empty pre/post-shutdown registries. Twenty-four additional cases
+  preserve fallback for twelve placements of rebinding. Compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Cross-build/cross-linking does not prove native P0041
+  Linux runtime behavior; inspect CI after publication.
+- 176 local Markdown paths, 34-group quick/CI selector equality, PowerShell UTF-8
+  BOM, gofmt, complete diff review and `git diff --check` passed. Precommit fetch
+  and remote SHA still matched the parent. Logs are ignored `build/P0041-*.log`.
+
+Same eighteen skips and prior shape/operator limits. Only direct unchanged scalar
+parameters gain cleanup; the whole-body scan conservatively rejects rebinding,
+same-name declarations and unknown nodes. Caller storage keeps its original
+lifetime without a copy/retain. Rebound/conditional/member/index/call results,
+retained owned-result accumulation, aliases/containers/destructors/fields and
+async/active exception unwinding stay separate. See
+[P0041](passes/P0041-borrowed-parameter-return.md). Next verify publication/native
+CI, then qualify conditional result trees with unchanged borrowed parameter leaves.
+
+---
+
+# Historical P0040 checkpoint - DreamCompiler
+
+**Date:** November 15, 2026 UTC
+
 **Pass:** P0040 - conditional owned-local string-result preservation and cleanup
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

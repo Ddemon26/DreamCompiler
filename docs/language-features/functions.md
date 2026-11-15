@@ -121,6 +121,15 @@ effects replace a local. Null selection retains no allocation. No result copy,
 retain or consumption is added. Any borrowed parameter, member, index, call or
 other unsupported value leaf keeps the whole return on its previous path.
 
+P0041 also releases qualified locals on a direct `return parameter;` when the
+scalar string parameter is unchanged throughout the function or method body.
+The saved pointer keeps its caller-provided lifetime; cleanup adds no copy or
+retain. Literal, empty, typed-null and managed caller storage qualify. Rebinding
+anywhere in the body, even after this return or inside a loop update or nested
+expression, preserves prior emission for that parameter. Same-name declarations
+and unknown body nodes conservatively prevent this proof. Other parameters may
+still be assigned. Conditional borrowed results remain separate.
+
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership
 remain unqualified. Primitive return shape checking remains a separate limitation.

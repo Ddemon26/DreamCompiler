@@ -134,8 +134,8 @@ func string doResult() {
         return doText;
     } while (true);
 }
-// Emission-only controls: borrowed/compound results and active exception exits
-// remain unqualified. The unused literal checks P0038 cleanup emission.
+// Active exception exits remain emission-only controls. The unused borrowed
+// result checks P0041; literal/owned conditional results check P0038/P0040.
 func string pendingResult() {
     string pendingOuter = "outer";
     try { string pendingTry = "try"; return pendingTry; }

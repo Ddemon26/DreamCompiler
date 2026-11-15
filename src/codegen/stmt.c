@@ -385,6 +385,7 @@ static void emit_func_impl(COut *b, Slice prefix, Node *n,
     CGCtx ctx = {0};
     ctx.ret_type = n->as.func.ret_type;
     ctx.is_sync_function = 1;
+    ctx.function_body = n->as.func.body;
     cgctx_scope_enter(&ctx);
     for (size_t i = 0; i < n->as.func.param_len; i++) {
       Node *p = n->as.func.params[i];
@@ -431,6 +432,7 @@ void emit_method(COut *b, Slice class_name, Node *n, const char *src_file) {
   CGCtx ctx = {0};
   ctx.ret_type = n->as.func.ret_type;
   ctx.is_sync_function = !n->as.func.is_async;
+  ctx.function_body = n->as.func.body;
   cgctx_scope_enter(&ctx);
   cgctx_push(&ctx, "this", 4, TK_IDENT, class_name);
   for (size_t i = 0; i < n->as.func.param_len; i++) {
@@ -486,6 +488,105 @@ static const VarBinding *owned_string_result(CGCtx *ctx, Node *expr) {
   // allocation for the caller; do not infer ownership through other expressions.
   return v && v->depth > 1 && v->type == TK_KW_STRING &&
          v->indirections == 0 && v->owns_string ? v : NULL;
+}
+
+static int names_binding(Slice name, const VarBinding *v) {
+  return name.len == v->len && memcmp(name.start, v->start, v->len) == 0;
+}
+
+static int parameter_unchanged(const Node *n, const VarBinding *v) {
+  if (!n) return 1;
+  // Scan the entire body, including later statements and loop updates. A
+  // parameter rebound to local storage no longer proves a caller-backed result.
+  // Same-name declarations conservatively disqualify rather than infer aliases.
+  switch (n->kind) {
+  case ND_BINOP:
+    switch (n->as.bin.op) {
+    case TK_EQ: case TK_PLUSEQ: case TK_MINUSEQ: case TK_STAREQ:
+    case TK_SLASHEQ: case TK_PERCENTEQ: case TK_ANDEQ: case TK_OREQ:
+    case TK_XOREQ: case TK_LSHIFTEQ: case TK_RSHIFTEQ: case TK_QMARKQMARKEQ:
+      if (n->as.bin.lhs->kind == ND_IDENT &&
+          names_binding(n->as.bin.lhs->as.ident, v)) return 0;
+      break;
+    default: break;
+    }
+    return parameter_unchanged(n->as.bin.lhs, v) &&
+           parameter_unchanged(n->as.bin.rhs, v);
+  case ND_UNARY: case ND_POST_UNARY:
+    if ((n->as.unary.op == TK_PLUSPLUS || n->as.unary.op == TK_MINUSMINUS) &&
+        n->as.unary.expr->kind == ND_IDENT &&
+        names_binding(n->as.unary.expr->as.ident, v)) return 0;
+    return parameter_unchanged(n->as.unary.expr, v);
+  case ND_VAR_DECL:
+    return !names_binding(n->as.var_decl.name, v) &&
+           parameter_unchanged(n->as.var_decl.init, v);
+  case ND_BLOCK:
+    for (size_t i = 0; i < n->as.block.len; i++)
+      if (!parameter_unchanged(n->as.block.items[i], v)) return 0;
+    return 1;
+  case ND_IF:
+    return parameter_unchanged(n->as.if_stmt.cond, v) &&
+           parameter_unchanged(n->as.if_stmt.then_br, v) &&
+           parameter_unchanged(n->as.if_stmt.else_br, v);
+  case ND_COND:
+    return parameter_unchanged(n->as.cond.cond, v) &&
+           parameter_unchanged(n->as.cond.then_expr, v) &&
+           parameter_unchanged(n->as.cond.else_expr, v);
+  case ND_WHILE:
+    return parameter_unchanged(n->as.while_stmt.cond, v) &&
+           parameter_unchanged(n->as.while_stmt.body, v);
+  case ND_DO_WHILE:
+    return parameter_unchanged(n->as.do_while_stmt.body, v) &&
+           parameter_unchanged(n->as.do_while_stmt.cond, v);
+  case ND_FOR:
+    return parameter_unchanged(n->as.for_stmt.init, v) &&
+           parameter_unchanged(n->as.for_stmt.cond, v) &&
+           parameter_unchanged(n->as.for_stmt.update, v) &&
+           parameter_unchanged(n->as.for_stmt.body, v);
+  case ND_SWITCH:
+    if (!parameter_unchanged(n->as.switch_stmt.expr, v)) return 0;
+    for (size_t i = 0; i < n->as.switch_stmt.len; i++)
+      if (!parameter_unchanged(n->as.switch_stmt.cases[i].value, v) ||
+          !parameter_unchanged(n->as.switch_stmt.cases[i].body, v)) return 0;
+    return 1;
+  case ND_TRY:
+    return !names_binding(n->as.try_stmt.catch_param, v) &&
+           parameter_unchanged(n->as.try_stmt.body, v) &&
+           parameter_unchanged(n->as.try_stmt.catch_body, v) &&
+           parameter_unchanged(n->as.try_stmt.finally_body, v);
+  case ND_CALL:
+    if (!parameter_unchanged(n->as.call.callee, v)) return 0;
+    for (size_t i = 0; i < n->as.call.len; i++)
+      if (!parameter_unchanged(n->as.call.args[i], v)) return 0;
+    return 1;
+  case ND_NEW:
+    for (size_t i = 0; i < n->as.new_expr.arg_len; i++)
+      if (!parameter_unchanged(n->as.new_expr.args[i], v)) return 0;
+    return 1;
+  case ND_INDEX:
+    return parameter_unchanged(n->as.index.array, v) &&
+           parameter_unchanged(n->as.index.index, v);
+  case ND_FIELD: return parameter_unchanged(n->as.field.object, v);
+  case ND_RETURN: return parameter_unchanged(n->as.ret.expr, v);
+  case ND_EXPR_STMT: return parameter_unchanged(n->as.expr_stmt.expr, v);
+  case ND_CONSOLE_CALL: return parameter_unchanged(n->as.console.arg, v);
+  case ND_THROW: return parameter_unchanged(n->as.throw_stmt.expr, v);
+  case ND_AWAIT: return parameter_unchanged(n->as.await_expr.expr, v);
+  case ND_INT: case ND_FLOAT: case ND_CHAR: case ND_STRING: case ND_BOOL:
+  case ND_NULL: case ND_IDENT: case ND_BASE: case ND_BREAK: case ND_CONTINUE:
+    return 1;
+  default: return 0; // Unknown/nested declarations do not establish the proof.
+  }
+}
+
+static int borrowed_parameter_result(CGCtx *ctx, Node *expr) {
+  if (ctx->ret_type != TK_KW_STRING || !ctx->function_body ||
+      !expr || expr->kind != ND_IDENT) return 0;
+  const VarBinding *v = cgctx_binding(ctx, expr->as.ident.start,
+                                    expr->as.ident.len);
+  return v && v->depth == 1 && v->type == TK_KW_STRING &&
+         v->indirections == 0 && !v->owns_string &&
+         parameter_unchanged(ctx->function_body, v);
 }
 
 static int is_primitive_scalar_result(TokenKind type) {
@@ -814,7 +915,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_write(b, "}");
     } else if (ctx->is_sync_function && n->as.ret.expr &&
                (is_primitive_scalar_result(ctx->ret_type) || preserved ||
-                conditional_local ||
+                conditional_local || borrowed_parameter_result(ctx, n->as.ret.expr) ||
                 (ctx->ret_type == TK_KW_STRING &&
                  is_static_string_result(n->as.ret.expr))) &&
                ctx->exception_depth == 0 && has_return_cleanup(ctx)) {
@@ -832,7 +933,8 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_free(&value);
 
       // Evaluate exactly once before freeing any storage read by the result.
-      // Static leaves are independent; owned-local leaves preserve their slot.
+      // Static/caller-backed results are independent of these locals;
+      // owned-local leaves preserve their slot.
       // Keep bindings for other branches; keep unbraced returns conditional.
       c_out_write(b, "{\n");
       c_out_indent(b);

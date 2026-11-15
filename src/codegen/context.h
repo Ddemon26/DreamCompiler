@@ -32,6 +32,7 @@ typedef struct CGCtx {
   TokenKind ret_type;
   int is_async_worker;
   int is_sync_function;
+  Node *function_body; /* Whole-body proof for unchanged borrowed parameters. */
   Slice async_func_name;
   CGControlTarget *control_target;
   int exception_depth; /* Returns crossing an exception context need unwinding. */

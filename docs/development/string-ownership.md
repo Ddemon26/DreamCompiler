@@ -437,7 +437,8 @@ source/alias lifetime needs separate qualification; a universal release could fr
 the result's backing, while universally copying results would add retained storage.
 Active try/catch/finally returns and async exits also keep their prior emission.
 P0038 separately qualifies direct literals below; P0040 additionally qualifies
-conditional owned-local/literal trees below. Borrowed-source and result-
+conditional owned-local/literal trees below; P0041 qualifies unchanged direct
+scalar string-parameter results. Broader borrowed-source and result-
 consumption policies remain open; never apply this predicate to an arbitrary
 string expression.
 
@@ -450,10 +451,10 @@ The shutdown registry must still be empty. Mixed/nested scopes, const/empty/null
 results, later declarations, unbraced true/false paths, loops/switches, headers,
 replacement/append, recursion, free/static/instance methods, name collisions and
 normal exception completion are covered. Caller backing and receiver survive;
-a caller snapshot survives backing replacement. Borrowed/compound result forms
-and active exception exits have unchanged-emission controls only and are not
-executed here. The unused literal control now checks P0038 cleanup emission;
-its runtime counts are unchanged.
+a caller snapshot survives backing replacement. Active exception exits remain
+unchanged-emission controls and are not executed here. Unused literal/conditional
+controls check P0038/P0040, and the direct borrowed control checks P0041 cleanup;
+runtime counts are unchanged.
 The existing empty-before-shutdown checks remain intact for earlier fixtures.
 
 ## Direct literal string returns (P0038)
@@ -469,7 +470,8 @@ When cleanup is needed, the existing collision-safe temporary captures the liter
 pointer before releases. Unbraced returns remain conditional and emitter metadata
 remains available for other paths. With no qualified locals, emission stays a direct
 return. P0038 qualified only `ND_STRING`; P0039 extends this to literal-only
-conditional trees below. Borrowed/member/index/call/assignment/concatenation results,
+conditional trees below. P0041 qualifies unchanged direct parameter results.
+Other borrowed/member/index/call/assignment/concatenation results,
 async exits and returns inside active try/catch/finally remain separate.
 
 The [literal-return regression](../../tests/basics/memory/literal_string_return.dr)
@@ -478,8 +480,8 @@ assertion in both modes before the fix. Both now require **51 nonnull releases**
 (18 class instances and 33 strings), **19 exact output lines** including an empty
 line, and an empty registry before and after shutdown. Exact C sequences check
 reverse cleanup order, no returned-literal copy, temporary collisions and unchanged
-borrowed/active-exception emission. Its unused literal-only conditional control now
-checks P0039 cleanup; runtime counts are unchanged. Mixed/nested/null/const/empty locals,
+active-exception emission. Unused literal-only conditional and borrowed controls
+check P0039/P0041 cleanup; runtime counts are unchanged. Mixed/nested/null/const/empty locals,
 later declarations, true/false unbraced paths, while/do/for/switch, header updates,
 zero/multiple iterations, recursion, methods, caller snapshot/backing/receiver
 survival, escaped results and normal exception completion execute. Both quick
@@ -556,6 +558,40 @@ and normal exception completion execute. Exact C checks require evaluation befor
 reverse cleanup and preserve unsupported/active-exception emission. P0037/P0039's
 unused owned-conditional controls check the new emission with unchanged runtime
 assertions. Both quick protocols and CI select the new group.
+
+## Unchanged borrowed string-parameter returns (P0041)
+
+A direct identifier result now qualifies when it resolves to a borrowed scalar
+string parameter and a whole-body scan establishes that parameter is unchanged.
+The synchronous function/static/instance method captures the pointer once, releases
+all qualified owned string/scalar-class locals in reverse order, and returns the
+saved pointer. The caller's backing storage remains independent of those locals.
+No result allocation, copy, retain or consumption is added; caller declarations
+still copy. No qualified locals means the existing direct return remains.
+
+The scan checks assignments and increment/decrement throughout the body, including
+later statements, loop conditions/updates, nested expressions and exception bodies.
+Same-name declarations/catch bindings and unknown/nested declarations conservatively
+disqualify the proof. Writes to other bindings do not disqualify this parameter.
+Dream has no parsed address-of expression for exposing a scalar parameter slot;
+by-value calls cannot rebind that slot. This is not alias analysis. A rebound
+parameter can point at owned local storage, so its returns preserve prior emission.
+Rebound/conditional/member/index/call results and active exception/async exits remain
+separate; existing dangling aliases are not repaired.
+
+The [regression](../../tests/basics/memory/borrowed_parameter_return.dr) and
+`TestCompiler_BorrowedParameterReturn` first reproduced a nonempty pre-shutdown
+registry in both modes. Each now checks **58 nonnull releases** (20 classes,
+38 strings), **17 exact output lines**, and an empty registry before and after
+shutdown. Nested/const/null/empty locals, later declarations, true/false unbraced
+returns, header updates, switch scopes, recursion, static/instance methods,
+temporary collisions, normal exception completion and caller snapshots/backing
+survival execute. Literal, empty, null and managed parameter storage are covered.
+Exact C checks require capture before reverse cleanup and unchanged unsupported/
+active-exception returns; **24 additional ordinary/module-entry cases** check
+fallback for twelve placements of rebinding. P0037/P0038 unused borrowed controls
+now check the qualified emission with unchanged runtime assertions. Both quick
+protocols and CI select the group; earlier allocator/refcount checks remain intact.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

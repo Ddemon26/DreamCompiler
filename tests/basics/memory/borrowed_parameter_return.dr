@@ -1,0 +1,144 @@
+// Expected: backing
+// Expected: backing
+// Expected: literal
+// Expected:
+// Expected: null
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: changed
+class BorrowedReturnToken { }
+func string nestedBorrowed(bool stop, string source, string *pointer) {
+    BorrowedReturnToken outerOwner = new BorrowedReturnToken();
+    string first = source;
+    string absent;
+    const string empty = "";
+    {
+        BorrowedReturnToken innerOwner = new BorrowedReturnToken();
+        string innerText = "discard";
+        if (stop) return (source);
+        string later = "later";
+    }
+    return source;
+}
+func string loopBorrowed(bool stop, string source) {
+    string outerText = "outer";
+    int i = 0;
+    for (string header = "header"; i < 2; header += "x") {
+        BorrowedReturnToken bodyOwner = new BorrowedReturnToken();
+        string bodyText = header;
+        if (stop) return source;
+        i++;
+    }
+    return source;
+}
+func string switchBorrowed(string source) {
+    string outerSwitch = "outer";
+    switch (1) {
+        case 1:
+            string caseText = source;
+            BorrowedReturnToken caseOwner = new BorrowedReturnToken();
+            return source;
+        default: break;
+    }
+    return source;
+}
+class BorrowedReturnReader {
+    static func string readStatic(string source) {
+        string staticText = "discard";
+        return source;
+    }
+    func string readInstance(string source) {
+        string instanceText = "discard";
+        BorrowedReturnToken instanceOwner = new BorrowedReturnToken();
+        return source;
+    }
+}
+func string recursiveBorrowed(int depth, string source) {
+    string recursiveText = source;
+    BorrowedReturnToken recursiveOwner = new BorrowedReturnToken();
+    if (depth > 0) recursiveBorrowed(depth - 1, source);
+    return source;
+}
+func string completedBorrowed(string source) {
+    string completedText = "discard";
+    try { string tryText = "try"; }
+    catch { }
+    finally { BorrowedReturnToken finallyOwner = new BorrowedReturnToken(); }
+    return source;
+}
+func string collisionBorrowed(string __dream_return_0) {
+    string collisionText = "discard";
+    return __dream_return_0;
+}
+func string otherWrite(string source, string other) {
+    string otherText = "discard";
+    other = "replacement";
+    return source;
+}
+func string noBorrowedLocals(string source) { return source; }
+// Emission-only controls: rebinding anywhere, including loop updates or a
+// nested expression, disqualifies this parameter even at an earlier return.
+func string reboundBorrowed(bool stop, string source) {
+    string reboundText = "owned";
+    if (stop) return source;
+    source = reboundText;
+    return source;
+}
+func string updatedBorrowed(bool stop, string source) {
+    for (string updateText = "owned"; true; source = updateText)
+        if (stop) return source;
+    return source;
+}
+func string expressionBorrowed(bool stop, string source) {
+    string expressionText = "owned";
+    if (stop) return source;
+    Console.WriteLine(source = expressionText);
+    return source;
+}
+func string pendingBorrowed(string source) {
+    string pendingOuter = "discard";
+    try { string pendingTry = "try"; return source; }
+    catch { string pendingCatch = "catch"; return source; }
+    finally { string pendingFinally = "finally"; return source; }
+    return source;
+}
+func string conditionalBorrowed(bool choice, string source) {
+    string conditionalText = "discard";
+    return choice ? source : "literal";
+}
+func void exerciseBorrowed() {
+    string backing = "backing";
+    string values[1];
+    values[0] = backing;
+    string snapshot = nestedBorrowed(true, backing, values);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(nestedBorrowed(false, backing, values));
+    Console.WriteLine(nestedBorrowed(true, "literal", values));
+    Console.WriteLine(nestedBorrowed(true, "", values));
+    string absent;
+    if (nestedBorrowed(true, absent, values) == null) Console.WriteLine("null");
+    Console.WriteLine(loopBorrowed(true, backing));
+    Console.WriteLine(loopBorrowed(false, backing));
+    Console.WriteLine(switchBorrowed(backing));
+    Console.WriteLine(BorrowedReturnReader.readStatic(backing));
+    BorrowedReturnReader reader = new BorrowedReturnReader();
+    Console.WriteLine(reader.readInstance(backing));
+    Console.WriteLine(recursiveBorrowed(2, backing));
+    Console.WriteLine(completedBorrowed(backing));
+    Console.WriteLine(collisionBorrowed(backing));
+    Console.WriteLine(otherWrite(backing, "other"));
+    Console.WriteLine(noBorrowedLocals(backing));
+    backing = "changed";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(backing);
+}
+exerciseBorrowed();
