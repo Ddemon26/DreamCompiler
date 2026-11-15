@@ -387,6 +387,21 @@ retained because repository metadata shows an active Pages site from `main:/docs
 they cannot be treated as unused from a local reference scan. Audit their paths
 separately, and qualify replacement coverage before pruning unique cgo fixtures.
 
+## T014 - Modernize the Pages website (implementation completed in P0028; live release pending)
+
+The owner approved the Source first homepage, Guide page reader, Workbench palette,
+and square corners. P0028 implements them with real Markdown routing, 21 sidebar
+targets, heading links, code copying, mobile navigation and themes. Eight Node
+checks, all sidebar renderings, browser interaction/overflow/sanitization checks,
+two exact-output examples and protected source hashes passed. See
+[P0028](passes/P0028-docs-website.md) for evidence and untested limits.
+
+Acceptance for live release: verify integration push/CI, obtain explicit owner
+instruction to publish from `main:/docs`, and inspect the deployed homepage/docs.
+The current branch push alone does not update Pages. Do not merge into `main`,
+change Pages settings or publish another hosted copy without new authorization.
+Legacy tutorial/API content and body-link accuracy remain a separate audit.
+
 ## Later work
 
 ### Compiler dogfooding (explicit user priority, first slice in P0025)

@@ -5,8 +5,12 @@ Dream is a small experimental programming language with C#-like syntax. The Drea
 This short guide explains the purpose of Dream and points you to the rest of the documentation for details on each language feature.
 
 - Dream aims to be easy to read with semicolon-terminated statements.
- - Dream currently supports `int`, `bool` and `string` variable types.
+ - Primitive types include `int`, `float`, `bool`, `char`, and `string`; see the
+   [implementation status](../development/implementation-status.md) for boundaries.
  - Control flow includes `if` statements, `switch` statements, `while` loops and `do-while` loops with braced blocks.
 
 Use the sidebar or the table of contents to explore specific topics such as variables, arithmetic and comparison operators.
+
+Start with the [quick-start guide](quick-start.md) to build the compiler and run
+your first program.
 

@@ -1,5 +1,49 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 14, 2026 (America/Vancouver)
+
+**Pass:** P0028 - square-edged homepage and documentation reader
+
+**Scope/platform:** static documentation website, Windows; compiler inputs unchanged
+
+- `node --check docs/site.js`: **passed**.
+- `node --test docs/site.test.mjs`: **8 passed, 0 failed/skipped**.
+- Actual browser rendering of **all 21 sidebar documents passed**. Homepage example
+  selection by click/keyboard, search including no results, internal navigation,
+  browser back, heading/deep-link reload, clipboard success, saved light theme and
+  restored dark theme, archives and 404/retry recovery passed.
+- Mobile **320px** homepage/table article and tablet **768px** homepage had no
+  page horizontal overflow. Mobile menu and table containment passed. Desktop
+  **1280px** homepage and article visually checked; viewport reset afterward.
+- Temporary Markdown QA: script/event-handler/unsafe-link removal, no injected
+  DOM attribute, distinct duplicate heading IDs and table wrapping passed. The
+  temporary fixture was removed before commit.
+- Browser initially exposed Windows Python serving `.mjs` as text/plain; runtime
+  modules now use `.js`. Subsequent module loading and interactions passed.
+- `zig version`: **0.17.1**. The two homepage examples were extracted into ignored
+  `build/P0028-example-{0,1}.dr`, compiled through **`zig build run -- ...`** and
+  executed sequentially: exact **`Hello, Dream!`** and **`8`**, exit zero. Initial
+  direct compiler invocations failed launching default GCC; the documented Zig
+  entry point sets `CC=zig cc` and passed.
+- **408 protected hashes unchanged**: compiler/runtime, fixtures, runner/Go tooling,
+  plugins, build graph and CI. **48 new/revised guide links resolved** before pass
+  metadata; final handoff/index links and diff checks precede commit.
+- Reused compiler evidence, **P0027 / November 14, 2026 UTC**, not rerun here:
+  **136 Dream passes, 18 skips, no failures**, **22 quick groups**, **5 runner tests**.
+  Both exact-parent native Linux/Windows [CI jobs](https://github.com/Ddemon26/DreamCompiler/actions/runs/43654089255)
+  passed before edits. No new cross-build or native Linux runtime claim.
+- Pages metadata read: **built**, **legacy source `main:/docs`**. No live deployment
+  performed. Integration publication requires verified push; live release requires
+  explicit owner instruction before a `main` merge or Pages-setting change.
+
+No compiler behavior or skipped cases were requalified. Legacy tutorial/API accuracy,
+browser forward and disabled-script/storage/clipboard environments were not separately
+tested. See [P0028](passes/P0028-docs-website.md) for scope and handoff.
+
+---
+
+## Historical P0027 checkpoint - November 14, 2026
+
 **Date:** November 14, 2026 UTC
 
 **Pass:** P0027 - unsupported Go build entry-point cleanup

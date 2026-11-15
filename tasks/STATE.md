@@ -1,44 +1,48 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0027 - unsupported Go build entry-point cleanup**.
-- Record: [P0027](passes/P0027-go-tooling-cleanup.md).
-- Parent/fetched approved remote: `57c8edf0edc7c05fc5385d2748ceb3011413fb49` (P0026).
-- Resolve the pass commit by its exact `Pass-ID: P0027` trailer.
-- Publication requires push and matching `git ls-remote`; inspect CI before new work.
+- Current pass: **P0028 - square-edged homepage and documentation reader**.
+- Record: [P0028](passes/P0028-docs-website.md).
+- Parent/fetched approved remote: `4f1c24ac6c5e88892666ed0e87066a0ecf01c430` (P0027).
+- Resolve the pass commit by its exact `Pass-ID: P0028` trailer.
+- Integration publication requires push and matching `git ls-remote`.
+- **Live Pages release requires new owner instruction: Pages still serves `main:/docs`.**
 
-The user requested another cleanup pass ahead of T011. It started clean in the
-approved primary checkout/branch/origin, one worktree and no competing active
-project chat. Approved fetch matched HEAD. P0026
-[CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43652638299) was initially
-pending; both native jobs passed before this pass edited files.
+The owner approved the Source first homepage and Guide page documentation layout,
+with Workbench's dark/lavender styling, then requested square edges throughout.
+P0028 implements those choices with no rounded controls/pills or decorative
+shadows. The same structure supports an optional light theme. The static site
+has no installation/build/CDN requirement. Local Marked and DOMPurify modules
+are pinned, integrity checked and licensed.
 
-P0027 removes the two obsolete Go C-library builder scripts and reduces the main
-Makefile/PowerShell launcher to the supported quick protocol and help. Defaults
-now select quick. The Make build/Go recipe is unchanged; the PowerShell script
-resolves its working directories and returns build/test failure codes, stopping
-before Go on build failure. Retired actions fail instead of installing modules or
-invoking absent cgo APIs, unsupported benchmark/fuzz modes or recursive tests.
-No launcher purges caches. The Go README and testing guide describe the contract.
+The working reader has 21 actual sidebar pages, title/group topic filtering,
+source-relative Markdown links, heading outlines/deep links, code copying,
+previous/next/source navigation, history handling, loading/error/retry states,
+mobile menus and theme persistence. New quick-start and implementation-status
+guides give bounded examples and evidence links; existing tutorial/API accuracy
+remains separate. See [website maintenance and design rules](../docs/development/docs-site.md).
 
-The exact 22-group selectors remain identical to the original and CI. **474
-protected file hashes** remain unchanged, including all compiler/runtime sources,
-active/deferred fixtures, docs/Pages assets, plugins, unique Go test/C/header/
-checksum files, build inputs, supported Python runner/config and CI. No assertions
-or exclusions changed. The full suite passed **136/154 with the same 18 skips**,
-zero failures/errors, 48.74s. All **22 real Go quick groups passed**, 36.863s;
-Python **five passed**, 0.029s. Seven controlled launcher probes, PowerShell
-parsing/BOM, GNU Make help/dry-runs and retired-target rejection passed. See
-[results](MostRecentTestResults.md); 95 local Markdown links also passed. No new cross-build was required because no
-compiler/C/build inputs changed. Native P0027 CI awaits publication.
+Started clean in the approved checkout/branch/origin, one worktree and no competing
+active writer. Fetch matched HEAD; both native P0027
+[CI jobs](https://github.com/Ddemon26/DreamCompiler/actions/runs/43654089255) passed.
+Website checks: **8 Node checks passed**, all 21 pages rendered in the browser,
+search/back/deep-link/copy/themes/archive/404 recovery passed. A real temporary
+Markdown fixture proved sanitization, duplicate IDs and table rendering; removed
+before commit. Mobile 320px and tablet 768px overflow checks passed; desktop
+1280px homepage/article reviewed. Windows `.mjs` MIME behavior was caught and
+fixed by using `.js` runtime modules. Both homepage examples compiled with
+documented `zig build run` and printed exact output using Zig 0.17.1.
 
-The Pages metadata reports a built site sourced from `main:/docs`; HTML/CSS
-cannot be treated as unused and were retained. Unique legacy cgo test sources,
-fixture-local Makefile, disabled benchmark/fuzz code and checksums also remain
-pending replacement-coverage decisions. The site needs a separate navigation/
-accuracy repair. Prior ownership/shape/operator/unwinding limits remain.
+**408 protected compiler/test/plugin/build/CI hashes unchanged.** Full compiler,
+Go, runner and cross-build checks were not rerun. Reused **P0027 evidence dated
+November 14, 2026 UTC**: 136 Dream passes/18 skips/no failures, 22 quick groups,
+5 runner tests, plus successful native CI above. See
+[results](MostRecentTestResults.md) for the website checks and limits.
 
-Next: verify P0027 publication/native CI and repair failures first. Otherwise
-resume T011 conditional-string initializer ownership with live-registry and
-branch-effect evidence, unless the user chooses another cleanup slice.
-Do not start a second pass here.
+GitHub Pages metadata is **built**, **legacy**, **`main:/docs`**. Pushing this
+integration pass does not update the live site. Root instructions prohibit a
+`main` merge or changed publishing destination without a new user instruction.
+The next concrete step is owner authorization for the live release, then live
+homepage/docs checks. Do not silently merge/reconfigure Pages or create another
+hosted copy. Existing compiler limits and the T011 conditional-string initializer
+task remain; do not begin a different feature while this delivery is unresolved.

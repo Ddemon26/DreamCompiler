@@ -2,6 +2,7 @@
 
 DreamCompiler is an experimental compiler for a C#-style language. It translates
 a tested subset of Dream to C, then links native programs with the Dream runtime.
+Use the [quick-start guide](getting-started/quick-start.md) for your first program.
 Use Zig **0.17.1** and re2c to build it. The lexer, parser, semantics and emitter
 are C11; entry-file newline normalization is the first production Dream helper.
 
@@ -44,5 +45,6 @@ not current measurements.
 
 Versioned examples and extended grammar include historical or planned syntax;
 check them against the feature inventory and regressions before relying on them.
-The Markdown links here are the maintained entry point. The older HTML viewer and
-additional tutorial/API pages still need a separate path and accuracy audit.
+The website presents these Markdown guides through a searchable topic navigation
+and article reader. Additional tutorial/API pages still need an accuracy audit.
+See the [website maintenance guide](development/docs-site.md) for routes and design rules.
