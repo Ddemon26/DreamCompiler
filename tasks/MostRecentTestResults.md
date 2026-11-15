@@ -2,6 +2,67 @@
 
 **Date:** November 15, 2026 UTC
 
+**Pass:** P0042 - conditional borrowed string-result scoped cleanup
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Clean approved checkout/branch/origin matched published P0041
+  `b57c2b2406f6c4621f8b30cb4b902eadc70d207d`. Its
+  [native Linux/Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43751573004)
+  passed build, runner, quick and full-suite steps before work. Schedule already
+  uses local execution and the approved cwd; no competing active writer found.
+- Restricted fetch failed DNS and restricted baseline could not locate Zig's
+  installation. Approved normal network/toolchain access succeeded without
+  changing toolchains, caches or permissions.
+- Baseline `zig build test`: **168 discovered, 150 passed, 18 skipped, zero failures/
+  errors**, 49.80s; `test_results/test_results_20261115_130630_windows.json`.
+- Before fix, from `codex/go`, `go test -count=1 -v -run
+  '^TestCompiler_ConditionalBorrowedReturn$' .`: **both modes failed**, 2.545s
+  (group 2.11s), with **62 live allocations instead of five** before shutdown.
+- `zig build`: **passed**, exit 0. Initial focused check: **both modes passed**,
+  3.132s (group 2.64s), with 75 releases and five original-reference results.
+- Strengthened focused checks initially failed the concatenation control's exact
+  C expectation (11.770s); it omitted the emitter's existing parentheses around
+  `dream_concat`. Corrected the expectation without changing emission or runtime
+  assertions. Final new/P0041/P0040/P0039 checks: **all passed**, 12.613s; new group
+  **3.72s**, including **48 rebinding cases**. The 24 direct-return controls remain.
+- `zig build test`: **169 discovered, 151 passed, 18 skipped, zero failures/errors**,
+  75.83s; `test_results/test_results_20261115_131203_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.040s.
+- Supported Windows Go quick protocol: **all 35 groups passed**, 80.416s; new group
+  **4.73s**. Each mode checks **75 nonnull releases** (19 classes, 56 strings),
+  **39 output lines**, **five selected owned results** with original references
+  before shutdown and an empty registry afterward. Native UBSan/live release/
+  refcount checks, Linux harness cross-linking and directly linked output pass.
+  Exact C requires capture before reverse cleanup and preserves unsupported and
+  active exception returns. All 48 conditional and 24 direct rebinding cases pass;
+  previous unused controls now check qualified cleanup with unchanged runtime
+  assertions. External compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Cross-build/cross-linking does not prove native P0042
+  Linux runtime behavior; inspect CI after publication.
+- 181 local Markdown paths, 35-group quick/CI selector equality, PowerShell UTF-8 BOM,
+  39 annotated output lines, gofmt, full diff review and `git diff --check` passed.
+  Precommit fetch and `git ls-remote` still matched the parent. Logs are ignored
+  `build/P0042-*.log`.
+
+Same eighteen skips and prior shape/operator limits. Every conditional value leaf
+must be a literal, known-owned scalar local or unchanged borrowed scalar parameter;
+unsupported/rebound leaves preserve the entire prior return. Caller backing retains
+its original lifetime without a result copy/retain; selected owned results retain
+their original lifetime until shutdown. General member/index/call/compound result
+lifetime, caller consumption, aliases/containers/destructors/fields and async/active
+exception unwinding remain separate. See
+[P0042](passes/P0042-conditional-borrowed-return.md). Next verify publication/native
+CI, then audit direct borrowed member-result lifetime and mutation/call barriers.
+
+---
+
+# Historical P0041 checkpoint - DreamCompiler
+
+**Date:** November 15, 2026 UTC
+
 **Pass:** P0041 - cleanup on unchanged borrowed scalar string-parameter returns
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

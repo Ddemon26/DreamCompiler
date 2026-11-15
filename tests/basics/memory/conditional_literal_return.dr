@@ -93,7 +93,7 @@ func string collisionConditional(int *effects) {
     return __dream_return_1(effects) ? "collision" : "unused";
 }
 func string noConditionalLocals(bool choice) { return choice ? "plain" : ""; }
-// Unqualified leaves and active exception exits are emission-only controls.
+// Uncalled borrowed leaves qualify in P0042; unsupported/exception controls stay separate.
 func string borrowedThen(bool choice, string source) {
     string thenDiscard = "discard";
     return choice ? source : "literal";

@@ -119,7 +119,7 @@ func string equalLocal() {
     string right = "equal";
     return false ? left : right;
 }
-// These uncalled controls must retain their complete previous emission.
+// Uncalled borrowed controls qualify in P0042; call/exception controls stay separate.
 func string borrowedLocal(bool choice, string source) {
     string owned = "owned";
     return choice ? owned : source;

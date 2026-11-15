@@ -524,8 +524,9 @@ remain intact.
 Synchronous string returns outside active exception contexts now qualify nested
 `?:` trees when every value leaf is a literal or a known-owned scalar string local
 under P0037's binding predicate. Every branch must qualify, including branches
-under constant conditions. Parameters, top-level bindings, arrays, explicit
-pointers, members, indexes, calls and other compound value leaves do not qualify;
+under constant conditions. P0042 additionally qualifies unchanged borrowed scalar
+parameters below. Top-level bindings, arrays, explicit pointers, members, indexes,
+calls and other compound value leaves do not qualify;
 one unsupported leaf preserves the entire return's previous emission.
 
 The collision-safe temporary captures the selected pointer once before cleanup.
@@ -576,8 +577,9 @@ disqualify the proof. Writes to other bindings do not disqualify this parameter.
 Dream has no parsed address-of expression for exposing a scalar parameter slot;
 by-value calls cannot rebind that slot. This is not alias analysis. A rebound
 parameter can point at owned local storage, so its returns preserve prior emission.
-Rebound/conditional/member/index/call results and active exception/async exits remain
-separate; existing dangling aliases are not repaired.
+P0042 extends this proof to conditional value leaves below. Rebound/member/index/
+call results and active exception/async exits remain separate; existing dangling
+aliases are not repaired.
 
 The [regression](../../tests/basics/memory/borrowed_parameter_return.dr) and
 `TestCompiler_BorrowedParameterReturn` first reproduced a nonempty pre-shutdown
@@ -592,6 +594,41 @@ active-exception returns; **24 additional ordinary/module-entry cases** check
 fallback for twelve placements of rebinding. P0037/P0038 unused borrowed controls
 now check the qualified emission with unchanged runtime assertions. Both quick
 protocols and CI select the group; earlier allocator/refcount checks remain intact.
+
+## Conditional borrowed string-parameter returns (P0042)
+
+A synchronous conditional string result outside active exception contexts now
+qualifies when every value leaf is a literal, a known-owned scalar string local,
+or a borrowed scalar string parameter proven unchanged by P0041's whole-body scan.
+The scan includes return conditions, later statements and loop updates. Every
+parameter used as a value leaf must pass, including leaves under constant
+conditions. One unsupported/rebound leaf preserves the entire previous return.
+Writes to parameters that are not value leaves do not block the result proof.
+
+The selected pointer is captured once before reverse-order cleanup. Only owned
+local value candidates receive P0040's pointer comparison; borrowed parameters
+are never released or retained. A selected borrowed value leaves no retained
+local allocation. Caller backing keeps its original lifetime and caller declarations
+still copy results. Selected owned results keep their original reference until
+shutdown; general result consumption and retained-result accumulation stay open.
+
+The [regression](../../tests/basics/memory/conditional_borrowed_return.dr) and
+`TestCompiler_ConditionalBorrowedReturn` reproduced **62 live allocations instead
+of five** in both modes before the fix. Each now checks **75 nonnull releases**
+(19 classes, 56 strings), **39 output lines**, exactly **five selected owned results**
+with their original reference before shutdown and an empty registry afterward.
+All nested value paths, two borrowed parameters, repeated leaves, null/empty/const
+storage, later declarations, unbraced paths, header updates, methods, temporary
+collisions, condition-side owned replacement and normal exception completion
+execute. Labels/effect counts require selected-only, once-only evaluation, and
+caller backing/snapshot survival is checked after return and backing replacement.
+Exact C requires capture before reverse cleanup and preserves call/assignment/
+concatenation/rebound-condition/active-exception returns. **48 additional cases**
+check twelve placements of rebinding with a borrowed leaf nested on either side,
+in both ordinary/module-entry modes. P0039/P0040/P0041 unused conditional controls
+now require the qualified cleanup; their runtime assertions remain unchanged.
+Both quick protocols and CI select the group; existing allocator/refcount/shutdown
+assertions and the 24 direct-parameter rebinding cases remain intact.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

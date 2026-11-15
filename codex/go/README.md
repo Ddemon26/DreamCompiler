@@ -225,9 +225,10 @@ Exact C sequences require once-only selection before reverse cleanup; candidate
 pointer comparisons preserve only the selected allocation. Nested/repeated leaves,
 null/const/empty slots, equal-content independent allocations, append in a condition,
 headers/updates, unbraced paths, methods, name collisions and caller snapshots are
-covered. Unsupported borrowed/call leaves and active exception returns keep their
-emission. P0037/P0039 unused owned-conditional controls check the new cleanup with
-unchanged runtime assertions. Both quick protocols and CI select this group.
+covered. Unsupported/rebound leaves and active exception returns keep their
+emission; P0042 qualifies unchanged borrowed scalar parameter leaves. P0037/P0039
+unused owned-conditional controls check the new cleanup with unchanged runtime
+assertions. Both quick protocols and CI select this group.
 
 `TestCompiler_BorrowedParameterReturn` checks direct unchanged scalar string
 parameter returns in both modes: 58 nonnull releases (20 classes, 38 strings),
@@ -235,11 +236,25 @@ parameter returns in both modes: 58 nonnull releases (20 classes, 38 strings),
 snapshots survive; no result copy/retain is added. Nested/header/switch scopes,
 unbraced paths, recursion, methods, temporary collisions, null/empty storage and
 normal exception completion execute. Exact C checks require reverse cleanup and
-preserve rebound/conditional/active-exception emission. Twenty-four additional
-cases check twelve placements of parameter rebinding in both modes, including
+preserve rebound/active-exception emission; P0042 qualifies conditional leaves.
+Twenty-four additional cases check twelve placements of parameter rebinding in both modes, including
 later statements and loop updates. Both quick protocols and CI select this group.
 P0037/P0038 unused borrowed controls now check qualified cleanup; their runtime
 counts remain unchanged. Rebound/compound results and alias lifetime stay separate.
+
+`TestCompiler_ConditionalBorrowedReturn` checks nested literal/owned-local/
+unchanged-parameter trees in both modes: 75 checked releases (19 classes, 56
+strings), 39 output lines and exactly five retained owned results. Before P0042,
+both modes left 62 live allocations instead. Exact C requires capture before
+reverse cleanup, owned-candidate comparisons and no borrowed copy/retain/release.
+All nested paths, selected-only/once-only conditions, repeated/null/empty leaves,
+headers/updates, methods, collisions, local replacement in a condition, completed
+exceptions and caller backing/snapshot survival execute. Unsupported/rebound and
+active-exception returns retain their emission. Forty-eight additional cases
+check twelve rebinding placements in either nested branch in both modes, sharing
+the direct-parameter helper without weakening its assertions. Earlier unused
+conditional controls require the new emission with unchanged runtime assertions.
+Both quick protocols and CI select the group.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

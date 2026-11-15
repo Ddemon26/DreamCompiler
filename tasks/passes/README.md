@@ -43,8 +43,9 @@
 | [P0039](P0039-conditional-literal-return.md) | 2026-11-15 | Literal-only conditional string results capture once before scoped cleanup; both modes, 148 Dream passes, 32 quick groups and Linux cross-build passed | `Pass-ID: P0039` |
 | [P0040](P0040-conditional-local-return.md) | 2026-11-15 | Conditional literal/owned-local results preserve selected storage during reverse cleanup; both-mode lifetime and full-suite checks passed | `Pass-ID: P0040` |
 | [P0041](P0041-borrowed-parameter-return.md) | 2026-11-15 | Direct unchanged borrowed string-parameter returns release scoped locals; both-mode lifetime, 24 rebound controls and full/quick/cross checks passed | `Pass-ID: P0041` |
+| [P0042](P0042-conditional-borrowed-return.md) | 2026-11-15 | Conditional unchanged borrowed scalar parameter results release other locals and preserve selected owned storage; both-mode lifetime and full-suite checks passed | `Pass-ID: P0042` |
 
-**Verify P0041 publication/native CI, then qualify conditional string results with unchanged borrowed parameter leaves under T011.**
+**Verify P0042 publication/native CI, then audit direct borrowed member-result lifetime and mutation barriers under T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

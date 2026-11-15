@@ -1,0 +1,182 @@
+// Expected: backing
+// Expected: inner
+// Expected: backing
+// Expected: backing
+// Expected: inner
+// Expected: backing
+// Expected: backing
+// Expected: other
+// Expected: second
+// Expected: backing
+// Expected: other
+// Expected: literal
+// Expected: backing
+// Expected: right
+// Expected: header
+// Expected: backing
+// Expected: header
+// Expected: header
+// Expected: backing
+// Expected: backing
+// Expected: static
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected:
+// Expected: null
+// Expected:
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: changex
+// Expected: backing
+// Expected: 12
+// Expected: backing
+// Expected: second
+// Expected: backing
+// Expected: changed
+class ConditionalBorrowedToken { }
+func bool chooseBorrowed(string label, int *effects, bool choice) {
+    effects[0]++;
+    Console.WriteLine(label);
+    return choice;
+}
+func string nestedMixed(bool stop, bool a, bool b, int *effects, string source, string other) {
+    ConditionalBorrowedToken outerOwner = new ConditionalBorrowedToken();
+    string left = source;
+    string right = "right";
+    string absent;
+    const string empty = "";
+    {
+        ConditionalBorrowedToken innerOwner = new ConditionalBorrowedToken();
+        string inner = "inner";
+        if (stop) return chooseBorrowed(left, effects, a)
+            ? (chooseBorrowed(inner, effects, b) ? source : left)
+            : (chooseBorrowed("other", effects, b) ? other : "literal");
+        string later = "later";
+    }
+    return a ? source : right;
+}
+func string loopMixed(bool stop, bool choice, string source, int *effects) {
+    string outerText = "outer";
+    int i = 0;
+    for (string header = "header"; i < 1; header += "x") {
+        ConditionalBorrowedToken bodyOwner = new ConditionalBorrowedToken();
+        string bodyText = "body";
+        if (stop) return chooseBorrowed(header, effects, choice) ? source : header;
+        i++;
+    }
+    return i > 0 ? source : "after";
+}
+class ConditionalBorrowedReader {
+    static func string readStatic(bool choice, string source) {
+        string staticText = "discard";
+        return choice ? source : "static";
+    }
+    func string readInstance(bool choice, string source) {
+        string result = source;
+        ConditionalBorrowedToken owner = new ConditionalBorrowedToken();
+        return choice ? source : result;
+    }
+}
+func string nullMixed(bool choice, string source) {
+    string absent;
+    const string empty = "";
+    string discard = "discard";
+    return choice ? source : (false ? absent : empty);
+}
+func bool __dream_return_1(int *effects) { effects[0]++; return true; }
+func string collisionMixed(string __dream_return_0, int *effects) {
+    string collisionText = "discard";
+    return __dream_return_1(effects) ? __dream_return_0 : "unused";
+}
+func string completedMixed(string source) {
+    string completedText = "discard";
+    try { string tryText = "try"; }
+    catch { }
+    finally { ConditionalBorrowedToken finallyOwner = new ConditionalBorrowedToken(); }
+    return true ? source : "unused";
+}
+func string otherMixed(string source, string other) {
+    string otherText = "owned";
+    other = otherText;
+    return true ? source : "unused";
+}
+func string repeatedMixed(bool choice, string source) {
+    string repeatedText = "discard";
+    return choice ? source : source;
+}
+func string changedMixed(string source, int *effects) {
+    string owned = "change";
+    string discard = "discard";
+    return chooseBorrowed((owned += "x"), effects, true) ? source : owned;
+}
+// Unsupported leaves and active exception exits keep the entire old return.
+func string callMixed(bool choice, string source) {
+    string callText = "discard";
+    return choice ? source : completedMixed(source);
+}
+func string conditionRebound(string source) {
+    string owned = "owned";
+    return (source = owned) == "x" ? source : "literal";
+}
+func string otherRebound(bool choice, string source, string other) {
+    string owned = "owned";
+    other = owned;
+    return true ? source : (choice ? other : "literal");
+}
+func string assignmentMixed(bool choice, string source) {
+    string owned = "owned";
+    return choice ? source : (source = owned);
+}
+func string concatMixed(bool choice, string source) {
+    string owned = "owned";
+    return choice ? source + "x" : owned;
+}
+func string pendingMixed(bool choice, string source) {
+    try { string pendingTry = "try"; return choice ? source : "try-literal"; }
+    catch { string pendingCatch = "catch"; return choice ? source : "catch-literal"; }
+    finally { string pendingFinally = "finally"; return choice ? source : "finally-literal"; }
+    return source;
+}
+func void exerciseMixed() {
+    string backing = "backing";
+    string second = "second";
+    int effects[1];
+    effects[0] = 0;
+    string snapshot = nestedMixed(true, true, true, effects, backing, second);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(nestedMixed(true, true, false, effects, backing, second));
+    Console.WriteLine(nestedMixed(true, false, true, effects, backing, second));
+    Console.WriteLine(nestedMixed(true, false, false, effects, backing, second));
+    Console.WriteLine(nestedMixed(false, true, false, effects, backing, second));
+    Console.WriteLine(nestedMixed(false, false, false, effects, backing, second));
+    Console.WriteLine(loopMixed(true, true, backing, effects));
+    Console.WriteLine(loopMixed(true, false, backing, effects));
+    Console.WriteLine(loopMixed(false, false, backing, effects));
+    Console.WriteLine(ConditionalBorrowedReader.readStatic(true, backing));
+    Console.WriteLine(ConditionalBorrowedReader.readStatic(false, backing));
+    ConditionalBorrowedReader reader = new ConditionalBorrowedReader();
+    Console.WriteLine(reader.readInstance(true, backing));
+    Console.WriteLine(reader.readInstance(false, backing));
+    Console.WriteLine(nullMixed(true, backing));
+    Console.WriteLine(nullMixed(false, backing));
+    string absent;
+    if (nullMixed(true, absent) == null) Console.WriteLine("null");
+    Console.WriteLine(nullMixed(true, ""));
+    Console.WriteLine(collisionMixed(backing, effects));
+    Console.WriteLine(completedMixed(backing));
+    Console.WriteLine(otherMixed(backing, second));
+    Console.WriteLine(repeatedMixed(true, backing));
+    Console.WriteLine(repeatedMixed(false, backing));
+    Console.WriteLine(changedMixed(backing, effects));
+    Console.WriteLine(effects[0]);
+    Console.WriteLine(backing);
+    Console.WriteLine(second);
+    backing = "changed";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(backing);
+}
+exerciseMixed();

@@ -118,8 +118,9 @@ owned candidate only when its current pointer differs from the selected pointer;
 all other qualified locals are released in reverse order. This preserves exactly
 one selected allocation with its original reference, including after condition
 effects replace a local. Null selection retains no allocation. No result copy,
-retain or consumption is added. Any borrowed parameter, member, index, call or
-other unsupported value leaf keeps the whole return on its previous path.
+retain or consumption is added. Member, index, call and other unsupported value
+leaves keep the whole return on its previous path. P0042 qualifies unchanged
+borrowed scalar parameter leaves as described below.
 
 P0041 also releases qualified locals on a direct `return parameter;` when the
 scalar string parameter is unchanged throughout the function or method body.
@@ -128,7 +129,17 @@ retain. Literal, empty, typed-null and managed caller storage qualify. Rebinding
 anywhere in the body, even after this return or inside a loop update or nested
 expression, preserves prior emission for that parameter. Same-name declarations
 and unknown body nodes conservatively prevent this proof. Other parameters may
-still be assigned. Conditional borrowed results remain separate.
+still be assigned.
+
+P0042 applies that same whole-body proof to every borrowed scalar parameter leaf
+in a conditional result tree. All value leaves must be literals, known-owned
+scalar locals or proven unchanged scalar parameters, even in unselected constant
+branches. Capture the selected pointer once before reverse cleanup. Only owned
+local value candidates need pointer comparisons; borrowed leaves preserve their
+caller backing without retaining or copying it. A write to any parameter used as
+a value leaf, including a write in a condition, prevents cleanup for the entire
+return. Unsupported value leaves and retained owned-result accumulation remain
+separate.
 
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership

@@ -604,12 +604,16 @@ static int is_static_string_result(const Node *expr) {
          is_static_string_result(expr->as.cond.else_expr);
 }
 
-static int is_local_string_result(CGCtx *ctx, Node *expr) {
+static int is_scoped_string_result(CGCtx *ctx, Node *expr) {
   if (!expr) return 0;
   if (expr->kind == ND_COND)
-    return is_local_string_result(ctx, expr->as.cond.then_expr) &&
-           is_local_string_result(ctx, expr->as.cond.else_expr);
-  return expr->kind == ND_STRING || owned_string_result(ctx, expr);
+    return is_scoped_string_result(ctx, expr->as.cond.then_expr) &&
+           is_scoped_string_result(ctx, expr->as.cond.else_expr);
+  // Every possible value must survive cleanup. Reuse the whole-body proof:
+  // even a write in the condition or a later loop update can rebind a parameter
+  // to local storage. One unsupported leaf preserves the entire old return.
+  return expr->kind == ND_STRING || owned_string_result(ctx, expr) ||
+         borrowed_parameter_result(ctx, expr);
 }
 
 static int result_mentions_binding(CGCtx *ctx, Node *expr,
@@ -866,10 +870,10 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     break;
   case ND_RETURN: {
     const VarBinding *preserved = owned_string_result(ctx, n->as.ret.expr);
-    int conditional_local = ctx->ret_type == TK_KW_STRING &&
-                            n->as.ret.expr && n->as.ret.expr->kind == ND_COND &&
-                            !is_static_string_result(n->as.ret.expr) &&
-                            is_local_string_result(ctx, n->as.ret.expr);
+    int conditional_scoped = ctx->ret_type == TK_KW_STRING &&
+                             n->as.ret.expr && n->as.ret.expr->kind == ND_COND &&
+                             !is_static_string_result(n->as.ret.expr) &&
+                             is_scoped_string_result(ctx, n->as.ret.expr);
     if (ctx->is_async_worker) {
       // In async worker, set task result instead of returning directly
       if (n->as.ret.expr) {
@@ -915,7 +919,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_write(b, "}");
     } else if (ctx->is_sync_function && n->as.ret.expr &&
                (is_primitive_scalar_result(ctx->ret_type) || preserved ||
-                conditional_local || borrowed_parameter_result(ctx, n->as.ret.expr) ||
+                conditional_scoped || borrowed_parameter_result(ctx, n->as.ret.expr) ||
                 (ctx->ret_type == TK_KW_STRING &&
                  is_static_string_result(n->as.ret.expr))) &&
                ctx->exception_depth == 0 && has_return_cleanup(ctx)) {
@@ -941,7 +945,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_write(b, "%s %s = ", type_to_c(ctx->ret_type), temporary);
       cg_emit_expr(ctx, b, n->as.ret.expr);
       c_out_write(b, ";\n");
-      if (conditional_local)
+      if (conditional_scoped)
         emit_conditional_return_cleanup(ctx, b, n->as.ret.expr, temporary);
       else
         emit_return_cleanup(ctx, b, preserved);

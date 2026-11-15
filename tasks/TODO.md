@@ -488,11 +488,19 @@ statements and loop updates. Full Windows: 150 passed, 18 skipped, zero failures
 errors; 34 quick groups, five runner tests and Linux cross-build passed. See
 [P0041](passes/P0041-borrowed-parameter-return.md).
 
-Broader T011 remains open. Verify P0041 publication/native CI and repair failures
-first. Next qualify conditional string-result trees with literal/known-owned-local/
-unchanged borrowed scalar parameter value leaves. Require once-only selection,
-selected-only effects, selected owned storage preservation and caller backing
-survival; rebound/unsupported leaves must keep the whole previous return.
+P0042 extends conditional result cleanup to unchanged borrowed scalar parameter
+leaves using P0041's whole-body proof. Both modes reproduced 62 live allocations
+instead of five; each now requires 75 checked releases (19 classes, 56 strings),
+39 output lines, five selected owned results with original references and an empty
+registry after shutdown. Forty-eight additional cases check twelve rebinding
+placements nested on either side in both modes; earlier runtime and direct-return
+assertions remain intact. See [P0042](passes/P0042-conditional-borrowed-return.md)
+and the current test snapshot for measured full/quick/cross results.
+
+Broader T011 remains open. Verify P0042 publication/native CI and repair failures
+first. Next audit direct borrowed member-result cleanup: establish receiver/backing
+lifetime and field-mutation/call barriers before selecting a safe implementation
+slice. Preserve fallback wherever that proof is unavailable.
 Keep general borrowed/member/index/call/compound result lifetime, caller
 consumption, pointer/class result transfer, aliases/containers/destructors/fields,
 async and exception unwinding separate. String-index return typing remains
