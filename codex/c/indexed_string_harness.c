@@ -16,9 +16,22 @@ static void checked_release(void *ptr) {
 }
 
 #define dr_release checked_release
-#ifdef DREAM_EMPTY_BEFORE_SHUTDOWN
+#if defined(DREAM_EMPTY_BEFORE_SHUTDOWN) || defined(DREAM_LIVE_BEFORE_SHUTDOWN)
 static void checked_shutdown(void) {
+#ifdef DREAM_EMPTY_BEFORE_SHUTDOWN
     assert(dr_head == NULL && "all scoped allocations must be reclaimed before shutdown");
+#endif
+#ifdef DREAM_LIVE_BEFORE_SHUTDOWN
+    size_t live = 0;
+    for (DrRef *ref = dr_head; ref; ref = ref->next) {
+        assert(ref->refcount == 1 && "returned storage keeps its original reference");
+        live++;
+    }
+    if (live != DREAM_LIVE_BEFORE_SHUTDOWN)
+        fprintf(stderr, "live allocations before shutdown: got %zu, expected %d\n",
+                live, DREAM_LIVE_BEFORE_SHUTDOWN);
+    assert(live == DREAM_LIVE_BEFORE_SHUTDOWN && "only returned allocations may remain");
+#endif
     dr_release_all();
 }
 #define dr_release_all checked_shutdown
@@ -27,7 +40,7 @@ static void checked_shutdown(void) {
 #include DREAM_STRING_PROGRAM
 #undef main
 #undef dr_release
-#ifdef DREAM_EMPTY_BEFORE_SHUTDOWN
+#if defined(DREAM_EMPTY_BEFORE_SHUTDOWN) || defined(DREAM_LIVE_BEFORE_SHUTDOWN)
 #undef dr_release_all
 #endif
 

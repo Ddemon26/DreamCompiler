@@ -377,12 +377,13 @@ func TestCompiler_ScalarReturnCleanup(t *testing.T) {
 		`{int__dream_return_3=@entry@__dream_return_2();dr_release(callText);return__dream_return_3;}`,
 		`{int__dream_return_0=((structScalarToken*)completedOuter)->value;dr_release(completedOuter);return__dream_return_0;}`,
 		`return1;dr_release(pendingTry);`, `return2;dr_release(pendingCatch);`,
-		`return3;dr_release(pendingFinally);`, `returnresult;dr_release(result);`,
+		`return3;dr_release(pendingFinally);`,
+		`{constchar*__dream_return_0=result;return__dream_return_0;}dr_release(result);`,
 		`returnsource;`, `returnletter;`, `return15;`,
 	}, "2\n1\n1\n4\n5\n6\n7\n8\n9\n2\n1.500000\n11\n11\nA\nZ\n2\n1\n0\n12\n13\n14\n15\nbacking\n", true,
 		`dr_release(this);`, `dr_release(parameter);`, `dr_release(pointer);`,
 		`dr_release(source);`, `dr_release(values);`, `dr_release(characters);`,
-		`constchar*__dream_return_`)
+		`dream_string_copy(result)`)
 }
 
 func TestCompiler_VoidReturnStrings(t *testing.T) {
@@ -454,6 +455,50 @@ func checkStringOwnership(t *testing.T, fixture string, releases int, emittedChe
 }
 
 func checkStorageOwnership(t *testing.T, fixture string, releases int, emittedChecks []string, want string, emptyBeforeShutdown bool, forbiddenChecks ...string) {
+	t.Helper()
+	liveCount := -1
+	if emptyBeforeShutdown {
+		liveCount = 0
+	}
+	checkStorageOwnershipWithLiveCount(t, fixture, releases, emittedChecks, want, liveCount, forbiddenChecks...)
+}
+
+func TestCompiler_LocalStringReturn(t *testing.T) {
+	// Seventeen nonnull returned allocations retain their existing lifetime;
+	// all other scoped allocations must be released (20 classes + 25 strings).
+	checkStorageOwnershipWithLiveCount(t, "local_string_return.dr", 45, []string{
+		`{constchar*__dream_return_0=selected;dr_release(innerOwner);dr_release(empty);dr_release(absent);dr_release(first);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=first;dr_release(empty);dr_release(absent);dr_release(outerOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=loopText;dr_release(bodyOwner);dr_release(header);dr_release(fallback);dr_release(loopOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=fallback;dr_release(loopOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=caseText;dr_release(caseOwner);dr_release(switchText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=switchText;return__dream_return_0;}`,
+		`{constchar*__dream_return_0=nullText;dr_release(disposable);dr_release(nullOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=emptyText;dr_release(emptyOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=appended;dr_release(other);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=staticResult;dr_release(staticDiscard);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=instanceResult;dr_release(instanceOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=deeper;dr_release(recursiveOwner);dr_release(recursiveText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=recursiveText;dr_release(recursiveOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_2=__dream_return_0;dr_release(collisionDiscard);return__dream_return_2;}`,
+		`{constchar*__dream_return_0=completedText;dr_release(completedOwner);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=neverText;dr_release(zeroHeader);dr_release(zeroText);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=whileText;dr_release(whileOwner);dr_release(whileOuter);return__dream_return_0;}`,
+		`{constchar*__dream_return_0=doText;dr_release(doOuter);return__dream_return_0;}`,
+		`returnpendingTry;dr_release(pendingTry);`,
+		`returnpendingCatch;dr_release(pendingCatch);`,
+		`returnpendingFinally;dr_release(pendingFinally);`,
+		`returnsource;dr_release(borrowedDiscard);`,
+		`return"literal";dr_release(literalDiscard);`,
+		`return(choice?left:right);dr_release(right);dr_release(left);`,
+	},
+		"backing value\nbacking value\nloop\nfallback\ncase\nswitch\nnull\nempty\nbacking value suffix\nstatic\nbacking value\nbacking value\nbacking value\ncompleted\nzero\nwhile\ndo\nreader\nbacking value\nbacking value\nchanged\n", 17,
+		`dr_release(this);`, `dr_release(source);`, `dr_release(pointer);`,
+		`dr_release(values);`, `dream_string_copy(selected)`,
+		`dream_string_copy(__dream_return_0)`)
+}
+
+func checkStorageOwnershipWithLiveCount(t *testing.T, fixture string, releases int, emittedChecks []string, want string, liveCount int, forbiddenChecks ...string) {
 	t.Helper()
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
@@ -544,8 +589,10 @@ func checkStorageOwnership(t *testing.T, fixture string, releases int, emittedCh
 				filepath.Join(tr.projectRoot, "src", "runtime", "extensions", "custom.c"),
 				filepath.Join(tr.projectRoot, "src", "runtime", "io", "console.c"),
 				filepath.Join(tr.projectRoot, "src", "runtime", "exceptions", "exception.c")}
-			if emptyBeforeShutdown {
+			if liveCount == 0 {
 				compileArgs = append(compileArgs, "-DDREAM_EMPTY_BEFORE_SHUTDOWN")
+			} else if liveCount > 0 {
+				compileArgs = append(compileArgs, fmt.Sprintf("-DDREAM_LIVE_BEFORE_SHUTDOWN=%d", liveCount))
 			}
 			if runtime.GOOS == "windows" {
 				// Exercise Linux's headers and linker here as well: a native Windows

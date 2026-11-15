@@ -177,9 +177,21 @@ evaluation-before-cleanup sequences and an empty registry before shutdown.
 Nested locals, string headers, unbraced conditionals, loops/switches, recursion,
 methods, all four result types, field/index reads, once-only effects, borrowed
 caller survival, temporary-name collisions and normal exception completion are
-covered. Active exception exits and owning string results retain emission-only
-checks. Both quick protocols and CI select it; result transfer and exception
-unwinding remain separate. See the [ownership contract](../../docs/development/string-ownership.md).
+covered. Active exception exits and the unused owned-string result have emission-only
+checks (the latter updated for P0037's direct-local preservation). Both quick
+protocols and CI select it; result consumption and exception unwinding remain
+separate. See the [ownership contract](../../docs/development/string-ownership.md).
+
+`TestCompiler_LocalStringReturn` checks direct known-owned string-local returns in
+both modes: 45 nonnull releases (20 classes, 25 strings), 21 output lines and
+exactly 17 returned allocations live before shutdown, each with its original
+reference. Before P0037, 44 allocations remained. Exact C checks preserve the
+returned binding and reverse-order cleanup of the other locals. Nested/const/null/
+empty results, loops/switches, headers, unbraced paths, append/replacement, recursion,
+methods, caller survival, name collisions and normal exception completion are
+covered. Other result forms and active exception exits have emission controls only.
+No result copy/consumption is introduced; shutdown still reclaims every retained
+result. Both quick protocols and CI select this group.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

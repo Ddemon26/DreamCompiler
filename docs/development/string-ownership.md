@@ -54,8 +54,9 @@ not a return-transfer ABI: a fresh managed result, or a local whose return bypas
 cleanup, remains in the allocation registry until shutdown unless otherwise
 released by its owner. This can retain storage and adds an extra allocation.
 The callee must return storage that is still readable when the caller copies it.
-This string-result path has no return cleanup, dangling-result repair or ownership
-inference.
+P0037 qualifies cleanup around direct owned-local results below, preserving the
+returned allocation's existing lifetime. There is no general result consumption,
+dangling-result repair or ownership inference.
 
 P0022 qualifies plain `=` when the destination is an identifier bound to a known
 owned scalar declaration. The emitter records this for the copied initializer
@@ -404,6 +405,53 @@ index/assignment effects, temporary-name collisions and normal exception
 completion are checked. Unused active exception returns and an owning string
 result have unchanged-emission checks only. Both quick protocols and CI select
 the group; existing allocator/refcount/shutdown assertions remain intact.
+
+## Direct owned-local string returns (P0037)
+
+The bounded result contract is `return local;` in a synchronous string function
+or static/instance method, outside active exception contexts, where `local` is
+a known-owned scalar string in an active body/header scope. Parentheses are
+transparent in the AST. `owns_string` records independent allocation ownership
+for the qualified declaration/replacement forms above; a null slot also qualifies.
+Parameters, top-level bindings, arrays and explicit pointers do not qualify.
+
+The emitter saves the pointer once in a collision-free `const char *` temporary,
+releases every other qualified string/scalar-class local in reverse declaration
+order, then returns the saved pointer. It skips exactly the returned binding,
+without changing emitter metadata, so untaken branches and normal block cleanup
+still release that binding. An unbraced conditional return keeps this complete
+sequence inside its condition. No result copy, retain or allocator change is added.
+
+This preserves the existing result lifetime: the returned allocation remains live
+with its original reference until shutdown. Caller declarations still copy the
+result; they do not consume or release that original reference. Recursion can
+therefore retain a returned allocation at each level. This pass reclaims the other
+locals; it does not introduce an owning return ABI or eliminate retained results.
+The returned string is independent of the locals being released, including a
+caller copy of an earlier returned allocation. Allocation failure remains null.
+
+This rule deliberately requires a direct known-owned identifier. Borrowed parameter,
+literal, member, indexed, call, assignment, concatenation and conditional *return
+expressions* retain prior emission, even when they mention owned locals. Their
+source/alias lifetime needs separate qualification; a universal release could free
+the result's backing, while universally copying results would add retained storage.
+Active try/catch/finally returns and async exits also keep their prior emission.
+Direct literals are the next bounded candidate because their static storage
+survives local cleanup. General borrowed-source and result-consumption policies
+remain open; never apply this predicate to an arbitrary string expression.
+
+The [regression](../../tests/basics/memory/local_string_return.dr) and
+`TestCompiler_LocalStringReturn` reproduce **44 live allocations before shutdown**
+in both ordinary/module-entry modes before the fix. Afterward, exact return/cleanup
+sequences, **45 nonnull releases** (20 classes, 25 strings), **21 output lines**
+and **17 remaining returned allocations**, each with one reference, are required.
+The shutdown registry must still be empty. Mixed/nested scopes, const/empty/null
+results, later declarations, unbraced true/false paths, loops/switches, headers,
+replacement/append, recursion, free/static/instance methods, name collisions and
+normal exception completion are covered. Caller backing and receiver survive;
+a caller snapshot survives backing replacement. Unsupported result forms and active
+exception exits have unchanged-emission controls only and are not executed here.
+The existing empty-before-shutdown checks remain intact for earlier fixtures.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

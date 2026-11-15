@@ -2,6 +2,54 @@
 
 **Date:** November 15, 2026 UTC
 
+**Pass:** P0037 - cleanup around direct owned-local string returns
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0036 publication matched parent `43772c74fe258d24d1389e6d8e50857dc0202297`;
+  [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43694034403)
+  passed Linux/Windows build, runner, quick and full-suite steps before work.
+- Restricted fetch failed DNS; restricted baseline could not locate the installed
+  Zig directory. Approved normal network/toolchain access succeeded without changing
+  toolchain, caches or permissions.
+- Baseline `zig build test`: **163 discovered, 145 passed, 18 skipped, zero
+  failures/errors**, 51.23s; `test_results_20261115_013451_windows.json`.
+- Before fix, `TestCompiler_LocalStringReturn` **failed both modes**, 3.033s
+  (group 2.44s), with **44 live allocations versus 17 expected** before shutdown.
+- Initial development build failed due to a misplaced return-case scope; source
+  correction restored the build. Final `zig build`: **passed**, exit 0. Initial
+  focused matrix **passed both modes**, 3.025s (group 2.54s), with native UBSan,
+  live registry/refcounts/shutdown, Linux harness cross-linking and linked output.
+- `zig build test`: **164 discovered, 146 passed, 18 skipped, zero failures/
+  errors**, 50.76s; `test_results/test_results_20261115_013843_windows.json`.
+- Python runner unit tests: **5 passed**, 0.033s.
+- Supported Windows Go quick protocol: **all 30 groups passed**, 55.520s;
+  new group **2.18s**, both modes including final exact C assertions. Each requires
+  **45 nonnull releases** (20 classes, 25 strings), **21 output lines**, exactly
+  **17 live returned allocations with one reference each** before shutdown, and
+  an empty registry afterward. Earlier empty-before-shutdown assertions remain.
+  External compiler invocations use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Cross-build/cross-link success is not native P0037
+  Linux execution evidence; inspect CI after publication.
+- **156 local Markdown paths resolved**, 30-group quick/CI selector equality,
+  PowerShell BOM, gofmt, scope/diff review and `git diff --check` checked before
+  commit. Precommit fetch/remote SHA matched the parent; no divergence. Publication
+  requires a matching remote SHA.
+
+Same eighteen skips and prior shape/operator limits. Returned owned-local storage
+retains its existing lifetime until shutdown; caller declarations still copy it
+without consuming the original. Other string result expressions, borrowed-source
+lifetime, aliases/containers/destructors/fields, pointer/class results, async and
+active exception exits remain separate. See [P0037](passes/P0037-local-string-return.md).
+Next verify publication/native CI, then qualify direct literal string-return cleanup.
+
+---
+
+## Historical P0036 checkpoint - DreamCompiler
+
+**Date:** November 15, 2026 UTC
+
 **Pass:** P0036 - scoped cleanup on primitive scalar return
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

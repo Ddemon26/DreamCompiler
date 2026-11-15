@@ -97,9 +97,17 @@ needed only when there are qualified locals to release; its name avoids active
 bindings and names in the lowered expression. No ownership transfer is needed
 for these primitive values.
 
+For a direct `return local;` of a known-owned scalar string, P0037 preserves that
+local's allocation, releases the other qualified locals, and returns the saved
+pointer. Parentheses and const locals follow the same rule. The returned allocation
+keeps its existing lifetime until shutdown; a caller declaration still copies it
+without consuming the original. This avoids releasing returned storage but does
+not eliminate retained results. Other string return expressions keep their previous
+emission, including borrowed parameters, literals, calls and conditionals.
+
 Returns inside active try/catch/finally contexts retain their previous behavior;
-exception unwinding, async exits and string/pointer/class result ownership remain
-unqualified. Primitive return shape checking remains a separate limitation.
+exception unwinding, async exits and general string/pointer/class result ownership
+remain unqualified. Primitive return shape checking remains a separate limitation.
 Class cleanup is qualified for fresh independent instances; aliases, class
 containers, destructors and field destruction remain separate. See the bounded
 [ownership checkpoint](../development/string-ownership.md).

@@ -468,12 +468,24 @@ static int has_return_cleanup(CGCtx *ctx) {
   return 0;
 }
 
-static void emit_return_cleanup(CGCtx *ctx, COut *b) {
+static void emit_return_cleanup(CGCtx *ctx, COut *b,
+                                 const VarBinding *preserved) {
   for (size_t i = ctx->len; i-- > 0;) {
     VarBinding *v = &ctx->vars[i];
-    if (return_releases_binding(v))
+    if (v != preserved && return_releases_binding(v))
       c_out_write(b, "dr_release(%.*s);\n", (int)v->len, v->start);
   }
+}
+
+static const VarBinding *owned_string_result(CGCtx *ctx, Node *expr) {
+  if (ctx->ret_type != TK_KW_STRING || !expr || expr->kind != ND_IDENT)
+    return NULL;
+  const VarBinding *v = cgctx_binding(ctx, expr->as.ident.start,
+                                    expr->as.ident.len);
+  // A direct owned local already has independent storage. Preserve that one
+  // allocation for the caller; do not infer ownership through other expressions.
+  return v && v->depth > 1 && v->type == TK_KW_STRING &&
+         v->indirections == 0 && v->owns_string ? v : NULL;
 }
 
 static int is_primitive_scalar_result(TokenKind type) {
@@ -711,7 +723,8 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   case ND_CONTINUE:
     emit_control_jump(ctx, b, 1);
     break;
-  case ND_RETURN:
+  case ND_RETURN: {
+    const VarBinding *preserved = owned_string_result(ctx, n->as.ret.expr);
     if (ctx->is_async_worker) {
       // In async worker, set task result instead of returning directly
       if (n->as.ret.expr) {
@@ -751,12 +764,12 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       // available to emit other branches and unreachable fall-through cleanup.
       c_out_write(b, "{\n");
       c_out_indent(b);
-      emit_return_cleanup(ctx, b);
+      emit_return_cleanup(ctx, b, NULL);
       c_out_write(b, "return;\n");
       c_out_dedent(b);
       c_out_write(b, "}");
     } else if (ctx->is_sync_function && n->as.ret.expr &&
-               is_primitive_scalar_result(ctx->ret_type) &&
+               (is_primitive_scalar_result(ctx->ret_type) || preserved) &&
                ctx->exception_depth == 0 && has_return_cleanup(ctx)) {
       // Preflight lowered names as well as bindings: a C initializer is already
       // inside its declarator's scope, so the temporary must not shadow a call.
@@ -778,12 +791,12 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_write(b, "%s %s = ", type_to_c(ctx->ret_type), temporary);
       cg_emit_expr(ctx, b, n->as.ret.expr);
       c_out_write(b, ";\n");
-      emit_return_cleanup(ctx, b);
+      emit_return_cleanup(ctx, b, preserved);
       c_out_write(b, "return %s;\n", temporary);
       c_out_dedent(b);
       c_out_write(b, "}");
     } else {
-      // Owning result transfer and exception unwinding remain separate.
+      // Other result expressions and exception unwinding remain separate.
       c_out_write(b, "return");
       if (n->as.ret.expr) {
         c_out_write(b, " ");
@@ -795,6 +808,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     }
     c_out_newline(b);
     break;
+  }
   case ND_THROW:
     if (n->as.throw_stmt.expr) {
       // Throw with expression (use expression as message)

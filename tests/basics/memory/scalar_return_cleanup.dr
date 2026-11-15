@@ -141,7 +141,8 @@ func int completedException() {
     finally { string completedFinally = "finally"; }
     return completedOuter.value;
 }
-// Active exception returns and string results keep their prior emission.
+// Active exception returns keep their prior emission. The unused owned string
+// result also checks P0037's direct-local preservation without runtime allocation.
 // These exception exits are checked only in C and are never called here.
 func int pendingException() {
     string pendingOuter = "outer";

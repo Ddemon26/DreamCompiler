@@ -1,0 +1,190 @@
+// Expected: backing value
+// Expected: backing value
+// Expected: loop
+// Expected: fallback
+// Expected: case
+// Expected: switch
+// Expected: null
+// Expected: empty
+// Expected: backing value suffix
+// Expected: static
+// Expected: backing value
+// Expected: backing value
+// Expected: backing value
+// Expected: completed
+// Expected: zero
+// Expected: while
+// Expected: do
+// Expected: reader
+// Expected: backing value
+// Expected: backing value
+// Expected: changed
+class ReturnToken { }
+func string nestedResult(bool stop, string source, string *pointer) {
+    ReturnToken outerOwner = new ReturnToken();
+    string first = source;
+    string absent;
+    const string empty = "";
+    {
+        const string selected = source;
+        ReturnToken innerOwner = new ReturnToken();
+        if (stop) return (selected);
+        ReturnToken lateOwner = new ReturnToken();
+    }
+    return first;
+}
+func string loopResult(bool stop) {
+    ReturnToken loopOwner = new ReturnToken();
+    string fallback = "fallback";
+    int i = 0;
+    for (string header = "header"; i < 2; i++) {
+        string loopText = "loop";
+        ReturnToken bodyOwner = new ReturnToken();
+        if (stop) return loopText;
+    }
+    return fallback;
+}
+func string switchResult(int choice) {
+    string switchText = "switch";
+    switch (choice) {
+        case 1:
+            string caseText = "case";
+            ReturnToken caseOwner = new ReturnToken();
+            return caseText;
+        default: break;
+    }
+    return switchText;
+}
+func string nullResult() {
+    string nullText;
+    ReturnToken nullOwner = new ReturnToken();
+    string disposable = "discard";
+    return nullText;
+}
+func string emptyResult() {
+    const string emptyText = "";
+    ReturnToken emptyOwner = new ReturnToken();
+    return emptyText;
+}
+func string replacedResult(string source) {
+    string appended = source;
+    string other = "other";
+    appended += " suffix";
+    return appended;
+}
+class ReturnReader {
+    string label;
+    func init() { this.label = "reader"; }
+    static func string readStatic() {
+        string staticResult = "static";
+        string staticDiscard = "discard";
+        return staticResult;
+    }
+    func string readInstance(string source) {
+        string instanceResult = source;
+        ReturnToken instanceOwner = new ReturnToken();
+        return instanceResult;
+    }
+}
+func string recursiveResult(int depth, string source) {
+    string recursiveText = source;
+    ReturnToken recursiveOwner = new ReturnToken();
+    if (depth > 0) {
+        string deeper = recursiveResult(depth - 1, recursiveText);
+        return deeper;
+    }
+    return recursiveText;
+}
+func string collisionResult(string source) {
+    string __dream_return_0 = source;
+    int __dream_return_1 = 1;
+    string collisionDiscard = "discard";
+    return __dream_return_0;
+}
+func string completedResult() {
+    string completedText = "completed";
+    try { string tryText = "try"; }
+    catch { }
+    finally { string finallyText = "finally"; }
+    ReturnToken completedOwner = new ReturnToken();
+    return completedText;
+}
+func string zeroResult() {
+    string zeroText = "zero";
+    for (string zeroHeader = "header"; false;) {
+        string neverText = "never";
+        return neverText;
+    }
+    return zeroText;
+}
+func string whileResult() {
+    string whileOuter = "outer";
+    int i = 0;
+    while (i < 2) {
+        string whileText = "while";
+        ReturnToken whileOwner = new ReturnToken();
+        if (i++ == 1) return whileText;
+    }
+    return whileOuter;
+}
+func string doResult() {
+    string doOuter = "outer";
+    do {
+        string doText = "do";
+        return doText;
+    } while (true);
+}
+// Emission-only controls: these result forms and active exception exits are
+// outside the direct owned-local boundary and are not called here.
+func string pendingResult() {
+    string pendingOuter = "outer";
+    try { string pendingTry = "try"; return pendingTry; }
+    catch { string pendingCatch = "catch"; return pendingCatch; }
+    finally { string pendingFinally = "finally"; return pendingFinally; }
+    return pendingOuter;
+}
+func string borrowedResult(string source) {
+    string borrowedDiscard = "discard";
+    return source;
+}
+func string literalResult() {
+    string literalDiscard = "discard";
+    return "literal";
+}
+func string conditionalResult(bool choice) {
+    string left = "left";
+    string right = "right";
+    return choice ? left : right;
+}
+func void exercise() {
+    string backing = "backing" + " value";
+    string values[1];
+    values[0] = backing;
+    string snapshot = nestedResult(true, backing, values);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(nestedResult(false, backing, values));
+    Console.WriteLine(loopResult(true));
+    Console.WriteLine(loopResult(false));
+    Console.WriteLine(switchResult(1));
+    Console.WriteLine(switchResult(2));
+    string absentCopy = nullResult();
+    if (absentCopy == null) Console.WriteLine("null");
+    Console.Write(emptyResult());
+    Console.WriteLine("empty");
+    Console.WriteLine(replacedResult(backing));
+    Console.WriteLine(ReturnReader.readStatic());
+    ReturnReader reader = new ReturnReader();
+    Console.WriteLine(reader.readInstance(backing));
+    Console.WriteLine(recursiveResult(1, backing));
+    Console.WriteLine(collisionResult(backing));
+    Console.WriteLine(completedResult());
+    Console.WriteLine(zeroResult());
+    Console.WriteLine(whileResult());
+    Console.WriteLine(doResult());
+    Console.WriteLine(reader.label);
+    Console.WriteLine(backing);
+    backing = "changed";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(backing);
+}
+exercise();
