@@ -416,16 +416,21 @@ static TokenKind analyze_expr(SemAnalyzer *s, Node *n) {
   case ND_BINOP: {
     if (n->as.bin.op == TK_EQ) check_class_assignment(s, expr_class(s, n->as.bin.lhs), n->as.bin.rhs);
     // Check for assignment to const variable
-    if (n->as.bin.op == TK_EQ && n->as.bin.lhs->kind == ND_IDENT) {
+    if ((n->as.bin.op == TK_EQ || n->as.bin.op == TK_PLUSEQ) &&
+        n->as.bin.lhs->kind == ND_IDENT) {
       char *name = slice_to_cstr(s, n->as.bin.lhs->as.ident);
       Symbol *sym = sym_intern(name);
       Decl *d = scope_lookup(s->scope, sym);
       if (d && d->kind == DECL_VAR && d->as.var.is_const) {
-        diag_pushf(s, n->pos, DIAG_ERROR, "cannot assign to const variable '%s'", name);
+        diag_pushf(s, n->as.bin.lhs->pos, DIAG_ERROR, "cannot assign to const variable '%s'", name);
       }
     }
     TokenKind lhs = analyze_expr(s, n->as.bin.lhs);
     TokenKind rhs = analyze_expr(s, n->as.bin.rhs);
+    if (n->as.bin.op == TK_PLUSEQ && lhs == TK_KW_STRING &&
+        rhs != TK_KW_STRING && n->as.bin.rhs->kind != ND_NULL)
+      diag_push(s, n->as.bin.lhs->pos, DIAG_ERROR,
+                "string '+=' requires a string or null operand");
     switch (n->as.bin.op) {
     case TK_EQ:
     case TK_PLUSEQ: case TK_MINUSEQ: case TK_STAREQ: case TK_SLASHEQ:

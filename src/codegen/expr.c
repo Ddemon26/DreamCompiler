@@ -232,6 +232,10 @@ int cg_is_string_expr(CGCtx *ctx, Node *n) {
   case ND_BASE:
     return member_type(ctx, n) == TK_KW_STRING;
   case ND_BINOP:
+    if (n->as.bin.op == TK_EQ || n->as.bin.op == TK_PLUSEQ) {
+      PrimitiveShape shape = primitive_shape(ctx, n->as.bin.lhs);
+      return shape.type == TK_KW_STRING && shape.indirections == 0;
+    }
     // Handle string concatenation operations (+ operator with strings)
     if (n->as.bin.op == TK_PLUS) {
       int lhs_is_string = cg_is_string_expr(ctx, n->as.bin.lhs);
@@ -325,12 +329,20 @@ void cg_emit_expr(CGCtx *ctx, COut *b, Node *n) {
     c_out_write(b, ")");
     break;
   case ND_BINOP:
-    if (n->as.bin.op == TK_EQ && n->as.bin.lhs->kind == ND_IDENT) {
+    if ((n->as.bin.op == TK_EQ || n->as.bin.op == TK_PLUSEQ) &&
+        n->as.bin.lhs->kind == ND_IDENT) {
       Node *lhs = n->as.bin.lhs;
       const VarBinding *binding = cgctx_binding(ctx, lhs->as.ident.start,
                                               lhs->as.ident.len);
-      if (binding && binding->owns_string) {
-        c_out_write(b, "__dream_string_assign(&");
+      Node *rhs = n->as.bin.rhs;
+      // Only scalar string/null append operands use the owned replacement path.
+      // Pointer/array bindings and other compound operators retain their emission.
+      int append = n->as.bin.op == TK_PLUSEQ;
+      int string_rhs = rhs->kind == ND_NULL ||
+          (cg_is_string_expr(ctx, rhs) &&
+           primitive_shape(ctx, rhs).indirections == 0);
+      if (binding && binding->owns_string && (!append || string_rhs)) {
+        c_out_write(b, append ? "__dream_string_append(&" : "__dream_string_assign(&");
         cg_emit_expr(ctx, b, lhs);
         c_out_write(b, ", ");
         cg_emit_expr(ctx, b, n->as.bin.rhs);

@@ -1,0 +1,3 @@
+// Expected error: cannot assign to const variable 'text'
+const string text = "fixed";
+text += " suffix";

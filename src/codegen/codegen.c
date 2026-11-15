@@ -84,6 +84,13 @@ static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode
   c_out_write(&builder, "    dr_release(*slot);\n");
   c_out_write(&builder, "    *slot = copy;\n    return copy;\n}\n\n");
 
+  // RHS evaluation finishes before entry. Read the current slot here, including
+  // any nested replacement, and concatenate before releasing aliased operands.
+  c_out_write(&builder, "static char *__dream_string_append(const char **slot, const char *text) {\n");
+  c_out_write(&builder, "    char *joined = dream_concat(*slot ? *slot : \"\", text ? text : \"\");\n");
+  c_out_write(&builder, "    dr_release(*slot);\n");
+  c_out_write(&builder, "    *slot = joined;\n    return joined;\n}\n\n");
+
   // Initialize exception handling system
   c_out_write(&builder, "static void dream_init_runtime(void) {\n");
   c_out_write(&builder, "    dream_exception_init();\n");

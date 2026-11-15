@@ -246,7 +246,7 @@ Python tests and Linux cross-build passed. See [P0016](passes/P0016-indexed-cons
 Semantic shape/bounds/operator/ownership qualification remains separate. Verify
 publication and native CI before T011; repair failed checks first.
 
-## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump/conditional/class-jump/assignment-initializer slices completed)
+## T011 - Qualify remaining string ownership paths (initializer/header/assignment/container/jump/conditional/class-jump/assignment-initializer/append slices completed)
 
 P0014 qualifies scalar declarations initialized directly from an index expression;
 P0017/P0018/P0019 add literals, identifiers and members; P0020 scopes for-header
@@ -255,10 +255,10 @@ without transferring ownership; P0022 qualifies plain replacement on known-owned
 scalar identifiers; P0023 excludes borrowed array/pointer bindings from scalar
 block cleanup; P0024 qualifies owned scalar cleanup on break/continue; P0030
 adds scalar conditional initializer copies; P0031 adds class-local jump cleanup;
-P0032 adds plain assignment-expression initializer copies. Source
-audit still finds plain C assignment elsewhere. Compound assignment, owning
-containers, return transfer, other early exits and field ownership
-remain unqualified; do not infer these from indexed-copy success. The memory
+P0032 adds plain assignment-expression initializer copies; P0033 qualifies owned
+scalar string `+=`. Source audit still finds plain C assignment elsewhere. Other
+compound operators, owning containers, return transfer, other early exits and
+field ownership remain unqualified; do not infer these from indexed-copy success. The memory
 guide's old pools/cycle/alias examples are design material, not implemented APIs.
 
 Acceptance: choose one bounded ownership boundary, reproduce it with checked
@@ -383,15 +383,24 @@ cleanup. Full Windows suite: 139 passed, 18 skipped, no failures/errors;
 [P0032](passes/P0032-assignment-initializer-ownership.md). Destination ownership
 is unchanged; fresh managed operands can remain registered until shutdown.
 
-Broader T011 remains open. Verify P0032 publication/native CI and repair failures
-first. Next reproduce owned scalar string `+=` through the real compiler and
-checked live allocations. The emitter currently uses generic C operator emission
-for `TK_PLUSEQ`. Qualify a bounded string/string replacement contract, once-only
-RHS effects, self-append and expression results in both modes; preserve numeric
-compound operators and document null/temporary ownership policy explicitly.
-Keep return transfer, class aliases/containers/destructors, field ownership and
-exception/finally unwinding separate. T012/T013 pruning and T014 website/release work are completed
-maintenance history; do not repeat those tasks from stale scheduled-run memory.
+P0033 replaces invalid C pointer `+=` with an owned-scalar string/null append
+helper. Both modes require 49 checked releases, 26 exact output lines, self/nested
+updates, independently copied results, once-only effects, null-as-empty policy,
+borrowed/member/fresh operands, header/jump cleanup, methods and top-level snapshots.
+Ten positioned, artifact-free cases reject const updates and non-string operands.
+Numeric compound operators retain their emission; managed operands retain ownership.
+Full Windows suite: 142 passed, 18 skipped, zero failures/errors; all 26 Go quick
+groups, five runner tests and Linux cross-build passed. See
+[P0033](passes/P0033-owned-string-append.md) for exact validation and limits.
+
+Broader T011 remains open. Verify P0033 publication/native CI and repair failures
+first. Next reproduce owned scalar locals retained by bare `return;` in void
+functions/methods. Qualify a bounded cleanup path with checked pre-shutdown
+allocations, borrowed parameters and nested/header scopes; keep value-return
+transfer and exception/finally unwinding separate.
+Class aliases/containers/destructors and field ownership remain separate.
+T012/T013 pruning and T014 website/release work are completed maintenance history;
+do not repeat those tasks from stale scheduled-run memory.
 
 ## T012 - Prune obsolete repository tooling and operational docs (completed in P0026)
 

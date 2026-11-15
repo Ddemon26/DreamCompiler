@@ -75,6 +75,27 @@ and the old value is released. Source ownership is unchanged. Fresh call,
 concatenation and read-line results used as replacements can remain registered
 until shutdown; this pass does not introduce temporary ownership transfer.
 
+P0033 qualifies `text += suffix` for the same known-owned mutable scalar identifier
+destinations when the operand is a scalar string expression or literal null.
+The operand evaluates once before the helper reads the slot's current value.
+Concatenation allocates independent managed storage before releasing that value;
+the helper stores and yields the new pointer. Self-append is safe. Nested updates
+read the value current after the inner update: `text += (text += "B")` with
+initial `"A"` produces `"ABAB"`. A declaration initialized by `+=` copies the
+complete result once, so its storage survives later source replacement or append.
+Normal replacement, block/header cleanup and break/continue apply to that copy.
+
+For this append operation, null on either side contributes empty text; null plus
+null and empty plus empty produce a nonnull managed empty string. This does not
+change null handling for ordinary `+` or `=`. Operand ownership is unchanged:
+borrowed sources remain readable, and fresh concatenation/call results can remain
+registered until shutdown. Allocation failure/size limits follow the existing
+`dream_concat` implementation; no new recovery policy is established. Const
+identifier updates and non-string/non-null operands receive Dream diagnostics
+before artifacts. Numeric `+=` retains its existing emission. Parameter/field/index
+destinations, pointer/array operands, conditional operands, other compound operators
+and general operator/shape checking remain outside this qualification.
+
 P0023 distinguishes string container bindings from scalar strings during normal
 block cleanup. A local `string values[N]` is emitted as a C array of borrowed
 string pointers; a local `string* alias = values` borrows the array storage.
@@ -286,6 +307,17 @@ top-level snapshots are covered. A call marker and index increment require
 once-only effects. The existing allocator/refcount/shutdown assertions remain
 unchanged. Both quick protocols and CI select this group.
 
+The [append regression](../../tests/basics/memory/appended_string_copy.dr) and
+`TestCompiler_AppendedStrings` require 49 nonnull checked releases and 26 exact
+output lines per mode, including old-value reclamation, source/copy lifetime,
+self/nested append, null/empty operands, call/index effects, member/borrowed/fresh
+sources, methods, zero/multiple loop iterations, header updates, break/continue,
+top-level snapshots and unchanged numeric operators. Ten positioned, artifact-free
+cases reject const append and int/float/bool/char operands. Both modes failed checked
+harness C compilation on invalid pointer `+=` before P0033; no runtime lifetime
+claim is made for those unbuildable programs. Existing registry/refcount/shutdown
+assertions remain intact. Both quick protocols and CI select the matrix.
+
 P0015 repairs the harness's Linux C11 build by matching `build.zig`'s
 `_GNU_SOURCE` feature macro for exception support. Windows runs also cross-link
 both modes for Linux before executing the native harness. Cross-linking checks
@@ -304,8 +336,8 @@ not establish alias retention, class pointer/array ownership, destructors or fie
 destruction. Return and exception/finally exits remain separate. Both quick protocols
 and CI select the new matrix; all prior allocator assertions remain intact.
 
-This is not a complete string ownership system. Other initializer forms, compound
-assignment, parameter/field/index destination ownership, alias retention,
+This is not a complete string ownership system. Other initializer forms/compound
+operators, parameter/field/index destination ownership, alias retention,
 owning arrays/pointers and automatic element destruction, function returns,
 early return/exception cleanup, class alias/container ownership,
 compound expressions and field ownership remain unqualified. Concatenation and

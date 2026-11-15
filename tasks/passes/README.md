@@ -34,8 +34,9 @@
 | [P0030](P0030-conditional-string-ownership.md) | 2026-11-14 | Conditional scalar strings own selected-value copies; both checked modes and full/23-group quick/cross checks pass; compiler handoff restored | `Pass-ID: P0030` |
 | [P0031](P0031-loop-exit-classes.md) | 2026-11-15 | Class locals released before break/continue; both checked modes, 138 Dream passes and 24 quick groups; cross-build passed | `Pass-ID: P0031` |
 | [P0032](P0032-assignment-initializer-ownership.md) | 2026-11-15 | Plain assignment scalar string initializers own independent copies; both checked modes, 139 Dream passes and 25 quick groups; cross-build passed | `Pass-ID: P0032` |
+| [P0033](P0033-owned-string-append.md) | 2026-11-15 | Owned scalar string append replaces old storage safely; both checked modes, ten rejection cases, 142 Dream passes and 26 quick groups; cross-build passed | `Pass-ID: P0033` |
 
-**Verify P0032 publication/native CI, then qualify T011 owned scalar string `+=`.**
+**Verify P0033 publication/native CI, then qualify T011 owned scalar cleanup on bare void return.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

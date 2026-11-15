@@ -34,7 +34,25 @@ string second = "World";
 string result = first + " " + second;  // "Hello World"
 ```
 
+### Owned String Append
+
+Mutable owned scalar identifiers also support string `+=`:
+
+```dream
+string text = "Hello";
+string snapshot = (text += " World");
+text += "!"; // snapshot remains "Hello World"
+```
+
+The operand evaluates once and must be a string or null. Null contributes empty
+text; the old allocation is released after concatenation, and declaration results
+receive independent copies. Self-append is supported. Const updates and non-string
+operands are rejected. Borrowed destinations, conditional operands and temporary
+ownership transfer remain unqualified; see the
+[storage checkpoint](../../development/string-ownership.md).
+
 ### String + Numeric Types
+
 ```dream
 string message = "Count: " + 42;        // "Count: 42"
 string balance = "Balance: $" + 19.99;  // "Balance: $19.99"

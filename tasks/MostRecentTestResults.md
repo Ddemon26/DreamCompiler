@@ -2,6 +2,55 @@
 
 **Date:** November 15, 2026 UTC (local reports November 14, America/Vancouver)
 
+**Pass:** P0033 - owned scalar string append
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- P0032 publication matched parent `4f9584773eac163ad3486811a4094ef353741bd3`;
+  [native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43674621260)
+  passed both Linux and Windows jobs before implementation.
+- Baseline `zig build test`: **157 discovered, 139 passed, 18 skipped, zero
+  failures/errors**, 48.49s; `test_results_20261114_212342_windows.json`.
+- Before fix, both append modes failed checked harness C compilation on invalid
+  pointer `+=`, 0.975s. They could not reach runtime lifetime checks.
+- Focused `TestCompiler_AppendedStrings`: **both modes and ten rejection cases
+  passed**, 3.084s (group 2.65s) before final signature review; final quick group
+  **passed**, 2.70s. Each mode checks **49 nonnull releases, 26 exact output lines**,
+  helper/copy/jump emission, native UBSan/live registry/refcounts/shutdown,
+  self/nested updates, null-as-empty policy, source/copy lifetime, once-only effects,
+  borrowed/member/fresh operands, methods, loops, headers and numeric preservation.
+  Ten positioned/artifact-free cases reject const append and non-string operands.
+  Linux harness cross-linking and direct compiler-linked output also pass.
+- Initial post-change full suite: **160 discovered, 142 passed, 18 skipped, zero
+  failures/errors**, 51.07s; `test_results_20261114_213126_windows.json`.
+- Final `zig build test` after matching the helper slot to generated `const char *`:
+  **160 discovered, 142 passed, 18 skipped, zero failures/errors**, 47.29s;
+  `test_results/test_results_20261114_213348_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.055s.
+- Supported Windows Go quick protocol: **26 groups passed**, 50.863s initially;
+  **all 26 passed again** after signature review, 50.744s. Compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed initially and after signature review**, final **15/15 steps**.
+  Linux executables were not run locally; native P0033 CI awaits publication.
+- **146 local Markdown paths resolved**; quick/CI selector equality, PowerShell BOM, gofmt,
+  complete scope/diff review and `git diff --check` checked before commit.
+  Nine pre-existing links in the changed operator guide were corrected to real pages.
+
+Same eighteen skips. Parameter/field/index destination ownership, pointer/array
+and conditional operands, other compound operators, owning containers, class
+aliases/destructors/fields and return/exception/finally unwinding remain unqualified.
+Fresh managed operands can remain registered until shutdown; temporary ownership
+transfer and new allocation failure/size policies are not added. See
+[P0033](passes/P0033-owned-string-append.md) for intermediate fixture failures and limits.
+Next: verify publication/native CI, then T011 owned scalar cleanup on bare void return.
+
+---
+
+## Historical P0032 checkpoint - DreamCompiler
+
+**Date:** November 15, 2026 UTC (local reports November 14, America/Vancouver)
+
 **Pass:** P0032 - scalar string assignment-initializer ownership
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

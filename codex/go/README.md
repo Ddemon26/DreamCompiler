@@ -161,7 +161,15 @@ assignment, borrowed destinations, null/empty results, managed operands, methods
 top-level snapshots and loop/header/jump cleanup are covered. Call/index effects
 run once. Both modes failed live-registry cleanup before P0032; prior allocator
 assertions remain unchanged. Both quick protocols and CI select this group.
-Compound assignment and return ownership remain unqualified.
+Other compound operators and return ownership remain unqualified.
+
+`TestCompiler_AppendedStrings` qualifies owned scalar string `+=` in both modes:
+49 nonnull checked releases, 26 exact output lines, generated helper/copy/jump
+sequences, self/nested updates, null as empty text, once-only call/index effects,
+borrowed/member/managed sources, loop headers, methods and top-level snapshots.
+Ten positioned, artifact-free cases reject const updates and int/float/bool/char
+operands. Before P0033, both modes failed harness C compilation on pointer `+=`.
+Both quick protocols and CI select it; temporary/result ownership is unchanged.
 
 `TestCompiler_IndexedConsole` checks generated formats before linking and exact
 output in ordinary/module-entry programs. All five primitive array/pointer element

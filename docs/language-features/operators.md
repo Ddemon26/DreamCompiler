@@ -64,7 +64,7 @@ words[0] = "Dream";
 words[1] = words[0] + " Language";          // "Dream Language"
 ```
 
-**📖 [Complete Arithmetic Guide](v1.1/arithmetic.md) | [String Operations](v1.1/strings.md)**
+**📖 [Complete Arithmetic Guide](../reference/v1.1/arithmetic.md) | [String Operations](../reference/v1.1/strings.md)**
 
 ### 📊 Comparison Operators
 Compare values and return boolean results.
@@ -90,7 +90,7 @@ bool sameNames = name1 == name2;   // false
 bool differentNames = name1 != name2; // true
 ```
 
-**📖 [Complete Comparison Guide](v1.1/comparison.md)**
+**📖 [Complete Comparison Guide](../reference/v1.1/comparison.md)**
 
 ### 🔗 Logical Operators
 Perform boolean logic operations.
@@ -113,7 +113,7 @@ bool isWorking = !isWeekend;  // Inverse of isWeekend
 bool result = false && expensiveFunction();  // expensiveFunction() not called
 ```
 
-**📖 [Complete Logical Guide](v1.1/logical.md)**
+**📖 [Complete Logical Guide](../reference/v1.1/logical.md)**
 
 ### ⚡ Bitwise Operators
 Manipulate individual bits for low-level programming.
@@ -140,7 +140,7 @@ int shifted = a << 2;    // Binary: 110000 = 48 (multiply by 4)
 int unshifted = a >> 1;  // Binary: 110 = 6 (divide by 2)
 ```
 
-**📖 [Complete Bitwise Guide](v1.1/bitwise.md)**
+**📖 [Complete Bitwise Guide](../reference/v1.1/bitwise.md)**
 
 ### ❓ Conditional Operator
 Provide inline conditional expressions (ternary operator).
@@ -157,7 +157,7 @@ string weather = temperature > 30.0 ? "hot" :
 int max = a > b ? a : b;  // Get maximum of two values
 ```
 
-**📖 [Complete Conditional Guide](v1.1/conditional.md)**
+**📖 [Complete Conditional Guide](../reference/v1.1/conditional.md)**
 
 ## Assignment Operators
 
@@ -196,6 +196,20 @@ int flags = 0b00001010;
 flags |= 0b00000101;   // Set additional bits
 flags &= 0b11110000;   // Clear lower 4 bits
 flags ^= 0b11111111;   // Toggle all bits
+```
+
+Owned mutable scalar string identifiers also support `+=` with a string or null
+operand. It evaluates the operand once, concatenates before releasing the old
+storage, and yields the new string. Null contributes empty text; a declaration
+initialized by the result receives an independent copy. Const updates and numeric,
+bool or char operands are rejected. Numeric `+=` keeps its existing behavior.
+Borrowed parameter/field/index destinations and conditional operands remain
+unqualified; see the [string ownership contract](../development/string-ownership.md).
+
+```dream
+string text = "Hello";
+string snapshot = (text += " World");
+text += "!"; // snapshot remains "Hello World"
 ```
 
 ### Increment and Decrement
@@ -445,9 +459,9 @@ if (object != null && object.isValid()) {
 
 After mastering operators, explore these related topics:
 
-1. **[Control Flow](control-flow.md)** - Use operators in conditional statements and loops
+1. **[Control Flow](language-guide/control-flow.md)** - Use operators in conditional statements and loops
 2. **[Functions](functions-overview.md)** - Create functions that use operators effectively
-3. **[Type System](type-system.md)** - Understand how operators work with different types
-4. **[Expressions](expressions.md)** - Build complex expressions using multiple operators
+3. **[Type System](../fundamentals/type-system.md)** - Understand how operators work with different types
+4. **[Expression Grammar](../reference/grammar/Grammar.md)** - Build complex expressions using multiple operators
 
 Operators are the building blocks for creating expressions and controlling program logic. Understanding their behavior, precedence, and appropriate usage is essential for writing effective Dream programs.

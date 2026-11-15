@@ -1,0 +1,123 @@
+// Expected: start literal
+// Expected: start literalstart literal
+// Expected: start literalstart literal
+// Expected: changed
+// Expected: once
+// Expected: left borrowed
+// Expected: 1
+// Expected: left borrowed field
+// Expected: borrowed
+// Expected: alive source
+// Expected: empty
+// Expected: null left
+// Expected: null left
+// Expected: ABAB
+// Expected: ABAB
+// Expected: plain expressionplain expression
+// Expected: fresh value
+// Expected: loopx
+// Expected: loopxx
+// Expected: stopx
+// Expected: 7
+// Expected: 3.500000
+// Expected: static value
+// Expected: instance value
+// Expected: top value
+// Expected: borrowed
+func string once(string text) { Console.WriteLine("once"); return text; }
+class Reader {
+    static string shared;
+    static func void readStatic() {
+        string text = "static";
+        text += " value";
+        Console.WriteLine(text);
+    }
+    func void readInstance() {
+        string text = "instance";
+        text += " value";
+        Console.WriteLine(text);
+    }
+}
+func void exercise(string borrowed, string absent) {
+    string text = "start";
+    text += " literal";
+    Console.WriteLine(text);
+    const string snapshot = (text += text);
+    Console.WriteLine(text);
+    text = "changed";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(text);
+    string values[2];
+    values[0] = borrowed;
+    values[1] = absent;
+    int index = 0;
+    string selected = "left ";
+    Console.WriteLine(selected += once(values[index++]));
+    Console.WriteLine(index);
+    Reader.shared = " field";
+    selected += Reader.shared;
+    Console.WriteLine(selected);
+    Console.WriteLine(borrowed);
+    string survivor;
+    {
+        string source = " source";
+        survivor += "alive";
+        survivor += source;
+    }
+    Console.WriteLine(survivor);
+    string empty;
+    empty += absent;
+    empty += "";
+    if (empty != null) { Console.Write(empty); Console.WriteLine("empty"); }
+    string nullable;
+    nullable += "null left";
+    nullable += null;
+    nullable += values[1];
+    Console.WriteLine(nullable);
+    Console.WriteLine(nullable += absent);
+    string nested = "A";
+    string nestedCopy = (nested += (nested += "B"));
+    Console.WriteLine(nested);
+    nested += "!";
+    Console.WriteLine(nestedCopy);
+    Console.WriteLine(text += (text = "plain expression"));
+    string fresh = "";
+    fresh += "fresh" + " value";
+    Console.WriteLine(fresh);
+    int i = 0;
+    for (string header = "loop"; i < 2; header += "x") {
+        i++;
+        string body = (header += "");
+        continue;
+    }
+    i = 0;
+    for (string header = "loop"; i < 2; i++) {
+        string body = (header += "x");
+        Console.WriteLine(body);
+        continue;
+    }
+    for (string zero = (text += ""); false; ) { Console.WriteLine("unexpected"); }
+    while (true) {
+        string stopped = "stop";
+        string body = (stopped += "x");
+        Console.WriteLine(body);
+        break;
+    }
+    int number = 5;
+    number += 2;
+    Console.WriteLine(number);
+    float real = 1.5;
+    real += 2.0;
+    Console.WriteLine(real);
+}
+string backing = "borrowed";
+string missing;
+exercise(backing, missing);
+Reader.readStatic();
+Reader reader = new Reader();
+reader.readInstance();
+string top = "top";
+string topCopy = (top += " value");
+top += " changed";
+Console.WriteLine(topCopy);
+Console.WriteLine(backing);

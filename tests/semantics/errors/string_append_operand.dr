@@ -1,0 +1,3 @@
+// Expected error: string '+=' requires a string or null operand
+string text = "fixed";
+text += 1;

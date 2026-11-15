@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -287,6 +288,74 @@ func TestCompiler_AssignmentInitializers(t *testing.T) {
 		`dr_release(staticText);`, `dr_release(instanceText);`,
 	},
 		"next\nnext\ncopy changed\nnext\nchain\nonce\n1\nbacking value\nbacking value\nparameter\nparameter\nnull field\nempty\nnull copy\nnext\nreplaced\nheader\nheader\nbreak\nfresh value\nstatic\ninstance\ntop\n")
+}
+
+func TestCompiler_AppendedStrings(t *testing.T) {
+	// 43 exercise releases, four method releases, two top-level replacements.
+	checkStringOwnership(t, "appended_string_copy.dr", 49, []string{
+		`staticchar*__dream_string_append(constchar**slot,constchar*text)`,
+		`char*joined=dream_concat(*slot?*slot:"",text?text:"");dr_release(*slot);*slot=joined;returnjoined;`,
+		`__dream_string_append(&text,"literal");`,
+		`snapshot=dream_string_copy(__dream_string_append(&text,text));`,
+		`dr_console_writeln(__dream_string_append(&selected,@entry@once((values[(index++)]))));`,
+		`__dream_string_append(&selected,Reader_shared);`,
+		`__dream_string_append(&survivor,source);`,
+		`__dream_string_append(&empty,absent);`,
+		`__dream_string_append(&nullable,((void*)0));`,
+		`__dream_string_append(&nullable,(values[1]));`,
+		`nestedCopy=dream_string_copy(__dream_string_append(&nested,__dream_string_append(&nested,"B")));`,
+		`__dream_string_append(&text,__dream_string_assign(&text,"plainexpression"))`,
+		`__dream_string_append(&fresh,(dream_concat("fresh","value")));`,
+		`body=dream_string_copy(__dream_string_append(&header,""));`,
+		`__dream_string_append(&header,"x"))`, `}dr_release(header);}`,
+		`dr_release(body);continue;`, `dr_release(body);dr_release(stopped);break;`,
+		`zero=dream_string_copy(__dream_string_append(&text,""));`, `}dr_release(zero);}`,
+		`topCopy=dream_string_copy(__dream_string_append(&top,"value"));`,
+		`__dream_string_append(&top,"changed");`,
+		`(number+=2);`, `(real+=2.0);`,
+	}, "start literal\nstart literalstart literal\nstart literalstart literal\nchanged\nonce\nleft borrowed\n1\nleft borrowed field\nborrowed\nalive source\nempty\nnull left\nnull left\nABAB\nABAB\nplain expressionplain expression\nfresh value\nloopx\nloopxx\nstopx\n7\n3.500000\nstatic value\ninstance value\ntop value\nborrowed\n")
+
+	tr := NewTestRunner(t)
+	defer tr.Cleanup()
+	for _, modules := range []bool{false, true} {
+		for _, rejected := range []struct{ declaration, operand, diagnostic string }{
+			{`const string text = "fixed";`, `" suffix"`, "cannot assign to const variable 'text'"},
+			{`string text = "fixed";`, `1`, "string '+=' requires a string or null operand"},
+			{`string text = "fixed";`, `1.5`, "string '+=' requires a string or null operand"},
+			{`string text = "fixed";`, `true`, "string '+=' requires a string or null operand"},
+			{`string text = "fixed";`, `'x'`, "string '+=' requires a string or null operand"},
+		} {
+			work := t.TempDir()
+			text := rejected.declaration + "\ntext += " + rejected.operand + ";\n"
+			args := []string{"--dev"}
+			if modules {
+				text = "import labels; " + text
+				args = append(args, "--multi-file")
+				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte("module labels;"), 0644); err != nil {
+					t.Fatal(err)
+				}
+			}
+			source := filepath.Join(work, "input.dr")
+			if err := os.WriteFile(source, []byte(text), 0644); err != nil {
+				t.Fatal(err)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			cmd := exec.CommandContext(ctx, tr.compilerPath, append(args, source)...)
+			cmd.Dir = work
+			out, err := cmd.CombinedOutput()
+			cancel()
+			if exit, ok := err.(*exec.ExitError); !ok || exit.ExitCode() != 1 || ctx.Err() == context.DeadlineExceeded {
+				t.Fatalf("append rejection %q (modules=%v): expected exit 1, got %v: %s", rejected.operand, modules, err, out)
+			}
+			plain := regexp.MustCompile(`\x1b\[[0-9;]*m`).ReplaceAllString(string(out), "")
+			if !strings.Contains(plain, rejected.diagnostic) || !regexp.MustCompile(`\b2:\d+:`).MatchString(plain) {
+				t.Fatalf("append rejection %q (modules=%v): missing positioned diagnostic: %s", rejected.operand, modules, out)
+			}
+			if _, err := os.Stat(filepath.Join(work, "build")); !os.IsNotExist(err) {
+				t.Fatalf("append rejection created artifacts: %v", err)
+			}
+		}
+	}
 }
 
 func TestCompiler_LoopExitClasses(t *testing.T) {

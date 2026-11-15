@@ -5,7 +5,7 @@
 Qualified scalar string initialization from literals, indexing, identifiers, members and calls,
 including supported for-header declarations, is
 described in the [ownership checkpoint](../development/string-ownership.md)
-(P0014/P0017/P0018/P0019/P0020/P0021/P0022/P0023/P0024/P0030/P0031/P0032). Conditional initializers copy only
+(P0014/P0017/P0018/P0019/P0020/P0021/P0022/P0023/P0024/P0030/P0031/P0032/P0033). Conditional initializers copy only
 the selected value. Plain assignment initializers such as
 `string copy = (source = "next")` evaluate the assignment once and copy its result;
 source and declaration have independent storage. The new declaration receives
@@ -18,7 +18,12 @@ start as null. Local string arrays and `string*` bindings borrow their elements
 and target storage; normal block exit releases neither those bindings nor their
 elements. Managed backing must outlive alias use. Scalar copies and class-instance
 cleanup remain intact. This does not establish parameter, field, owning-container
-or array-element ownership.
+or array-element ownership. Qualified mutable owned scalar identifiers also support
+`+=` with a string/null operand: evaluate once, concatenate before releasing the old
+value, and yield the new pointer. Null contributes empty text. Declaration results
+are copied independently; fresh managed operands can remain until shutdown. Const
+updates and non-string operands are rejected. See the checkpoint for remaining
+destination, expression and allocation limits.
 Break/continue release qualified owned scalar strings and class locals in the scopes they leave.
 Loop headers survive continue/update and are released after the loop; switch
 breaks preserve enclosing loop locals, and switch continues target the enclosing

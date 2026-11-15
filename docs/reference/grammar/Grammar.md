@@ -172,7 +172,7 @@ ReturnStatement     ::= "return" [ Expression ] ";"                             
 ```ebnf
 Expression          ::= Assignment                                                     // Implemented
 Assignment          ::= Conditional [ AssignmentOperator Assignment ]                  // Implemented
-AssignmentOperator  ::= "=" | "+=" | "-=" | "*=" | "/=" | "%="                         // Implemented
+AssignmentOperator  ::= "=" | "+=" | "-=" | "*=" | "/=" | "%="                         // Implemented; string += is limited to owned scalar identifiers and string/null operands
 Conditional         ::= LogicalOr [ "?" Expression ":" Conditional ]                   // Implemented
 LogicalOr           ::= LogicalAnd { "||" LogicalAnd }                                 // Implemented
 LogicalAnd          ::= BitwiseOr { "&&" BitwiseOr }                                   // Implemented

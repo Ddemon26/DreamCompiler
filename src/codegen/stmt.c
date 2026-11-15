@@ -458,7 +458,8 @@ static int copies_string_initializer(Node *init) {
                   init->kind == ND_IDENT || init->kind == ND_FIELD ||
                   init->kind == ND_BASE || init->kind == ND_CALL ||
                   init->kind == ND_COND ||
-                  (init->kind == ND_BINOP && init->as.bin.op == TK_EQ));
+                  (init->kind == ND_BINOP &&
+                   (init->as.bin.op == TK_EQ || init->as.bin.op == TK_PLUSEQ)));
 }
 
 static void emit_loop_body(CGCtx *ctx, COut *b, Node *body,
