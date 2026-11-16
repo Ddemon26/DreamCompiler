@@ -715,6 +715,20 @@ Both quick protocols and CI select the new group. Explicit class parameters,
 async instance methods and semantic receiver shadowing remain unsupported.
 Selected owned-result accumulation and caller consumption remain separate.
 
+### Static string-field return audit (P0046; implementation open)
+
+The [static-field audit and acceptance contract](static-member-return-cleanup.md)
+distinguishes global pointer-slot lifetime from backing lifetime. Static field
+assignments remain raw C assignments and can install callee-local storage.
+The selected future slice requires a direct unshadowed class type qualifier,
+actual static scalar string declaration/owner and the existing whole-body
+read-only barriers. Capture once before reverse local cleanup without field/result
+copy, retain or release. Conditional static leaves, other receivers and static
+pointer/array declaration shape emission remain separate. No compiler behavior
+changed or compiler tests were rerun in P0046; P0045's measured evidence above
+remains current. The next pass must reproduce retained allocations and qualify
+both ordinary/module-entry modes before claiming static return cleanup.
+
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,
 owning arrays/pointers and automatic element destruction, string/pointer/class result transfer,

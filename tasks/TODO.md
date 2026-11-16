@@ -526,10 +526,19 @@ lines and four selected owned results until shutdown. The shared 196 emission
 controls plus fourteen expression rejections and two nested-else positives pass.
 See [P0045](passes/P0045-conditional-member-return.md) and the current results.
 
-Broader T011 remains open. Verify P0045 publication/native CI and repair failures
-first. Next audit static scalar string-field result lifetime and mutation/alias
-barriers, then define a bounded implementation contract and both-mode acceptance
-matrix. Keep class-parameter syntax and local/struct/nested/base receivers separate.
+P0046 audits static string-field backing and defines a direct class type-qualified
+[implementation contract](../docs/development/static-member-return-cleanup.md).
+Global slot lifetime does not establish pointee lifetime. Require an unshadowed
+class qualifier, actual static scalar declaration/owner and the existing whole-body
+read-only barriers; capture once before reverse cleanup without result copy/retain
+or global release. Both-mode lifetime/C/output and unsafe emission-only acceptance
+are specified. No compiler behavior changed or compiler tests were rerun; reuse
+P0045 dated 2026-11-16 UTC. Its exact-parent native Linux/Windows CI passed.
+
+Broader T011 remains open. Verify P0046 publication/native CI and repair failures
+first. Next reproduce and implement the selected direct static-field slice.
+Conditional static leaves, static pointer/array declaration shape emission,
+class-parameter syntax and local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime, caller
 consumption, pointer/class result transfer, aliases/containers/destructors/fields,
 async and exception unwinding separate. String-index return typing remains
