@@ -1,4 +1,22 @@
-# Borrowed member-return cleanup: P0043 audit and P0044 implementation
+# Borrowed member-return cleanup: P0043 audit and P0044-P0045 implementation
+
+P0045 extends the conditional result predicate to the same proven member leaves,
+mixed with literals, known-owned scalar locals and unchanged scalar parameters.
+Every possible value leaf qualifies before any cleanup is inserted. A member leaf
+requires the unchanged whole-body read-only proof, including conditions, later
+code and unselected branches. Capture the selected pointer once; compare only
+owned-local candidates to preserve selected storage while releasing other locals
+in reverse order. Borrowed members/parameters gain no copy or retain.
+
+The [conditional fixture](../../tests/basics/memory/conditional_member_return.dr)
+and [Go group](../../codex/go/conditional_member_return_test.go) check 59 releases,
+27 output lines and four original-reference owned survivors per mode. All four
+are reclaimed by runtime shutdown. Exact C checks inherited casts, nested/unbraced/
+loop/header/switch returns, temporary collisions and no-local direct returns.
+The original 196 controls also run with conditional member results; fourteen
+additional expression rejections preserve effectful conditions and unsupported
+unselected leaves, and two nested-else positive controls qualify. Static/local/
+struct/nested/base receivers remain excluded. See [P0045](../../tasks/passes/P0045-conditional-member-return.md).
 
 P0044 implements direct scalar nonstatic `this.field` string-result cleanup under
 the whole-body read-only proof below. Both ordinary/module-entry modes reproduced
@@ -8,7 +26,8 @@ UBSan and 196 emission-only fallback/shape/guard controls pass. See the
 [pass record](../../tasks/passes/P0044-borrowed-member-return.md) and
 [ownership checkpoint](string-ownership.md#read-only-direct-instance-string-field-returns-p0044).
 
-The P0043 source audit/design below remains the rationale. P0044 found explicit
+The P0043 source audit/design below describes the original direct-return slice;
+P0045's extension above supersedes its conditional-member exclusion. P0044 found explicit
 class parameters and async instance methods are rejected by the existing grammar,
 and receiver-name shadowing by semantics. Thus the executable first slice uses
 explicit `this`; free/static readers accepting class parameters remain unavailable.
@@ -157,7 +176,7 @@ limits above qualify the implemented slice; broader cases remain future work:
    Inspect native CI separately. Update feature/user/ownership docs with measured
    behavior only after implementation.
 
-Field ownership, class aliases/destructors, pointer/array shape checks, conditional
-member results, interprocedural effects, caller consumption and exception/async
+Field ownership, class aliases/destructors, pointer/array shape checks, static or
+other excluded member results, interprocedural effects, caller consumption and exception/async
 cleanup remain separate. See the [ownership contract](string-ownership.md) and
 [backlog](../../tasks/TODO.md).

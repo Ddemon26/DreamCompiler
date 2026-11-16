@@ -1,0 +1,134 @@
+// Expected: backing
+// Expected: backing
+// Expected: source
+// Expected: literal
+// Expected: alternate
+// Expected: right
+// Expected: backing
+// Expected: null
+// Expected:
+// Expected: null
+// Expected:
+// Expected: literal
+// Expected: backing
+// Expected: backing
+// Expected: collision
+// Expected: unused
+// Expected: backing
+// Expected: header
+// Expected: backing
+// Expected: after
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: alternate
+// Expected: backing
+// Expected: backing
+// Expected: changed
+class ConditionalMemberBase {
+    string value;
+    string alternate;
+    string __dream_return_0;
+    func init(string input) {
+        this.value = input;
+        this.alternate = "alternate";
+        this.__dream_return_0 = "collision";
+    }
+    func string members(bool choice) {
+        string discard = "discard";
+        return choice ? this.value : this.alternate;
+    }
+}
+class ConditionalMemberChild : ConditionalMemberBase {
+    func init(string input) { base.init(input); }
+    func string mixed(int path, bool a, bool b, string source) {
+        string first = this.value;
+        string right = "right";
+        string absent;
+        const string empty = "";
+        {
+            string inner = "inner";
+            if (path == 0) return a ? (b ? this.value : first) : (b ? source : "literal");
+            string later = "later";
+        }
+        return a ? this.alternate : right;
+    }
+    func string nullable(int path) {
+        string absent;
+        const string empty = "";
+        string discard = "discard";
+        return path == 0 ? this.value : (path == 1 ? absent : empty);
+    }
+    func string repeated(bool choice) {
+        string discard = "discard";
+        return choice ? this.value : this.value;
+    }
+    func string collision(bool choice) {
+        string __dream_return_1 = "discard";
+        return choice ? this.__dream_return_0 : "unused";
+    }
+    func string loop(bool stop, bool choice) {
+        string outer = "outer";
+        for (string header = "header"; stop;) {
+            string body = this.value;
+            return choice ? this.value : header;
+        }
+        return choice ? this.value : "after";
+    }
+    func string alternatePath(bool stop, bool choice) {
+        string outer = "outer";
+        if (stop) while (true) {
+            string inner = "inner";
+            return choice ? this.value : "while";
+        }
+        switch (1) {
+            case 1:
+                string caseText = "case";
+                return choice ? this.value : "case";
+            default: break;
+        }
+        return choice ? this.value : "after";
+    }
+    func string noLocals(bool choice) { return choice ? this.value : "unused"; }
+}
+func void exerciseConditionalMembers() {
+    string backing = "backing";
+    string externalSource = "source";
+    ConditionalMemberChild reader = new ConditionalMemberChild(backing);
+    string snapshot = reader.mixed(0, true, true, externalSource);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(reader.mixed(0, true, false, externalSource));
+    Console.WriteLine(reader.mixed(0, false, true, externalSource));
+    Console.WriteLine(reader.mixed(0, false, false, externalSource));
+    Console.WriteLine(reader.mixed(1, true, false, externalSource));
+    Console.WriteLine(reader.mixed(1, false, false, externalSource));
+    Console.WriteLine(reader.nullable(0));
+    if (reader.nullable(1) == null) Console.WriteLine("null");
+    Console.WriteLine(reader.nullable(2));
+    string absent;
+    reader.value = absent;
+    if (reader.nullable(0) == null) Console.WriteLine("null");
+    reader.value = "";
+    Console.WriteLine(reader.nullable(0));
+    reader.value = "literal";
+    Console.WriteLine(reader.nullable(0));
+    reader.value = backing;
+    Console.WriteLine(reader.repeated(true));
+    Console.WriteLine(reader.repeated(false));
+    Console.WriteLine(reader.collision(true));
+    Console.WriteLine(reader.collision(false));
+    Console.WriteLine(reader.loop(true, true));
+    Console.WriteLine(reader.loop(true, false));
+    Console.WriteLine(reader.loop(false, true));
+    Console.WriteLine(reader.loop(false, false));
+    Console.WriteLine(reader.alternatePath(true, true));
+    Console.WriteLine(reader.alternatePath(false, true));
+    Console.WriteLine(reader.members(true));
+    Console.WriteLine(reader.members(false));
+    Console.WriteLine(reader.noLocals(true));
+    reader.value = "changed";
+    backing = "replacement";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(reader.value);
+}
+exerciseConditionalMembers();

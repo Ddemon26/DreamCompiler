@@ -46,8 +46,9 @@
 | [P0042](P0042-conditional-borrowed-return.md) | 2026-11-15 | Conditional unchanged borrowed scalar parameter results release other locals and preserve selected owned storage; both-mode lifetime and full-suite checks passed | `Pass-ID: P0042` |
 | [P0043](P0043-member-return-audit.md) | 2026-11-16 | Source-audited member backing and alias/call barriers; read-only borrowed class-member contract and acceptance matrix; implementation remains open | `Pass-ID: P0043` |
 | [P0044](P0044-borrowed-member-return.md) | 2026-11-16 | Direct read-only instance string-field results capture before cleanup; both-mode lifetime, 196 fallback controls and full-suite checks pass | `Pass-ID: P0044` |
+| [P0045](P0045-conditional-member-return.md) | 2026-11-16 | Conditional read-only instance-field results preserve selected owned storage and clean other locals; both-mode lifetime, fallback and full-suite checks pass | `Pass-ID: P0045` |
 
-**Verify P0044 publication/native CI, then qualify conditional result trees with read-only instance-field leaves under T011.**
+**Verify P0045 publication/native CI, then audit static scalar string-field result lifetime and mutation/alias barriers under T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

@@ -703,9 +703,11 @@ static int is_scoped_string_result(CGCtx *ctx, Node *expr) {
            is_scoped_string_result(ctx, expr->as.cond.else_expr);
   // Every possible value must survive cleanup. Reuse the whole-body proof:
   // even a write in the condition or a later loop update can rebind a parameter
-  // to local storage. One unsupported leaf preserves the entire old return.
+  // or field to local storage. Member leaves require the separate read-only
+  // body proof, including conditions and unselected branches. One unsupported
+  // leaf preserves the entire old return.
   return expr->kind == ND_STRING || owned_string_result(ctx, expr) ||
-         borrowed_parameter_result(ctx, expr);
+         borrowed_parameter_result(ctx, expr) || borrowed_member_result(ctx, expr);
 }
 
 static int result_mentions_binding(CGCtx *ctx, Node *expr,

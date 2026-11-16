@@ -669,9 +669,51 @@ inside a class are not registered yet, so alias/constructor controls use a prior
 class. The async control uses an accepted free function/static field. These tests
 do not broaden grammar or qualify async runtime behavior. Unknown AST/operators
 fail closed in source; source syntax cannot construct arbitrary unknown nodes.
-Conditional member leaves, static/local/struct/nested/base receivers, broader field
+P0045 extends the same proof to conditional member leaves below.
+Static/local/struct/nested/base receivers, broader field
 and class-alias ownership, caller consumption and exception/async cleanup remain
 separate. Incoming receiver and backing must already be live.
+
+## Conditional read-only instance string-field returns (P0045)
+
+Conditional trees may mix proven scalar nonstatic `this.field` reads, literals,
+known-owned scalar locals and unchanged borrowed scalar parameters. Every value
+leaf must qualify, including constant unselected branches. Any member leaf requires
+P0044's separate whole-body read-only proof with every write/call/alias barrier
+unchanged. Effectful conditions therefore preserve the entire previous return.
+The less restrictive P0041/P0042 parameter-only proof remains unchanged.
+
+Capture the selected pointer exactly once before reverse local cleanup, preserving
+inherited owning-class casts. Only owned-local value candidates receive pointer
+comparisons to preserve selected storage. Member/parameter/literal leaves retain
+their existing caller/static lifetime without result copy/retain, receiver release
+or field destruction. No-local methods keep direct returns. Unsupported leaves,
+static/local/struct/nested/base receivers and async/active exception exits keep
+previous emission; no partial cleanup is inserted.
+
+The [fixture](../../tests/basics/memory/conditional_member_return.dr) and
+`TestCompiler_ConditionalMemberReturn` in
+[conditional_member_return_test.go](../../codex/go/conditional_member_return_test.go)
+initially reproduced **50 live allocations instead of four** in both modes before
+the fix, before adding the final two-field reader calls.
+Each mode now requires **59 nonnull releases** (one receiver, 58 strings), **27 output
+lines**, **four selected owned results** with original reference counts before
+shutdown and an empty registry afterward. Selected local/for-header/empty results,
+null/empty/literal/managed member backing, nested branches, independent snapshot
+survival after caller replacement, inherited fields, temporary collisions, unbraced/
+loop/header/switch paths and no-local returns are checked. Generated C requires
+capture before reverse cleanup with no result copy/retain or receiver release.
+
+The shared 196 emission controls also run on conditional member trees. Fourteen
+additional negative controls check effectful conditions and unselected call/concat/
+assignment/index leaves; two nested-else member controls qualify. Unsafe alias
+programs remain emission-only. The old direct group's newly eligible conditional
+control is replaced by a mixed instance/static result, which remains unsupported;
+conditional positives now have separate lifetime/C coverage. Existing allocator,
+reference-count, direct-return and parameter-result assertions remain intact.
+Both quick protocols and CI select the new group. Explicit class parameters,
+async instance methods and semantic receiver shadowing remain unsupported.
+Selected owned-result accumulation and caller consumption remain separate.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

@@ -2,6 +2,67 @@
 
 **Date:** November 16, 2026 UTC
 
+**Pass:** P0045 - conditional read-only instance string-field return cleanup
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Approved clean checkout/attached branch/origin matched published P0044
+  `106d95cd0db5a727e8a7f0a577670f0e81f91b93`. Its
+  [native Linux/Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43793738851)
+  passed build, runner, quick and full-suite steps. Schedule already uses local
+  execution/approved cwd; one registered worktree, no competing active writer found.
+- Restricted fetch failed DNS and restricted baseline could not locate the Zig
+  installation. Approved normal network/toolchain access succeeded without
+  changing toolchain configuration, caches or permissions.
+- Baseline `zig build test`: **170 discovered, 152 passed, 18 skipped, zero failures/
+  errors**, 50.92s; `test_results/test_results_20261115_212858_windows.json`.
+- Before fix, `go test -count=1 -v -run '^TestCompiler_ConditionalMemberReturn$' .`
+  from `codex/go`: **both modes failed**, **50 live allocations instead of four**,
+  2.616s (group 2.17s). An earlier test setup failed a global forbidden-release
+  assertion because the caller reused the parameter name; renamed the caller
+  binding before lifetime reproduction. No cleanup assertion was removed.
+- `zig build`: **passed**, exit 0. Initial lifetime group: **both modes passed**,
+  3.184s (group 2.74s), initially 57 releases/25 outputs. Final coverage adds two
+  inherited two-field calls. A broader five-group run passed the four earlier
+  return groups but failed the new index control's C expectation (27.625s);
+  corrected its missing existing parentheses without changing compiler behavior.
+- Final focused new group: **passed**, 8.627s (group 8.18s). Each mode checks **59
+  nonnull releases** (one receiver, 58 strings), **27 output lines**, **four selected
+  owned results** with original references before shutdown and an empty registry
+  afterward. Native UBSan/live release checks, Linux harness cross-linking and
+  directly linked exact output pass. Exact C checks one capture before reverse
+  cleanup, selected-local comparisons, inherited casts, collisions and no-local
+  returns; no member result copy/retain or receiver release. **196 shared emission
+  controls**, **14 expression rejections** and **two nested-else positives** pass.
+- `zig build test`: **171 discovered, 153 passed, 18 skipped, zero failures/errors**,
+  48.45s; `test_results/test_results_20261115_213338_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.044s.
+- Supported Windows Go quick protocol: **all 37 groups passed**, 82.677s; new group
+  **6.86s**, prior direct member group **7.09s**. External compiler tests use
+  `-count=1`; existing allocator/reference-count/shutdown assertions stay intact.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Cross-build/cross-linking does not prove native P0045
+  Linux runtime behavior; inspect CI after publication.
+- **207 local Markdown paths**, UTF-8 in all 17 pass files, PowerShell BOM,
+  37-group quick/CI selector and actual-pass equality, 27 annotated outputs,
+  P0001-P0045 index continuity, gofmt, full diff review and `git diff --check`
+  passed. Logs: ignored `build/P0045-*.log`.
+
+Same eighteen skips and prior shape/operator limits. Conditional member leaves
+require the unchanged whole-body read-only proof. Static/local/struct/nested/base
+receivers, explicit class parameters, caller consumption, retained owned-result
+accumulation, broader aliases/containers/destructors/fields and exception/async
+cleanup remain separate. String-index return typing, custom-type for headers and
+direct class null initializers remain limited. Next verify publication/native CI,
+then audit static scalar string-field result lifetime and mutation/alias barriers.
+
+---
+
+# Historical P0044 checkpoint - DreamCompiler
+
+**Date:** November 16, 2026 UTC
+
 **Pass:** P0044 - read-only direct instance string-field return cleanup
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

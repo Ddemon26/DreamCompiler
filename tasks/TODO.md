@@ -517,12 +517,19 @@ P0043's conceptual explicit class-parameter cases remain rejected by grammar, as
 async instance methods; semantic receiver shadowing is also rejected. No syntax
 was broadened. Valid controls use explicit this and previously declared alias types.
 
-Broader T011 remains open. Verify P0044 publication/native CI and repair failures
-first. Next qualify conditional result trees with read-only `this.field` leaves
-under the same proof, beginning with both-mode retained-allocation reproduction
-and mixed owned/literal/borrowed lifetime controls. Preserve every write/call/alias
-barrier; keep class-parameter syntax and static/local/struct/nested/base receivers
-separate.
+P0045 qualifies conditional result trees with those proven `this.field` leaves,
+mixing literals, known-owned scalar locals and unchanged scalar parameters. The
+read-only proof and every write/call/alias barrier remain unchanged. An initial
+both-mode matrix retained 50 allocations instead of four before the fix. Final
+coverage adds a two-field inherited reader; each mode checks 59 releases, 27 output
+lines and four selected owned results until shutdown. The shared 196 emission
+controls plus fourteen expression rejections and two nested-else positives pass.
+See [P0045](passes/P0045-conditional-member-return.md) and the current results.
+
+Broader T011 remains open. Verify P0045 publication/native CI and repair failures
+first. Next audit static scalar string-field result lifetime and mutation/alias
+barriers, then define a bounded implementation contract and both-mode acceptance
+matrix. Keep class-parameter syntax and local/struct/nested/base receivers separate.
 Keep general borrowed/member/index/call/compound result lifetime, caller
 consumption, pointer/class result transfer, aliases/containers/destructors/fields,
 async and exception unwinding separate. String-index return typing remains

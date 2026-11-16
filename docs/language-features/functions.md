@@ -148,7 +148,11 @@ without copying/retaining the result or releasing the receiver. Every write,
 increment/decrement, call, constructor, console operation, custom-type/pointer/
 array local, exception or await blocks this proof, even in later/unreachable code.
 Only primitive scalar locals and explicitly allowed read expressions/control flow
-qualify. Conditional member leaves and static/local/struct/nested/base receivers
+qualify. P0045 also permits these member reads as value leaves in conditional
+trees mixed with literals, known-owned locals and unchanged scalar parameters.
+Every leaf must qualify; one member leaf requires the whole-body read-only proof,
+including conditions and unselected branches. Capture once before cleanup and
+preserve only selected owned storage. Static/local/struct/nested/base receivers
 retain previous emission. Explicit class parameters and async instance methods
 are rejected by the current grammar; this pass does not add them. The caller must
 keep the receiver and field backing live. See the [member contract](../development/member-return-cleanup.md).

@@ -31,13 +31,19 @@ func TestCompiler_BorrowedMemberReturn(t *testing.T) {
 		"backing\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\ncollision\nbacking\nbacking\nbacking\nnull\nnull\n\n\nliteral\nbacking\nchanged\n", true,
 		`dr_release(this);`, `dr_release(source);`,
 		`dr_retain(`, `dream_string_copy(__dream_return_`)
-	checkMemberReturnFallbacks(t)
+	checkMemberReturnFallbacks(t, false)
 }
 
-func checkMemberReturnFallbacks(t *testing.T) {
+func checkMemberReturnFallbacks(t *testing.T, conditional bool) {
 	t.Helper()
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
+	result := `this.value`
+	emitted := `return((structProbe*)this)->value;`
+	if conditional {
+		result = `stop ? (stop ? this.value : owned) : source`
+		emitted = `return(stop?(stop?((structProbe*)this)->value:owned):source);`
+	}
 	// Never execute these programs: aliases and writes can make their field or
 	// receiver dangling. Inspect both early/later returns before host compilation.
 	barriers := []struct{ name, statement string }{
@@ -91,7 +97,7 @@ func checkMemberReturnFallbacks(t *testing.T) {
 			for _, before := range []bool{false, true} {
 				t.Run(fmt.Sprintf("fallback_%s/before=%v/modules=%v", tc.name, before, modules), func(t *testing.T) {
 					statement := tc.statement
-					early := `if (stop) return this.value;`
+					early := `if (stop) return ` + result + `;`
 					if before {
 						statement, early = early, statement
 					}
@@ -102,9 +108,9 @@ func void store(string input) { this.value = input; }
 static func void storeStatic(string input) { }
 func string probe(bool stop, string source, int *indices) {
 string owned = "owned";
-` + early + statement + `return this.value; } }`
+` + early + statement + `return ` + result + `; } }`
 					c := memberReturnEmission(t, tr, text, modules)
-					if strings.Count(c, `return((structProbe*)this)->value;`) != 2 || strings.Contains(c, "__dream_return_") {
+					if strings.Count(c, emitted) != 2 || strings.Contains(c, "__dream_return_") {
 						t.Fatalf("barrier must preserve both original returns:\n%s", c)
 					}
 				})
@@ -116,13 +122,17 @@ string owned = "owned";
 			{"static", ``, `Probe.shared`, `returnProbe_shared;`},
 			{"pointer", ``, `this.pointer`, `return((structProbe*)this)->pointer;`},
 			{"array", ``, `this.values`, `return((structProbe*)this)->values;`},
-			{"conditional", ``, `stop ? this.value : source`, `return(stop?((structProbe*)this)->value:source);`},
+			{"conditional_static", ``, `stop ? this.value : Probe.shared`, `return(stop?((structProbe*)this)->value:Probe_shared);`},
 			{"base", ``, `base.value`, `return((structParent*)this)->value;`},
 			{"local_receiver", `Parent local = new Parent();`, `local.value`, `return((structParent*)local)->value;`},
 			{"struct_receiver", `Record record;`, `record.value`, `returnrecord.value;`},
 			{"nested_receiver", ``, `this.next.value`, `return((structParent*)((structProbe*)this)->next)->value;`},
 		} {
 			t.Run(fmt.Sprintf("shape_%s/modules=%v", tc.name, modules), func(t *testing.T) {
+				if conditional {
+					tc.result = `stop ? this.value : (` + tc.result + `)`
+					tc.emitted = `return(stop?((structProbe*)this)->value:` + strings.TrimSuffix(strings.TrimPrefix(tc.emitted, `return`), `;`) + `);`
+				}
 				text := memberFallbackPrelude + `class Probe : Parent {
 string value; static string shared; string *pointer; string values[1]; Parent next;
 func string probe(bool stop, string source) { string owned = "owned"; ` + tc.decl + `return ` + tc.result + `; } }`
@@ -138,6 +148,10 @@ try { return this.value; } catch { return this.value; } finally { return this.va
 				`return((structProbe*)this)->value;`},
 		} {
 			t.Run(fmt.Sprintf("guard_%s/modules=%v", tc.name, modules), func(t *testing.T) {
+				if conditional {
+					tc.method = strings.ReplaceAll(tc.method, `return this.value;`, `return true ? this.value : "unused";`)
+					tc.emitted = `return(1?((structProbe*)this)->value:"unused");`
+				}
 				c := memberReturnEmission(t, tr, `class Probe { string value; `+tc.method+` }`, modules)
 				if !strings.Contains(c, tc.emitted) || strings.Contains(c, "__dream_return_") {
 					t.Fatalf("guard must preserve previous return emission:\n%s", c)

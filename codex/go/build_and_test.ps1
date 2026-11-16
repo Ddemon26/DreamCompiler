@@ -27,7 +27,7 @@ if ($buildExit -ne 0) { exit $buildExit }
 
 Push-Location $PSScriptRoot
 try {
-    & go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules|LoopsAtOptimizationLevels|LiteralEmission|LiteralFailures|MethodArguments|ConstructorArguments|ParserRecovery|PointerParameters|IndexedStrings|LiteralStrings|IdentifierStrings|MemberStrings|ForStrings|CallStrings|AssignedStrings|StringContainers|LoopExitStrings|LoopExitClasses|ConditionalStrings|AssignmentInitializers|AppendedStrings|VoidReturnStrings|VoidReturnClasses|ScalarReturnCleanup|LocalStringReturn|LiteralStringReturn|ConditionalLiteralReturn|ConditionalLocalReturn|BorrowedParameterReturn|ConditionalBorrowedReturn|BorrowedMemberReturn|IndexedConsole|Dogfood)$' .
+    & go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules|LoopsAtOptimizationLevels|LiteralEmission|LiteralFailures|MethodArguments|ConstructorArguments|ParserRecovery|PointerParameters|IndexedStrings|LiteralStrings|IdentifierStrings|MemberStrings|ForStrings|CallStrings|AssignedStrings|StringContainers|LoopExitStrings|LoopExitClasses|ConditionalStrings|AssignmentInitializers|AppendedStrings|VoidReturnStrings|VoidReturnClasses|ScalarReturnCleanup|LocalStringReturn|LiteralStringReturn|ConditionalLiteralReturn|ConditionalLocalReturn|BorrowedParameterReturn|ConditionalBorrowedReturn|BorrowedMemberReturn|ConditionalMemberReturn|IndexedConsole|Dogfood)$' .
     $testExit = $LASTEXITCODE
 } finally {
     Pop-Location
