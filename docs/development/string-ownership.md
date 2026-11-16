@@ -630,11 +630,48 @@ now require the qualified cleanup; their runtime assertions remain unchanged.
 Both quick protocols and CI select the group; existing allocator/refcount/shutdown
 assertions and the 24 direct-parameter rebinding cases remain intact.
 
-P0043's [member-return audit and implementation contract](member-return-cleanup.md)
-establishes why receiver-slot immutability cannot prove field backing or protect
-unretained class aliases. It selects a separate whole-body read-only borrowed
-class receiver proof and future regression matrix; member-return cleanup remains
-unimplemented. P0043 is documentation only and reuses dated P0042 test evidence.
+## Read-only direct instance string-field returns (P0044)
+
+P0044 implements the [P0043 member-return proof](member-return-cleanup.md) for
+direct `this.field` results in synchronous methods. Resolve the depth-1 borrowed
+class binding and the actual nonstatic scalar string declaration, including its
+inherited owner. Capture the field pointer once before reverse local cleanup;
+add no copy, retain, receiver release or field destruction. No cleanup is inserted
+when there are no qualified local owners.
+
+The separate whole-body AST/operator allowlist rejects all writes, increment/
+decrement, calls/new/console/await, exceptions, nested/unknown nodes, receiver-name
+shadowing and every custom-type/pointer/array local, including already-exited
+blocks. This protects backing from aliased writes and the receiver from unretained
+class-alias cleanup. Independent primitive scalar locals/read expressions and
+qualified control flow are permitted. P0041/P0042's less restrictive parameter
+proof remains unchanged. Failed proof keeps the entire original return.
+
+The [regression](../../tests/basics/memory/borrowed_member_return.dr) and
+`TestCompiler_BorrowedMemberReturn` in
+[member_return_test.go](../../codex/go/member_return_test.go) reproduced a nonempty
+pre-shutdown registry in both ordinary/module-entry modes before the fix. Each
+now requires **38 nonnull releases** (one receiver, 37 strings), **21 output lines**,
+and empty pre/post-shutdown registries with live release operands and original
+reference counts. Literal/managed/empty/typed-null backing, independent snapshots,
+nested/alternate/unbraced paths, later declarations, while/do/for/header/switch
+returns, read-only operations, inherited fields, temporary collisions and no-local
+returns execute. Caller receiver/backing and snapshot survival are checked.
+Exact C requires owner-preserving capture before reverse releases and forbids
+receiver/result retain/release/copy. **196 emission-only controls** cover mutations
+and calls before/after early returns throughout body/header/expression positions,
+aliases in exited scopes, result shape and exception/async guards. No unsafe alias
+example is executed. Quick protocols/CI select the new group.
+
+Explicit class parameters and async instance methods are rejected by today's
+grammar; receiver shadowing is rejected by semantics. Self-type declarations
+inside a class are not registered yet, so alias/constructor controls use a prior
+class. The async control uses an accepted free function/static field. These tests
+do not broaden grammar or qualify async runtime behavior. Unknown AST/operators
+fail closed in source; source syntax cannot construct arbitrary unknown nodes.
+Conditional member leaves, static/local/struct/nested/base receivers, broader field
+and class-alias ownership, caller consumption and exception/async cleanup remain
+separate. Incoming receiver and backing must already be live.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

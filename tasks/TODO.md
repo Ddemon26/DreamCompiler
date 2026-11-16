@@ -506,11 +506,23 @@ whole-body read-only proof; every write/call/new, custom-type/pointer/array loca
 exception/async, shadowing or unknown node preserves previous emission. No compiler
 behavior changed and no compiler tests were rerun; reuse dated P0042 evidence.
 
-Broader T011 remains open. Verify P0043 publication/native CI and repair failures
-first. Next implement that member-return slice, beginning with both-mode retained-
-allocation reproduction and the documented lifetime/output/exact-C matrix and
-mutation/call/class-alias fallback controls. Keep conditional member leaves and
-static/struct/local/nested/base receivers separate.
+P0044 implements direct scalar nonstatic `this.field` string-result cleanup under
+that read-only proof, preserving inherited owner casts and the existing parameter
+proof. Each checked mode requires 38 releases, 21 output lines, empty pre/post-
+shutdown registries and caller backing/snapshot survival; 196 emission-only controls
+preserve mutations/calls/aliases/shapes/exception/async fallback. Full Windows suite:
+152 passed, 18 skipped, no failures/errors; all 36 quick groups, five runner tests
+and Linux cross-build 15/15 passed. See [P0044](passes/P0044-borrowed-member-return.md).
+P0043's conceptual explicit class-parameter cases remain rejected by grammar, as do
+async instance methods; semantic receiver shadowing is also rejected. No syntax
+was broadened. Valid controls use explicit this and previously declared alias types.
+
+Broader T011 remains open. Verify P0044 publication/native CI and repair failures
+first. Next qualify conditional result trees with read-only `this.field` leaves
+under the same proof, beginning with both-mode retained-allocation reproduction
+and mixed owned/literal/borrowed lifetime controls. Preserve every write/call/alias
+barrier; keep class-parameter syntax and static/local/struct/nested/base receivers
+separate.
 Keep general borrowed/member/index/call/compound result lifetime, caller
 consumption, pointer/class result transfer, aliases/containers/destructors/fields,
 async and exception unwinding separate. String-index return typing remains

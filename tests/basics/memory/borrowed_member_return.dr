@@ -1,0 +1,130 @@
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: collision
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: null
+// Expected: null
+// Expected:
+// Expected:
+// Expected: literal
+// Expected: backing
+// Expected: changed
+class MemberReturnBase {
+    string value;
+    string __dream_return_0;
+    func init(string input) {
+        this.value = input;
+        this.__dream_return_0 = "collision";
+    }
+    func string readThis() {
+        string snapshot = this.value;
+        const string discard = "";
+        return (this.value);
+    }
+    func string loweredCollision() {
+        string __dream_return_1 = "discard";
+        return this.__dream_return_0;
+    }
+}
+class MemberReturnChild : MemberReturnBase {
+    func init(string input) { base.init(input); }
+    func string readInherited() {
+        string inheritedText = this.value;
+        return this.value;
+    }
+    func string nestedMember(bool stop) {
+        string first = this.value;
+        string absent;
+        const string empty = "";
+        {
+            string inner = "discard";
+            if (stop) return (this.value);
+            string later = "later";
+        }
+        return this.value;
+    }
+    func string pathMember(int path) {
+        string outer = "outer";
+        if (path == 0) while (true) {
+            string whileText = "while";
+            return this.value;
+        }
+        if (path == 1) do {
+            string doText = "do";
+            return this.value;
+        } while (false);
+        if (path == 2) for (string header = "header"; true;) {
+            string body = header;
+            return this.value;
+        }
+        switch (path) {
+            case 3:
+                string caseText = "case";
+                return this.value;
+            default: break;
+        }
+        return this.value;
+    }
+    func string collisionMember() {
+        string __dream_return_0 = "discard";
+        return this.value;
+    }
+    func string noMemberLocals() { return this.value; }
+    func string readOnlyOps(int *indices) {
+        string opsText = "discard";
+        int number = indices[0];
+        float fraction = 1.5;
+        char letter = 'a';
+        bool test = !false && ((~(-number) & 3) >= 0);
+        (number + 1) * (number - 1) / (number == 0 ? 1 : number);
+        while (false) { continue; }
+        for (; false;) { break; }
+        if (test || fraction > 0.0) return this.value;
+        return this.value;
+    }
+}
+func void exerciseMembers() {
+    string backing = "backing";
+    MemberReturnChild reader = new MemberReturnChild(backing);
+    string snapshot = reader.nestedMember(true);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(reader.value);
+    Console.WriteLine(reader.nestedMember(false));
+    Console.WriteLine(reader.readThis());
+    Console.WriteLine(reader.readInherited());
+    Console.WriteLine(reader.pathMember(0));
+    Console.WriteLine(reader.pathMember(1));
+    Console.WriteLine(reader.pathMember(2));
+    Console.WriteLine(reader.pathMember(3));
+    Console.WriteLine(reader.collisionMember());
+    Console.WriteLine(reader.loweredCollision());
+    Console.WriteLine(reader.pathMember(4));
+    int indices[1];
+    indices[0] = 2;
+    Console.WriteLine(reader.readOnlyOps(indices));
+    Console.WriteLine(reader.noMemberLocals());
+    string absent;
+    reader.value = absent;
+    if (reader.nestedMember(true) == null) Console.WriteLine("null");
+    if (reader.readThis() == null) Console.WriteLine("null");
+    reader.value = "";
+    Console.WriteLine(reader.nestedMember(true));
+    Console.WriteLine(reader.readThis());
+    reader.value = "literal";
+    Console.WriteLine(reader.nestedMember(true));
+    reader.value = "changed";
+    backing = "replacement";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(reader.value);
+}
+exerciseMembers();

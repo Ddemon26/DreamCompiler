@@ -589,6 +589,98 @@ static int borrowed_parameter_result(CGCtx *ctx, Node *expr) {
          parameter_unchanged(ctx->function_body, v);
 }
 
+// An unchanged receiver slot alone says nothing about field backing. Keep this
+// proof separate from parameter_unchanged: even unrelated writes/calls may act
+// through aliases, and class locals can release an unretained receiver alias at
+// an already-exited block. Unknown nodes/operators fail closed.
+static int member_body_readonly(const Node *n, const VarBinding *receiver) {
+  if (!n) return 1;
+  switch (n->kind) {
+  case ND_BINOP:
+    switch (n->as.bin.op) {
+    case TK_PLUS: case TK_MINUS: case TK_STAR: case TK_SLASH: case TK_PERCENT:
+    case TK_CARET: case TK_LSHIFT: case TK_RSHIFT: case TK_AND: case TK_OR:
+    case TK_LT: case TK_GT: case TK_LTEQ: case TK_GTEQ: case TK_EQEQ: case TK_NEQ:
+    case TK_ANDAND: case TK_OROR: case TK_QMARKQMARK:
+      return member_body_readonly(n->as.bin.lhs, receiver) &&
+             member_body_readonly(n->as.bin.rhs, receiver);
+    default: return 0;
+    }
+  case ND_UNARY:
+    switch (n->as.unary.op) {
+    case TK_PLUS: case TK_MINUS: case TK_BANG: case TK_TILDE:
+      return member_body_readonly(n->as.unary.expr, receiver);
+    default: return 0;
+    }
+  case ND_VAR_DECL:
+    switch (n->as.var_decl.type) {
+    case TK_KW_INT: case TK_KW_FLOAT: case TK_KW_BOOL: case TK_KW_CHAR:
+    case TK_KW_STRING: break;
+    default: return 0;
+    }
+    return !n->as.var_decl.is_pointer && !n->as.var_decl.array_len &&
+           !names_binding(n->as.var_decl.name, receiver) &&
+           member_body_readonly(n->as.var_decl.init, receiver);
+  case ND_BLOCK:
+    for (size_t i = 0; i < n->as.block.len; i++)
+      if (!member_body_readonly(n->as.block.items[i], receiver)) return 0;
+    return 1;
+  case ND_IF:
+    return member_body_readonly(n->as.if_stmt.cond, receiver) &&
+           member_body_readonly(n->as.if_stmt.then_br, receiver) &&
+           member_body_readonly(n->as.if_stmt.else_br, receiver);
+  case ND_COND:
+    return member_body_readonly(n->as.cond.cond, receiver) &&
+           member_body_readonly(n->as.cond.then_expr, receiver) &&
+           member_body_readonly(n->as.cond.else_expr, receiver);
+  case ND_WHILE:
+    return member_body_readonly(n->as.while_stmt.cond, receiver) &&
+           member_body_readonly(n->as.while_stmt.body, receiver);
+  case ND_DO_WHILE:
+    return member_body_readonly(n->as.do_while_stmt.body, receiver) &&
+           member_body_readonly(n->as.do_while_stmt.cond, receiver);
+  case ND_FOR:
+    return member_body_readonly(n->as.for_stmt.init, receiver) &&
+           member_body_readonly(n->as.for_stmt.cond, receiver) &&
+           member_body_readonly(n->as.for_stmt.update, receiver) &&
+           member_body_readonly(n->as.for_stmt.body, receiver);
+  case ND_SWITCH:
+    if (!member_body_readonly(n->as.switch_stmt.expr, receiver)) return 0;
+    for (size_t i = 0; i < n->as.switch_stmt.len; i++)
+      if (!member_body_readonly(n->as.switch_stmt.cases[i].value, receiver) ||
+          !member_body_readonly(n->as.switch_stmt.cases[i].body, receiver)) return 0;
+    return 1;
+  case ND_INDEX:
+    return member_body_readonly(n->as.index.array, receiver) &&
+           member_body_readonly(n->as.index.index, receiver);
+  case ND_FIELD: return member_body_readonly(n->as.field.object, receiver);
+  case ND_RETURN: return member_body_readonly(n->as.ret.expr, receiver);
+  case ND_EXPR_STMT: return member_body_readonly(n->as.expr_stmt.expr, receiver);
+  case ND_INT: case ND_FLOAT: case ND_CHAR: case ND_STRING: case ND_BOOL:
+  case ND_NULL: case ND_IDENT: case ND_BASE: case ND_BREAK: case ND_CONTINUE:
+    return 1;
+  default: return 0;
+  }
+}
+
+static int borrowed_member_result(CGCtx *ctx, Node *expr) {
+  if (ctx->ret_type != TK_KW_STRING || !ctx->function_body ||
+      !expr || expr->kind != ND_FIELD ||
+      expr->as.field.object->kind != ND_IDENT) return 0;
+  Slice name = expr->as.field.object->as.ident;
+  const VarBinding *receiver = cgctx_binding(ctx, name.start, name.len);
+  if (!receiver || receiver->depth != 1 || receiver->type != TK_IDENT ||
+      receiver->indirections != 0 || !cg_is_class_type(receiver->type_name)) return 0;
+  // Resolve actual declaration/shape, including inherited owner lookup. Normal
+  // expression emission supplies that owner's cast; token typing is insufficient.
+  Node *field = cg_member(receiver->type_name, expr->as.field.name, NULL);
+  return field && field->kind == ND_VAR_DECL &&
+         field->as.var_decl.type == TK_KW_STRING &&
+         !field->as.var_decl.is_static && !field->as.var_decl.is_pointer &&
+         !field->as.var_decl.array_len &&
+         member_body_readonly(ctx->function_body, receiver);
+}
+
 static int is_primitive_scalar_result(TokenKind type) {
   return type == TK_KW_INT || type == TK_KW_FLOAT ||
          type == TK_KW_BOOL || type == TK_KW_CHAR;
@@ -920,6 +1012,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     } else if (ctx->is_sync_function && n->as.ret.expr &&
                (is_primitive_scalar_result(ctx->ret_type) || preserved ||
                 conditional_scoped || borrowed_parameter_result(ctx, n->as.ret.expr) ||
+                borrowed_member_result(ctx, n->as.ret.expr) ||
                 (ctx->ret_type == TK_KW_STRING &&
                  is_static_string_result(n->as.ret.expr))) &&
                ctx->exception_depth == 0 && has_return_cleanup(ctx)) {

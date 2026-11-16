@@ -141,6 +141,18 @@ a value leaf, including a write in a condition, prevents cleanup for the entire
 return. Unsupported value leaves and retained owned-result accumulation remain
 separate.
 
+P0044 also qualifies direct `return this.field;` for an actual scalar nonstatic
+string field, including inherited fields, when the entire method body passes a
+separate read-only proof. It captures the pointer before reverse local cleanup
+without copying/retaining the result or releasing the receiver. Every write,
+increment/decrement, call, constructor, console operation, custom-type/pointer/
+array local, exception or await blocks this proof, even in later/unreachable code.
+Only primitive scalar locals and explicitly allowed read expressions/control flow
+qualify. Conditional member leaves and static/local/struct/nested/base receivers
+retain previous emission. Explicit class parameters and async instance methods
+are rejected by the current grammar; this pass does not add them. The caller must
+keep the receiver and field backing live. See the [member contract](../development/member-return-cleanup.md).
+
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership
 remain unqualified. Primitive return shape checking remains a separate limitation.

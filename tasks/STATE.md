@@ -1,47 +1,47 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0043 - borrowed member-return lifetime audit and implementation contract**.
-- Record: [P0043](passes/P0043-member-return-audit.md).
-- Parent/fetched approved remote: `3038fdcaad863e287232971fb48ec34ae6f96acd` (P0042).
-- Resolve this pass commit by its exact `Pass-ID: P0043` trailer.
+- Current pass: **P0044 - read-only direct instance string-field return cleanup**.
+- Record: [P0044](passes/P0044-borrowed-member-return.md).
+- Parent/fetched approved remote: `001c5223cc6d9e054b66f8da5f0b821f3731c007` (P0043).
+- Resolve this pass commit by its exact `Pass-ID: P0044` trailer.
 - Delivery requires push and matching `git ls-remote`; inspect native CI next.
 
-P0043 completes the requested source audit without changing compiler behavior.
-An unchanged receiver slot does not prove unchanged field backing: direct/aliased
-field writes and calls/constructors can install local storage. Class alias locals
-also receive releases without a retain proof, including in already-exited scopes.
-P0041's parameter proof cannot be applied transitively to member results.
+P0044 captures direct scalar nonstatic `this.field` string results before reverse
+local cleanup, including inherited owning-class casts. A separate whole-body
+AST/operator allowlist rejects every write/inc/dec, call/new/console/await,
+exception, custom-type/pointer/array local, receiver shadowing and unknown node.
+Already-exited class alias scopes are scanned too. No result copy/retain or
+receiver release is added. P0041/P0042's parameter proof remains unchanged;
+conditional member leaves and static/local/struct/nested/base results stay separate.
 
-The [implementation contract](../docs/development/member-return-cleanup.md) selects
-direct scalar string instance fields on borrowed depth-1 class parameters/explicit
-`this`, with a separate whole-body read-only proof. Reject all writes, calls/new,
-custom-type/pointer/array locals, exceptions/async, shadowing and unknown nodes.
-Resolve actual scalar/nonstatic field shape and inherited owner before reusing
-capture-before-reverse-cleanup. Preserve the entire previous return on failed proof.
-Conditional member leaves, static/struct/local/nested receivers and `base` results
-remain separate. The contract specifies positive lifetime/output/C checks and
-mutation/alias/call fallback controls for the implementation pass.
+Both modes reproduced retained allocations before the fix. Each now checks 38
+nonnull releases (one receiver, 37 strings), 21 output lines, empty pre/post-shutdown
+registries, caller backing/snapshot survival and exact capture/reverse cleanup.
+196 emission-only controls preserve mutation/call/alias/shape/exception/async fallback.
+Explicit class parameters and async instance methods remain rejected by grammar;
+receiver shadowing is rejected by semantics. See the [contract](../docs/development/member-return-cleanup.md)
+for the accepted fixture substitutions and untested boundaries.
 
-Clean approved checkout/attached branch/origin matched published P0042; one
+Clean approved checkout/attached branch/origin matched published P0043; one
 registered worktree and available chats showed no competing active writer.
-Schedule already uses the approved local cwd. P0042
-[native Linux and Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43757071666)
-passed build, runner, quick and full-suite steps before this audit.
+Schedule already uses the approved local cwd. P0043
+[native Linux and Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43784740261)
+passed build, runner, quick and full-suite steps before this work.
 
-Compiler tests were **not rerun** for this documentation-only pass. Reuse P0042's
-**2026-11-15 UTC** [results](MostRecentTestResults.md): 169 discovered, 151 passed,
-18 skipped, zero failures/errors; 35 quick groups, five runner tests and Linux
-cross-build 15/15 passed. Source/test/build inputs and the measured snapshot remain
-unchanged. See the pass record for documentation verification.
+Windows full suite: 170 discovered, 152 passed, 18 skipped, zero failures/errors;
+36 Go quick groups, five Python runner tests and Linux cross-build 15/15 passed.
+Cross-build evidence does not prove native Linux runtime behavior. See
+[results](MostRecentTestResults.md) and the pass record for exact checks/timings.
 
 Next invocation:
 
-1. Verify P0043 publication by trailer/remote SHA and inspect native CI. Repair
+1. Verify P0044 publication by trailer/remote SHA and inspect native CI. Repair
    failed checks before new work.
-2. Implement the selected read-only direct borrowed class-member result slice,
-   beginning with both-mode retained-allocation reproduction and the contract's
-   whole-body mutation/call/class-alias fallback controls.
+2. Qualify conditional result trees containing read-only `this.field` leaves under
+   the same proof, beginning with both-mode retained-allocation reproduction and
+   mixed owned/literal/borrowed lifetime controls. Preserve every write/call/alias
+   barrier; do not add explicit class-parameter syntax in this slice.
 3. Preserve retained owned-result accumulation, aliases/containers/destructors/
    fields, async/exception unwinding, shape/operator limits and eighteen skips.
    String-index return typing, custom-type for headers and class null initializers

@@ -1,5 +1,67 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 16, 2026 UTC
+
+**Pass:** P0044 - read-only direct instance string-field return cleanup
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4
+
+- Clean approved checkout/branch/origin matched published P0043
+  `001c5223cc6d9e054b66f8da5f0b821f3731c007`. Its
+  [native Linux/Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43784740261)
+  passed build, runner, quick and full-suite steps before work. Schedule already
+  uses local execution and the approved cwd; no competing active writer found.
+- Restricted fetch failed DNS and restricted baseline could not locate Zig's
+  installation. Approved normal network/toolchain access succeeded without
+  changing toolchains, caches or permissions.
+- Baseline `zig build test`: **169 discovered, 151 passed, 18 skipped, zero failures/
+  errors**, 54.00s; `test_results/test_results_20261115_192459_windows.json`.
+- Before fix, `go test -count=1 -v -run '^TestCompiler_BorrowedMemberReturn$' .`
+  from `codex/go`: **both modes failed** at the empty-before-shutdown registry
+  assertion, 2.703s (group 2.24s), after fixing test package/unsupported parameter
+  scaffolding. `zig build` passed; initial both-mode lifetime check then passed
+  (2.889s, group 2.44s), with 36 releases before two more positive paths were added.
+- The new fallback matrix initially used self-type declarations, receiver shadowing
+  and async methods rejected by current parsing/semantics. Replaced these with valid
+  prior-type alias/constructor and free-async/static-field controls; retained grammar
+  limitations. The broader five-group check passed prior groups and failed only the
+  invalid async-method fixture (20.723s). No compiler grammar/semantics were changed.
+- Final focused new group: **passed**, 8.002s, both modes plus **196 emission-only
+  controls**. Each mode checks **38 nonnull releases** (one receiver, 37 strings),
+  **21 output lines**, empty pre/post-shutdown registries, native UBSan/live release/
+  refcount checks, Linux harness cross-linking and directly linked exact output.
+  Exact C requires one capture before reverse cleanup with inherited owner cast,
+  no receiver release or result retain/copy, and no-local direct returns. Caller
+  receiver/backing and independent snapshot survive subsequent replacement.
+- `zig build test`: **170 discovered, 152 passed, 18 skipped, zero failures/errors**,
+  52.40s; `test_results/test_results_20261115_193452_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **5 passed**, 0.057s.
+- Supported Windows Go quick protocol: **all 36 groups passed**, 77.947s; new group **8.57s**. Prior
+  owned/borrowed return allocator/refcount/shutdown assertions remain intact;
+  external compiler tests use `-count=1`.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Cross-build/cross-linking does not prove native P0044
+  Linux runtime behavior; inspect CI after publication.
+- 201 local Markdown paths, UTF-8/BOM, 36-group quick/CI selector and actual-pass
+  equality, 21 annotated outputs, P0001-P0044 index continuity, gofmt, full diff
+  review and `git diff --check` passed. Precommit fetch and `git ls-remote` still
+  matched the parent. Logs are ignored `build/P0044-*.log`.
+
+Same eighteen skips and prior shape/operator limits. Only direct scalar nonstatic
+`this.field` string results under the whole-body read-only proof gain cleanup.
+Explicit class parameters and async instance methods remain rejected by grammar;
+receiver-name shadowing by semantics. Conditional member leaves, static/local/struct/
+nested/base receivers, caller consumption, retained owned results, broader aliases/
+containers/destructors/fields and exception/async cleanup stay separate. String-index
+return typing, custom-type for headers and direct class null initializers remain
+limited. Next verify publication/native CI, then qualify conditional member leaves
+under the same write/call/alias barriers.
+
+---
+
+# Historical P0042 checkpoint - DreamCompiler
+
 **Date:** November 15, 2026 UTC
 
 **Pass:** P0042 - conditional borrowed string-result scoped cleanup

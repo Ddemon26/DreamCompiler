@@ -1,8 +1,22 @@
-# Borrowed member-return cleanup: P0043 audit and implementation contract
+# Borrowed member-return cleanup: P0043 audit and P0044 implementation
 
-This is a source audit and a proposed first slice, not implemented member-return
-cleanup. P0042 remains the measured compiler checkpoint. The implementation pass
-must reproduce the retained allocations and implement the proof below.
+P0044 implements direct scalar nonstatic `this.field` string-result cleanup under
+the whole-body read-only proof below. Both ordinary/module-entry modes reproduced
+retained scoped allocations before the fix; each now checks 38 releases, 21 output
+lines and empty pre/post-shutdown registries. Exact C, native checked allocator/
+UBSan and 196 emission-only fallback/shape/guard controls pass. See the
+[pass record](../../tasks/passes/P0044-borrowed-member-return.md) and
+[ownership checkpoint](string-ownership.md#read-only-direct-instance-string-field-returns-p0044).
+
+The P0043 source audit/design below remains the rationale. P0044 found explicit
+class parameters and async instance methods are rejected by the existing grammar,
+and receiver-name shadowing by semantics. Thus the executable first slice uses
+explicit `this`; free/static readers accepting class parameters remain unavailable.
+The metadata predicate recognizes depth-1 class bindings without adding syntax.
+The audit's class-parameter examples are conceptual counterexamples, not accepted
+Dream source. Valid controls use methods and previously declared alias classes;
+self-type declarations inside a class are not registered yet. Async guarding is
+checked with an accepted free function/static field, without runtime claims.
 
 ## What the current paths establish
 
@@ -110,9 +124,10 @@ normal fallthrough and unbraced conditional returns.
 The initial restriction excludes independently allocated class locals and apparently
 read-only calls too. Relaxation requires a separate proven slice.
 
-## Implementation acceptance evidence
+## P0043 acceptance contract and P0044 qualification
 
-These are future requirements, not P0043 test results:
+These were future requirements in P0043. P0044's measured results and the grammar
+limits above qualify the implemented slice; broader cases remain future work:
 
 1. Add a real Dream regression and checked Go lifetime group in ordinary/module-entry
    modes. Before fixing the compiler, reproduce scoped allocations retained at a
