@@ -547,11 +547,21 @@ rejections. Existing parameter/member/lifetime assertions are preserved. Full
 Windows: 154 passed, 18 skipped, zero failures/errors; 38 quick groups, five runner
 tests and Linux cross-build 15/15 passed. See [P0047](passes/P0047-static-member-return.md).
 
-Broader T011 remains open. Verify P0047 publication/native CI and repair failures
-first. Next qualify conditional static value leaves under the unchanged read-only
-proof, with mixed borrowed/owned/literal lifetime and failed-leaf controls.
-Conditional static leaves, static pointer/array declaration shape emission,
-class-parameter syntax and local/struct/nested/base receivers remain separate.
+P0048 qualifies those conditional static value leaves alongside proven instance,
+parameter, owned-local and literal leaves. All whole-body barriers remain intact.
+Both pre-fix modes fail the complete test's capture/cleanup C assertion; final
+lifetime evidence checks 67 nonnull releases, 35 outputs and four original-reference
+owned survivors until shutdown in each mode. All 246 new-group subtests pass;
+unsafe body/leaf/shape/guard controls and migrated positive static controls retain
+prior allocator/refcount assertions. See
+[P0048](passes/P0048-conditional-static-return.md) and the current measured snapshot.
+
+Broader T011 remains open. Verify P0048 publication/native CI and repair failures
+first. Next audit caller consumption and retained owned-result accumulation,
+distinguish borrowed/owned calls, reproduce the boundary with checked lifetime
+evidence and define a bounded implementation contract. Static pointer/array
+shape emission, class-parameter syntax and local/struct/nested/base receivers
+remain separate.
 Keep general borrowed/member/index/call/compound result lifetime, caller
 consumption, pointer/class result transfer, aliases/containers/destructors/fields,
 async and exception unwinding separate. String-index return typing remains

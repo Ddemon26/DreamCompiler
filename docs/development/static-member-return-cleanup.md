@@ -1,11 +1,15 @@
-# Static string-field return cleanup: P0046 audit, P0047 implementation
+# Static string-field return cleanup: P0046 audit, P0047-P0048 implementation
 
 P0047 implements P0046's direct class type-qualified scalar static string-field
 return slice. The pointer is captured once before reverse local cleanup when the
 entire body passes the existing read-only proof. Static storage duration keeps
 the pointer slot alive, but does not keep its pointed-to string alive. Callers
 must supply live backing; no field ownership or result copy/retain is added.
-P0045's direct/conditional instance proof remains unchanged.
+P0048 also permits these proven static reads as conditional value leaves alongside
+literals, known-owned locals, unchanged parameters and proven instance fields.
+Every leaf must qualify; any static/member leaf requires the unchanged whole-body
+read-only proof. Capture once, preserve selected owned storage and reverse-clean
+the other locals. P0045's instance proof remains unchanged.
 
 ## Current paths and lifetime
 
@@ -16,15 +20,15 @@ P0045's direct/conditional instance proof remains unchanged.
 | Field expression | [expr.c](../../src/codegen/expr.c): `expr_type`, `is_type_reference`, `ND_FIELD` | Static members emit the owning type's global symbol. The instance receiver expression is not emitted for a resolved static field. A variable binding can shadow a type spelling. |
 | Field assignment | [expr.c](../../src/codegen/expr.c): `ND_BINOP` | Owned replacement applies to owned identifier bindings; a static field destination remains a raw C assignment. The global can point at callee-local storage. |
 | Local snapshots | [stmt.c](../../src/codegen/stmt.c): `copies_string_initializer`, `ND_VAR_DECL`; [custom.c](../../src/runtime/extensions/custom.c): `dream_string_copy` | Scalar member-initialized locals own independent copies; null copies remain null. Releasing a snapshot does not release the original field backing. |
-| Current result qualification | [stmt.c](../../src/codegen/stmt.c): `borrowed_static_member_result`, `borrowed_member_result`, `is_static_string_result`, `is_scoped_string_result`, `ND_RETURN` | Separate direct static and instance proofs; conditional static leaves remain excluded. Despite its name, `is_static_string_result` recognizes literals and literal-only conditional trees, not static fields. |
+| Current result qualification | [stmt.c](../../src/codegen/stmt.c): `borrowed_static_member_result`, `borrowed_member_result`, `is_static_string_result`, `is_scoped_string_result`, `ND_RETURN` | Separate static and instance proofs also qualify conditional value leaves in P0048. Despite its name, `is_static_string_result` recognizes literals and literal-only conditional trees, not static fields. |
 | Body proof | [stmt.c](../../src/codegen/stmt.c): `member_body_readonly`, `parameter_unchanged` | The member allowlist rejects all writes/calls, custom-type/pointer/array locals, exceptions and unknown nodes/operators. Parameter-slot immutability alone cannot protect a global's pointee. |
 | Binding and release | [context.c](../../src/codegen/context.c): `cgctx_binding`, `cgctx_has_var`; [memory.c](../../src/runtime/memory/memory.c): `dr_release`, `dr_release_all` | Context lookup distinguishes variables from type names. Managed lifetime follows allocations/refcounts, not references stored in global fields. |
 
 The [member-copy fixture](../../tests/basics/memory/member_string_copy.dr) and
 [Go checks](../../codex/go/indexed_strings_test.go) cover static snapshots and
 caller backing survival. The [member-return controls](../../codex/go/member_return_test.go)
-now check eligible direct static cleanup and preserve mixed instance/static
-fallback. P0047 adds separate static lifetime coverage below. Static pointer/array
+now check eligible direct and conditional static cleanup. P0047-P0048 add
+separate static lifetime coverage below. Static pointer/array
 declarations use a separate
 emitter that does not preserve their shape; exclude them from this return slice
 rather than repairing static storage emission incidentally.
@@ -81,9 +85,11 @@ execution. It adds no global ownership, alias analysis or concurrency guarantee.
    and unbraced returns. With no cleanup candidates retain direct return.
    A failed predicate preserves the entire previous return.
 
-The first implementation excludes conditional static leaves, even when both
-arms look safe; mixing static with instance/local/parameter leaves is a later
-slice. Also exclude struct qualifiers and variable/`this`/`base`/nested/index/call
+P0047 first excluded conditional static leaves. P0048 qualifies each leaf with
+`is_scoped_string_result`, including mixed static/instance/local/parameter/literal
+trees, without changing the literal-only predicate or read-only allowlist. One
+unsupported leaf preserves the entire old return, including unselected leaves.
+Continue to exclude struct qualifiers and variable/`this`/`base`/nested/index/call
 receivers, implicit field identifiers and pointer/array fields. Existing instance
 and conditional-member support must retain its prior behavior and controls.
 
@@ -149,14 +155,43 @@ as non-class/struct receivers before emission; rejection checks require exit 1,
 bounded execution and no build artifacts. They do not broaden syntax/semantics.
 Unsafe mutation/alias examples remain emission-only. The prior direct member
 group migrates its two static controls to exact-C positives; conditional static
-controls and all allocator/refcount assertions remain intact.
+controls remained fallbacks at P0047. P0048 migrates eligible controls to positives,
+keeping all allocator/refcount assertions intact.
 
-Both quick protocols and CI select the new group. Conditional static leaves,
-other receivers, pointer/array static declaration emission, broader ownership,
-caller consumption and async/exception unwinding remain separate. Next qualify
-conditional static value leaves under the unchanged proof, with mixed borrowed/
-owned/literal lifetime and failed-leaf controls. See
-[P0047](../../tasks/passes/P0047-static-member-return.md) for required check results.
+Both quick protocols and CI select the group. See
+[P0047](../../tasks/passes/P0047-static-member-return.md) for its check results.
+
+## P0048 conditional static value leaves
+
+The [conditional fixture](../../tests/basics/memory/conditional_static_return.dr)
+and [Go group](../../codex/go/conditional_static_return_test.go) check both modes
+with **67 nonnull releases**, **35 output lines** and **four selected owned results**
+surviving with original references until shutdown. The independent allocation
+tally is in the test. Pre-fix both modes fail the exact capture/cleanup C assertion;
+post-fix the checked allocator verifies live release operands/refcounts, native
+UBSan and empty storage after shutdown. Linux harness cross-linking and directly
+linked output are also checked. No pre-fix runtime result is claimed: the unchanged
+C assertion stops execution before the lifetime harness.
+
+Coverage mixes static/instance/parameter/owned/literal leaves, inherited and hidden
+owning globals, managed/literal/empty/typed-null backing, nested and unbraced paths,
+for-header selected storage, loops/switches, free/static/instance readers, later
+locals, temporary collisions, no-local returns and independent snapshot survival.
+The borrowed global is cleared before caller backing leaves scope. Capture happens
+once before cleanup; only selected owned slots are preserved, with no result copy,
+retain, global release or field ownership.
+
+Shared emission-only controls retain every whole-body write/call/alias/shape barrier
+on both early and later returns. Expression controls reject effects in conditions
+or unselected branches, pointer/array fields and unsupported qualifiers; nested-else
+and multiple-type positives qualify. Active exception and async exits retain prior
+emission. Former eligible static fallback controls now assert exact positive C;
+all prior allocator/refcount assertions remain unchanged.
+
+Other qualifiers, static pointer/array declaration emission, caller consumption,
+retained owned-result accumulation and async/exception unwinding remain separate.
+Next audit caller consumption of owned string results before choosing a new slice.
+See [P0048](../../tasks/passes/P0048-conditional-static-return.md) for check results.
 
 See the [ownership contract](string-ownership.md),
 [instance member proof](member-return-cleanup.md) and

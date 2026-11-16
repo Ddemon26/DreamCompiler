@@ -685,7 +685,7 @@ static int borrowed_member_result(CGCtx *ctx, Node *expr) {
 
 // A global slot does not own its backing. Only direct, unshadowed class
 // qualifiers and the same whole-body read-only proof establish independence
-// from callee locals. Keep conditional static leaves outside this slice.
+// from callee locals. Conditional trees qualify each value leaf separately.
 static int borrowed_static_member_result(CGCtx *ctx, Node *expr) {
   if (ctx->ret_type != TK_KW_STRING || !ctx->function_body ||
       !expr || expr->kind != ND_FIELD ||
@@ -729,7 +729,8 @@ static int is_scoped_string_result(CGCtx *ctx, Node *expr) {
   // body proof, including conditions and unselected branches. One unsupported
   // leaf preserves the entire old return.
   return expr->kind == ND_STRING || owned_string_result(ctx, expr) ||
-         borrowed_parameter_result(ctx, expr) || borrowed_member_result(ctx, expr);
+         borrowed_parameter_result(ctx, expr) || borrowed_member_result(ctx, expr) ||
+         borrowed_static_member_result(ctx, expr);
 }
 
 static int result_mentions_binding(CGCtx *ctx, Node *expr,

@@ -49,8 +49,9 @@
 | [P0045](P0045-conditional-member-return.md) | 2026-11-16 | Conditional read-only instance-field results preserve selected owned storage and clean other locals; both-mode lifetime, fallback and full-suite checks pass | `Pass-ID: P0045` |
 | [P0046](P0046-static-member-return-audit.md) | 2026-11-16 | Source-audited static slot/backing lifetime; direct type-qualified class-field contract and both-mode acceptance; implementation remains open | `Pass-ID: P0046` |
 | [P0047](P0047-static-member-return.md) | 2026-11-16 | Direct read-only static class string-field results capture once before reverse local cleanup; both-mode lifetime, exact C and guarded fallback checks pass | `Pass-ID: P0047` |
+| [P0048](P0048-conditional-static-return.md) | 2026-11-16 | Conditional proven static string-field leaves mix with borrowed/owned/literal results, preserve selected owned storage and clean other locals; both-mode lifetime and guarded fallback checks pass | `Pass-ID: P0048` |
 
-**Verify P0047 publication/native CI, then qualify conditional static string-field value leaves under the unchanged read-only proof in T011.**
+**Verify P0048 publication/native CI, then audit caller consumption and retained owned-result accumulation in T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

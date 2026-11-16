@@ -80,9 +80,14 @@ struct Record { static string shared; }
 func string other() { return "other"; }
 class Store : Parent { static string shared; `+tc.decl+`
 func string probe(bool stop) { `+body+` } }`, modules)
-				if tc.name == "instance_field" {
-					if !strings.Contains(c, `{constchar*__dream_return_0=((structStore*)this)->plain;dr_release(owned);return__dream_return_0;}`) {
-						t.Fatalf("preserve prior instance support:\n%s", c)
+				if tc.name == "instance_field" || strings.HasPrefix(tc.name, "conditional_") {
+					expr := tc.emitted
+					cleanup := `dr_release(owned);`
+					if tc.name == "conditional_local" {
+						cleanup = `if(owned!=__dream_return_0)dr_release(owned);`
+					}
+					if !strings.Contains(c, `{constchar*__dream_return_0=`+expr+`;`+cleanup+`return__dream_return_0;}`) {
+						t.Fatalf("qualified instance/static leaves must clean locals:\n%s", c)
 					}
 				} else if strings.Contains(c, "__dream_return_") || !strings.Contains(c, `return`+tc.emitted+`;`) {
 					t.Fatalf("unsupported static expression must preserve direct return %s:\n%s", tc.emitted, c)

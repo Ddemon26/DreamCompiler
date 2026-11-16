@@ -1,0 +1,173 @@
+// Expected: backing
+// Expected: backing
+// Expected: source
+// Expected: literal
+// Expected: alternate
+// Expected: right
+// Expected: backing
+// Expected: null
+// Expected:
+// Expected: null
+// Expected:
+// Expected: literal
+// Expected: backing
+// Expected: backing
+// Expected: collision
+// Expected: unused
+// Expected: backing
+// Expected: header
+// Expected: backing
+// Expected: after
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: alternate
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: static
+// Expected: backing
+// Expected: free
+// Expected: hidden
+// Expected: backing
+// Expected: backing
+// Expected: changed
+class ConditionalStaticBase {
+    static string value;
+    string instanceValue;
+    static string alternate;
+    static string __dream_return_0;
+    func init(string input) {
+        ConditionalStaticChild.value = input;
+        this.instanceValue = input;
+        ConditionalStaticChild.alternate = "alternate";
+        ConditionalStaticChild.__dream_return_0 = "collision";
+    }
+    func string members(bool choice) {
+        string discard = "discard";
+        return choice ? ConditionalStaticChild.value : ConditionalStaticChild.alternate;
+    }
+}
+class ConditionalStaticChild : ConditionalStaticBase {
+    func init(string input) { base.init(input); }
+    func string mixed(int path, bool a, bool b, string source) {
+        string first = ConditionalStaticChild.value;
+        string right = "right";
+        string absent;
+        const string empty = "";
+        {
+            string inner = "inner";
+            if (path == 0) return a ? (b ? ConditionalStaticChild.value : first) : (b ? source : "literal");
+            string later = "later";
+        }
+        return a ? ConditionalStaticChild.alternate : right;
+    }
+    func string nullable(int path) {
+        string absent;
+        const string empty = "";
+        string discard = "discard";
+        return path == 0 ? ConditionalStaticChild.value : (path == 1 ? absent : empty);
+    }
+    func string repeated(bool choice) {
+        string discard = "discard";
+        return choice ? ConditionalStaticChild.value : ConditionalStaticChild.value;
+    }
+    func string collision(bool choice) {
+        string __dream_return_1 = "discard";
+        return choice ? ConditionalStaticChild.__dream_return_0 : "unused";
+    }
+    func string loop(bool stop, bool choice) {
+        string outer = "outer";
+        for (string header = "header"; stop;) {
+            string body = ConditionalStaticChild.value;
+            return choice ? ConditionalStaticChild.value : header;
+        }
+        return choice ? ConditionalStaticChild.value : "after";
+    }
+    func string alternatePath(bool stop, bool choice) {
+        string outer = "outer";
+        if (stop) while (true) {
+            string inner = "inner";
+            return choice ? ConditionalStaticChild.value : "while";
+        }
+        switch (1) {
+            case 1:
+                string caseText = "case";
+                return choice ? ConditionalStaticChild.value : "case";
+            default: break;
+        }
+        return choice ? ConditionalStaticChild.value : "after";
+    }
+    func string mixedReceiver(bool choice) {
+        string discard = "discard";
+        return choice ? ConditionalStaticChild.value : this.instanceValue;
+    }
+    static func string staticRead(bool choice) {
+        string discard = "discard";
+        return choice ? ConditionalStaticChild.value : "static";
+    }
+    func string noLocals(bool choice) { return choice ? ConditionalStaticChild.value : "unused"; }
+}
+class ConditionalStaticHidden : ConditionalStaticChild {
+    static string value;
+    static func string hiddenRead(bool choice) {
+        string hiddenText = "hidden";
+        return choice ? ConditionalStaticHidden.value : ConditionalStaticChild.value;
+    }
+}
+func string readConditionalStatic(bool choice) {
+    string freeText = "free";
+    return choice ? ConditionalStaticChild.value : "free";
+}
+func void exerciseConditionalStatics() {
+    string backing = "backing";
+    string externalSource = "source";
+    ConditionalStaticChild reader = new ConditionalStaticChild(backing);
+    string snapshot = reader.mixed(0, true, true, externalSource);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(reader.mixed(0, true, false, externalSource));
+    Console.WriteLine(reader.mixed(0, false, true, externalSource));
+    Console.WriteLine(reader.mixed(0, false, false, externalSource));
+    Console.WriteLine(reader.mixed(1, true, false, externalSource));
+    Console.WriteLine(reader.mixed(1, false, false, externalSource));
+    Console.WriteLine(reader.nullable(0));
+    if (reader.nullable(1) == null) Console.WriteLine("null");
+    Console.WriteLine(reader.nullable(2));
+    string absent;
+    ConditionalStaticChild.value = absent;
+    if (reader.nullable(0) == null) Console.WriteLine("null");
+    ConditionalStaticChild.value = "";
+    Console.WriteLine(reader.nullable(0));
+    ConditionalStaticChild.value = "literal";
+    Console.WriteLine(reader.nullable(0));
+    ConditionalStaticChild.value = backing;
+    Console.WriteLine(reader.repeated(true));
+    Console.WriteLine(reader.repeated(false));
+    Console.WriteLine(reader.collision(true));
+    Console.WriteLine(reader.collision(false));
+    Console.WriteLine(reader.loop(true, true));
+    Console.WriteLine(reader.loop(true, false));
+    Console.WriteLine(reader.loop(false, true));
+    Console.WriteLine(reader.loop(false, false));
+    Console.WriteLine(reader.alternatePath(true, true));
+    Console.WriteLine(reader.alternatePath(false, true));
+    Console.WriteLine(reader.members(true));
+    Console.WriteLine(reader.members(false));
+    Console.WriteLine(reader.noLocals(true));
+    Console.WriteLine(reader.mixedReceiver(true));
+    Console.WriteLine(reader.mixedReceiver(false));
+    Console.WriteLine(ConditionalStaticChild.staticRead(true));
+    Console.WriteLine(ConditionalStaticChild.staticRead(false));
+    Console.WriteLine(readConditionalStatic(true));
+    Console.WriteLine(readConditionalStatic(false));
+    ConditionalStaticHidden.value = "hidden";
+    Console.WriteLine(ConditionalStaticHidden.hiddenRead(true));
+    Console.WriteLine(ConditionalStaticHidden.hiddenRead(false));
+    ConditionalStaticChild.value = "changed";
+    backing = "replacement";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(ConditionalStaticChild.value);
+    ConditionalStaticChild.value = absent;
+}
+exerciseConditionalStatics();

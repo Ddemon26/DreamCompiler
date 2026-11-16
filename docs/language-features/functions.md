@@ -152,9 +152,9 @@ qualify. P0045 also permits these member reads as value leaves in conditional
 trees mixed with literals, known-owned locals and unchanged scalar parameters.
 Every leaf must qualify; one member leaf requires the whole-body read-only proof,
 including conditions and unselected branches. Capture once before cleanup and
-preserve only selected owned storage. Static/local/struct/nested/base receivers
-retain previous emission. Explicit class parameters and async instance methods
-are rejected by the current grammar; this pass does not add them. The caller must
+preserve only selected owned storage. Local/struct/nested/base instance receivers
+retain previous emission; type-qualified static reads are covered below. Explicit
+class parameters and async instance methods are rejected by the current grammar; this pass does not add them. The caller must
 keep the receiver and field backing live. See the [member contract](../development/member-return-cleanup.md).
 
 P0047 also qualifies direct `return Type.field;` for a scalar static string field
@@ -163,8 +163,11 @@ same whole-body read-only barriers. It captures the global pointer once before
 reverse local cleanup, with no result copy/retain or global release. Free functions
 and static/instance methods qualify; no-local readers keep direct returns. The
 caller must keep incoming backing live and clear borrowed static slots before
-releasing that backing. Conditional static leaves, other qualifiers and pointer/
-array fields remain outside this slice. See the
+releasing that backing. P0048 permits these static reads as conditional value
+leaves mixed with proven instance/parameter/local/literal leaves. Every leaf must
+qualify under the unchanged whole-body barriers; capture once and preserve only
+selected owned storage. Other static qualifiers and pointer/array fields remain
+outside this slice. See the
 [static-field contract](../development/static-member-return-cleanup.md).
 
 Returns inside active try/catch/finally contexts retain their previous behavior;

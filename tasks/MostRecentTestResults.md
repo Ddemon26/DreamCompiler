@@ -2,6 +2,69 @@
 
 **Date:** November 16, 2026 UTC
 
+**Pass:** P0048 - conditional read-only static string-field return cleanup
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.
+
+- Clean approved checkout/attached branch/origin equals published P0047
+  `f06e6c84dfadfeeb93db39cd999145d126b8f16a`; exact-parent
+  [native Linux/Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43874515506)
+  passed build, Python, quick and full-suite steps. One registered worktree, no
+  competing active writer found. Schedule uses local execution/approved cwd.
+- Restricted fetch failed DNS and restricted baseline could not locate Zig's
+  installation. Approved normal network/toolchain access succeeded without cache,
+  configuration or permission changes.
+- Baseline `zig build test`: **172 discovered, 154 passed, 18 skipped, zero failures/
+  errors**, **46.94s**; `test_results/test_results_20261116_115736_windows.json`.
+- Pre-fix full regression in both ordinary/module-entry modes fails the exact
+  capture/cleanup C assertion, **0.535s**. No pre-fix runtime result is claimed:
+  the intact assertion stops execution before the checked allocator.
+- Final `go test -count=1 -v -run '^TestCompiler_ConditionalStaticReturn$' .` from
+  `codex/go`: **246 subtests pass**, **9.247s**. Each lifetime mode checks **67
+  nonnull releases** (one receiver, 66 strings), **35 output lines**, live release
+  operands/refcounts, native UBSan, Linux harness cross-linking, directly linked
+  exact output and **four original-reference owned survivors** until shutdown;
+  storage is empty afterward. Independent allocation tally is in the test.
+- Mixed static/instance/parameter/local/literal leaves, inherited/hidden owners,
+  managed/literal/empty/typed-null backing, scope/header/loop/switch paths,
+  collisions, free/static/instance readers, caller/snapshot survival and no-local
+  readers are checked. Borrowed static backing is cleared before caller cleanup.
+  The other 244 controls check body/leaf/shape barriers and async/exception exits.
+  Former eligible static fallbacks migrate to exact positive C; existing lifetime
+  assertions remain unchanged. Unsafe mutation/alias/shape sources never run.
+- Initial four-group run passes prior member/conditional-member/static groups and
+  both new lifetime modes, but fails one new module unselected-call expectation
+  (36.343s). Corrected its existing lowered free-function symbol; no compiler,
+  grammar, lifetime assertion or semantic change was needed. Native rebuild passed.
+- `zig build test`: **173 discovered, 155 passed, 18 skipped, zero failures/errors**,
+  **47.26s**; `test_results/test_results_20261116_120305_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five pass**, **0.036s**.
+- Supported Windows Go quick protocol: **all 39 groups pass**, **93.816s**,
+  conditional static **7.61s**, conditional member **6.97s**, direct member **6.62s**,
+  direct static **7.90s**. External compiler tests use `-count=1`; quick/CI selectors
+  equal the actual passing groups. Previous ownership/allocator checks pass.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **15/15 steps pass**. Cross-building/cross-linking does not prove native P0048
+  Linux runtime behavior; inspect CI after publication.
+- Documentation/encoding/BOM/index/annotation/gofmt/diff checks are recorded in
+  [P0048](passes/P0048-conditional-static-return.md). Logs: ignored `build/P0048-*.log`.
+
+The same eighteen skips and prior shape/operator/grammar limits persist. Static
+value leaves require an unshadowed class qualifier, actual scalar static field/
+owner and the unchanged whole-body read-only proof. Valid incoming backing remains
+a caller precondition. Other static qualifiers, static pointer/array emission,
+caller consumption/retained owned-result accumulation, aliases/containers/
+destructors/fields, pointer/class result transfer and async/exception unwinding
+remain separate. Next verify publication/native CI, then audit caller consumption
+of owned string results before choosing the next bounded implementation slice.
+
+---
+
+# Historical P0047 checkpoint - DreamCompiler
+
+**Date:** November 16, 2026 UTC
+
 **Pass:** P0047 - direct read-only static string-field return cleanup
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.

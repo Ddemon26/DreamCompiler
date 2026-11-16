@@ -670,9 +670,9 @@ class. The async control uses an accepted free function/static field. These test
 do not broaden grammar or qualify async runtime behavior. Unknown AST/operators
 fail closed in source; source syntax cannot construct arbitrary unknown nodes.
 P0045 extends the same proof to conditional member leaves below.
-Static/local/struct/nested/base receivers, broader field
-and class-alias ownership, caller consumption and exception/async cleanup remain
-separate. Incoming receiver and backing must already be live.
+P0047-P0048 qualify type-qualified static reads below; other static qualifiers,
+local/struct/nested/base instance receivers, broader field/class-alias ownership,
+caller consumption and exception/async cleanup remain separate. Incoming receiver and backing must already be live.
 
 ## Conditional read-only instance string-field returns (P0045)
 
@@ -688,8 +688,9 @@ inherited owning-class casts. Only owned-local value candidates receive pointer
 comparisons to preserve selected storage. Member/parameter/literal leaves retain
 their existing caller/static lifetime without result copy/retain, receiver release
 or field destruction. No-local methods keep direct returns. Unsupported leaves,
-static/local/struct/nested/base receivers and async/active exception exits keep
-previous emission; no partial cleanup is inserted.
+local/struct/nested/base instance receivers and async/active exception exits keep
+previous emission; no partial cleanup is inserted. P0048 adds type-qualified
+static leaves below.
 
 The [fixture](../../tests/basics/memory/conditional_member_return.dr) and
 `TestCompiler_ConditionalMemberReturn` in
@@ -708,8 +709,9 @@ The shared 196 emission controls also run on conditional member trees. Fourteen
 additional negative controls check effectful conditions and unselected call/concat/
 assignment/index leaves; two nested-else member controls qualify. Unsafe alias
 programs remain emission-only. The old direct group's newly eligible conditional
-control is replaced by a mixed instance/static result, which remains unsupported;
-conditional positives now have separate lifetime/C coverage. Existing allocator,
+control was replaced in P0045 by a mixed instance/static result; P0048 migrates
+that result to positive C coverage. Conditional positives have separate lifetime/C
+coverage. Existing allocator,
 reference-count, direct-return and parameter-result assertions remain intact.
 Both quick protocols and CI select the new group. Explicit class parameters,
 async instance methods and semantic receiver shadowing remain unsupported.
@@ -743,9 +745,32 @@ without artifacts. Primitive parameter and indexed class-array field receivers a
 rejected before emission; local type-name shadowing is rejected in active/exited/later/
 header scopes. No grammar or semantic boundary is broadened. Quick/CI selectors align.
 
-Conditional static leaves, struct/variable/this/base/nested/index/call qualifiers,
-static pointer/array shape emission and async/exception exits remain outside this
-slice. See [P0047](../../tasks/passes/P0047-static-member-return.md) for check results.
+P0048 extends these proven static reads to conditional value leaves, as described
+below. Struct/variable/this/base/nested/index/call static qualifiers, static pointer/
+array shape emission and async/exception exits remain outside this slice.
+See [P0047](../../tasks/passes/P0047-static-member-return.md) for check results.
+
+## Conditional read-only static string-field returns (P0048)
+
+Conditional trees may mix proven static fields, instance fields, unchanged scalar
+parameters, known-owned scalar locals and literals. Each static leaf reuses
+`borrowed_static_member_result`; the complete function body must pass the unchanged
+member read-only allowlist, including conditions and unselected branches. Capture
+the result once before reverse cleanup and preserve only selected owned storage.
+No result copy/retain, global release or field ownership is added. One unsupported
+leaf/effect preserves the complete prior return; async/active exception exits
+retain prior emission. The literal-only predicate remains unchanged.
+
+The [fixture](../../tests/basics/memory/conditional_static_return.dr) and
+[Go group](../../codex/go/conditional_static_return_test.go) check both modes with
+67 nonnull releases, 35 output lines and four original-reference owned survivors
+until shutdown; all storage is gone afterward. Exact C verifies inherited/hidden
+owners, mixed receiver leaves, free/static/instance readers, nested/alternate/
+for-header/loop/switch paths, collisions and no-local returns. Caller backing and
+independent snapshots survive; borrowed globals are cleared before backing exits.
+All write/call/alias/shape barriers and failed-leaf/async/exception controls remain.
+See the [static contract](static-member-return-cleanup.md) and
+[P0048](../../tasks/passes/P0048-conditional-static-return.md).
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

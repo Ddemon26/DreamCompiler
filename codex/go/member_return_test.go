@@ -47,6 +47,10 @@ func checkMemberReturnFallbacks(t *testing.T, conditional, static bool) {
 	if static {
 		result = `Probe.shared`
 		emitted = `returnProbe_shared;`
+		if conditional {
+			result = `stop ? (stop ? Probe.shared : owned) : source`
+			emitted = `return(stop?(stop?Probe_shared:owned):source);`
+		}
 	}
 	// Never execute these programs: aliases and writes can make their field or
 	// receiver dangling. Inspect both early/later returns before host compilation.
@@ -148,11 +152,12 @@ string owned = "owned";
 string value; static string shared; string *pointer; string values[1]; Parent next;
 func string probe(bool stop, string source) { string owned = "owned"; ` + tc.decl + `return ` + tc.result + `; } }`
 				c := memberReturnEmission(t, tr, text, modules)
-				if tc.name == "static" && !conditional {
-					// P0047 migrates this formerly unsupported direct result to
-					// positive exact-C coverage; lifetime is checked separately.
-					if !strings.Contains(c, `{constchar*__dream_return_0=Probe_shared;dr_release(owned);return__dream_return_0;}`) {
-						t.Fatalf("direct static result must clean locals:\n%s", c)
+				if tc.name == "static" || tc.name == "conditional_static" {
+					// P0047/P0048 qualify these static value leaves; keep exact-C
+					// coverage here and lifetime checks in their dedicated groups.
+					expr := strings.TrimSuffix(strings.TrimPrefix(tc.emitted, `return`), `;`)
+					if !strings.Contains(c, `{constchar*__dream_return_0=`+expr+`;dr_release(owned);return__dream_return_0;}`) {
+						t.Fatalf("qualified static leaves must clean locals:\n%s", c)
 					}
 					return
 				}
