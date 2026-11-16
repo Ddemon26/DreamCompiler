@@ -1,47 +1,47 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0042 - conditional borrowed string-result scoped cleanup**.
-- Record: [P0042](passes/P0042-conditional-borrowed-return.md).
-- Parent/fetched approved remote: `b57c2b2406f6c4621f8b30cb4b902eadc70d207d` (P0041).
-- Resolve this pass commit by its exact `Pass-ID: P0042` trailer.
+- Current pass: **P0043 - borrowed member-return lifetime audit and implementation contract**.
+- Record: [P0043](passes/P0043-member-return-audit.md).
+- Parent/fetched approved remote: `3038fdcaad863e287232971fb48ec34ae6f96acd` (P0042).
+- Resolve this pass commit by its exact `Pass-ID: P0043` trailer.
 - Delivery requires push and matching `git ls-remote`; inspect native CI next.
 
-P0042 qualifies conditional string-result trees whose value leaves are literals,
-known-owned scalar locals or borrowed scalar parameters proven unchanged by
-P0041's whole-body scan. Every possible value must qualify, including unreachable
-constant branches. Capture the selected pointer once, compare only owned-local
-candidates and release other qualified strings/classes in reverse order. Borrowed
-parameters retain their original caller backing without copy/retain/consumption.
-Selected owned results keep their original reference until shutdown. Rebound or
-unsupported leaves preserve the entire previous return; async/active exception
-exits remain separate. See the [contract](../docs/development/string-ownership.md#conditional-borrowed-string-parameter-returns-p0042).
+P0043 completes the requested source audit without changing compiler behavior.
+An unchanged receiver slot does not prove unchanged field backing: direct/aliased
+field writes and calls/constructors can install local storage. Class alias locals
+also receive releases without a retain proof, including in already-exited scopes.
+P0041's parameter proof cannot be applied transitively to member results.
 
-The regression reproduced 62 live allocations instead of five in both modes.
-Each now requires 75 nonnull releases (19 classes, 56 strings), 39 output lines,
-five selected owned results before shutdown and an empty registry afterward.
-All nested paths, two borrowed parameters, repeated/null/empty/const leaves,
-header updates, methods, collisions, owned replacement in a condition, completed
-exceptions and caller backing/snapshot survival execute. Exact C checks require
-capture before reverse cleanup and preserve unsupported/exception returns.
-Forty-eight additional cases preserve both original returns for twelve placements
-of rebinding nested on either side in both modes. P0039/P0040/P0041 unused controls
-now check qualified cleanup; their runtime and earlier harness assertions remain.
+The [implementation contract](../docs/development/member-return-cleanup.md) selects
+direct scalar string instance fields on borrowed depth-1 class parameters/explicit
+`this`, with a separate whole-body read-only proof. Reject all writes, calls/new,
+custom-type/pointer/array locals, exceptions/async, shadowing and unknown nodes.
+Resolve actual scalar/nonstatic field shape and inherited owner before reusing
+capture-before-reverse-cleanup. Preserve the entire previous return on failed proof.
+Conditional member leaves, static/struct/local/nested receivers and `base` results
+remain separate. The contract specifies positive lifetime/output/C checks and
+mutation/alias/call fallback controls for the implementation pass.
 
-Clean approved checkout/attached branch/origin matched published P0041; one
+Clean approved checkout/attached branch/origin matched published P0042; one
 registered worktree and available chats showed no competing active writer.
-Schedule already uses the approved local cwd. P0041
-[native Linux and Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43751573004)
-passed build, runner, quick and full-suite steps before work. See
-[results](MostRecentTestResults.md) for P0042's measured validation.
+Schedule already uses the approved local cwd. P0042
+[native Linux and Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43757071666)
+passed build, runner, quick and full-suite steps before this audit.
+
+Compiler tests were **not rerun** for this documentation-only pass. Reuse P0042's
+**2026-11-15 UTC** [results](MostRecentTestResults.md): 169 discovered, 151 passed,
+18 skipped, zero failures/errors; 35 quick groups, five runner tests and Linux
+cross-build 15/15 passed. Source/test/build inputs and the measured snapshot remain
+unchanged. See the pass record for documentation verification.
 
 Next invocation:
 
-1. Verify P0042 publication by trailer/remote SHA and inspect native CI. Repair
+1. Verify P0043 publication by trailer/remote SHA and inspect native CI. Repair
    failed checks before new work.
-2. Audit direct borrowed member-result cleanup: establish receiver/backing lifetime
-   and field-mutation/call barriers before selecting a safe implementation slice.
-   Preserve fallback wherever that proof is unavailable.
+2. Implement the selected read-only direct borrowed class-member result slice,
+   beginning with both-mode retained-allocation reproduction and the contract's
+   whole-body mutation/call/class-alias fallback controls.
 3. Preserve retained owned-result accumulation, aliases/containers/destructors/
    fields, async/exception unwinding, shape/operator limits and eighteen skips.
    String-index return typing, custom-type for headers and class null initializers

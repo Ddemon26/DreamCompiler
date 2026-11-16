@@ -497,10 +497,20 @@ placements nested on either side in both modes; earlier runtime and direct-retur
 assertions remain intact. See [P0042](passes/P0042-conditional-borrowed-return.md)
 and the current test snapshot for measured full/quick/cross results.
 
-Broader T011 remains open. Verify P0042 publication/native CI and repair failures
-first. Next audit direct borrowed member-result cleanup: establish receiver/backing
-lifetime and field-mutation/call barriers before selecting a safe implementation
-slice. Preserve fallback wherever that proof is unavailable.
+P0043 completes the requested direct borrowed member-result source audit and
+[implementation contract](../docs/development/member-return-cleanup.md).
+Receiver-slot immutability does not prove field backing: aliased writes/calls and
+unretained class alias cleanup require separate barriers. The first slice selects
+direct scalar instance fields on borrowed class parameters/explicit this with a
+whole-body read-only proof; every write/call/new, custom-type/pointer/array local,
+exception/async, shadowing or unknown node preserves previous emission. No compiler
+behavior changed and no compiler tests were rerun; reuse dated P0042 evidence.
+
+Broader T011 remains open. Verify P0043 publication/native CI and repair failures
+first. Next implement that member-return slice, beginning with both-mode retained-
+allocation reproduction and the documented lifetime/output/exact-C matrix and
+mutation/call/class-alias fallback controls. Keep conditional member leaves and
+static/struct/local/nested/base receivers separate.
 Keep general borrowed/member/index/call/compound result lifetime, caller
 consumption, pointer/class result transfer, aliases/containers/destructors/fields,
 async and exception unwinding separate. String-index return typing remains

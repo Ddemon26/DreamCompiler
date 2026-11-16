@@ -630,6 +630,12 @@ now require the qualified cleanup; their runtime assertions remain unchanged.
 Both quick protocols and CI select the group; existing allocator/refcount/shutdown
 assertions and the 24 direct-parameter rebinding cases remain intact.
 
+P0043's [member-return audit and implementation contract](member-return-cleanup.md)
+establishes why receiver-slot immutability cannot prove field backing or protect
+unretained class aliases. It selects a separate whole-body read-only borrowed
+class receiver proof and future regression matrix; member-return cleanup remains
+unimplemented. P0043 is documentation only and reuses dated P0042 test evidence.
+
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,
 owning arrays/pointers and automatic element destruction, string/pointer/class result transfer,
