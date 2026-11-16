@@ -1,0 +1,139 @@
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: collision
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: backing
+// Expected: hidden
+// Expected: null
+// Expected: null
+// Expected:
+// Expected:
+// Expected: literal
+// Expected: backing
+// Expected: changed
+class StaticReturnBase {
+    static string hidden = "base";
+    static string value;
+    static string __dream_return_0;
+    func init(string input) {
+        StaticReturnBase.value = input;
+        StaticReturnBase.__dream_return_0 = "collision";
+    }
+    func string readThis() {
+        string snapshot = StaticReturnBase.value;
+        const string discard = "";
+        return (StaticReturnBase.value);
+    }
+    func string loweredCollision() {
+        string __dream_return_1 = "discard";
+        return StaticReturnBase.__dream_return_0;
+    }
+}
+class StaticReturnChild : StaticReturnBase {
+    func init(string input) { base.init(input); }
+    static string hidden = "hidden";
+    static func string readHidden() { string hiddenText = "discard"; return StaticReturnChild.hidden; }
+    func string readInherited() {
+        string inheritedText = StaticReturnBase.value;
+        return StaticReturnChild.value;
+    }
+    func string nestedMember(bool stop) {
+        string first = StaticReturnBase.value;
+        string absent;
+        const string empty = "";
+        {
+            string inner = "discard";
+            if (stop) return (StaticReturnBase.value);
+            string later = "later";
+        }
+        return StaticReturnChild.value;
+    }
+    func string pathMember(int path) {
+        string outer = "outer";
+        if (path == 0) while (true) {
+            string whileText = "while";
+            return StaticReturnChild.value;
+        }
+        if (path == 1) do {
+            string doText = "do";
+            return StaticReturnChild.value;
+        } while (false);
+        if (path == 2) for (string header = "header"; true;) {
+            string body = header;
+            return StaticReturnChild.value;
+        }
+        switch (path) {
+            case 3:
+                string caseText = "case";
+                return StaticReturnChild.value;
+            default: break;
+        }
+        return StaticReturnChild.value;
+    }
+    func string collisionMember() {
+        string __dream_return_0 = "discard";
+        return StaticReturnChild.value;
+    }
+    func string noMemberLocals() { return StaticReturnChild.value; }
+    func string readOnlyOps(int *indices) {
+        string opsText = "discard";
+        int number = indices[0];
+        float fraction = 1.5;
+        char letter = 'a';
+        bool test = !false && ((~(-number) & 3) >= 0);
+        (number + 1) * (number - 1) / (number == 0 ? 1 : number);
+        while (false) { continue; }
+        for (; false;) { break; }
+        if (test || fraction > 0.0) return StaticReturnChild.value;
+        return StaticReturnChild.value;
+    }
+}
+func string readStaticFree() { string freeText = "discard"; return StaticReturnBase.value; }
+func void exerciseStatics() {
+    string backing = "backing";
+    StaticReturnChild reader = new StaticReturnChild(backing);
+    string snapshot = reader.nestedMember(true);
+    Console.WriteLine(snapshot);
+    Console.WriteLine(StaticReturnBase.value);
+    Console.WriteLine(reader.nestedMember(false));
+    Console.WriteLine(reader.readThis());
+    Console.WriteLine(reader.readInherited());
+    Console.WriteLine(reader.pathMember(0));
+    Console.WriteLine(reader.pathMember(1));
+    Console.WriteLine(reader.pathMember(2));
+    Console.WriteLine(reader.pathMember(3));
+    Console.WriteLine(reader.collisionMember());
+    Console.WriteLine(reader.loweredCollision());
+    Console.WriteLine(reader.pathMember(4));
+    int indices[1];
+    indices[0] = 2;
+    Console.WriteLine(reader.readOnlyOps(indices));
+    Console.WriteLine(reader.noMemberLocals());
+    Console.WriteLine(readStaticFree());
+    Console.WriteLine(StaticReturnChild.readHidden());
+    string absent;
+    StaticReturnBase.value = absent;
+    if (reader.nestedMember(true) == null) Console.WriteLine("null");
+    if (reader.readThis() == null) Console.WriteLine("null");
+    StaticReturnBase.value = "";
+    Console.WriteLine(reader.nestedMember(true));
+    Console.WriteLine(reader.readThis());
+    StaticReturnBase.value = "literal";
+    Console.WriteLine(reader.nestedMember(true));
+    StaticReturnBase.value = "changed";
+    backing = "replacement";
+    Console.WriteLine(snapshot);
+    Console.WriteLine(StaticReturnBase.value);
+    StaticReturnBase.value = absent;
+}
+exerciseStatics();

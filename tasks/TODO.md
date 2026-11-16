@@ -535,8 +535,21 @@ or global release. Both-mode lifetime/C/output and unsafe emission-only acceptan
 are specified. No compiler behavior changed or compiler tests were rerun; reuse
 P0045 dated 2026-11-16 UTC. Its exact-parent native Linux/Windows CI passed.
 
-Broader T011 remains open. Verify P0046 publication/native CI and repair failures
-first. Next reproduce and implement the selected direct static-field slice.
+P0047 implements the direct unshadowed class type-qualified static scalar string
+result slice under that contract. A separate predicate shares the unchanged
+read-only traversal via an explicit guarded name; capture once before reverse
+cleanup without result copy/retain, global release or fake receiver bindings.
+Both modes first reproduced retained locals and now check 40 releases, 23 output
+lines, inherited/hidden owner C emission, caller/snapshot survival and empty
+pre/post-shutdown registries. The 252-subtest group includes all write/call/alias/
+shape barriers, migrated direct-static positives and twelve artifact-free semantic
+rejections. Existing parameter/member/lifetime assertions are preserved. Full
+Windows: 154 passed, 18 skipped, zero failures/errors; 38 quick groups, five runner
+tests and Linux cross-build 15/15 passed. See [P0047](passes/P0047-static-member-return.md).
+
+Broader T011 remains open. Verify P0047 publication/native CI and repair failures
+first. Next qualify conditional static value leaves under the unchanged read-only
+proof, with mixed borrowed/owned/literal lifetime and failed-leaf controls.
 Conditional static leaves, static pointer/array declaration shape emission,
 class-parameter syntax and local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime, caller

@@ -2,6 +2,67 @@
 
 **Date:** November 16, 2026 UTC
 
+**Pass:** P0047 - direct read-only static string-field return cleanup
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.
+
+- Clean approved checkout/attached branch/origin matched published P0046
+  `3e1db012b833c7060217120533d82321d05a9df9`; exact-parent
+  [Linux/Windows native CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43821203292)
+  passed build, Python, quick and full suite. One registered worktree, no competing
+  active writer found. Schedule already uses local execution/approved cwd.
+- Restricted fetch/CI requests failed network access and restricted baseline could
+  not locate Zig's installation. Approved normal network/toolchain access succeeded
+  without changing toolchain configuration, caches or permissions.
+- Baseline `zig build test`: **171 discovered, 153 passed, 18 skipped, zero failures/
+  errors**, **48.75s**; `test_results/test_results_20261116_060710_windows.json`.
+- Before fix, `go test -count=1 -v -run '^TestCompiler_StaticMemberReturn$' .` from
+  `codex/go`: **both modes failed** the empty pre-shutdown registry assertion,
+  **2.637s** (group 2.20s). Native rebuild passed; initial both-mode lifetime check
+  then passed, **2.860s** (group 2.43s).
+- Final static group: **252 subtests passed**, **9.015s**. Each mode checks **40
+  nonnull releases** (one receiver, 39 strings), **23 output lines**, live release
+  operands/refcounts, native UBSan, Linux harness cross-linking, directly linked
+  exact output and empty pre/post-shutdown registries. Caller backing and independent
+  snapshot survive; borrowed static backing is cleared before caller storage exits.
+  Exact C checks once-only capture before reverse cleanup, inherited/hidden owners,
+  free/static/instance readers, scope/header paths, collisions and no-local returns.
+- Static controls comprise 208 shared controls (206 fallback, two migrated static
+  positives), 30 expressions (28 fallback, two existing-instance positives), twelve
+  artifact-free semantic rejections plus two lifetime modes. Earlier member groups
+  passed intermediate broader runs. Initial new expectation failures omitted existing
+  assignment parentheses or expected emission for shadow/index sources rejected by
+  current semantics; corrected exact C/diagnostic tests preserve compiler behavior.
+  No lifetime assertions or unsupported conditional controls were removed.
+- `zig build test`: **172 discovered, 154 passed, 18 skipped, zero failures/errors**,
+  **46.49s**; `test_results/test_results_20261116_061319_windows.json`.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five passed**, **0.043s**.
+- Supported Windows Go quick protocol: **all 38 groups passed**, **86.012s**,
+  including the static group's 252 subtests and all earlier ownership groups.
+  External compiler tests use `-count=1`; existing allocator/reference/shutdown
+  assertions remain intact. Both quick selectors and CI include the new group.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **passed, 15/15 steps**. Cross-building/cross-linking does not prove native P0047
+  Linux runtime behavior; inspect CI after publication.
+- Final documentation/diff checks are recorded in
+  [P0047](passes/P0047-static-member-return.md). Logs: ignored `build/P0047-*.log`.
+
+The same eighteen skips and prior shape/operator limits persist. Direct static
+results require an unshadowed class type, actual scalar static declaration/owner
+and the unchanged whole-body read-only proof. Valid incoming backing remains a
+caller precondition. Conditional static leaves, other receivers, static pointer/
+array declaration emission, caller consumption/retained owned-result accumulation,
+class-parameter syntax, aliases/containers/destructors/fields, pointer/class result
+transfer and async/exception unwinding remain separate. Next verify publication/
+native CI, then qualify conditional static value leaves under the same proof.
+
+---
+
+# Historical P0045 checkpoint - DreamCompiler
+
+**Date:** November 16, 2026 UTC
+
 **Pass:** P0045 - conditional read-only instance string-field return cleanup
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4

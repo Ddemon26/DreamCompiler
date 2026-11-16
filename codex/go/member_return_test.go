@@ -31,10 +31,10 @@ func TestCompiler_BorrowedMemberReturn(t *testing.T) {
 		"backing\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\nbacking\ncollision\nbacking\nbacking\nbacking\nnull\nnull\n\n\nliteral\nbacking\nchanged\n", true,
 		`dr_release(this);`, `dr_release(source);`,
 		`dr_retain(`, `dream_string_copy(__dream_return_`)
-	checkMemberReturnFallbacks(t, false)
+	checkMemberReturnFallbacks(t, false, false)
 }
 
-func checkMemberReturnFallbacks(t *testing.T, conditional bool) {
+func checkMemberReturnFallbacks(t *testing.T, conditional, static bool) {
 	t.Helper()
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
@@ -43,6 +43,10 @@ func checkMemberReturnFallbacks(t *testing.T, conditional bool) {
 	if conditional {
 		result = `stop ? (stop ? this.value : owned) : source`
 		emitted = `return(stop?(stop?((structProbe*)this)->value:owned):source);`
+	}
+	if static {
+		result = `Probe.shared`
+		emitted = `returnProbe_shared;`
 	}
 	// Never execute these programs: aliases and writes can make their field or
 	// receiver dangling. Inspect both early/later returns before host compilation.
@@ -92,6 +96,13 @@ func checkMemberReturnFallbacks(t *testing.T, conditional bool) {
 		{"throw", `throw owned;`},
 		{"await", `await source;`},
 	}
+	if static {
+		barriers = append(barriers, []struct{ name, statement string }{
+			{"derived_static_write", `Derived.shared = owned;`},
+			{"instance_static_write", `this.shared = owned;`},
+			{"global_local_backing", `Probe.shared = owned;`},
+		}...)
+	}
 	for _, modules := range []bool{false, true} {
 		for _, tc := range barriers {
 			for _, before := range []bool{false, true} {
@@ -108,7 +119,7 @@ func void store(string input) { this.value = input; }
 static func void storeStatic(string input) { }
 func string probe(bool stop, string source, int *indices) {
 string owned = "owned";
-` + early + statement + `return ` + result + `; } }`
+` + early + statement + `return ` + result + `; } } class Derived : Probe { }`
 					c := memberReturnEmission(t, tr, text, modules)
 					if strings.Count(c, emitted) != 2 || strings.Contains(c, "__dream_return_") {
 						t.Fatalf("barrier must preserve both original returns:\n%s", c)
@@ -137,6 +148,14 @@ string owned = "owned";
 string value; static string shared; string *pointer; string values[1]; Parent next;
 func string probe(bool stop, string source) { string owned = "owned"; ` + tc.decl + `return ` + tc.result + `; } }`
 				c := memberReturnEmission(t, tr, text, modules)
+				if tc.name == "static" && !conditional {
+					// P0047 migrates this formerly unsupported direct result to
+					// positive exact-C coverage; lifetime is checked separately.
+					if !strings.Contains(c, `{constchar*__dream_return_0=Probe_shared;dr_release(owned);return__dream_return_0;}`) {
+						t.Fatalf("direct static result must clean locals:\n%s", c)
+					}
+					return
+				}
 				if !strings.Contains(c, tc.emitted+`dr_release(`) || strings.Contains(c, "__dream_return_") {
 					t.Fatalf("unsupported result must keep direct return before cleanup, wanted %s:\n%s", tc.emitted, c)
 				}

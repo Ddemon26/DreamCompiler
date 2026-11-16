@@ -157,6 +157,16 @@ retain previous emission. Explicit class parameters and async instance methods
 are rejected by the current grammar; this pass does not add them. The caller must
 keep the receiver and field backing live. See the [member contract](../development/member-return-cleanup.md).
 
+P0047 also qualifies direct `return Type.field;` for a scalar static string field
+on an unshadowed class type, including inherited/hidden owner lookup, under the
+same whole-body read-only barriers. It captures the global pointer once before
+reverse local cleanup, with no result copy/retain or global release. Free functions
+and static/instance methods qualify; no-local readers keep direct returns. The
+caller must keep incoming backing live and clear borrowed static slots before
+releasing that backing. Conditional static leaves, other qualifiers and pointer/
+array fields remain outside this slice. See the
+[static-field contract](../development/static-member-return-cleanup.md).
+
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership
 remain unqualified. Primitive return shape checking remains a separate limitation.

@@ -715,19 +715,37 @@ Both quick protocols and CI select the new group. Explicit class parameters,
 async instance methods and semantic receiver shadowing remain unsupported.
 Selected owned-result accumulation and caller consumption remain separate.
 
-### Static string-field return audit (P0046; implementation open)
+## Direct read-only static string-field returns (P0047)
 
-The [static-field audit and acceptance contract](static-member-return-cleanup.md)
-distinguishes global pointer-slot lifetime from backing lifetime. Static field
-assignments remain raw C assignments and can install callee-local storage.
-The selected future slice requires a direct unshadowed class type qualifier,
-actual static scalar string declaration/owner and the existing whole-body
-read-only barriers. Capture once before reverse local cleanup without field/result
-copy, retain or release. Conditional static leaves, other receivers and static
-pointer/array declaration shape emission remain separate. No compiler behavior
-changed or compiler tests were rerun in P0046; P0045's measured evidence above
-remains current. The next pass must reproduce retained allocations and qualify
-both ordinary/module-entry modes before claiming static return cleanup.
+P0047 implements the [P0046 contract](static-member-return-cleanup.md) for direct
+`return Type.field;` on an unshadowed registered class type and an actual scalar
+static string declaration/owning class. A separate predicate shares the existing
+whole-body read-only traversal using an explicit guarded name. It adds no fake
+receiver binding and does not change the instance/parameter proofs or literal-only
+predicate. All writes/calls/new/console/await/exceptions, custom-type/pointer/array
+locals, shadowing and unknown nodes/operators still block the proof.
+
+Capture the owning global pointer once before reverse local cleanup. No result
+copy/retain, global/receiver release or field ownership is added. Inherited and
+hidden owner selection, collisions, free/static/instance readers and no-local
+returns preserve normal expression emission. Incoming backing must be live;
+callers must clear borrowed static slots before releasing their backing.
+
+The [fixture](../../tests/basics/memory/static_member_return.dr) and
+[Go group](../../codex/go/static_member_return_test.go) reproduced retained callee
+allocations in both modes before the fix. Each mode now requires 40 nonnull releases
+(one receiver, 39 strings), 23 output lines, live release/refcount checks, independent
+snapshot/caller backing survival and empty pre/post-shutdown registries. Exact C
+requires capture before reverse cleanup. Of 252 subtests, two are lifetime modes,
+208 shared controls include two newly eligible direct-static positives, 30 expression
+controls include two existing-instance positives, and twelve assert semantic rejection
+without artifacts. Primitive parameter and indexed class-array field receivers are
+rejected before emission; local type-name shadowing is rejected in active/exited/later/
+header scopes. No grammar or semantic boundary is broadened. Quick/CI selectors align.
+
+Conditional static leaves, struct/variable/this/base/nested/index/call qualifiers,
+static pointer/array shape emission and async/exception exits remain outside this
+slice. See [P0047](../../tasks/passes/P0047-static-member-return.md) for check results.
 
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,

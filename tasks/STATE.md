@@ -1,45 +1,49 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0046 - direct static string-field return lifetime audit**.
-- Record: [P0046](passes/P0046-static-member-return-audit.md).
-- Parent/fetched approved remote: `18242ec38b8188f4d109654746ee721ad4ced376` (P0045).
-- Resolve this pass commit by its exact `Pass-ID: P0046` trailer.
+- Current pass: **P0047 - direct read-only static string-field return cleanup**.
+- Record: [P0047](passes/P0047-static-member-return.md).
+- Parent/fetched approved remote: `3e1db012b833c7060217120533d82321d05a9df9` (P0046).
+- Resolve this pass commit by its exact `Pass-ID: P0047` trailer.
 - Delivery requires push and matching `git ls-remote`; inspect native CI next.
 
-P0046 is documentation only. The [static-field contract](../docs/development/static-member-return-cleanup.md)
-traces raw global slots, inherited owner lookup, assignment, local copies, return
-proof and runtime lifetime. A global pointer slot does not keep its pointee alive.
-Select direct unshadowed class type-qualified scalar static fields with the
-existing whole-body read-only barriers, once-only capture and reverse local
-cleanup. No result copy/retain/global release or field ownership is proposed.
-The both-mode acceptance matrix requires retained-allocation reproduction,
-exact C/output/refcounts, caller/snapshot survival and emission-only effect/
-alias/shadow/shape controls. Static pointer/array declarations have separate
-emitter shape limits. Implementation remains open; conditional static leaves
-and struct/instance/base/nested qualifiers remain excluded from the next slice.
+P0047 implements the [P0046 static-field contract](../docs/development/static-member-return-cleanup.md)
+for direct `Type.field` results on unshadowed registered class types and actual
+scalar static string declarations/owners. A separate predicate shares the unchanged
+whole-body read-only allowlist using an explicit guarded name. Capture once before
+reverse local cleanup, preserving inherited/hidden owner symbols. No result copy/
+retain, global release, fake receiver binding or field ownership is introduced.
+Conditional static leaves and other qualifier/field shapes keep prior emission.
 
-Clean approved checkout/attached branch/origin matched published P0045; one
+Both modes reproduced retained callee allocations before the fix. Each now checks
+40 nonnull releases (one receiver, 39 strings), 23 output lines, exact C, caller
+backing/snapshot survival and empty pre/post-shutdown registries. All 252 static
+group subtests pass, including effects/alias/shape/receiver barriers, migrated
+direct-static positives and twelve artifact-free semantic rejections. Local type
+shadowing and indexed class-array receivers hit existing semantic boundaries;
+no grammar/semantics changed. Earlier member/parameter/allocator assertions remain.
+
+Clean approved checkout/attached branch/origin matched published P0046; one
 registered worktree and available chats showed no competing active writer.
-Schedule already uses the approved local cwd. P0045
-[native Linux and Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43805269601)
+Schedule already uses local execution and approved cwd. P0046
+[native Linux and Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43821203292)
 passed build, runner, quick and full-suite steps for the exact parent SHA.
 
-Compiler tests were **not rerun** for this audit. Reused evidence: **P0045,
-2026-11-16 UTC**, Windows full suite 171 discovered, 153 passed, 18 skipped, zero
-failures/errors; 37 Go quick groups, five Python tests and Linux cross-build 15/15
-passed. The [measured snapshot](MostRecentTestResults.md) is unchanged.
+Windows Zig 0.17.1 full suite: **172 discovered, 154 passed, 18 skipped, zero
+failures/errors**, 46.49s. All 38 Go quick groups, five Python tests and Linux
+cross-build 15/15 passed.
+Exact results are recorded in the [measured snapshot](MostRecentTestResults.md).
+Cross-build/cross-linking alone does not prove native P0047 Linux runtime behavior.
 
 Next invocation:
 
-1. Verify P0046 publication by trailer/remote SHA and inspect native CI. Repair
+1. Verify P0047 publication by trailer/remote SHA and inspect native CI. Repair
    failed checks before new work.
-2. Reproduce and implement direct class type-qualified static scalar string-field
-   return cleanup under the [contract](../docs/development/static-member-return-cleanup.md),
-   with both-mode lifetime/C/output evidence and mutation/call/shape fallbacks.
-3. Preserve P0045 instance/conditional proof and assertions. Conditional static
-   leaves, caller consumption/retained owned-result accumulation, class-parameter
-   grammar limits, local/struct/nested/base receivers, aliases/containers/destructors/
-   fields, async/exception unwinding and shape/operator limits remain separate.
+2. Qualify conditional static string-field value leaves under the unchanged
+   read-only proof, with mixed borrowed/owned/literal lifetime and failed-leaf
+   controls. Preserve the direct/static and P0037-P0045 proofs and assertions.
+3. Keep caller consumption/retained owned-result accumulation, pointer/class result
+   transfer, static pointer/array emission, class-parameter syntax, other receivers,
+   aliases/containers/destructors/fields and async/exception unwinding separate.
    The eighteen skips, string-index return typing, custom-type for headers and
    direct class null initializer limits persist. Do not repeat P0026-P0029 maintenance.

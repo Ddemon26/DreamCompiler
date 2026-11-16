@@ -27,7 +27,7 @@ func TestCompiler_ConditionalMemberReturn(t *testing.T) {
 		"backing\nbacking\nsource\nliteral\nalternate\nright\nbacking\nnull\n\nnull\n\nliteral\nbacking\nbacking\ncollision\nunused\nbacking\nheader\nbacking\nafter\nbacking\nbacking\nbacking\nalternate\nbacking\nbacking\nchanged\n", 4,
 		`dr_release(this);`, `dr_release(source);`, `dr_retain(`,
 		`dream_string_copy(__dream_return_`)
-	checkMemberReturnFallbacks(t, true)
+	checkMemberReturnFallbacks(t, true, false)
 	checkConditionalMemberExpressions(t)
 }
 
