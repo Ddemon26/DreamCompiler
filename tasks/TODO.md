@@ -556,10 +556,24 @@ unsafe body/leaf/shape/guard controls and migrated positive static controls reta
 prior allocator/refcount assertions. See
 [P0048](passes/P0048-conditional-static-return.md) and the current measured snapshot.
 
-Broader T011 remains open. Verify P0048 publication/native CI and repair failures
-first. Next audit caller consumption and retained owned-result accumulation,
-distinguish borrowed/owned calls, reproduce the boundary with checked lifetime
-evidence and define a bounded implementation contract. Static pointer/array
+P0049 completes that caller-consumption source audit and
+[bounded adoption contract](../docs/development/owned-call-result-consumption.md).
+Eight real compiler/checked allocator probes cover ordinary/module-entry modes:
+each mode retains five owned initializer originals, zero borrowed control results,
+one mixed-return original and five results in other consumers. Generated C,
+nonnull release operands/refcounts, exact output and shutdown registries are checked.
+Compiler behavior is unchanged. Select only complete scalar string declaration
+initializers calling a proven synchronous free-function factory: exactly one
+scalar string declaration from literal/null/absent/scalar parameter plus its
+terminal direct local return. All other definitions and consumers retain current
+behavior. Require actual lowered definitions, no caller shadowing and original
+allocation identity evidence; no blanket release, retain or call-type inference.
+
+Broader T011 remains open. Verify P0049 publication/native CI and repair failures
+first. Next implement that direct proven-owned free-function initializer adoption
+with both-mode pre-fix regressions, bounded repeated-call storage and exact
+borrowed/mixed/method/shape/effect fallback controls. Preserve P0037-P0048 ownership
+assertions and explain only genuinely eligible fixture/count migrations. Static pointer/array
 shape emission, class-parameter syntax and local/struct/nested/base receivers
 remain separate.
 Keep general borrowed/member/index/call/compound result lifetime, caller

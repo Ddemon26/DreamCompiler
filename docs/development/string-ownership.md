@@ -58,6 +58,13 @@ P0037 qualifies cleanup around direct owned-local results below, preserving the
 returned allocation's existing lifetime. There is no general result consumption,
 dangling-result repair or ownership inference.
 
+P0049's [caller-consumption audit and implementation contract](owned-call-result-consumption.md)
+measures retained owned originals separately from safe borrowed call copies and
+mixed return provenance. It selects a conservative direct free-function factory
+initializer adoption slice for the next pass. Compiler behavior remains unchanged;
+no call result is adopted or consumed yet. The reproducible checked audit is
+[owned_result_audit.py](../../codex/python/owned_result_audit.py).
+
 P0022 qualifies plain `=` when the destination is an identifier bound to a known
 owned scalar declaration. The emitter records this for the copied initializer
 forms above, concatenation and read-line initializers, and declarations without

@@ -1,5 +1,47 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 17, 2026 UTC
+
+**Pass:** P0049 - owned string call-result audit and adoption contract
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.
+
+- Approved clean checkout/attached branch/origin matches P0048
+  `7f356d9ab1e2145f0f10fe31142f3db34a09072b`. Its exact-head
+  [native Linux/Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43935983779)
+  passed build, runner, Go quick and full Dream suite. One registered worktree;
+  available chats show no competing active writer. Schedule uses local approved cwd.
+- `zig build test`: **173 discovered, 155 passed, 18 skipped, zero failures/errors**,
+  **49.46s**, `test_results/test_results_20261116_180209_windows.json` (local date).
+  Compiler sources are unchanged; this is the final compiler checkpoint as well.
+- `python codex/python/owned_result_audit.py`: **eight probes pass, 9.439s**,
+  ordinary/module-entry modes. Per mode, owned initializer originals: **6 releases /
+  5 live**; borrowed initializer controls: **7 / 0**; mixed-provenance initializers:
+  **4 / 1**; other consumers: **3 / 5**. Final survivors have original reference
+  counts and shutdown empties the registry. These counts measure existing debt,
+  not adoption acceptance. Exact C/output, live release operands/refcounts, native
+  UBSan, Linux harness cross-link and normally linked output pass. Original allocation
+  identities and peak storage are not measured by this audit.
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five pass, 0.056s**.
+- Supported Windows Go quick protocol: **all 39 groups pass, 101.704s**;
+  external compiler tests use `-count=1`. Prior ownership assertions are unchanged.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **15/15 steps pass**. Cross-build/cross-link success is not native Linux audit
+  execution. Python syntax and documentation/diff checks are in
+  [P0049](passes/P0049-owned-call-result-audit.md). Logs: ignored `build/P0049-*.log`.
+
+Restricted network/Zig access initially failed; approved normal accesses succeeded
+without toolchain/cache/configuration changes. Two initial helper/validation launch
+path errors occurred before tests ran and were corrected; details are in the pass.
+The same eighteen skips and grammar/operator/shape limits persist. Caller adoption
+is not implemented. Next verify publication/CI and implement only the
+[proven free-function initializer slice](../docs/development/owned-call-result-consumption.md).
+
+---
+
+# Historical P0048 checkpoint - DreamCompiler
+
 **Date:** November 16, 2026 UTC
 
 **Pass:** P0048 - conditional read-only static string-field return cleanup
