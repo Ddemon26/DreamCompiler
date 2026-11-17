@@ -2,6 +2,69 @@
 
 **Date:** November 17, 2026 UTC
 
+**Pass:** P0050 - adopt proven owned free-function string initializers
+
+**Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.
+
+- Approved clean checkout/attached branch/origin equals published P0049
+  `f31b174eb5bad57334c915b769d3c7f63cb3ff66`. Exact-parent
+  [native Linux/Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/43993419794)
+  passed build, Python, quick and full suite. One registered worktree; available
+  chats show no competing active project writer. Schedule uses local approved cwd.
+- Baseline `zig build test`: **173 discovered, 155 passed, 18 skipped, zero
+  failures/errors**, **61.36s**, `test_results/test_results_20261116_192137_windows.json`.
+- Corrected pre-fix both-mode regression fails the exact adoption C assertions,
+  **0.702s** package time. The C gate stops before runtime. Initial new fixture
+  corrections and existing grammar/semantic limits are explained in
+  [P0050](passes/P0050-owned-call-initializer.md); no prior assertion is weakened.
+- Final focused `go test -count=1 -v -run '^TestCompiler_OwnedCallInitializer$' .`:
+  **74 subtests pass**, **6.829s** package time. Each mode checks 10,000 original
+  pointer releases/refcount one, peak live count one, zero survivors after each
+  call, a separate string-transfer probe, native UBSan, Linux harness cross-link
+  and checked/directly linked exact output. Main fixture: **16 copies/15 scoped
+  releases** ordinary, **17/16** module (one borrowed import copy). Only the exact
+  original top-level global remains at shutdown with refcount one, then none.
+- Both modes cover actual forward/imported definitions and same-spelled borrowed
+  versus owned factories, snapshots/replacement, absent/typed-null/escaped/empty/
+  const/grouped calls, scopes/headers/loops/jumps/returns/collisions. Fifty-six
+  emission-only definition controls, four consumer/primitive-positive controls
+  and twelve artifact-free unresolved/shadow/binding/null/async rejections pass.
+- Supported Windows Go quick protocol: **all 40 groups pass, 151.212s**;
+  external compiler tests use `-count=1`. The final focused rerun follows a
+  test-only imported-definition discrimination addition; compiler and all other
+  group inputs were unchanged. P0037-P0048 fixture/count/refcount assertions
+  remain unchanged and pass; no genuine prior fixture migration was required.
+- Final `zig build test`: **174 discovered, 156 passed, 18 skipped, zero failures/
+  errors**, **80.83s**, `test_results/test_results_20261116_193319_windows.json`
+  (local date in result filenames).
+- `python -m unittest discover -s codex/python -p test_test_manager.py`:
+  **five pass, 0.081s**.
+- `python codex/python/owned_result_audit.py`: **eight probes pass, 12.184s**.
+  Per mode owned initializers now **6 releases/0 live** (P0049: 6/5); borrowed
+  **7/0**, mixed **4/1** and other consumers **3/5** remain unchanged. Checked
+  release operands/refcounts, exact C/output, native UBSan and Linux cross-links
+  pass. Only eligible C/live counts supersede the measured P0049 checkpoint.
+- `zig build -Dtarget=x86_64-linux-gnu --prefix build/linux --summary all`:
+  **15/15 steps pass**. Cross-build/cross-linking does not prove native Linux
+  P0050 execution; inspect exact-commit CI after publication.
+- Final review: **243 local Markdown paths**, **18 UTF-8 pass files**, 50-pass
+  index continuity, equal quick/CI selectors matched to all 40 passing groups,
+  PowerShell BOM, gofmt, Python syntax and diff checks pass. Existing lifetime
+  fixtures/harness/assertions are unchanged. Logs: ignored `build/P0050-*.log`.
+
+The eighteen skips and previous grammar/operator/shape limits persist. This is
+only direct declaration adoption from the two-statement proven factory. Top-level
+storage keeps program lifetime. General/mixed/method results, nested owned argument
+temporaries, other consumers, aliases/containers/destructors/fields, pointer/class
+transfer and async/exception unwinding remain separate. Next verify publication/CI,
+then audit plain assignment from the same factories into already-owned scalar slots.
+
+---
+
+# Historical P0049 checkpoint - DreamCompiler
+
+**Date:** November 17, 2026 UTC
+
 **Pass:** P0049 - owned string call-result audit and adoption contract
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.

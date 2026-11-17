@@ -764,6 +764,48 @@ static int copies_string_initializer(Node *init) {
                    (init->as.bin.op == TK_EQ || init->as.bin.op == TK_PLUSEQ)));
 }
 
+/* A separate, intentionally small transfer proof. Return cleanup eligibility
+ * does not imply ownership: literals, parameters and fields may be borrowed. */
+static int adopts_string_call(CGCtx *ctx, Node *call) {
+  if (!call || call->kind != ND_CALL || !call->as.call.callee ||
+      call->as.call.callee->kind != ND_IDENT) return 0;
+  Slice name = call->as.call.callee->as.ident;
+  if (cgctx_has_var(ctx, name.start, name.len)) return 0;
+  Node *fn = cg_function(name);
+  if (!fn || fn->as.func.is_async || fn->as.func.ret_type != TK_KW_STRING ||
+      fn->as.func.param_len != call->as.call.len) return 0;
+  Node *body = fn->as.func.body;
+  if (!body || body->kind != ND_BLOCK || body->as.block.len != 2) return 0;
+  Node *local = body->as.block.items[0], *ret = body->as.block.items[1];
+  if (!local || local->kind != ND_VAR_DECL ||
+      local->as.var_decl.type != TK_KW_STRING || local->as.var_decl.is_static ||
+      local->as.var_decl.is_pointer || local->as.var_decl.array_len ||
+      !ret || ret->kind != ND_RETURN || !ret->as.ret.expr ||
+      ret->as.ret.expr->kind != ND_IDENT) return 0;
+  Slice slot = local->as.var_decl.name, result = ret->as.ret.expr->as.ident;
+  if (slot.len != result.len || memcmp(slot.start, result.start, slot.len)) return 0;
+  Node *init = local->as.var_decl.init;
+  int source_is_parameter = 0;
+  for (size_t i = 0; i < fn->as.func.param_len; i++) {
+    Node *p = fn->as.func.params[i];
+    if (!p || p->kind != ND_VAR_DECL || p->as.var_decl.is_pointer ||
+        p->as.var_decl.array_len || p->as.var_decl.is_static ||
+        !(is_primitive_scalar_result(p->as.var_decl.type) ||
+          p->as.var_decl.type == TK_KW_STRING)) return 0;
+    Slice parameter = p->as.var_decl.name;
+    // Same-spelled local/parameter cannot establish either binding's identity.
+    if (slot.len == parameter.len &&
+        !memcmp(slot.start, parameter.start, slot.len)) return 0;
+    if (init && init->kind == ND_IDENT &&
+        p->as.var_decl.type == TK_KW_STRING &&
+        init->as.ident.len == parameter.len &&
+        !memcmp(init->as.ident.start, parameter.start, parameter.len))
+      source_is_parameter = 1;
+  }
+  return !init || init->kind == ND_STRING || init->kind == ND_NULL ||
+         source_is_parameter;
+}
+
 static void emit_loop_body(CGCtx *ctx, COut *b, Node *body,
                            const char *src_file) {
   CGControlTarget target = {ctx->len, 1, ctx->control_target};
@@ -869,11 +911,12 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         c_out_write(b, " = ");
         // Literals have static storage; indexed, identifier, member and call
         // values may be borrowed, including conditional and assignment results.
-        // These expressions do not transfer ownership to the declaration.
-        // Give these scalar declarations their own allocation for block cleanup.
+        // Only a proven free-function factory transfers its original allocation.
+        // Give all other scalar declarations an independent copy for cleanup.
         int copy_string = n->as.var_decl.type == TK_KW_STRING &&
                           !n->as.var_decl.is_pointer &&
-                          copies_string_initializer(n->as.var_decl.init);
+                          copies_string_initializer(n->as.var_decl.init) &&
+                          !adopts_string_call(ctx, n->as.var_decl.init);
         if (copy_string) c_out_write(b, "dream_string_copy(");
         cg_emit_value_as(ctx, b, n->as.var_decl.type_name, n->as.var_decl.init);
         if (copy_string) c_out_write(b, ")");

@@ -1,0 +1,46 @@
+// Expected: owned
+// Expected: escaped "value"
+// Expected: empty
+// Expected: null
+// Expected: backing
+// Expected: changed
+// Expected: owned
+// Expected: 7
+// Expected: global
+// This function is also invoked independently by the identity/peak harness.
+func void identityProbe() { string identity = owned(); }
+func void bare() { string early = owned(); return; }
+func int scalar() { string earlyScalar = owned(); return 7; }
+func string transfer() { string forwarded = owned(); return forwarded; }
+func void exercise() {
+    string first = (owned()); Console.WriteLine(first);
+    const string escaped = escapedFactory(); Console.WriteLine(escaped);
+    string empty = emptyFactory();
+    Console.Write(empty); Console.WriteLine("empty");
+    string absent = absentFactory(); string explicitNull = nullFactory(absent);
+    if (absent == null && explicitNull == null) Console.WriteLine("null");
+    string backing = "backing";
+    string snapshot = clone(backing);
+    backing = "changed";
+    Console.WriteLine(snapshot); Console.WriteLine(backing);
+    { string nested = owned(); }
+    for (string zero = owned(); false; ) { Console.WriteLine("unreachable"); }
+    int i = 0;
+    for (string header = owned(); i < 4; i++) {
+        string body = owned();
+        if (i == 0) continue;
+        if (i == 2) break;
+    }
+    bare(); Console.WriteLine(first); Console.WriteLine(scalar());
+    string __dream_return_0 = owned();
+}
+// Definitions after their uses must be proved from the registered program.
+func string owned() { string result = "owned"; return result; }
+func string escapedFactory() { const string result = "escaped \"value\""; return (result); }
+func string emptyFactory() { string result = ""; return result; }
+func string absentFactory() { string result; return result; }
+func string nullFactory(string source) { string result = source; return result; }
+func string clone(string source) { const string result = source; return result; }
+func string globalFactory() { string result = "global"; return result; }
+exercise();
+const string global = globalFactory(); Console.WriteLine(global);

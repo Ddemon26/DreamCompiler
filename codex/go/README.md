@@ -283,3 +283,24 @@ tests. The two obsolete standalone library builders have been removed. Legacy
 cgo source fixtures, disabled benchmark/fuzz files and their checksums remain for
 a separate replacement-coverage audit. See the
 [testing guide](../TEST_GUIDE.md) for the complete validation procedure.
+
+### Proven owned factory initializers (P0050)
+
+`TestCompiler_OwnedCallInitializer` checks direct scalar string declaration
+adoption from a deliberately narrow actual-definition proof. Ordinary/module and
+imported forward definitions run with original-pointer/refcount checks: 10,000
+scoped declarations keep only one live result and leave none after each call.
+A separate string-return probe transfers that original to the C harness. The
+main fixture makes 16 allocations/15 scoped releases in ordinary mode, 17/16 in
+module mode (one independent imported borrowed copy); only the program-lifetime
+global remains until shutdown. Same-spelled imported borrowed and entry-owned
+factories prove selection by lowered definition. Exact linked/checked output,
+Linux harness cross-linking, emission-only unsafe fallbacks and artifact-free
+semantic rejections run through the supported quick/CI selector. See the
+[contract](../../docs/development/owned-call-result-consumption.md).
+
+The manual `python codex/python/owned_result_audit.py` probes now supersede only
+P0049's eligible owned-initializer live count (five to zero per mode). Borrowed,
+mixed and other-consumer counts remain unchanged. Prior P0037-P0048 lifetime
+fixtures/assertions are unchanged; their more complex functions fail the narrow
+factory proof. Cross-linking is distinct from native Linux execution in CI.

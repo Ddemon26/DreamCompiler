@@ -1,10 +1,10 @@
-"""Reproduce the P0049 ownership boundary; measured debt, not feature acceptance.
+"""Check the P0049 ownership probes with P0050's scoped initializer adoption.
 
 Run from the checkout with an already built compiler, with no competing writer:
     python codex/python/owned_result_audit.py
 
-This audits the current copy-every-call-result behavior. A later ownership change
-must supersede these baseline counts with its own regression acceptance criteria.
+P0049's original retention measurements remain in its pass/contract. P0050
+supersedes only owned_initializers: callers now adopt the five originals.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -23,7 +23,7 @@ func string borrowed(string source) { return source; }
 '''
 CASES = [
     {
-        "name": "owned_initializers", "releases": 6, "live": 5,
+        "name": "owned_initializers", "releases": 6, "live": 0,
         "source": COMMON + '''
 func string cloned(string source) { string result = source; return result; }
 func string emptyResult() { const string result = ""; return result; }
@@ -41,10 +41,10 @@ func void exercise() {
 exercise();
 ''',
         "output": "owned\nowned\nowned\nbacking\n\nnull\n",
-        "c": ['text=dream_string_copy(@entry@owned());',
-              'snapshot=dream_string_copy(@entry@cloned(backing));',
-              'empty=dream_string_copy(@entry@emptyResult());',
-              'absent=dream_string_copy(@entry@nullResult());'],
+        "c": ['text=@entry@owned();',
+              'snapshot=@entry@cloned(backing);',
+              'empty=@entry@emptyResult();',
+              'absent=@entry@nullResult();'],
     },
     {
         "name": "borrowed_initializers", "releases": 7, "live": 0,

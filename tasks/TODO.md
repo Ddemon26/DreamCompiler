@@ -569,14 +569,26 @@ terminal direct local return. All other definitions and consumers retain current
 behavior. Require actual lowered definitions, no caller shadowing and original
 allocation identity evidence; no blanket release, retain or call-type inference.
 
-Broader T011 remains open. Verify P0049 publication/native CI and repair failures
-first. Next implement that direct proven-owned free-function initializer adoption
-with both-mode pre-fix regressions, bounded repeated-call storage and exact
-borrowed/mixed/method/shape/effect fallback controls. Preserve P0037-P0048 ownership
-assertions and explain only genuinely eligible fixture/count migrations. Static pointer/array
-shape emission, class-parameter syntax and local/struct/nested/base receivers
-remain separate.
-Keep general borrowed/member/index/call/compound result lifetime, caller
+P0050 implements that exact factory proof and adopts the original allocation for
+complete direct scalar string declaration initializers, keeping destination ownership
+and every callee return proof intact. Actual lowered definitions, primitive scalar
+parameter shapes and caller binding guards are required. Both modes check 10,000
+original-pointer releases at peak live count one, string transfer, snapshots,
+headers/jumps/returns and program-lifetime top-level storage; all 74 focused
+subtests pass. Same-spelled imported borrowed/entry-owned factories take different
+paths. The eight audit probes now require zero owned-initializer survivors;
+borrowed/mixed/other-consumer counts remain unchanged. No prior ownership fixture,
+release count or refcount assertion changed. Full Windows: 156 passes/18 skips,
+zero failures/errors; 40 Go quick groups, five runner tests and Linux 15/15 pass.
+See [P0050](passes/P0050-owned-call-initializer.md).
+
+Broader T011 remains open. Verify P0050 publication/native CI and repair failures
+first. Next audit plain assignment into existing owned scalar slots using the
+same factory proof, including once-only evaluation, old-slot release and
+unsupported fallback. Define evidence before implementing another consumer.
+Static pointer/array shape emission, class-parameter syntax and
+local/struct/nested/base receivers remain separate.
+Keep general borrowed/member/index/call/compound result lifetime and other caller
 consumption, pointer/class result transfer, aliases/containers/destructors/fields,
 async and exception unwinding separate. String-index return typing remains
 limited; custom-type for headers and direct class null initializers remain

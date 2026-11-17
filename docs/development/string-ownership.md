@@ -779,9 +779,24 @@ All write/call/alias/shape barriers and failed-leaf/async/exception controls rem
 See the [static contract](static-member-return-cleanup.md) and
 [P0048](../../tasks/passes/P0048-conditional-static-return.md).
 
+## Direct proven-owned call initializers (P0050)
+
+A complete scalar string declaration may adopt a direct synchronous free-function
+result when its actual lowered body is exactly one scalar string local initialized
+from a literal, absent/null AST or scalar string parameter, followed by a direct
+return of that binding. All parameters have scalar primitive shapes; caller
+shadowing and unsupported definitions prevent adoption. Omit the caller copy and
+keep the destination owned, so existing cleanup releases or transfers the original
+reference. No runtime ABI, return proof or other consumer changes. See the
+[contract and measured identity/lifetime evidence](owned-call-result-consumption.md).
+Top-level declarations retain program lifetime until shutdown. Direct literal-null
+and async-result string declarations remain rejected; typed-null copies execute.
+Historical caller-copy statements above describe their original pass checkpoints;
+P0050 supersedes only actually proven factory initializers.
+
 This is not a complete string ownership system. Other initializer forms/compound
 operators, parameter/field/index destination ownership, alias retention,
-owning arrays/pointers and automatic element destruction, string/pointer/class result transfer,
+owning arrays/pointers and automatic element destruction, general string/pointer/class result transfer,
 exception cleanup, class alias/container ownership,
 compound expressions and field ownership remain unqualified. Concatenation and
 read-line initializers keep their existing managed allocation; as replacements

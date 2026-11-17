@@ -1,18 +1,19 @@
-# Owned string call results: P0049 audit and implementation contract
+# Owned string call results: P0049 audit and P0050 adoption
 
 P0037-P0048 preserve selected owned local allocations across a string return and
-clean other qualified locals. A caller still copies every direct scalar string
-call initializer. Its copy is released normally; the original owned result stays
+clean other qualified locals. At P0049 a caller copied every direct scalar string
+call initializer. Its copy was released normally; the original owned result stayed
 in the allocator registry until shutdown. The same return type can also describe
 a literal, borrowed parameter/field, or a conditional choice between borrowed and
 owned storage. Result type and allocation membership cannot establish ownership.
 
-P0049 measures this boundary and defines the first caller adoption slice below.
-It does **not** implement adoption, change the C ABI, or qualify all string calls.
+P0049 measured this boundary and defined the first caller adoption slice below.
+P0050 implements that proof in `adopts_string_call` without changing the C ABI.
+The audit tables describe the pre-adoption checkpoint; current evidence follows.
 
 ## Source audit
 
-| Path | Source evidence | Current consequence |
+| Path | Source evidence | P0049 consequence |
 | --- | --- | --- |
 | Function result model | [ast.h](../../src/parser/ast.h), `Node.as.func`; [context.h](../../src/codegen/context.h), `VarBinding` | Functions have a return type/body but no owned/borrowed result metadata. `owns_string` belongs to local bindings, not call expressions. |
 | Direct free-function lookup | [stmt.c](../../src/codegen/stmt.c), `cg_register_program`, `cg_function` | Searches definitions in the registered program by exact function name. A future proof must resolve the actual function and exclude a variable binding with the same spelling. A name or string return type alone is insufficient. |
@@ -42,7 +43,9 @@ every nonnull generated release must target a live base with reference count one
 remaining allocations must retain their original references; shutdown must empty
 the registry. It also runs the normally linked program and cross-links the checked
 program for Linux on Windows. No generated ownership statement or harness assertion
-is removed. These counts document current debt, not acceptance for adoption.
+is removed. The historical counts below document P0049 debt. P0050 supersedes
+only `owned_initializers`: it now requires six releases and zero live survivors
+in each mode, with direct caller initializers. The other three probes are unchanged.
 
 Measured on Windows, 2026-11-17 UTC, Zig 0.17.1, in **each** mode:
 
@@ -129,7 +132,7 @@ remain unchanged. Library callers without a visible proven definition continue
 to use current rules. General ownership annotations or a tagged return ABI would
 be a different project and are not prerequisites for this bounded proof.
 
-## Implementation acceptance and next pass
+## Implementation acceptance (P0049 contract)
 
 - Start with intact pre-fix regressions showing the direct-initializer extra copy
   and retained originals, in ordinary and module-entry/imported-function modes.
@@ -158,3 +161,41 @@ Caller-owned arguments and field backing must already be valid. General return
 flow, mixed-provenance calls, method ownership, other consumers, recursive results,
 pointer/class transfer, aliases/containers/destructors/fields, async and exception
 unwinding remain open. No skipped fixture, grammar or semantic shape is broadened.
+
+## P0050 implemented boundary and evidence
+
+`adopts_string_call` resolves the actual registered lowered free-function body,
+rejects caller bindings with the callee name and checks the exact two-statement
+definition above. The destination keeps `owns_string`; only the outer copy is
+omitted. Existing callee return, jump, block and qualified-return cleanup remain
+unchanged. Methods, borrowed/mixed/effectful/recursive factories, unsupported
+initializers and all other consumers preserve their previous emission.
+
+The [regression](../../codex/go/owned_call_initializer_test.go),
+[Dream fixture](../../tests/basics/memory/owned_call_initializer.dr) and
+[checked harness](../../codex/c/owned_call_initializer_harness.c) check actual
+ordinary/module-entry/imported definitions, forward definitions, literal/escaped/
+empty/const/grouped calls, absent and typed-null parameter copies, nested/header/
+loop/break/continue paths, early bare/primitive returns and an adopted local
+transferred through a string return. Caller snapshots survive backing replacement.
+Each identity probe makes exactly one copy and releases that exact original base
+with reference count one. Ten thousand repetitions have peak live count one and
+an empty registry after each call. A separately called transfer probe returns the
+original allocation without copying or releasing it; the harness releases it once.
+Top-level storage keeps program lifetime: exactly its original allocation remains
+at shutdown, then the registry is empty. This is distinct from scoped accumulation.
+
+Direct `string result = null` and string declarations from async calls are already
+rejected by semantic analysis; the defensive AST proof does not broaden them.
+Typed-null parameter snapshots execute instead. String `==` retains its existing
+pointer comparison, so empty-string output is checked through Console operations.
+Shadowing guards are defensive: source shadowing is already rejected by semantic
+or module validation. Unsafe shape/recursive/effect/exception controls are
+emission-only, never executed. Array/custom-type parameter syntax remains outside
+the grammar. No general flow, ABI, ownership annotations or argument-temp cleanup
+is introduced. Nested owned call arguments can still accumulate independently.
+
+Next audit plain assignment into an already-owned scalar destination using the
+same factory proof, including evaluation order, old-slot release and unsupported
+fallback, before implementing another consumer. See
+[P0050](../../tasks/passes/P0050-owned-call-initializer.md) for measured validation.
