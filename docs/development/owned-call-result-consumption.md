@@ -200,3 +200,8 @@ select complete assignment statements only, preserve once-only RHS evaluation be
 old-slot release, and require original-pointer evidence before adoption is implemented.
 General assignment-expression and other-consumer behavior remains unchanged. See
 [P0050](../../tasks/passes/P0050-owned-call-initializer.md) for measured validation.
+
+
+P0052 now implements the [complete-statement assignment slice](owned-call-assignment.md).
+The other-consumer audit retains four originals per mode instead of five; its three
+nonnull releases and all other consumer behavior remain unchanged.

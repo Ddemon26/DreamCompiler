@@ -1,0 +1,31 @@
+// Expected: old
+// Expected: changed
+// Expected: 2
+// Expected: global
+func string factory() { string result = "owned"; return result; }
+func string clone(string source) { const string result = source; return result; }
+func string absent() { string result; return result; }
+func string empty() { string result = ""; return result; }
+func string escaped() { const string result = "escaped \"value\""; return result; }
+func string nullFactory(string source) { string result = source; return result; }
+func string effect(int value) { string result = "effect"; return result; }
+func void identityProbe() { string identity = "old"; for (int k=0; k<10; k++) identity = factory(); }
+func string transfer() { string forwarded = "old"; forwarded = factory(); return forwarded; }
+func void exercise() {
+    string text = "old";
+    string snapshot = text;
+    text = clone(text);
+    text = clone(text = "changed");
+    Console.WriteLine(snapshot); Console.WriteLine(text);
+    text = (empty()); text = escaped(); text = absent(); text = nullFactory(text);
+    int count = 0; text = effect(count++); text = effect(count++);
+    Console.WriteLine(count);
+    if (true) text = factory();
+    int i = 0;
+    while (i < 4) { text = factory(); i++; if (i == 1) continue; if (i == 3) break; }
+    for (int j = 0; j < 0; j++) text = factory();
+    { string __dream_owned_0 = "temp collision"; __dream_owned_0 = factory(); }
+    { string __dream_string_adopt = "collision"; __dream_string_adopt = factory(); }
+}
+exercise();
+string global = "old"; global = clone("global"); Console.WriteLine(global);

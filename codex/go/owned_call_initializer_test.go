@@ -168,6 +168,7 @@ func checkOwnedCallFallbacks(t *testing.T, tr *TestRunner) {
 		} {
 			t.Run(fmt.Sprintf("fallback_%s/modules=%v", tc.name, modules), func(t *testing.T) {
 				c := memberReturnEmission(t, tr, tc.definition+` string probe = `+tc.call+`;`, modules)
+				assigned := memberReturnEmission(t, tr, tc.definition+` string probe; probe = `+tc.call+`;`, modules)
 				call := strings.ReplaceAll(tc.call, "factory(", prefix+"factory(")
 				call = strings.ReplaceAll(call, "true", "1")
 				if strings.Contains(tc.call, ".") {
@@ -175,6 +176,9 @@ func checkOwnedCallFallbacks(t *testing.T, tr *TestRunner) {
 					if strings.HasPrefix(tc.call, "item.") {
 						call = "Store_factory(((structStore*)item))"
 					}
+				}
+				if !strings.Contains(assigned, "__dream_string_assign(&probe,"+call+");") {
+					t.Fatalf("unsupported assignment changed: %s", assigned)
 				}
 				if !strings.Contains(c, "probe=dream_string_copy("+call+");") {
 					t.Fatalf("unsupported definition/consumer must keep its copy %q:\n%s", call, c)
@@ -189,7 +193,7 @@ string target = "start"; target = factory(); target += factory();
 string compound = true ? factory() : "literal";
 Console.WriteLine(factory()); factory(); view(factory());`, modules)
 			for _, want := range []string{
-				"__dream_string_assign(&target," + prefix + "factory());",
+				"(char*)" + prefix + "factory();dr_release(target);target=__dream_owned_0;",
 				"__dream_string_append(&target," + prefix + "factory());",
 				"compound=dream_string_copy((1?" + prefix + "factory():\"literal\"));",
 				"return" + prefix + "factory();", "dr_console_writeln(" + prefix + "factory());",

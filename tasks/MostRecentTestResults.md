@@ -2,6 +2,52 @@
 
 **Date:** November 17, 2026 UTC
 
+**Pass:** P0052 - adopt complete-statement owned factory assignments
+
+**Platform/toolchain:** Windows; Zig 0.17.1.
+
+- Parent P0051 native Linux/Windows [CI 44036460739](https://github.com/Ddemon26/DreamCompiler/actions/runs/44036460739)
+  passed. Clean approved checkout/attached branch/origin equals fetched parent.
+- Baseline `zig build test`: **174 discovered/156 passed/18 skipped/zero failures
+  or errors**, **48.11s**, `test_results/test_results_20261117_060416_windows.json`.
+- Pre-fix ten-probe audit: **10.564s**, both isolated assignment modes retain
+  **three originals/four nonnull releases**. Focused pre-fix test fails both
+  adoption C gates, **0.793s**; excluded context controls pass.
+- Final two focused groups: **86 subtests pass, 7.771s** (12 assignment, 74
+  initializer). Existing 28 definition controls in each mode additionally check
+  assignment fallback. Each mode executes 100,000 replacements across 10,000 calls,
+  original-pointer release order/refcount one, peak live two, empty after each call.
+  Separate return identity and main **19 copies/19 releases** pass with exact output,
+  native UBSan, Linux cross-link and normal linking. Prior initializer evidence is
+  unchanged. Only eligible assignment C expectations migrate.
+- Final ten-probe audit: **10.197s**, isolated assignment **4 releases/0 live**,
+  other consumers **3/4** (previous 3/5); owned initializers **6/0**, borrowed **7/0**,
+  mixed **4/1** unchanged, per mode. No other consumer assertion changes.
+- Final `zig build test`: **175 discovered/157 passed/18 skipped/zero failures or
+  errors**, **44.56s**, `test_results/test_results_20261117_060815_windows.json`.
+- Python runner unittest command: **five pass, 0.032s**.
+- Supported Windows Go quick protocol: **41 groups pass, 96.283s**, `-count=1`.
+- Linux cross-build: **15/15 steps pass**. Cross-building/linking does not prove
+  native Linux P0052 execution; inspect exact-commit CI after publication.
+- Documentation/path, UTF-8, selectors, 52-pass index, BOM, gofmt, Python syntax and
+  diff review pass. Checked 254 local Markdown paths and 19 UTF-8 pass files.
+  Logs: ignored `build/P0052-*.log`. See [P0052](passes/P0052-owned-call-assignment.md)
+  for environment/initial expectation/helper corrections and limits.
+
+The eighteen skips persist. General assignment expressions, remaining consumers,
+mixed/method results, nested owned arguments, aliases/containers/destructors/fields,
+pointer/class transfer and async/exception unwinding remain separate. Top-level
+storage retains program lifetime. Next verify publication/native CI, then audit
+complete discarded factory-call statements before implementing another consumer.
+
+---
+
+# Historical P0050 checkpoint
+
+# Most Recent Test Results - DreamCompiler
+
+**Date:** November 17, 2026 UTC
+
 **Pass:** P0050 - adopt proven owned free-function string initializers
 
 **Platform/toolchain:** Windows; Zig 0.17.1, re2c 3.0, Python 3.13.17, Go 1.27.4.

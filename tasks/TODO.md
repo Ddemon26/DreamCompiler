@@ -590,11 +590,18 @@ identity/order evidence. General expression contexts retain current emission.
 Compiler behavior is unchanged; P0050 dated 2026-11-17 evidence is reused without
 rerunning compiler checks. P0050 native Linux/Windows CI passed.
 
-Broader T011 remains open. Verify P0051 publication/CI and repair failures first.
-Next implement that complete-statement slice, starting with isolated pre-fix
-retention and original-allocation evidence in both modes. Preserve borrowed/mixed/
-method/shape fallback and prior checked lifetime assertions; update only eligible
-assignment expectations. Other consumers remain separate.
+P0052 implements complete-statement assignment adoption under that proof, using a
+fresh statement-local RHS temporary before current-slot release. Both-mode isolated
+retention falls from three to zero originals with unchanged four releases; repeated
+replacement checks original-pointer release order, refcount one and peak live count
+two. Existing definition fallback controls now also assert assignment fallback;
+only eligible assignment C/audit expectations migrate. See
+[P0052](passes/P0052-owned-call-assignment.md) for full measured checks.
+
+Broader T011 remains open. Verify P0052 publication/CI and repair failures first.
+Next audit discarded complete factory-call statements and define a bounded actual-
+definition/side-effect/lifetime contract before implementing another consumer.
+Other consumers and general assignment expressions remain separate.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

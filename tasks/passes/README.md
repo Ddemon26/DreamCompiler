@@ -53,6 +53,7 @@
 | [P0049](P0049-owned-call-result-audit.md) | 2026-11-17 | Reproduced owned call-result accumulation with eight checked probes; defined conservative free-function initializer adoption contract; compiler unchanged | `Pass-ID: P0049` |
 | [P0050](P0050-owned-call-initializer.md) | 2026-11-17 | Adopt direct proven free-function scalar string initializers; original allocation identity, bounded repeated-call storage, fallback and full checks pass | `Pass-ID: P0050` |
 | [P0051](P0051-owned-call-assignment-audit.md) | 2026-11-17 | Audited owned factory assignment; defined complete-statement adoption, evaluation/release order and original-pointer acceptance; compiler unchanged | `Pass-ID: P0051` |
+| [P0052](P0052-owned-call-assignment.md) | 2026-11-17 | Adopt proven owned factory results in complete assignment statements | `Pass-ID: P0052` |
 
 **Verify P0051 publication/CI, then implement complete-statement owned factory assignment under its contract in T011.**
 Verify current git history and delivery before allocating another ID.

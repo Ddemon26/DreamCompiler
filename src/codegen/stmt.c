@@ -1159,7 +1159,34 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     c_out_newline(b);
     break;
   }
-  case ND_EXPR_STMT:
+  case ND_EXPR_STMT: {
+    Node *assignment = n->as.expr_stmt.expr;
+    if (assignment->kind == ND_BINOP && assignment->as.bin.op == TK_EQ &&
+        assignment->as.bin.lhs->kind == ND_IDENT) {
+      Slice name = assignment->as.bin.lhs->as.ident;
+      const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
+      if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
+          slot->indirections == 0 && adopts_string_call(ctx, assignment->as.bin.rhs)) {
+        // A statement-local temporary avoids a new global helper namespace.
+        // Finish the RHS before reading/releasing the current destination: an
+        // argument may itself replace that destination or snapshot its backing.
+        char temporary[64];
+        size_t suffix = 0;
+        do {
+          snprintf(temporary, sizeof temporary, "__dream_owned_%zu", suffix++);
+        } while (cgctx_has_var(ctx, temporary, strlen(temporary)) ||
+                 cg_function((Slice){temporary, strlen(temporary)}));
+        c_out_write(b, "{ char *%s = (char *)", temporary);
+        cg_emit_expr(ctx, b, assignment->as.bin.rhs);
+        c_out_write(b, "; dr_release(");
+        cg_emit_expr(ctx, b, assignment->as.bin.lhs);
+        c_out_write(b, "); ");
+        cg_emit_expr(ctx, b, assignment->as.bin.lhs);
+        c_out_write(b, " = %s; }", temporary);
+        c_out_newline(b);
+        break;
+      }
+    }
     if (n->as.expr_stmt.expr->kind == ND_CONSOLE_CALL) {
       Node *call = n->as.expr_stmt.expr;
       if (call->as.console.read) {
@@ -1187,6 +1214,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_newline(b);
     }
     break;
+  }
   case ND_CONSOLE_CALL:
     if (n->as.console.read) {
       c_out_write(b, "dream_readline()");

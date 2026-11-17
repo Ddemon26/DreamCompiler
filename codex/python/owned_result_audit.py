@@ -1,10 +1,11 @@
-"""Check the P0049 ownership probes with P0050's scoped initializer adoption.
+"""Check ownership probes with P0050 initializer and P0052 assignment adoption.
 
 Run from the checkout with an already built compiler, with no competing writer:
     python codex/python/owned_result_audit.py
 
 P0049's original retention measurements remain in its pass/contract. P0050
-supersedes only owned_initializers: callers now adopt the five originals.
+supersedes owned_initializers: callers adopt the five originals. P0052 adds an
+isolated assignment probe and reduces other_consumers survivors from five to four.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -22,6 +23,9 @@ func string owned() { string result = "owned"; return result; }
 func string borrowed(string source) { return source; }
 '''
 CASES = [
+    {"name": "isolated_assignment", "releases": 4, "live": 0,
+     "source": COMMON + 'func void exercise() { string text = "old"; text = owned(); text = owned(); text = owned(); } exercise();',
+     "output": "", "c": []},
     {
         "name": "owned_initializers", "releases": 6, "live": 0,
         "source": COMMON + '''
@@ -95,7 +99,7 @@ exercise();
               'if(result!=__dream_return_0)dr_release(result);'],
     },
     {
-        "name": "other_consumers", "releases": 3, "live": 5,
+        "name": "other_consumers", "releases": 3, "live": 4,
         "source": COMMON + '''
 func void view(string source) { Console.WriteLine(source); }
 func void exercise() {
@@ -107,7 +111,7 @@ func void exercise() {
 exercise();
 ''',
         "output": "owned\nowned\nownedowned\n",
-        "c": ['__dream_string_assign(&text,@entry@owned());',
+        "c": ['(char*)@entry@owned();dr_release(text);text=__dream_owned_0;',
               '__dream_string_append(&text,@entry@owned());',
               '@entry@view(@entry@owned());'],
     },

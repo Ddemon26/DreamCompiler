@@ -1,9 +1,9 @@
 # Owned factory results assigned to existing string slots
 
 P0051 audits the next T011 consumer after [P0050 declaration adoption](owned-call-result-consumption.md).
-This is an implementation contract, not implemented assignment adoption. Compiler,
-runtime, grammar and regressions are unchanged. Source was inspected on 2026-11-17
-at parent `4e0020436ab5997989eb10108ab3f61f43f4e4a7`.
+P0051 records the pre-fix audit and contract below. P0052 implements the complete-
+statement boundary; see the implementation evidence at the end. The historical
+audit was inspected at `4e0020436ab5997989eb10108ab3f61f43f4e4a7`.
 
 ## Current path and failure mechanism
 
@@ -113,3 +113,33 @@ General assignment-expression ownership, call forwarding, method/mixed result
 flow, nested owned arguments, containers/fields/destructors, pointer/class transfer
 and async/exception unwinding remain separate work. P0051 reruns no compiler tests;
 reuse [P0050 results](../../tasks/MostRecentTestResults.md) with their date and limits.
+
+## P0052 implementation
+
+`cg_emit_stmt` now selects exactly the complete-statement boundary above and reuses
+`adopts_string_call` in the same translation unit, without widening its proof.
+Instead of adding a global helper, emit a block with a fresh `__dream_owned_N`
+temporary, checked against active bindings and registered function names. Capture
+the RHS once, release the current destination, and store the original pointer.
+This implements the conceptual helper operation while avoiding a new global helper
+name collision and leaving recursive expression emission unchanged. The destination
+keeps its existing ownership metadata and cleanup. No runtime ABI changes.
+
+Both ordinary and imported/module modes first reproduced three retained originals
+from three isolated assignments. After adoption they retain zero, with the same
+four nonnull releases. The aggregate audit changes only assignment: three releases
+and four survivors instead of five. Borrowed/mixed/initializer audits are unchanged.
+The new checked harness repeats ten replacements in each of 10,000 scoped calls:
+eleven original allocations/releases per call, in allocation order, peak live count
+two and zero survivors. A returned result is the original final pointer; its old
+slot was released. The main fixture checks 19 copies/releases, self-snapshot,
+nested replacement, once-only primitive effects, null/empty/escaped results,
+loops/jumps/unbraced paths, temporary collisions and global lifetime. Existing
+initializer controls additionally assert assignment fallback for all 28 unsupported
+definitions in both modes. Header/chained/initializer expressions and borrowed
+parameters retain previous emission. Native UBSan, Linux cross-links and directly
+linked exact output are checked; cross-linking is not Linux execution.
+
+See [P0052](../../tasks/passes/P0052-owned-call-assignment.md) for measured checks.
+General assignment expressions and the remaining consumers still require their own
+provenance and lifetime audits; no blanket result release is justified.

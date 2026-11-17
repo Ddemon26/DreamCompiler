@@ -804,3 +804,14 @@ they are copied, leaving temporary/result ownership unchanged.
 Pointer shape compatibility and general indexed expression typing remain separate
 work. P0016 qualifies direct indexed primitive console formatting, including scalar
 string characters; it does not establish semantic argument/return shapes.
+
+
+## Complete proven-owned factory assignments (P0052)
+
+Complete assignment statements to already-owned scalar string identifier slots
+reuse P0050's actual-definition factory proof. Capture the result once in a fresh
+statement-local temporary, release the current destination after RHS completion,
+and store the original pointer. Self-snapshot and nested argument replacement
+therefore finish before destination cleanup. Other assignment expression contexts,
+borrowed/mixed/method results and shape/body barriers retain previous emission.
+See the [boundary and evidence](owned-call-assignment.md).
