@@ -205,3 +205,8 @@ General assignment-expression and other-consumer behavior remains unchanged. See
 P0052 now implements the [complete-statement assignment slice](owned-call-assignment.md).
 The other-consumer audit retains four originals per mode instead of five; its three
 nonnull releases and all other consumer behavior remain unchanged.
+
+P0053 defines the [discarded complete factory-call statement contract](owned-call-discard.md).
+It selects the same unchanged factory proof and requires immediate original-result
+release after normal call completion. This is audited future work; no discard
+emission or measured lifetime expectation changes in P0053.

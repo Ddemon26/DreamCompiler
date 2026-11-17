@@ -598,9 +598,16 @@ two. Existing definition fallback controls now also assert assignment fallback;
 only eligible assignment C/audit expectations migrate. See
 [P0052](passes/P0052-owned-call-assignment.md) for full measured checks.
 
-Broader T011 remains open. Verify P0052 publication/CI and repair failures first.
-Next audit discarded complete factory-call statements and define a bounded actual-
-definition/side-effect/lifetime contract before implementing another consumer.
+P0053 completes the [discarded factory-call audit and contract](../docs/development/owned-call-discard.md).
+Select only complete direct call statements under the unchanged actual-definition
+factory proof. Evaluate once and release the original after normal completion;
+borrowed/mixed/method/shape/body barriers and other consumers retain current emission.
+No compiler behavior changed or compiler checks reran; reuse P0052 dated 2026-11-17.
+P0052 exact-commit Linux/Windows CI passed. Isolated pre-fix retention, original
+allocation identity/refcount and bounded repeated-call evidence remain required.
+
+Broader T011 remains open. Verify P0053 publication/CI and repair failures first.
+Next implement only complete discarded factory-call statements under that contract.
 Other consumers and general assignment expressions remain separate.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.

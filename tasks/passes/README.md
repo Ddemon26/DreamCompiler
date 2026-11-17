@@ -54,8 +54,9 @@
 | [P0050](P0050-owned-call-initializer.md) | 2026-11-17 | Adopt direct proven free-function scalar string initializers; original allocation identity, bounded repeated-call storage, fallback and full checks pass | `Pass-ID: P0050` |
 | [P0051](P0051-owned-call-assignment-audit.md) | 2026-11-17 | Audited owned factory assignment; defined complete-statement adoption, evaluation/release order and original-pointer acceptance; compiler unchanged | `Pass-ID: P0051` |
 | [P0052](P0052-owned-call-assignment.md) | 2026-11-17 | Adopt proven owned factory results in complete assignment statements | `Pass-ID: P0052` |
+| [P0053](P0053-owned-call-discard-audit.md) | 2026-11-17 | Define safe release contract for discarded proven factory results | `Pass-ID: P0053` |
 
-**Verify P0051 publication/CI, then implement complete-statement owned factory assignment under its contract in T011.**
+**Verify P0053 publication/CI, then implement complete-statement proven factory discard release under its contract in T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not
