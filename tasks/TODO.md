@@ -582,10 +582,19 @@ release count or refcount assertion changed. Full Windows: 156 passes/18 skips,
 zero failures/errors; 40 Go quick groups, five runner tests and Linux 15/15 pass.
 See [P0050](passes/P0050-owned-call-initializer.md).
 
-Broader T011 remains open. Verify P0050 publication/native CI and repair failures
-first. Next audit plain assignment into existing owned scalar slots using the
-same factory proof, including once-only evaluation, old-slot release and
-unsupported fallback. Define evidence before implementing another consumer.
+P0051 completes the [plain assignment source audit and contract](../docs/development/owned-call-assignment.md).
+Only complete assignment statements with identifier owned scalar destinations and
+P0050's unchanged factory proof are selected. RHS finishes once before releasing
+the current slot; nested argument replacement and self-snapshot require explicit
+identity/order evidence. General expression contexts retain current emission.
+Compiler behavior is unchanged; P0050 dated 2026-11-17 evidence is reused without
+rerunning compiler checks. P0050 native Linux/Windows CI passed.
+
+Broader T011 remains open. Verify P0051 publication/CI and repair failures first.
+Next implement that complete-statement slice, starting with isolated pre-fix
+retention and original-allocation evidence in both modes. Preserve borrowed/mixed/
+method/shape fallback and prior checked lifetime assertions; update only eligible
+assignment expectations. Other consumers remain separate.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

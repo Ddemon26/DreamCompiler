@@ -52,8 +52,9 @@
 | [P0048](P0048-conditional-static-return.md) | 2026-11-16 | Conditional proven static string-field leaves mix with borrowed/owned/literal results, preserve selected owned storage and clean other locals; both-mode lifetime and guarded fallback checks pass | `Pass-ID: P0048` |
 | [P0049](P0049-owned-call-result-audit.md) | 2026-11-17 | Reproduced owned call-result accumulation with eight checked probes; defined conservative free-function initializer adoption contract; compiler unchanged | `Pass-ID: P0049` |
 | [P0050](P0050-owned-call-initializer.md) | 2026-11-17 | Adopt direct proven free-function scalar string initializers; original allocation identity, bounded repeated-call storage, fallback and full checks pass | `Pass-ID: P0050` |
+| [P0051](P0051-owned-call-assignment-audit.md) | 2026-11-17 | Audited owned factory assignment; defined complete-statement adoption, evaluation/release order and original-pointer acceptance; compiler unchanged | `Pass-ID: P0051` |
 
-**Verify P0050 publication/native CI, then audit plain assignment from proven factories into owned scalar slots in T011.**
+**Verify P0051 publication/CI, then implement complete-statement owned factory assignment under its contract in T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

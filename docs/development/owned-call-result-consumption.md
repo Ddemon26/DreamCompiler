@@ -195,7 +195,8 @@ emission-only, never executed. Array/custom-type parameter syntax remains outsid
 the grammar. No general flow, ABI, ownership annotations or argument-temp cleanup
 is introduced. Nested owned call arguments can still accumulate independently.
 
-Next audit plain assignment into an already-owned scalar destination using the
-same factory proof, including evaluation order, old-slot release and unsupported
-fallback, before implementing another consumer. See
+P0051 completes the [plain-assignment audit and contract](owned-call-assignment.md):
+select complete assignment statements only, preserve once-only RHS evaluation before
+old-slot release, and require original-pointer evidence before adoption is implemented.
+General assignment-expression and other-consumer behavior remains unchanged. See
 [P0050](../../tasks/passes/P0050-owned-call-initializer.md) for measured validation.
