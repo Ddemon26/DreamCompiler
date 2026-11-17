@@ -1,0 +1,54 @@
+// Expected: backing
+// Expected: changed
+// Expected: 1
+func void identityProbe() { factory(); }
+func string factory() { string result = "owned"; return result; }
+func string clone(string source) { const string result = source; return result; }
+func string empty() { string result = ""; return result; }
+func string escaped() { const string result = "escaped \"value\""; return result; }
+func string absent() { string result; return result; }
+func string effect(int value) { string result = "effect"; return result; }
+func string borrow(string source) { return source; }
+func string literal() { return "literal"; }
+
+func void early(bool stop) {
+    factory();
+    if (stop) return;
+    factory();
+}
+
+func void exercise() {
+    string backing = "backing";
+    string snapshot = backing;
+    clone(backing);
+    borrow(backing);
+    literal();
+    clone(backing = "changed");
+    Console.WriteLine(snapshot);
+    Console.WriteLine(backing);
+    (empty());
+    escaped();
+    absent();
+    string missing;
+    clone(missing);
+    int count = 0;
+    effect(count++);
+    Console.WriteLine(count);
+    if (true) factory();
+    if (false) factory();
+    for (int i = 0; i < 0; i++) factory();
+    for (int i = 0; i < 4; i++) {
+        factory();
+        if (i == 0) continue;
+        if (i == 2) break;
+    }
+    switch (count) {
+        case 1: factory(); break;
+        default: break;
+    }
+    { factory(); }
+}
+
+factory();
+early(true);
+exercise();

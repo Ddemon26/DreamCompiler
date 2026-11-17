@@ -1208,6 +1208,12 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         c_out_write(b, ");");
         c_out_newline(b);
       }
+    } else if (adopts_string_call(ctx, n->as.expr_stmt.expr)) {
+      // The discarded result has no destination to own its transferred reference.
+      c_out_write(b, "dr_release((void *)");
+      cg_emit_expr(ctx, b, n->as.expr_stmt.expr);
+      c_out_write(b, ");");
+      c_out_newline(b);
     } else {
       cg_emit_expr(ctx, b, n->as.expr_stmt.expr);
       c_out_write(b, ";");

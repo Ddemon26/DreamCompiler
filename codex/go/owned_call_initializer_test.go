@@ -168,7 +168,7 @@ func checkOwnedCallFallbacks(t *testing.T, tr *TestRunner) {
 		} {
 			t.Run(fmt.Sprintf("fallback_%s/modules=%v", tc.name, modules), func(t *testing.T) {
 				c := memberReturnEmission(t, tr, tc.definition+` string probe = `+tc.call+`;`, modules)
-				assigned := memberReturnEmission(t, tr, tc.definition+` string probe; probe = `+tc.call+`;`, modules)
+				assigned := memberReturnEmission(t, tr, tc.definition+` string probe; probe = `+tc.call+`; `+tc.call+`;`, modules)
 				call := strings.ReplaceAll(tc.call, "factory(", prefix+"factory(")
 				call = strings.ReplaceAll(call, "true", "1")
 				if strings.Contains(tc.call, ".") {
@@ -179,6 +179,9 @@ func checkOwnedCallFallbacks(t *testing.T, tr *TestRunner) {
 				}
 				if !strings.Contains(assigned, "__dream_string_assign(&probe,"+call+");") {
 					t.Fatalf("unsupported assignment changed: %s", assigned)
+				}
+				if !strings.Contains(assigned, "*/"+call+";") || strings.Contains(assigned, "dr_release((void*)"+call) {
+					t.Fatalf("unsupported discard changed: %s", assigned)
 				}
 				if !strings.Contains(c, "probe=dream_string_copy("+call+");") {
 					t.Fatalf("unsupported definition/consumer must keep its copy %q:\n%s", call, c)
@@ -198,6 +201,7 @@ Console.WriteLine(factory()); factory(); view(factory());`, modules)
 				"compound=dream_string_copy((1?" + prefix + "factory():\"literal\"));",
 				"return" + prefix + "factory();", "dr_console_writeln(" + prefix + "factory());",
 				prefix + "view(" + prefix + "factory());",
+				"dr_release((void*)" + prefix + "factory());",
 			} {
 				if !strings.Contains(c, want) {
 					t.Fatalf("other consumer changed: missing %q", want)

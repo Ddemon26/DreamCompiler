@@ -1,8 +1,8 @@
 # Discarded proven-owned factory results
 
-P0053 audits the next T011 consumer at parent
-`5a6e4ac3835f031e245f9d2050cbb5e905e10e4e`. This is an implementation
-contract; compiler behavior is unchanged. It builds on the unchanged
+P0053 audited this T011 consumer at parent
+`5a6e4ac3835f031e245f9d2050cbb5e905e10e4e`. P0054 implements the
+selected boundary below. It builds on the unchanged
 [factory proof](owned-call-result-consumption.md) and
 [complete assignment implementation](owned-call-assignment.md).
 
@@ -108,7 +108,17 @@ aliases/containers/destructors/fields and pointer/class transfer remain separate
    runner and Linux cross-build checks; inspect native CI. No new exclusions or
    weakened assertions. Cross-linking alone does not prove native Linux execution.
 
-P0053 reruns no compiler tests. Reuse P0052's 2026-11-17 results with their original
-limits; its exact-commit [Linux and Windows CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44090301495)
-passed. Next implement only this complete-statement discard boundary after
-publication verification and isolated pre-fix/identity evidence.
+## Implementation and measured behavior
+
+P0054 emits `dr_release((void *)factory(arguments));` in the expression-statement
+emitter, reusing the existing factory proof. The cast adapts the const-qualified
+C return type to the allocator API. The call is emitted once, including its
+arguments. There is no caller copy, retain or scoped binding.
+
+The isolated eight-call audit changed from zero releases and eight live originals
+to eight releases and zero live originals before shutdown in each mode. The
+aggregate audit measured four releases and three survivors per mode. The checked
+native harness independently verifies 10,000 calls per mode, one live allocation
+at peak and zero after each call. Each release uses the original pointer at
+reference count one. See the [pass record](../../tasks/passes/P0054-owned-call-discard.md)
+for commands and remaining limits.

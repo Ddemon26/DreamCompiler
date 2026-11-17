@@ -4,7 +4,7 @@
 
 quick-validate:
 	cd ../.. && zig build
-	go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules|LoopsAtOptimizationLevels|LiteralEmission|LiteralFailures|MethodArguments|ConstructorArguments|ParserRecovery|PointerParameters|IndexedStrings|LiteralStrings|IdentifierStrings|MemberStrings|ForStrings|CallStrings|AssignedStrings|StringContainers|LoopExitStrings|LoopExitClasses|ConditionalStrings|AssignmentInitializers|AppendedStrings|VoidReturnStrings|VoidReturnClasses|ScalarReturnCleanup|LocalStringReturn|LiteralStringReturn|ConditionalLiteralReturn|ConditionalLocalReturn|BorrowedParameterReturn|ConditionalBorrowedReturn|BorrowedMemberReturn|ConditionalMemberReturn|StaticMemberReturn|ConditionalStaticReturn|OwnedCallInitializer|OwnedCallAssignment|IndexedConsole|Dogfood)$$' .
+	go test -count=1 -v -run 'TestCompiler_(DiagnosticExitStatus|ArenaGrowth|WarningsRemainNonfatal|Modules|LoopsAtOptimizationLevels|LiteralEmission|LiteralFailures|MethodArguments|ConstructorArguments|ParserRecovery|PointerParameters|IndexedStrings|LiteralStrings|IdentifierStrings|MemberStrings|ForStrings|CallStrings|AssignedStrings|StringContainers|LoopExitStrings|LoopExitClasses|ConditionalStrings|AssignmentInitializers|AppendedStrings|VoidReturnStrings|VoidReturnClasses|ScalarReturnCleanup|LocalStringReturn|LiteralStringReturn|ConditionalLiteralReturn|ConditionalLocalReturn|BorrowedParameterReturn|ConditionalBorrowedReturn|BorrowedMemberReturn|ConditionalMemberReturn|StaticMemberReturn|ConditionalStaticReturn|OwnedCallInitializer|OwnedCallAssignment|OwnedCallDiscard|IndexedConsole|Dogfood)$$' .
 
 help:
 	@echo "make quick-validate (default): build the compiler and run CLI stability checks"

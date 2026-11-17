@@ -815,3 +815,12 @@ and store the original pointer. Self-snapshot and nested argument replacement
 therefore finish before destination cleanup. Other assignment expression contexts,
 borrowed/mixed/method results and shape/body barriers retain previous emission.
 See the [boundary and evidence](owned-call-assignment.md).
+
+## Discarded proven-owned factory results (P0054)
+
+A complete direct call statement releases a proven factory's original result
+after its arguments and the call finish. The emitter uses the same
+actual-definition proof as scalar declaration and assignment adoption. It emits
+no caller copy, retain or scoped binding. Borrowed or unproven calls, for headers,
+compound expressions and nested owned arguments keep their existing lifetime.
+See the [boundary and measured identity evidence](owned-call-discard.md).

@@ -55,8 +55,9 @@
 | [P0051](P0051-owned-call-assignment-audit.md) | 2026-11-17 | Audited owned factory assignment; defined complete-statement adoption, evaluation/release order and original-pointer acceptance; compiler unchanged | `Pass-ID: P0051` |
 | [P0052](P0052-owned-call-assignment.md) | 2026-11-17 | Adopt proven owned factory results in complete assignment statements | `Pass-ID: P0052` |
 | [P0053](P0053-owned-call-discard-audit.md) | 2026-11-17 | Define safe release contract for discarded proven factory results | `Pass-ID: P0053` |
+| [P0054](P0054-owned-call-discard.md) | 2026-11-17 | Release original results of complete proven factory-call statements | `Pass-ID: P0054` |
 
-**Verify P0053 publication/CI, then implement complete-statement proven factory discard release under its contract in T011.**
+**Verify P0054 publication/CI, then audit direct proven factory results passed to synchronous string parameters in T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

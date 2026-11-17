@@ -206,7 +206,8 @@ P0052 now implements the [complete-statement assignment slice](owned-call-assign
 The other-consumer audit retains four originals per mode instead of five; its three
 nonnull releases and all other consumer behavior remain unchanged.
 
-P0053 defines the [discarded complete factory-call statement contract](owned-call-discard.md).
-It selects the same unchanged factory proof and requires immediate original-result
-release after normal call completion. This is audited future work; no discard
-emission or measured lifetime expectation changes in P0053.
+P0053 defined the [discarded complete factory-call statement contract](owned-call-discard.md).
+P0054 implements immediate release of the original result after normal call
+completion under the same factory proof. The aggregate audit now measures four
+nonnull releases and three retained originals per mode, from append, Console
+output and argument consumption.

@@ -1,4 +1,4 @@
-"""Check ownership probes with P0050 initializer and P0052 assignment adoption.
+"""Check ownership probes with initializer, assignment and discard consumption.
 
 Run from the checkout with an already built compiler, with no competing writer:
     python codex/python/owned_result_audit.py
@@ -6,6 +6,7 @@ Run from the checkout with an already built compiler, with no competing writer:
 P0049's original retention measurements remain in its pass/contract. P0050
 supersedes owned_initializers: callers adopt the five originals. P0052 adds an
 isolated assignment probe and reduces other_consumers survivors from five to four.
+P0054 adds isolated discard and reduces other_consumers survivors to three.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -23,6 +24,9 @@ func string owned() { string result = "owned"; return result; }
 func string borrowed(string source) { return source; }
 '''
 CASES = [
+    {"name": "isolated_discard", "releases": 8, "live": 0,
+     "source": COMMON + 'for (int i = 0; i < 8; i++) owned();',
+     "output": "", "c": ["dr_release((void*)@entry@owned());"]},
     {"name": "isolated_assignment", "releases": 4, "live": 0,
      "source": COMMON + 'func void exercise() { string text = "old"; text = owned(); text = owned(); text = owned(); } exercise();',
      "output": "", "c": []},
@@ -99,7 +103,7 @@ exercise();
               'if(result!=__dream_return_0)dr_release(result);'],
     },
     {
-        "name": "other_consumers", "releases": 3, "live": 4,
+        "name": "other_consumers", "releases": 4, "live": 3,
         "source": COMMON + '''
 func void view(string source) { Console.WriteLine(source); }
 func void exercise() {
@@ -113,7 +117,8 @@ exercise();
         "output": "owned\nowned\nownedowned\n",
         "c": ['(char*)@entry@owned();dr_release(text);text=__dream_owned_0;',
               '__dream_string_append(&text,@entry@owned());',
-              '@entry@view(@entry@owned());'],
+              '@entry@view(@entry@owned());',
+              'dr_release((void*)@entry@owned());'],
     },
 ]
 

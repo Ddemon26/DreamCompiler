@@ -606,9 +606,18 @@ No compiler behavior changed or compiler checks reran; reuse P0052 dated 2026-11
 P0052 exact-commit Linux/Windows CI passed. Isolated pre-fix retention, original
 allocation identity/refcount and bounded repeated-call evidence remain required.
 
-Broader T011 remains open. Verify P0053 publication/CI and repair failures first.
-Next implement only complete discarded factory-call statements under that contract.
-Other consumers and general assignment expressions remain separate.
+P0054 implements the complete-statement discard slice with the same proof. In each
+mode the isolated eight-call audit moves from zero releases/eight survivors to eight
+releases/zero survivors. The original-pointer harness checks 10,000 repetitions
+at peak live count one, null and argument effects, and exact checked/linked output.
+The aggregate audit now has four releases and three survivors for append, Console
+output and argument consumption. See [P0054](passes/P0054-owned-call-discard.md).
+
+Broader T011 remains open. Verify P0054 publication/CI and repair failures first.
+Next audit direct proven factory results passed to a synchronous string parameter.
+Start with the retained `view(owned())` case and trace parameter escape and argument
+evaluation before choosing a bounded release rule. Keep append, Console and general
+assignment expressions separate.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

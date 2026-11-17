@@ -2,6 +2,41 @@
 
 **Date:** November 17, 2026 UTC
 
+**Pass:** P0054 - release discarded proven factory results
+
+**Platform/toolchain:** Windows, Zig 0.17.1.
+
+- P0053 exact-parent native Linux and Windows [CI 44155266595](https://github.com/Ddemon26/DreamCompiler/actions/runs/44155266595)
+  passed.
+- Baseline `zig build test`: **175 discovered, 157 passed, 18 skipped, zero failures
+  or errors** (66.82s, `test_results_20261117_154217_windows.json`).
+- Before the fix, eight isolated discarded calls added eight live originals
+  and zero nonnull releases in each mode. The focused Go test failed the expected
+  generated-C release gates in both modes (0.643s).
+- Focused Go ownership groups: **90 subtests passed** (11.602s, `-count=1`).
+  The new group verifies 10,000 original-pointer releases per mode at reference
+  count one and peak live count one. No survivor remains after any call. Checked
+  and normally linked execution produce identical output for the scoped fixture.
+- Ownership audit: **12 probes passed** (13.901s). Per mode, isolated discard
+  reached **8 releases/0 live** and the aggregate other-consumer case **4/3**.
+  Prior assignment and initializer cases retain their measured counts.
+- Final `zig build test`: **176 discovered, 158 passed, 18 skipped, zero failures
+  or errors** (57.49s, `test_results_20261117_154619_windows.json`).
+- Python test-runner unit tests: **5 passed** (0.042s).
+- Windows Go quick protocol: **42 groups passed** (122.767s, `-count=1`).
+- Linux cross-build: **15/15 steps succeeded**. Native P0054 Linux runtime
+  verification is tracked by CI.
+
+See [P0054](passes/P0054-owned-call-discard.md) for exact commands and scope.
+Append, Console output and argument consumption still retain results in the
+aggregate case. The next audit starts with `view(owned())`.
+
+---
+
+## Historical P0052 checkpoint
+
+**Date:** November 17, 2026 UTC
+
 **Pass:** P0052 - adopt complete-statement owned factory assignments
 
 **Platform/toolchain:** Windows; Zig 0.17.1.

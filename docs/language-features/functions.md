@@ -262,16 +262,24 @@ their own managed allocation before normal block cleanup. See the bounded
 [string ownership checkpoint](../development/string-ownership.md); other string
 ownership paths and general pointer safety remain unqualified.
 
-### Scalar string call initializers
+### Scalar string call results
 
-`string text = getText()` evaluates the call once and copies its readable result
-into independent managed storage. Literal, borrowed, managed and null results
-follow this rule for free functions and static/instance/base methods, including
-const declarations and for headers. Normal declaration cleanup releases the copy.
-The caller does not take ownership of the returned pointer: a fresh managed result
-can remain registered until shutdown. Return transfer, value-return cleanup and
-dangling results remain unqualified; see the
-[ownership checkpoint](../development/string-ownership.md).
+A synchronous free function qualifies as a proven factory when its body declares
+one scalar string local from a literal, an omitted initializer, or a scalar string
+parameter, then directly returns that local. Its parameters must have primitive
+scalar types. The compiler checks the actual definition, including imported
+functions.
+
+`string text = getText();` takes ownership of a proven factory's result. A complete
+`text = getText();` statement does the same for an already-owned scalar string
+variable, releasing its previous value after the call finishes. A standalone
+`getText();` statement releases the proven factory result immediately after the
+call. The call and its arguments still run, and a null result needs no storage.
+
+Scalar string declarations initialized by other calls copy the readable result into
+independent managed storage. Borrowed calls and results used in contexts such as
+arguments, append, or Console output keep their existing lifetime rules.
+See the [string ownership checkpoint](../development/string-ownership.md).
 
 ### Single Parameters
 ```dream
