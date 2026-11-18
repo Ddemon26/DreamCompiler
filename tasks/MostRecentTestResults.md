@@ -2,6 +2,35 @@
 
 **Date:** November 18, 2026 UTC
 
+**Pass:** P0059 - release proven factory operands in string append initializers
+
+**Platform/toolchain:** Windows, Zig 0.17.1.
+
+- P0058 exact-parent native Linux and Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44310991032)
+  passed.
+- `zig build test`: **179 discovered, 161 passed, 18 skipped, zero failures
+  or errors** (55.29s). Report: `test_results_20261118_063302_windows.json`.
+- Focused append, initializer, argument, and assignment Go groups: **four
+  passed** (20.189s). The new regression checks 10,000 append initializers
+  per mode, 50,013 nonnull releases, zero allocations live before shutdown,
+  and independent destination/snapshot storage.
+- `python codex/python/owned_result_audit.py`: **26 probes passed** (31.859s).
+  The isolated initializer moved from **32 releases and eight survivors**
+  in P0058 to **40 releases and zero survivors** in both modes.
+- Python test-runner unit tests: **5 passed** (0.036s).
+- Windows Go quick protocol: **43 groups passed** (128.677s, `-count=1`).
+- Native build and Linux cross-build: **15/15** steps succeeded each. Native
+  Linux runtime validation for P0059 is tracked in CI.
+
+See the [P0059 record](passes/P0059-owned-append-initializer.md) for details and
+the remaining ownership cases.
+
+---
+
+## Historical P0058 checkpoint
+
+**Date:** November 18, 2026 UTC
+
 **Pass:** P0058 - release proven factory operands after owned string append
 
 **Platform/toolchain:** Windows, Zig 0.17.1.

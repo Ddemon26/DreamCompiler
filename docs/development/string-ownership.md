@@ -97,8 +97,9 @@ Normal replacement, block/header cleanup and break/continue apply to that copy.
 For this append operation, null on either side contributes empty text. Null plus
 null and empty plus empty produce a nonnull managed empty string. Borrowed
 sources remain readable, and fresh concatenation or unproven call results can
-remain registered until shutdown. P0058 covers
-[proven factories in complete append statements](#append-of-proven-factory-results-p0058).
+remain registered until shutdown. Proven factory operands are released in
+[complete append statements](#append-of-proven-factory-results-p0058) and
+[direct append initializers](#append-initializers-with-proven-factory-results-p0059).
 Allocation failure and size limits follow `dream_concat`. Const
 identifier updates and non-string/non-null operands receive Dream diagnostics
 before artifacts. Numeric `+=` retains its existing emission. Parameter/field/index
@@ -866,5 +867,22 @@ The checked regression exercises 10,000 repetitions in each mode, along with
 destination replacement during argument evaluation, a once-only side effect,
 null operands, borrowed self-append, and temporary name shadowing. The isolated
 eight-call audit now finds 24 nonnull releases and zero survivors in each mode.
-Factory operands in nested append expressions still need lifetime analysis. See the
-[P0058 pass record](../../tasks/passes/P0058-owned-call-append.md).
+See the [P0058 pass record](../../tasks/passes/P0058-owned-call-append.md).
+
+## Append initializers with proven factory results (P0059)
+
+In `string snapshot = (text += makeText());`, when `text` is an owned scalar
+string identifier and `makeText()` passes the factory proof, the append helper
+consumes the original factory result. It reads the current destination after
+argument evaluation, installs the joined allocation, and releases the factory
+result. The declaration copies the joined value into its own managed allocation.
+Changing the destination or releasing the snapshot leaves the other value readable.
+The same rule applies to const snapshots and declarations in a `for` initializer.
+Null still contributes empty text.
+
+Each eight-iteration audit went from 32 nonnull releases and eight live factory
+allocations to 40 releases and zero live allocations. The checked regression
+exercises 10,000 repetitions per mode, including operand effects, borrowed
+self-append, null, and zero-iteration header cleanup. An append under another
+operator, passed as an argument, or returned still uses the general expression
+path. See the [P0059 pass record](../../tasks/passes/P0059-owned-append-initializer.md).

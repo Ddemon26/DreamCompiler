@@ -194,12 +194,14 @@ func void view(string source) { }
 func string forward() { return factory(); }
 string target = "start"; target = factory(); target += factory();
 string appended = (target += factory());
+string nestedAppend = true ? (target += factory()) : "literal";
 string compound = true ? factory() : "literal";
 Console.WriteLine(factory()); factory(); view(factory());`, modules)
 			for _, want := range []string{
 				"(char*)" + prefix + "factory();dr_release(target);target=__dream_owned_0;",
 				"{constchar*dreamOwnedArgument0=" + prefix + "factory();__dream_string_append(&target,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}",
-				"appended=dream_string_copy(__dream_string_append(&target," + prefix + "factory()));",
+				"appended=dream_string_copy(__dream_string_append_owned(&target," + prefix + "factory()));",
+				"nestedAppend=dream_string_copy((1?__dream_string_append(&target," + prefix + "factory()):\"literal\"));",
 				"compound=dream_string_copy((1?" + prefix + "factory():\"literal\"));",
 				"return" + prefix + "factory();",
 				ownedArgumentBlock(prefix+"factory()", "dr_console_writeln", "dreamOwnedArgument0"),

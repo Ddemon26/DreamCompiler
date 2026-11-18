@@ -169,7 +169,10 @@ sequences, self/nested updates, null as empty text, once-only call/index effects
 borrowed/member/managed sources, loop headers, methods and top-level snapshots.
 Ten positioned, artifact-free cases reject const updates and int/float/bool/char
 operands. Before P0033, both modes failed harness C compilation on pointer `+=`.
-Both quick protocols and CI select it; temporary/result ownership is unchanged.
+Both quick protocols and CI select it. P0058 covers complete statements with proven
+factory operands. P0059 covers direct scalar string initializers with the same
+operands, checking 50,013 nonnull releases, zero live allocations before shutdown,
+and independently readable destination and snapshot in each mode.
 
 `TestCompiler_ScalarReturnCleanup` checks synchronous primitive scalar returns
 in both modes: 47 nonnull releases (21 classes, 26 strings), 23 output lines,

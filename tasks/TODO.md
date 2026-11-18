@@ -641,10 +641,16 @@ isolated audit goes from 16 releases and eight survivors to 24 releases and
 zero survivors. The aggregate reaches seven releases and zero survivors. See
 [P0058](passes/P0058-owned-call-append.md).
 
-Broader T011 remains open. Verify P0058 publication and native CI, then isolate
-`string snapshot = (text += owned());` in both modes. Measure the operand
-original and prove the joined destination and copied snapshot stay independent
-before selecting a release rule for that initializer context.
+P0059 releases a proven factory operand when the append directly initializes
+an owned scalar string declaration. The destination keeps the joined storage
+and the initializer takes an independent copy. The isolated eight-iteration audit
+goes from 32 releases and eight survivors to 40 releases and zero survivors in
+each mode. See [P0059](passes/P0059-owned-append-initializer.md).
+
+Broader T011 remains open. Verify P0059 publication and native CI, then isolate
+`Console.WriteLine(text += owned());` in both modes. Measure the original
+factory allocation and confirm the installed destination survives printing
+before selecting a release rule for that consumer.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

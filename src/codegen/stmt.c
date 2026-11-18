@@ -806,6 +806,18 @@ static int adopts_string_call(CGCtx *ctx, Node *call) {
          source_is_parameter;
 }
 
+static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr) {
+  if (expr->kind != ND_BINOP || expr->as.bin.op != TK_PLUSEQ ||
+      expr->as.bin.lhs->kind != ND_IDENT) return NULL;
+  Node *lhs = expr->as.bin.lhs;
+  Slice name = lhs->as.ident;
+  const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
+  if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
+      slot->indirections == 0 && adopts_string_call(ctx, expr->as.bin.rhs))
+    return lhs;
+  return NULL;
+}
+
 static Node *owned_console_wrapper_argument(CGCtx *ctx, Node *call) {
   if (call->kind != ND_CALL || call->as.call.len != 1 ||
       !call->as.call.callee || call->as.call.callee->kind != ND_IDENT) return NULL;
@@ -962,8 +974,18 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
                           !n->as.var_decl.is_pointer &&
                           copies_string_initializer(n->as.var_decl.init) &&
                           !adopts_string_call(ctx, n->as.var_decl.init);
+        Node *init = n->as.var_decl.init;
+        Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init) : NULL;
         if (copy_string) c_out_write(b, "dream_string_copy(");
-        cg_emit_value_as(ctx, b, n->as.var_decl.type_name, n->as.var_decl.init);
+        if (append_slot) {
+          c_out_write(b, "__dream_string_append_owned(&");
+          cg_emit_expr(ctx, b, append_slot);
+          c_out_write(b, ", ");
+          cg_emit_expr(ctx, b, init->as.bin.rhs);
+          c_out_write(b, ")");
+        } else {
+          cg_emit_value_as(ctx, b, n->as.var_decl.type_name, init);
+        }
         if (copy_string) c_out_write(b, ")");
       } else if (n->as.var_decl.type == TK_KW_STRING &&
                  !n->as.var_decl.is_pointer) {
@@ -1206,18 +1228,8 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   }
   case ND_EXPR_STMT: {
     Node *expr = n->as.expr_stmt.expr;
-    Node *append_slot = NULL;
-    Node *owned_arg = NULL;
-    if (expr->kind == ND_BINOP && expr->as.bin.op == TK_PLUSEQ &&
-        expr->as.bin.lhs->kind == ND_IDENT) {
-      Slice name = expr->as.bin.lhs->as.ident;
-      const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
-      if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
-          slot->indirections == 0 && adopts_string_call(ctx, expr->as.bin.rhs)) {
-        append_slot = expr->as.bin.lhs;
-        owned_arg = expr->as.bin.rhs;
-      }
-    }
+    Node *append_slot = owned_factory_append_slot(ctx, expr);
+    Node *owned_arg = append_slot ? expr->as.bin.rhs : NULL;
     if (expr->kind == ND_BINOP && expr->as.bin.op == TK_EQ &&
         expr->as.bin.lhs->kind == ND_IDENT) {
       Slice name = expr->as.bin.lhs->as.ident;

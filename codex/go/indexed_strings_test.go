@@ -326,6 +326,19 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "A+B\nnewnew\n1\n[]\nB\nB BB B\nBB B\n", true)
 	})
 
+	t.Run("owned_factory_initializer", func(t *testing.T) {
+		checkStorageOwnership(t, "owned_call_append_initializer.dr", 50013, []string{
+			`char*joined=__dream_string_append(slot,text);dr_release((void*)text);returnjoined;`,
+			`snapshot=dream_string_copy(__dream_string_append_owned(&text,@entry@factory()));`,
+			`__dream_string_append(&text,"!");`, `dr_release(snapshot);}`,
+			`postAssignment=dream_string_copy(__dream_string_append_owned(&changed,@entry@clone(__dream_string_assign(&changed,"new"),(count++))));`,
+			`emptyCopy=dream_string_copy(__dream_string_append_owned(&empty,@entry@absent()));`,
+			`borrowedCopy=dream_string_copy(__dream_string_append(&alias,@entry@borrowed(alias)));`,
+			`header=dream_string_copy(__dream_string_append_owned(&alias,@entry@factory()));`,
+			`}dr_release(header);}`,
+		}, "AB\nAB!\nnewnew\n1\n[]\nsamesame\nsamesameB\n", true)
+	})
+
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
 	for _, modules := range []bool{false, true} {

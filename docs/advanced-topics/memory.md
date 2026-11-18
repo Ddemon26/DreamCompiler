@@ -21,7 +21,9 @@ cleanup remain intact. This does not establish parameter, field, owning-containe
 or array-element ownership. Qualified mutable owned scalar identifiers also support
 `+=` with a string/null operand: evaluate once, concatenate before releasing the old
 value, and yield the new pointer. Null contributes empty text. Declaration results
-are copied independently; fresh managed operands can remain until shutdown. Const
+are copied independently. A complete append statement or an append that directly
+initializes a scalar string releases its operand when the operand is an eligible
+factory call. Other fresh managed operands can remain until shutdown. Const
 updates and non-string operands are rejected. See the checkpoint for remaining
 destination, expression and allocation limits.
 Break/continue release qualified owned scalar strings and class locals in the scopes they leave.
