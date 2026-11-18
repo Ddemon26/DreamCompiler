@@ -203,8 +203,9 @@ operand. It evaluates the operand once, concatenates before releasing the old
 storage, and yields the new string. Null contributes empty text; a declaration
 initialized by the result receives an independent copy. Const updates and numeric,
 bool or char operands are rejected. Numeric `+=` keeps its existing behavior.
-An append that directly initializes a scalar string also releases the operand
-when it comes from a [proven factory](../development/string-ownership.md#append-initializers-with-proven-factory-results-p0059).
+An append also releases a proven factory operand when it directly initializes
+a scalar string or supplies the sole argument to a supported Console wrapper.
+See the [append ownership rules](../development/string-ownership.md#append-arguments-to-console-wrappers-p0061).
 Borrowed parameter/field/index destinations and conditional operands remain
 unqualified; see the [string ownership contract](../development/string-ownership.md).
 

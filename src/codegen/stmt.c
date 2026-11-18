@@ -807,7 +807,7 @@ static int adopts_string_call(CGCtx *ctx, Node *call) {
 }
 
 static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr) {
-  if (expr->kind != ND_BINOP || expr->as.bin.op != TK_PLUSEQ ||
+  if (!expr || expr->kind != ND_BINOP || expr->as.bin.op != TK_PLUSEQ ||
       expr->as.bin.lhs->kind != ND_IDENT) return NULL;
   Node *lhs = expr->as.bin.lhs;
   Slice name = lhs->as.ident;
@@ -826,7 +826,7 @@ static void emit_owned_factory_append(CGCtx *ctx, COut *b, Node *slot, Node *ope
   c_out_write(b, ")");
 }
 
-static Node *owned_console_wrapper_argument(CGCtx *ctx, Node *call) {
+static Node *console_wrapper_argument(CGCtx *ctx, Node *call) {
   if (call->kind != ND_CALL || call->as.call.len != 1 ||
       !call->as.call.callee || call->as.call.callee->kind != ND_IDENT) return NULL;
   Slice name = call->as.call.callee->as.ident;
@@ -852,8 +852,7 @@ static Node *owned_console_wrapper_argument(CGCtx *ctx, Node *call) {
   Slice slot = param->as.var_decl.name;
   if (!arg || arg->kind != ND_IDENT || arg->as.ident.len != slot.len ||
       memcmp(arg->as.ident.start, slot.start, slot.len)) return NULL;
-  arg = call->as.call.args[0];
-  return adopts_string_call(ctx, arg) ? arg : NULL;
+  return call->as.call.args[0];
 }
 
 static int owned_argument_name_in_use(CGCtx *ctx, Slice name) {
@@ -1267,7 +1266,19 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       if (adopts_string_call(ctx, expr->as.console.arg))
         owned_arg = expr->as.console.arg;
     } else if (!append_slot) {
-      owned_arg = owned_console_wrapper_argument(ctx, expr);
+      Node *arg = console_wrapper_argument(ctx, expr);
+      Node *wrapped_append_slot = owned_factory_append_slot(ctx, arg);
+      if (wrapped_append_slot) {
+        // Pass the destination-owned join after consuming the factory operand.
+        cg_emit_expr(ctx, b, expr->as.call.callee);
+        c_out_write(b, "(");
+        emit_owned_factory_append(ctx, b, wrapped_append_slot, arg->as.bin.rhs);
+        c_out_write(b, ");");
+        c_out_newline(b);
+        break;
+      }
+      if (adopts_string_call(ctx, arg))
+        owned_arg = arg;
     }
     if (owned_arg) {
       // C puts a declaration's name in scope inside its own initializer.

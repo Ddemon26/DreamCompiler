@@ -653,10 +653,17 @@ keeps the installed join. In each mode the eight-iteration audit goes from
 16 releases and eight survivors to 24 releases and zero survivors. See
 [P0060](passes/P0060-owned-append-console.md).
 
-Broader T011 remains open. Verify P0060 publication and native CI, then isolate
-`view(text += owned());` in both modes with a one-parameter user function that
-prints its argument. Measure the original factory allocation and confirm the
-joined destination survives the call before selecting a release rule.
+P0061 releases a proven factory operand when the append directly supplies the
+sole argument to a synchronous void wrapper that only prints its one scalar
+string parameter. The join remains destination-owned. The eight-call audit
+moves from 16 releases and eight survivors to 24 releases and zero survivors in
+each mode. The two-statement wrapper control retains one original factory
+operand. See [P0061](passes/P0061-owned-append-wrapper.md).
+
+Broader T011 remains open. Verify P0061 publication and native CI, then isolate
+`return (text += owned());` from a synchronous string function with an owned
+local in both modes. Measure the factory operand and verify that a caller can
+read the join before choosing a release rule.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

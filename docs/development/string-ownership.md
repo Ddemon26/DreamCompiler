@@ -100,7 +100,8 @@ sources remain readable, and fresh concatenation or unproven call results can
 remain registered until shutdown. Proven factory operands are released in
 [complete append statements](#append-of-proven-factory-results-p0058),
 [direct append initializers](#append-initializers-with-proven-factory-results-p0059),
-and [direct Console output of append results](#console-output-of-append-results-p0060).
+[direct Console output of append results](#console-output-of-append-results-p0060),
+and [arguments to Console wrappers](#append-arguments-to-console-wrappers-p0061).
 Allocation failure and size limits follow `dream_concat`. Const
 identifier updates and non-string/non-null operands receive Dream diagnostics
 before artifacts. Numeric `+=` retains its existing emission. Parameter/field/index
@@ -900,6 +901,22 @@ the ordinary append path.
 The eight-iteration audit measures 24 nonnull releases and zero survivors in
 each mode, up from 16 releases and eight survivors. The stress regression also
 checks both writers, an argument that replaces the destination and increments a
-counter once, null, and borrowed self-append. Appends nested under another
-operator, passed to user functions, or returned remain on general expression
-emission. See the [P0060 pass record](../../tasks/passes/P0060-owned-append-console.md).
+counter once, null, and borrowed self-append.
+See the [P0060 pass record](../../tasks/passes/P0060-owned-append-console.md).
+
+## Append arguments to Console wrappers (P0061)
+
+In a complete `view(text += makeText());` statement, `view` must be a synchronous
+free function with a void return, one scalar string parameter, and a body that
+only prints that parameter through `Console.Write` or `Console.WriteLine`.
+When the destination owns its string and the operand passes the factory proof,
+the append helper reads the destination after argument evaluation, installs
+the join, and releases the factory operand. The wrapper reads the join and the
+destination keeps it for later reads and updates.
+
+Eight isolated calls per mode moved from 16 releases and eight live
+allocations to 24 releases and zero live allocations. The two-statement
+wrapper control follows general expression emission and retains its original
+factory allocation until shutdown. General calls, nested expressions, and
+returned appends remain open.
+See the [P0061 pass record](../../tasks/passes/P0061-owned-append-wrapper.md).

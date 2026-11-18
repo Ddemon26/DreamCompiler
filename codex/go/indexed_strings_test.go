@@ -324,6 +324,15 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "newnew\nnewnew!\n1\n[]\nsamesame\n", true)
 	})
 
+	t.Run("owned_factory_wrapper", func(t *testing.T) {
+		checkStorageOwnership(t, "owned_call_append_wrapper.dr", 20008, []string{
+			`@entry@showText(__dream_string_append_owned(&text,@entry@empty()));`,
+			`@entry@view(__dream_string_append_owned(&changed,@entry@clone(__dream_string_assign(&changed,"new"),(count++))));`,
+			`@entry@showText(__dream_string_append_owned(&nullable,@entry@absent()));`,
+			`@entry@view(__dream_string_append(&alias,@entry@borrowed(alias)));`,
+		}, "newnew\nnewnew!\n1\n[]\nsamesame\n", true)
+	})
+
 	t.Run("owned_factory_operand", func(t *testing.T) {
 		checkStorageOwnership(t, "owned_call_append.dr", 30012, []string{
 			`{constchar*dreamOwnedArgument0=@entry@factory();__dream_string_append(&text,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,

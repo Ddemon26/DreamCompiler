@@ -14,6 +14,7 @@ the remaining other_consumers survivor.
 P0058 releases eligible append operands and leaves the aggregate with zero survivors.
 P0059 isolates an append that initializes an independent string snapshot.
 P0060 isolates an append that passes its joined value directly to Console output.
+P0061 isolates an append that passes its joined value to a Console wrapper.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -40,6 +41,41 @@ def argument_release(consumer, leading_args=""):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "append_wrapper",
+        "releases": 24, "live": 0,
+        "source": COMMON + '''
+func void view(string source) { Console.WriteLine(source); }
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "start";
+        view(text += owned());
+        Console.WriteLine(text);
+    }
+}
+exercise();
+''',
+        "output": "startowned\nstartowned\n" * 8,
+        "c": ["@entry@view(__dream_string_append_owned(&text,@entry@owned()));"],
+    },
+    {
+        "name": "append_unqualified_wrapper",
+        "releases": 2, "live": 1,
+        "source": COMMON + '''
+func void view(string source) {
+    Console.Write(source);
+    Console.WriteLine(source);
+}
+func void exercise() {
+    string text = "start";
+    view(text += owned());
+    Console.WriteLine(text);
+}
+exercise();
+''',
+        "output": "startownedstartowned\nstartowned\n",
+        "c": ["@entry@view(__dream_string_append(&text,@entry@owned()));"],
+    },
     {
         "name": "append_console",
         "releases": 24, "live": 0,

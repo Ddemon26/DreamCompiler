@@ -2,6 +2,36 @@
 
 **Date:** November 18, 2026 UTC
 
+**Pass:** P0061 - release proven factory operands in appends passed to Console wrappers
+
+**Platform/toolchain:** Windows, Zig 0.17.1.
+
+- P0060 exact-parent native Linux and Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44323725290)
+  passed.
+- `zig build test`: **181 discovered, 163 passed, 18 skipped, zero failures
+  or errors** (51.75s). Report: `test_results_20261118_120053_windows.json`.
+- Focused append, initializer, argument, and assignment Go groups: **four
+  passed** (23.043s). The new regression checks 10,000 wrapper appends per mode,
+  20,008 nonnull releases, zero allocations live before shutdown, and
+  successful destination reuse after the wrapper returns.
+- `python codex/python/owned_result_audit.py`: **32 probes passed** (34.977s).
+  The isolated wrapper append moved from **16 releases and eight survivors**
+  in P0060 to **24 releases and zero survivors** in each mode. The
+  two-statement wrapper control retained one original in each mode.
+- Python test-runner unit tests: **5 passed** (0.053s).
+- Windows Go quick protocol: **43 groups passed** (116.625s, `-count=1`).
+- Native build and Linux cross-build: **15/15** steps succeeded each. Native
+  Linux runtime validation for P0061 is tracked in CI.
+
+See the [P0061 record](passes/P0061-owned-append-wrapper.md) for details and
+the remaining ownership cases.
+
+---
+
+## Historical P0060 checkpoint
+
+**Date:** November 18, 2026 UTC
+
 **Pass:** P0060 - release proven factory operands in printed string appends
 
 **Platform/toolchain:** Windows, Zig 0.17.1.

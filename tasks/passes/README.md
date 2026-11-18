@@ -62,8 +62,9 @@
 | [P0058](P0058-owned-call-append.md) | 2026-11-18 | Release proven factory operands after complete owned string append statements | `Pass-ID: P0058` |
 | [P0059](P0059-owned-append-initializer.md) | 2026-11-18 | Release proven factory operands in direct string append initializers | `Pass-ID: P0059` |
 | [P0060](P0060-owned-append-console.md) | 2026-11-18 | Release proven factory operands in string appends printed directly by Console | `Pass-ID: P0060` |
+| [P0061](P0061-owned-append-wrapper.md) | 2026-11-18 | Release proven factory operands in string appends passed to Console wrappers | `Pass-ID: P0061` |
 
-**Verify P0060 publication and available CI, then isolate a proven factory operand in an append passed to a one-parameter Console wrapper.**
+**Verify P0061 publication and available CI, then isolate a proven factory operand in an append returned from a synchronous string function.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not
