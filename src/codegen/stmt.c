@@ -1206,6 +1206,18 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   }
   case ND_EXPR_STMT: {
     Node *expr = n->as.expr_stmt.expr;
+    Node *append_slot = NULL;
+    Node *owned_arg = NULL;
+    if (expr->kind == ND_BINOP && expr->as.bin.op == TK_PLUSEQ &&
+        expr->as.bin.lhs->kind == ND_IDENT) {
+      Slice name = expr->as.bin.lhs->as.ident;
+      const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
+      if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
+          slot->indirections == 0 && adopts_string_call(ctx, expr->as.bin.rhs)) {
+        append_slot = expr->as.bin.lhs;
+        owned_arg = expr->as.bin.rhs;
+      }
+    }
     if (expr->kind == ND_BINOP && expr->as.bin.op == TK_EQ &&
         expr->as.bin.lhs->kind == ND_IDENT) {
       Slice name = expr->as.bin.lhs->as.ident;
@@ -1233,13 +1245,12 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       }
     }
     const char *console_writer = NULL;
-    Node *owned_arg = NULL;
     if (expr->kind == ND_CONSOLE_CALL && !expr->as.console.read) {
       console_writer = expr->as.console.newline ? "dr_console_writeln" : "dr_console_write";
       // The runtime prints synchronously and does not store the pointer.
       if (adopts_string_call(ctx, expr->as.console.arg))
         owned_arg = expr->as.console.arg;
-    } else {
+    } else if (!append_slot) {
       owned_arg = owned_console_wrapper_argument(ctx, expr);
     }
     if (owned_arg) {
@@ -1255,9 +1266,19 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_write(b, "; ");
       if (console_writer)
         c_out_write(b, "%s", console_writer);
+      else if (append_slot)
+        c_out_write(b, "__dream_string_append");
       else
         cg_emit_expr(ctx, b, expr->as.call.callee);
-      c_out_write(b, "(%s); dr_release((void *)%s); }", temporary, temporary);
+      c_out_write(b, "(");
+      if (append_slot) {
+        // The helper reads the post-RHS slot, copies both operands, and
+        // installs the new allocation before the RHS reference is released.
+        c_out_write(b, "&");
+        cg_emit_expr(ctx, b, append_slot);
+        c_out_write(b, ", ");
+      }
+      c_out_write(b, "%s); dr_release((void *)%s); }", temporary, temporary);
       c_out_newline(b);
     } else if (expr->kind == ND_CONSOLE_CALL) {
       if (expr->as.console.read) {

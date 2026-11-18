@@ -94,12 +94,12 @@ initial `"A"` produces `"ABAB"`. A declaration initialized by `+=` copies the
 complete result once, so its storage survives later source replacement or append.
 Normal replacement, block/header cleanup and break/continue apply to that copy.
 
-For this append operation, null on either side contributes empty text; null plus
-null and empty plus empty produce a nonnull managed empty string. This does not
-change null handling for ordinary `+` or `=`. Operand ownership is unchanged:
-borrowed sources remain readable, and fresh concatenation/call results can remain
-registered until shutdown. Allocation failure/size limits follow the existing
-`dream_concat` implementation; no new recovery policy is established. Const
+For this append operation, null on either side contributes empty text. Null plus
+null and empty plus empty produce a nonnull managed empty string. Borrowed
+sources remain readable, and fresh concatenation or unproven call results can
+remain registered until shutdown. P0058 covers
+[proven factories in complete append statements](#append-of-proven-factory-results-p0058).
+Allocation failure and size limits follow `dream_concat`. Const
 identifier updates and non-string/non-null operands receive Dream diagnostics
 before artifacts. Numeric `+=` retains its existing emission. Parameter/field/index
 destinations, pointer/array operands, conditional operands, other compound operators
@@ -850,3 +850,21 @@ per mode, with a peak of one live allocation. The proof requires the entire
 output operand to be an eligible factory call. The null-result case is checked
 at emission because the runtime formats its argument with `%s`.
 See the [P0057 pass record](../../tasks/passes/P0057-direct-console-ownership.md).
+
+## Append of proven factory results (P0058)
+
+A complete `text += makeText();` statement captures the operand once when
+`text` is a known-owned scalar string identifier and the entire operand passes
+the existing [factory proof](owned-call-result-consumption.md). The append helper
+reads the destination after the call finishes, so a factory argument can replace
+the destination before concatenation. The helper copies both strings into a new
+allocation, releases the old destination, and installs the joined string. The
+statement then releases the original factory result. Null contributes empty text
+and its release is a no-op.
+
+The checked regression exercises 10,000 repetitions in each mode, along with
+destination replacement during argument evaluation, a once-only side effect,
+null operands, borrowed self-append, and temporary name shadowing. The isolated
+eight-call audit now finds 24 nonnull releases and zero survivors in each mode.
+Factory operands in nested append expressions still need lifetime analysis. See the
+[P0058 pass record](../../tasks/passes/P0058-owned-call-append.md).

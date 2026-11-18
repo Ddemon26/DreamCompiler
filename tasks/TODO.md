@@ -635,11 +635,16 @@ writer's isolated audit moves from zero releases/eight survivors to eight
 releases/zero survivors. The aggregate reaches six releases and one survivor.
 See [P0057](passes/P0057-direct-console-ownership.md).
 
-Broader T011 remains open. Verify P0057 publication and available CI, then
-isolate proven factory results used by a complete `+=` statement on an owned
-scalar string identifier. Measure lifetime in both modes and audit read and
-replacement order before selecting an append release rule. Keep nested append
-and general argument and assignment expressions separate.
+P0058 releases a proven factory operand after a complete owned scalar string
+`+=` statement copies it and installs the joined result. In each mode, the
+isolated audit goes from 16 releases and eight survivors to 24 releases and
+zero survivors. The aggregate reaches seven releases and zero survivors. See
+[P0058](passes/P0058-owned-call-append.md).
+
+Broader T011 remains open. Verify P0058 publication and native CI, then isolate
+`string snapshot = (text += owned());` in both modes. Measure the operand
+original and prove the joined destination and copied snapshot stay independent
+before selecting a release rule for that initializer context.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

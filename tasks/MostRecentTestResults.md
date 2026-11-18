@@ -2,6 +2,36 @@
 
 **Date:** November 18, 2026 UTC
 
+**Pass:** P0058 - release proven factory operands after owned string append
+
+**Platform/toolchain:** Windows, Zig 0.17.1.
+
+- P0057 exact-parent native Linux and Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44298800009)
+  passed.
+- `zig build test`: **178 discovered, 160 passed, 18 skipped, zero failures
+  or errors** (59.72s). Report: `test_results_20261118_060712_windows.json`.
+- Focused append, initializer, argument, and assignment Go groups: **four
+  passed** (17.051s). The new subtest checks 10,000 append repetitions per
+  mode, 30,012 nonnull releases per mode, zero survivors before shutdown, exact
+  generated C, and exact checked and normally linked output.
+- `python codex/python/owned_result_audit.py`: **24 probes passed** (28.084s).
+  The isolated append moved from **16 releases and eight survivors** at P0057
+  to **24 releases and zero survivors** in each mode. The aggregate went from
+  **six releases and one survivor** to **seven releases and zero survivors**.
+- Python test-runner unit tests: **5 passed** (0.044s).
+- Windows Go quick protocol: **43 groups passed** (131.950s, `-count=1`).
+- Native build and Linux cross-build: **15/15** steps succeeded each. Native
+  Linux runtime validation for P0058 is tracked in CI.
+
+See the [P0058 record](passes/P0058-owned-call-append.md) for the remaining
+ownership cases and validation evidence.
+
+---
+
+## Historical P0057 checkpoint
+
+**Date:** November 18, 2026 UTC
+
 **Pass:** P0057 - release proven factory results after direct Console output
 
 **Platform/toolchain:** Windows, Zig 0.17.1.

@@ -11,6 +11,7 @@ P0055 isolates synchronous argument consumption and checks two exclusion cases.
 P0056 releases eligible wrapper arguments and leaves two other_consumers survivors.
 P0057 isolates and releases eligible direct Console arguments, leaving append as
 the remaining other_consumers survivor.
+P0058 releases eligible append operands and leaves the aggregate with zero survivors.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -29,13 +30,30 @@ func string borrowed(string source) { return source; }
 '''
 
 
-def argument_release(consumer):
+def argument_release(consumer, leading_args=""):
     return ("{constchar*dreamOwnedArgument0=@entry@owned();"
-            f"{consumer}(dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}}")
+            f"{consumer}({leading_args}dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}}")
 
 
 ARGUMENT_RELEASE = argument_release("@entry@view")
+APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "isolated_append",
+        "releases": 24, "live": 0,
+        "source": COMMON + '''
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "start";
+        text += owned();
+        Console.WriteLine(text);
+    }
+}
+exercise();
+''',
+        "output": "startowned\n" * 8,
+        "c": [APPEND_RELEASE],
+    },
     {
         "name": "isolated_console_write",
         "releases": 8, "live": 0,
@@ -169,7 +187,7 @@ exercise();
               'if(result!=__dream_return_0)dr_release(result);'],
     },
     {
-        "name": "other_consumers", "releases": 6, "live": 1,
+        "name": "other_consumers", "releases": 7, "live": 0,
         "source": COMMON + '''
 func void view(string source) { Console.WriteLine(source); }
 func void exercise() {
@@ -182,7 +200,7 @@ exercise();
 ''',
         "output": "owned\nowned\nownedowned\n",
         "c": ['(char*)@entry@owned();dr_release(text);text=__dream_owned_0;',
-              '__dream_string_append(&text,@entry@owned());',
+              APPEND_RELEASE,
               argument_release("dr_console_writeln"),
               ARGUMENT_RELEASE,
               'dr_release((void*)@entry@owned());'],
