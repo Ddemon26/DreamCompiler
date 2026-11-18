@@ -1,0 +1,26 @@
+// Expected: snapshot
+// Expected: effect
+// Expected: 1
+// Expected: owned
+// Expected: owned
+func string factory() { string result = "owned"; return result; }
+func string clone(string source) { string result = source; return result; }
+func string effect(int value) { string result = "effect"; return result; }
+func void view(string source) { Console.Write(source); }
+func void bare(string source) { Console.Write(source); }
+func void line(string source) { Console.WriteLine(source); }
+
+func void identityProbe() { view(factory()); }
+func void exercise() {
+    string dreamOwnedArgument0 = "snapshot";
+    int count = 0;
+    if (true) line(clone(dreamOwnedArgument0));
+    if (false) line(factory());
+    { line(effect(count++)); }
+    Console.WriteLine(count);
+    line(factory());
+    bare(factory());
+    Console.WriteLine("");
+}
+
+exercise();

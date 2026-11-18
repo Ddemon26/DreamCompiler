@@ -621,10 +621,18 @@ C argument expressions and checks the sibling side effect once. The
 scalar string parameter and an exact Console-write body. Compiler emission is
 unchanged. See [P0055](passes/P0055-owned-call-argument-audit.md).
 
-Broader T011 remains open. Verify P0055 publication and available CI, then
-implement the selected complete-statement rule with checked original-pointer
-release after the wrapper returns. Keep pointer-escape and sibling fallbacks,
-append, direct Console and general assignment expressions separate.
+P0056 implements the complete-statement rule after normal return from the
+Console wrapper. Imported definitions are evaluated independently of
+same-spelled local functions. Both modes check 10,000 original-pointer
+releases with peak live count one and no survivors. The isolated audit is
+now eight releases and zero survivors, and the aggregate probe is five
+releases and two survivors. Static-field escape and sibling-argument probes
+retain their prior measurements. See [P0056](passes/P0056-owned-call-argument.md).
+
+Broader T011 remains open. Verify P0056 publication and available CI, then
+isolate direct Console output with a proven factory result and measure its
+lifetime before selecting a release rule. Keep append and general argument
+and assignment expressions separate.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

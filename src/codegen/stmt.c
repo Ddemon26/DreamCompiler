@@ -806,6 +806,51 @@ static int adopts_string_call(CGCtx *ctx, Node *call) {
          source_is_parameter;
 }
 
+static Node *owned_console_wrapper_argument(CGCtx *ctx, Node *call) {
+  if (call->kind != ND_CALL || call->as.call.len != 1 ||
+      !call->as.call.callee || call->as.call.callee->kind != ND_IDENT) return NULL;
+  Slice name = call->as.call.callee->as.ident;
+  if (cgctx_has_var(ctx, name.start, name.len)) return NULL;
+  Node *fn = cg_function(name);
+  if (!fn || fn->as.func.is_async || fn->as.func.ret_type != TK_KW_VOID ||
+      fn->as.func.param_len != 1) return NULL;
+  Node *param = fn->as.func.params[0];
+  if (!param || param->kind != ND_VAR_DECL ||
+      param->as.var_decl.type != TK_KW_STRING || param->as.var_decl.is_pointer ||
+      param->as.var_decl.array_len || param->as.var_decl.is_static) return NULL;
+
+  // The whole callee body must use the original parameter only for synchronous
+  // output. Even an unchanged parameter can escape through another statement.
+  Node *body = fn->as.func.body;
+  if (!body || body->kind != ND_BLOCK || body->as.block.len != 1) return NULL;
+  Node *stmt = body->as.block.items[0];
+  if (!stmt || stmt->kind != ND_EXPR_STMT) return NULL;
+  Node *console = stmt->as.expr_stmt.expr;
+  if (!console || console->kind != ND_CONSOLE_CALL || console->as.console.read)
+    return NULL;
+  Node *arg = console->as.console.arg;
+  Slice slot = param->as.var_decl.name;
+  if (!arg || arg->kind != ND_IDENT || arg->as.ident.len != slot.len ||
+      memcmp(arg->as.ident.start, slot.start, slot.len)) return NULL;
+  arg = call->as.call.args[0];
+  return adopts_string_call(ctx, arg) ? arg : NULL;
+}
+
+static int owned_argument_name_in_use(CGCtx *ctx, Slice name) {
+  if (cgctx_has_var(ctx, name.start, name.len) || cg_function(name)) return 1;
+  // Qualified Dream enum members become unqualified C constants.
+  for (size_t i = 0; i < g_program->as.block.len; i++) {
+    Node *decl = g_program->as.block.items[i];
+    if (decl->kind != ND_ENUM_DECL) continue;
+    for (size_t j = 0; j < decl->as.enum_decl.len; j++) {
+      Slice member = decl->as.enum_decl.members[j]->as.var_decl.name;
+      if (member.len == name.len && !memcmp(member.start, name.start, name.len))
+        return 1;
+    }
+  }
+  return 0;
+}
+
 static void emit_loop_body(CGCtx *ctx, COut *b, Node *body,
                            const char *src_file) {
   CGControlTarget target = {ctx->len, 1, ctx->control_target};
@@ -1187,7 +1232,22 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         break;
       }
     }
-    if (n->as.expr_stmt.expr->kind == ND_CONSOLE_CALL) {
+    Node *owned_arg = owned_console_wrapper_argument(ctx, n->as.expr_stmt.expr);
+    if (owned_arg) {
+      // C puts a declaration's name in scope inside its own initializer.
+      // A name without underscores also avoids type_member names.
+      char temporary[64];
+      size_t suffix = 0;
+      do {
+        snprintf(temporary, sizeof temporary, "dreamOwnedArgument%zu", suffix++);
+      } while (owned_argument_name_in_use(ctx, (Slice){temporary, strlen(temporary)}));
+      c_out_write(b, "{ const char *%s = ", temporary);
+      cg_emit_expr(ctx, b, owned_arg);
+      c_out_write(b, "; ");
+      cg_emit_expr(ctx, b, n->as.expr_stmt.expr->as.call.callee);
+      c_out_write(b, "(%s); dr_release((void *)%s); }", temporary, temporary);
+      c_out_newline(b);
+    } else if (n->as.expr_stmt.expr->kind == ND_CONSOLE_CALL) {
       Node *call = n->as.expr_stmt.expr;
       if (call->as.console.read) {
         c_out_write(b, "dream_readline();");

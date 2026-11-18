@@ -276,9 +276,14 @@ variable, releasing its previous value after the call finishes. A standalone
 `getText();` statement releases the proven factory result immediately after the
 call. The call and its arguments still run, and a null result needs no storage.
 
+In a complete `show(getText());` statement, the caller passes the original
+result and releases it after `show` returns if `show` is a synchronous void
+free function with one scalar string parameter and its entire body is one
+`Console.Write` or `Console.WriteLine` statement using that parameter.
+
 Scalar string declarations initialized by other calls copy the readable result into
 independent managed storage. Borrowed calls and results used in contexts such as
-arguments, append, or Console output keep their existing lifetime rules.
+general arguments, append, or direct Console output keep their existing lifetime rules.
 See the [string ownership checkpoint](../development/string-ownership.md).
 
 ### Single Parameters

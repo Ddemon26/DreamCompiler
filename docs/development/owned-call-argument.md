@@ -1,11 +1,11 @@
 # Proven factory results passed to string parameters
 
 P0055 audited direct argument consumption at parent
-`04daec85aeee2d7c2a352e7d498bd5c24f7ac914`. The compiler still leaves
-these results registered until shutdown. The selected implementation scope is a
-complete call statement to a synchronous, single-parameter console wrapper.
+`04daec85aeee2d7c2a352e7d498bd5c24f7ac914`. P0056 implements release after
+normal return for a complete call statement to a synchronous, single-parameter
+Console wrapper. It preserves the existing factory proof.
 
-## Source audit
+## P0055 source audit and before measurements
 
 | Stage | Finding |
 | --- | --- |
@@ -38,20 +38,19 @@ one argument out into a preceding declaration would impose such an order. A
 single outer argument avoids this problem and leaves evaluation inside the
 factory call governed by the same C expression as before.
 
-## Selected implementation boundary
+## P0056 implementation boundary
 
-Select a complete `ND_EXPR_STMT` containing a direct identifier call to an
-actual synchronous free-function definition returning `void`. Require exactly
-one scalar string parameter and one argument. Reject pointer/array shapes and
-caller names shadowed by a variable. Require the complete callee body to be a
-block containing exactly one statement, the intrinsic `Console.Write` or
-`Console.WriteLine` of the unmodified parameter identifier. ReadLine, computed
-operands, and all additional body statements are outside this proof. Match the
-parameter in the resolved definition, including when the function was imported.
+The emitter selects a complete `ND_EXPR_STMT` containing a direct identifier
+call to an actual synchronous free-function definition returning `void`. It
+requires exactly one scalar string parameter and one argument. The complete
+callee body must be a block containing exactly one statement, the intrinsic
+`Console.Write` or `Console.WriteLine` of the parameter identifier. The proof
+matches the parameter in the resolved definition, including when the function
+was imported. Caller names shadowed by a variable, pointer and array parameters,
+ReadLine, computed operands and additional body statements fall outside this rule.
 
-Require the sole argument to pass the existing `adopts_string_call` proof with
-its current shape and provenance limits. Implement the selection at statement
-emission. The conceptual output is one C block:
+The sole argument must pass the existing `adopts_string_call` proof with its
+current shape and provenance limits. Statement emission produces one C block:
 
 ```c
 {
@@ -61,12 +60,13 @@ emission. The conceptual output is one C block:
 }
 ```
 
-Choose a fresh temporary that cannot shadow any C name used by the original
-expressions. Emit the factory expression once, pass the original pointer, and
-release it once after the consumer returns. No caller copy, retain, or scope
-cleanup entry is needed. The block remains one statement for unbraced control
-flow. There is no new ordering within the factory's own arguments and no
-recursive processing of their results.
+The temporary uses a name without underscores and avoids visible bindings,
+function names and unqualified C enum constants. Lowered member names contain
+an underscore separating the type from the member. The block evaluates the
+factory expression once, passes the original pointer and releases it once
+after the consumer returns. It remains one statement for unbraced control
+flow. The factory's own arguments keep their original C evaluation order and
+lifetime rules.
 
 The release operation accepts null. Preserve the consumer call and its input
 even when the factory yields null. The current Console implementation passes
@@ -79,28 +79,25 @@ Console and append, unproven factories, and callees outside the exact body
 shape retain their existing behavior. General parameter escapes, exception and
 async unwinding, and alias/container ownership remain separate work.
 
-## Evidence required for implementation
+## Implementation checks
 
-1. Reuse the isolated audit as the before measurement. Add an emitted-C check
-   that fails at the unchanged parent and then requires one factory call, one
-   consumer call with the captured pointer, and immediate release in both
-   ordinary and module-entry modes. Check actual imported definitions and
-   same-spelled local/imported consumers whose bodies differ.
-2. Instrument the original allocation. Verify it is readable in Console,
-   released once on return at reference count one, and absent after every
-   iteration of at least 10,000 isolated calls per mode. Verify peak live count
-   one, no caller copy/retain, and no second scope or shutdown release. Keep
-   output checks on normal linking and checked execution.
-3. Cover `Write` and `WriteLine`, a primitive argument effect in the factory,
-   a borrowed input snapshot, unbraced and scoped calls, and temporary name
-   collisions. Check null emission without passing null to the Console runtime.
-4. Keep the static-store and sibling controls unchanged. Verify fallback for
-   pointer/array parameters, async, side effects or forwarding in the callee
-   body, non-void returns, non-statement contexts and failed factory proofs.
-   Run emission-only cases when the existing runtime path is unsafe. Preserve
-   existing diagnostics for rejected programs.
-5. The expected per-mode result after implementation is eight releases and
-   zero survivors in the isolated probe, and five releases and two survivors in
-   the aggregate probe. Those numbers are acceptance criteria. Run the focused
-   suite, full Dream tests, Go quick protocol, Python runner checks and Linux
-   cross-build, and inspect native CI.
+1. The generated-C regression fails at the unchanged parent and requires one
+   factory call, one consumer call with the captured pointer, and immediate
+   release in both modes. Same-spelled local and imported consumers exercise
+   actual definition lookup.
+2. The checked harness verifies the original pointer is readable in Console
+   and released once at reference count one. It verifies peak live count one
+   and an empty allocator list after each of 10,000 calls per mode. Checked
+   and ordinarily linked fixture runs compare exact output.
+3. The fixture covers `Write` and `WriteLine`, a primitive argument effect in the
+   factory, a borrowed input snapshot, unbraced and scoped calls, and temporary
+   name collisions. The null result is tested at emission only.
+4. Exclusion checks cover pointer parameters, async, forwarding, extra
+   statements, computed operands, non-void returns, non-statement contexts,
+   unproven factories and direct Console output. Array parameter syntax still
+   produces its parser diagnostic.
+5. P0056 measures eight releases and zero survivors in the isolated probe,
+   and five releases and two survivors in the aggregate probe, in each mode.
+   The escape and sibling controls each still measure zero releases and one
+   survivor. See the [pass record](../../tasks/passes/P0056-owned-call-argument.md)
+   for regression and platform results.

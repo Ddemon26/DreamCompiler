@@ -8,6 +8,7 @@ supersedes owned_initializers: callers adopt the five originals. P0052 adds an
 isolated assignment probe and reduces other_consumers survivors from five to four.
 P0054 adds isolated discard and reduces other_consumers survivors to three.
 P0055 isolates synchronous argument consumption and checks two exclusion cases.
+P0056 releases eligible wrapper arguments and leaves two other_consumers survivors.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -24,16 +25,20 @@ COMMON = '''
 func string owned() { string result = "owned"; return result; }
 func string borrowed(string source) { return source; }
 '''
+ARGUMENT_RELEASE = (
+    "{constchar*dreamOwnedArgument0=@entry@owned();"
+    "@entry@view(dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}"
+)
 CASES = [
     {
         "name": "isolated_argument",
-        "releases": 0, "live": 8,
+        "releases": 8, "live": 0,
         "source": COMMON + '''
 func void view(string source) { Console.WriteLine(source); }
 for (int i = 0; i < 8; i++) view(owned());
 ''',
         "output": "owned\n" * 8,
-        "c": ["@entry@view(@entry@owned());", "dr_console_writeln(source);"],
+        "c": [ARGUMENT_RELEASE, "dr_console_writeln(source);"],
     },
     {
         "name": "argument_stored_by_consumer",
@@ -144,7 +149,7 @@ exercise();
               'if(result!=__dream_return_0)dr_release(result);'],
     },
     {
-        "name": "other_consumers", "releases": 4, "live": 3,
+        "name": "other_consumers", "releases": 5, "live": 2,
         "source": COMMON + '''
 func void view(string source) { Console.WriteLine(source); }
 func void exercise() {
@@ -158,7 +163,7 @@ exercise();
         "output": "owned\nowned\nownedowned\n",
         "c": ['(char*)@entry@owned();dr_release(text);text=__dream_owned_0;',
               '__dream_string_append(&text,@entry@owned());',
-              '@entry@view(@entry@owned());',
+              ARGUMENT_RELEASE,
               'dr_release((void*)@entry@owned());'],
     },
 ]

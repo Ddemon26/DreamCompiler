@@ -824,3 +824,12 @@ actual-definition proof as scalar declaration and assignment adoption. It emits
 no caller copy, retain or scoped binding. Borrowed or unproven calls, for headers,
 compound expressions and nested owned arguments keep their existing lifetime.
 See the [boundary and measured identity evidence](owned-call-discard.md).
+
+## Proven factory results passed to Console wrappers (P0056)
+
+A complete statement such as `show(getText());` releases a proven factory
+result after `show` returns normally when the actual synchronous void free
+function has one scalar string parameter and its whole body calls
+`Console.Write` or `Console.WriteLine` on that parameter. The caller passes the
+original pointer and releases it after the read. See the
+[argument boundary and measured behavior](owned-call-argument.md).

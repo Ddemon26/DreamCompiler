@@ -32,6 +32,7 @@ func TestCompiler_ParserRecovery(t *testing.T) {
 		{"duplicate_comma", "\n\nfunc read(int first,, int second) {}", "expected parameter type", 3, nil},
 		{"missing_comma", "\n\nfunc read(int first int second) {}", "expected ')'", 3, nil},
 		{"array_parameter", "\n\nfunc read(int items[]) {}", "expected ')'", 3, nil},
+		{"array_string_wrapper", "func string factory() { string result = \"text\"; return result; }\n\nfunc void view(string value[]) { Console.WriteLine(value); }\nview(factory());", "expected ')'", 3, nil},
 		{"nested_parentheses", "class Child {}\n\nfunc read(Child (child)) {}", "expected parameter type", 3, nil},
 		{"type_at_eof", "\n\nfunc read(Child", "expected parameter type", 3, nil},
 		{"name_at_eof", "\n\nfunc read(int\n", "expected parameter name", 4, nil},

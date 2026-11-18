@@ -1,29 +1,27 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0055 - audit proven factory results passed as arguments**.
-- Record: [P0055](passes/P0055-owned-call-argument-audit.md).
-- Parent/fetched approved remote: `04daec85aeee2d7c2a352e7d498bd5c24f7ac914` (P0054).
-- Resolve this pass commit by its exact `Pass-ID: P0055` trailer.
+- Current pass: **P0056 - release proven factory arguments after Console wrappers**.
+- Record: [P0056](passes/P0056-owned-call-argument.md).
+- Parent/fetched approved remote: `4b2a9a869c3ec45d5dd9fb419c810bdfc50e3fdb` (P0055).
+- Resolve this pass commit by its exact `Pass-ID: P0056` trailer.
 - Delivery requires push and matching `git ls-remote`.
 
-Eight isolated `view(owned())` calls leave eight original allocations live
-before shutdown in each mode. A separate wrapper stores the pointer in a
-static field and reads it after the call. A two-argument control verifies both
-arguments stay in the same C call and the sibling effect occurs once.
-Compiler emission is unchanged. The [argument contract](../docs/development/owned-call-argument.md)
-selects a single-argument `void` free function whose entire body writes the
-scalar string parameter to Console.
+The [argument rule](../docs/development/owned-call-argument.md) releases a
+proven factory result after a complete call statement to a synchronous
+single-parameter void free function whose entire body writes that scalar string
+parameter to Console. Both compilation modes verify 10,000 releases at peak
+live count one. Static-field escape and sibling-argument controls continue to
+observe the original pointer live after the call.
 
-P0054 passed exact-commit native Linux/Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44193733124).
-The updated checked audit passed 18 probes. See [measured tests](MostRecentTestResults.md).
-Eighteen unannotated entries remain skipped in the reused full-suite result.
+P0055 passed exact-commit native Linux/Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44213186405).
+See [measured tests](MostRecentTestResults.md). Eighteen unannotated Dream
+entries remain skipped.
 
 Next invocation:
 
-1. Verify P0055 publication and inspect its exact-commit CI if available.
-2. Implement the selected statement-only rule with unchanged factory proof.
-   Gate it on actual destination definition and require original-pointer
-   release, peak live count one and no survivors across repeated calls.
-3. Preserve the pointer-escape and sibling controls. General argument flow,
-   direct Console/append consumption, and async/exception cleanup remain open.
+1. Verify P0056 publication and inspect exact-commit CI. Repair any failed baseline.
+2. Isolate the remaining direct `Console.Write` and `Console.WriteLine` factory
+   results, measure their lifetime in both modes, and define the complete-statement
+   release boundary before extending the rule.
+3. Keep append, general argument flow and async/exception cleanup separate.

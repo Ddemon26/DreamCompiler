@@ -2,6 +2,37 @@
 
 **Date:** November 18, 2026 UTC
 
+**Pass:** P0056 - release proven factory arguments after Console wrappers
+
+**Platform/toolchain:** Windows, Zig 0.17.1.
+
+- P0055 exact-parent native Linux and Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44213186405)
+  passed.
+- `zig build test`: **177 discovered, 159 passed, 18 skipped, zero failures
+  or errors** (58.96s). Report: `test_results_20261118_002529_windows.json`.
+- Focused Go wrapper and parser recovery groups: **both passed** (4.608s).
+  The native checked harness verifies **10,000 calls per mode**. The factory
+  original stays readable through Console output, releases at reference count
+  one and never leaves more than one live allocation. Generated-C checks,
+  normal linking, Linux harness cross-links and exact output passed.
+- `python codex/python/owned_result_audit.py`: **18 probes passed** (20.912s).
+  Per mode, the isolated wrapper now has **8 releases/0 live** before
+  shutdown and the aggregate has **5/2**. The static field and sibling
+  controls still each have **0/1**.
+- Python test-runner unit tests: **5 passed** (0.055s).
+- Windows Go quick protocol: **43 groups passed** (119.340s, `-count=1`).
+- Native build and Linux cross-build: **15/15** steps succeeded each. The
+  local Linux check was a cross-build.
+
+See the [P0056 record](passes/P0056-owned-call-argument.md) for the rules and
+the remaining ownership cases.
+
+---
+
+## Historical P0055 checkpoint
+
+**Date:** November 18, 2026 UTC
+
 **Pass:** P0055 - audit proven factory results passed as arguments
 
 **Platform/toolchain:** Windows, Zig 0.17.1.
