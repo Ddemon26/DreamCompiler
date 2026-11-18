@@ -199,7 +199,8 @@ Console.WriteLine(factory()); factory(); view(factory());`, modules)
 				"(char*)" + prefix + "factory();dr_release(target);target=__dream_owned_0;",
 				"__dream_string_append(&target," + prefix + "factory());",
 				"compound=dream_string_copy((1?" + prefix + "factory():\"literal\"));",
-				"return" + prefix + "factory();", "dr_console_writeln(" + prefix + "factory());",
+				"return" + prefix + "factory();",
+				ownedArgumentBlock(prefix+"factory()", "dr_console_writeln", "dreamOwnedArgument0"),
 				prefix + "view(" + prefix + "factory());",
 				"dr_release((void*)" + prefix + "factory());",
 			} {

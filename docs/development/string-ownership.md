@@ -833,3 +833,20 @@ function has one scalar string parameter and its whole body calls
 `Console.Write` or `Console.WriteLine` on that parameter. The caller passes the
 original pointer and releases it after the read. See the
 [argument boundary and measured behavior](owned-call-argument.md).
+
+## Direct Console output of proven factory results (P0057)
+
+A complete `Console.Write(makeText());` or `Console.WriteLine(makeText());`
+statement captures a direct call that passes the same actual-definition
+factory proof. It sends the original pointer to the selected runtime writer
+and calls `dr_release` immediately after the writer returns. The writer uses
+the pointer for synchronous output. The same statement-local naming rules as
+the Console wrapper apply, including for an unbraced loop or branch body.
+
+Each writer's isolated eight-call probe went from zero releases and eight live
+originals to eight releases and zero live originals in ordinary and module-entry
+compilation. The checked regression also exercises 10,000 calls to each writer
+per mode, with a peak of one live allocation. The proof requires the entire
+output operand to be an eligible factory call. The null-result case is checked
+at emission because the runtime formats its argument with `%s`.
+See the [P0057 pass record](../../tasks/passes/P0057-direct-console-ownership.md).

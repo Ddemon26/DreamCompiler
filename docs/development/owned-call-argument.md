@@ -4,6 +4,8 @@ P0055 audited direct argument consumption at parent
 `04daec85aeee2d7c2a352e7d498bd5c24f7ac914`. P0056 implements release after
 normal return for a complete call statement to a synchronous, single-parameter
 Console wrapper. It preserves the existing factory proof.
+P0057 uses the same statement release sequence for
+[direct Console output](string-ownership.md#direct-console-output-of-proven-factory-results-p0057).
 
 ## P0055 source audit and before measurements
 
@@ -73,11 +75,11 @@ even when the factory yields null. The current Console implementation passes
 that pointer to `printf("%s", ...)`, so a null factory is an emission-only
 control for this wrapper boundary.
 
-Sibling arguments, assignments, declaration initializers, for headers, method
-receivers, nested/conditional expression consumers, forwarded results, direct
-Console and append, unproven factories, and callees outside the exact body
-shape retain their existing behavior. General parameter escapes, exception and
-async unwinding, and alias/container ownership remain separate work.
+At the P0056 checkpoint, sibling arguments, assignments, declaration initializers,
+for headers, method receivers, nested/conditional expression consumers, forwarded
+results, direct Console and append, unproven factories, and callees outside the
+exact body shape retained their existing behavior. General parameter escapes,
+exception and async unwinding, and alias/container ownership remain separate work.
 
 ## Implementation checks
 

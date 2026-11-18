@@ -58,8 +58,9 @@
 | [P0054](P0054-owned-call-discard.md) | 2026-11-17 | Release original results of complete proven factory-call statements | `Pass-ID: P0054` |
 | [P0055](P0055-owned-call-argument-audit.md) | 2026-11-18 | Measure argument retention and define release for single-parameter console wrappers | `Pass-ID: P0055` |
 | [P0056](P0056-owned-call-argument.md) | 2026-11-18 | Release original factory arguments after proven Console wrappers return | `Pass-ID: P0056` |
+| [P0057](P0057-direct-console-ownership.md) | 2026-11-18 | Release proven factory results after direct Console output | `Pass-ID: P0057` |
 
-**Verify P0056 publication and available CI, then isolate direct Console factory-result consumption in T011.**
+**Verify P0057 publication and available CI, then isolate factory results consumed by complete owned-string append statements in T011.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

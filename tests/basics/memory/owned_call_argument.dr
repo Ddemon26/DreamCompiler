@@ -3,6 +3,8 @@
 // Expected: 1
 // Expected: owned
 // Expected: owned
+// Expected: effectowned
+// Expected: 2
 func string factory() { string result = "owned"; return result; }
 func string clone(string source) { string result = source; return result; }
 func string effect(int value) { string result = "effect"; return result; }
@@ -10,7 +12,11 @@ func void view(string source) { Console.Write(source); }
 func void bare(string source) { Console.Write(source); }
 func void line(string source) { Console.WriteLine(source); }
 
-func void identityProbe() { view(factory()); }
+func void identityProbe() {
+    view(factory());
+    Console.Write(factory());
+    Console.WriteLine(factory());
+}
 func void exercise() {
     string dreamOwnedArgument0 = "snapshot";
     int count = 0;
@@ -21,6 +27,9 @@ func void exercise() {
     line(factory());
     bare(factory());
     Console.WriteLine("");
+    if (true) Console.Write(effect(count++));
+    Console.WriteLine(factory());
+    Console.WriteLine(count);
 }
 
 exercise();

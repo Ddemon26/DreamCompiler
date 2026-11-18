@@ -2,6 +2,38 @@
 
 **Date:** November 18, 2026 UTC
 
+**Pass:** P0057 - release proven factory results after direct Console output
+
+**Platform/toolchain:** Windows, Zig 0.17.1.
+
+- P0056 exact-parent native Linux and Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44259186333)
+  passed.
+- `zig build test`: **177 discovered, 159 passed, 18 skipped, zero failures
+  or errors** (57.21s). Report: `test_results_20261118_044750_windows.json`.
+- Focused Go argument, discard and indexed Console groups: **three passed**
+  (7.009s). The checked identity harness exercised **10,000 direct calls per
+  writer and 10,000 wrapper calls per mode**. It observed the original
+  allocation at reference count one and zero survivors after each release.
+  Generated-C, exact-output and Linux harness cross-link checks passed.
+- `python codex/python/owned_result_audit.py`: **22 probes passed** (26.942s).
+  Each direct writer went from **0 releases/8 live** at P0056 to **8/0** in
+  both modes. The aggregate went from **5/2** to **6/1**.
+- Python test-runner unit tests: **5 passed** (0.052s).
+- Windows Go quick protocol: **43 groups passed** on rerun (124.747s,
+  `-count=1`). The initial run exposed a Console emission expectation in the
+  initializer fixture, which now checks the complete release sequence.
+- Native build and Linux cross-build: **15/15** steps succeeded each. The
+  local Linux check was a cross-build.
+
+See the [P0057 record](passes/P0057-direct-console-ownership.md) for the rules
+and the remaining ownership cases.
+
+---
+
+## Historical P0056 checkpoint
+
+**Date:** November 18, 2026 UTC
+
 **Pass:** P0056 - release proven factory arguments after Console wrappers
 
 **Platform/toolchain:** Windows, Zig 0.17.1.

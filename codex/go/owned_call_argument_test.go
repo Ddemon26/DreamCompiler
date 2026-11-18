@@ -39,6 +39,7 @@ func TestCompiler_OwnedCallArgument(t *testing.T) {
 				factory, wrapper = "__dream_module_1_factory()", "__dream_module_1_view"
 				options = append(options, "--multi-file")
 				program = "import labels;\n" + strings.Replace(program, "view(factory());", "labels.view(labels.factory());", 1)
+				program = strings.Replace(program, "Console.Write(factory());", "Console.Write(labels.factory());", 1)
 				program = strings.Replace(program, "Console.Write(source);", "Console.Write(source); Console.Write(source);", 1)
 				program += "\nfunc void importControls() { view(factory()); labels.line(factory()); }\n"
 				imported := `module labels;
@@ -80,6 +81,10 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			temp0, temp1 := "dreamOwnedArgument0", "dreamOwnedArgument1"
 			for _, want := range []string{
 				ownedArgumentBlock(factory, wrapper, temp0),
+				ownedArgumentBlock(factory, "dr_console_write", temp0),
+				ownedArgumentBlock(entry+"factory()", "dr_console_writeln", temp0),
+				"if(1)" + ownedArgumentBlock(entry+"effect((count++))", "dr_console_write", temp1),
+				ownedArgumentBlock(entry+"factory()", "dr_console_writeln", temp1),
 				"if(1)" + ownedArgumentBlock(entry+"clone("+temp0+")", entry+"line", temp1),
 				ownedArgumentBlock(entry+"effect((count++))", entry+"line", temp1),
 			} {
@@ -87,9 +92,9 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 					t.Errorf("expected one %q, got %d", want, got)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 6 ||
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 10 ||
 				strings.Contains(c, "dr_retain(") {
-				t.Error("expected six wrapper release sites without any retains")
+				t.Error("expected six wrapper and four direct Console release sites without any retains")
 			}
 			if modules && (!strings.Contains(c, entry+"view("+entry+"factory());") ||
 				!strings.Contains(c, "__dream_module_1_line("+entry+"factory());")) {
@@ -120,7 +125,7 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			}
 			binary := filepath.Join(work, "checked"+suffix)
 			command("zig", append(args, "-o", binary)...)
-			const want = "snapshot\neffect\n1\nowned\nowned\n"
+			const want = "snapshot\neffect\n1\nowned\nowned\neffectowned\n2\n"
 			if got := command(binary); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -153,6 +158,11 @@ func void probe(string* values) {
     returnValue(factory());
     later(factory());
     Console.WriteLine(factory());
+    Console.Write(absent());
+    Console.Write(borrowed("source"));
+    Console.WriteLine("literal");
+    Console.Write(factory() + "!");
+    Console.Write(pointerFactory(values));
     line(pointerFactory(values));
     pointerView(factory());
 }`, modules)
@@ -167,7 +177,12 @@ func void probe(string* values) {
 				entry + "computed(" + factory + ");",
 				entry + "returnValue(" + factory + ");",
 				entry + "later(" + factory + ");",
-				"dr_console_writeln(" + factory + ");",
+				ownedArgumentBlock(factory, "dr_console_writeln", "dreamOwnedArgument0"),
+				ownedArgumentBlock(entry+"absent()", "dr_console_write", "dreamOwnedArgument0"),
+				"dr_console_write(" + entry + "borrowed(\"source\"));",
+				"dr_console_writeln(\"literal\");",
+				"dr_console_write((dream_concat(" + factory + ",\"!\")));",
+				"dr_console_write(" + entry + "pointerFactory(values));",
 				wrapper + "(" + entry + "pointerFactory(values));",
 				entry + "pointerView(" + factory + ");",
 			} {
@@ -175,8 +190,8 @@ func void probe(string* values) {
 					t.Errorf("missing context %q", want)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 1 {
-				t.Error("only the complete null-result wrapper statement should release")
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 3 {
+				t.Error("only the three eligible complete statements should release")
 			}
 		})
 	}
@@ -187,10 +202,14 @@ func int dreamOwnedArgument1() { return 2; }
 class __dream_owned { static int arg_0; }
 func string factory(int value) { string result = "owned"; return result; }
 func void line(string value) { Console.WriteLine(value); }
-line(factory(Number.dreamOwnedArgument0 + dreamOwnedArgument1() + __dream_owned.arg_0));`, false)
-		want := ownedArgumentBlock("factory(((dreamOwnedArgument0+dreamOwnedArgument1())+__dream_owned_arg_0))", "line", "dreamOwnedArgument2")
-		if !strings.Contains(c, want) {
-			t.Errorf("missing hygienic wrapper block %q", want)
+line(factory(Number.dreamOwnedArgument0 + dreamOwnedArgument1() + __dream_owned.arg_0));
+Console.WriteLine(factory(Number.dreamOwnedArgument0 + dreamOwnedArgument1() + __dream_owned.arg_0));`, false)
+		factory := "factory(((dreamOwnedArgument0+dreamOwnedArgument1())+__dream_owned_arg_0))"
+		for _, consumer := range []string{"line", "dr_console_writeln"} {
+			want := ownedArgumentBlock(factory, consumer, "dreamOwnedArgument2")
+			if !strings.Contains(c, want) {
+				t.Errorf("missing hygienic release block %q", want)
+			}
 		}
 	})
 }

@@ -6,6 +6,10 @@ Dream's standard library exposes simple console functions.
 - `Console.ReadLine` reads a line from standard input.
 - `Console.Read` reads a single character from standard input.
 
+When a complete `Write` or `WriteLine` statement takes the direct result of a
+[proven string factory](../../development/string-ownership.md#direct-console-output-of-proven-factory-results-p0057),
+the compiler releases that result after printing it.
+
 ```dream
 Console.Write("Enter name: ");
 string name = Console.ReadLine();

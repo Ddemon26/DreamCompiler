@@ -3,7 +3,7 @@
 #include "../../src/runtime/extensions/custom.h"
 #include "../../src/runtime/io/console.h"
 
-static size_t copies, releases, writes;
+static size_t copies, releases, writes, lines;
 static int checking_identity, observed;
 static char *original;
 
@@ -19,16 +19,29 @@ static char *checked_copy(const char *source) {
     return ptr;
 }
 
+static void observe_original(const char *ptr) {
+    assert(ptr == original && !observed);
+    assert(dr_head && !dr_head->next && dr_head->refcount == 1);
+    assert(strcmp(ptr, "owned") == 0);
+    observed = 1;
+}
+
 static void checked_write(const char *ptr) {
     if (!checking_identity) {
         dr_console_write(ptr);
         return;
     }
-    assert(ptr == original && !observed);
-    assert(dr_head && !dr_head->next && dr_head->refcount == 1);
-    assert(strcmp(ptr, "owned") == 0);
-    observed = 1;
+    observe_original(ptr);
     writes++;
+}
+
+static void checked_writeln(const char *ptr) {
+    if (!checking_identity) {
+        dr_console_writeln(ptr);
+        return;
+    }
+    observe_original(ptr);
+    lines++;
 }
 
 static void checked_release(void *ptr) {
@@ -52,6 +65,7 @@ static void checked_shutdown(void) {
 
 #define dream_string_copy checked_copy
 #define dr_console_write checked_write
+#define dr_console_writeln checked_writeln
 #define dr_release checked_release
 #define dr_release_all checked_shutdown
 #define main dream_entry_main
@@ -59,6 +73,7 @@ static void checked_shutdown(void) {
 #undef main
 #undef dr_release_all
 #undef dr_release
+#undef dr_console_writeln
 #undef dr_console_write
 #undef dream_string_copy
 
@@ -66,12 +81,13 @@ int main(void) {
     checking_identity = 1;
     for (size_t i = 1; i <= 10000; i++) {
         DREAM_IDENTITY_PROBE();
-        assert(copies == i && writes == i && releases == i);
+        assert(copies == 3 * i && releases == 3 * i);
+        assert(writes == 2 * i && lines == i);
         assert(!original && !observed && !dr_head);
     }
     checking_identity = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 5 && releases == 5 && !dr_head);
+    assert(copies == 7 && releases == 7 && !dr_head);
     return 0;
 }

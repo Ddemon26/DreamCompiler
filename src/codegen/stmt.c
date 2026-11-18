@@ -1205,13 +1205,13 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     break;
   }
   case ND_EXPR_STMT: {
-    Node *assignment = n->as.expr_stmt.expr;
-    if (assignment->kind == ND_BINOP && assignment->as.bin.op == TK_EQ &&
-        assignment->as.bin.lhs->kind == ND_IDENT) {
-      Slice name = assignment->as.bin.lhs->as.ident;
+    Node *expr = n->as.expr_stmt.expr;
+    if (expr->kind == ND_BINOP && expr->as.bin.op == TK_EQ &&
+        expr->as.bin.lhs->kind == ND_IDENT) {
+      Slice name = expr->as.bin.lhs->as.ident;
       const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
       if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
-          slot->indirections == 0 && adopts_string_call(ctx, assignment->as.bin.rhs)) {
+          slot->indirections == 0 && adopts_string_call(ctx, expr->as.bin.rhs)) {
         // A statement-local temporary avoids a new global helper namespace.
         // Finish the RHS before reading/releasing the current destination: an
         // argument may itself replace that destination or snapshot its backing.
@@ -1222,17 +1222,26 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         } while (cgctx_has_var(ctx, temporary, strlen(temporary)) ||
                  cg_function((Slice){temporary, strlen(temporary)}));
         c_out_write(b, "{ char *%s = (char *)", temporary);
-        cg_emit_expr(ctx, b, assignment->as.bin.rhs);
+        cg_emit_expr(ctx, b, expr->as.bin.rhs);
         c_out_write(b, "; dr_release(");
-        cg_emit_expr(ctx, b, assignment->as.bin.lhs);
+        cg_emit_expr(ctx, b, expr->as.bin.lhs);
         c_out_write(b, "); ");
-        cg_emit_expr(ctx, b, assignment->as.bin.lhs);
+        cg_emit_expr(ctx, b, expr->as.bin.lhs);
         c_out_write(b, " = %s; }", temporary);
         c_out_newline(b);
         break;
       }
     }
-    Node *owned_arg = owned_console_wrapper_argument(ctx, n->as.expr_stmt.expr);
+    const char *console_writer = NULL;
+    Node *owned_arg = NULL;
+    if (expr->kind == ND_CONSOLE_CALL && !expr->as.console.read) {
+      console_writer = expr->as.console.newline ? "dr_console_writeln" : "dr_console_write";
+      // The runtime prints synchronously and does not store the pointer.
+      if (adopts_string_call(ctx, expr->as.console.arg))
+        owned_arg = expr->as.console.arg;
+    } else {
+      owned_arg = owned_console_wrapper_argument(ctx, expr);
+    }
     if (owned_arg) {
       // C puts a declaration's name in scope inside its own initializer.
       // A name without underscores also avoids type_member names.
@@ -1244,38 +1253,39 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_write(b, "{ const char *%s = ", temporary);
       cg_emit_expr(ctx, b, owned_arg);
       c_out_write(b, "; ");
-      cg_emit_expr(ctx, b, n->as.expr_stmt.expr->as.call.callee);
+      if (console_writer)
+        c_out_write(b, "%s", console_writer);
+      else
+        cg_emit_expr(ctx, b, expr->as.call.callee);
       c_out_write(b, "(%s); dr_release((void *)%s); }", temporary, temporary);
       c_out_newline(b);
-    } else if (n->as.expr_stmt.expr->kind == ND_CONSOLE_CALL) {
-      Node *call = n->as.expr_stmt.expr;
-      if (call->as.console.read) {
+    } else if (expr->kind == ND_CONSOLE_CALL) {
+      if (expr->as.console.read) {
         c_out_write(b, "dream_readline();");
         c_out_newline(b);
-      } else if (cg_is_string_expr(ctx, call->as.console.arg)) {
-        c_out_write(b, call->as.console.newline ? "dr_console_writeln("
-                                                : "dr_console_write(");
-        cg_emit_expr(ctx, b, call->as.console.arg);
+      } else if (cg_is_string_expr(ctx, expr->as.console.arg)) {
+        c_out_write(b, "%s(", console_writer);
+        cg_emit_expr(ctx, b, expr->as.console.arg);
         c_out_write(b, ");");
         c_out_newline(b);
       } else {
         c_out_write(b, "printf(\"");
-        c_out_write(b, "%s", cg_fmt_for_arg(ctx, call->as.console.arg));
-        if (call->as.console.newline)
+        c_out_write(b, "%s", cg_fmt_for_arg(ctx, expr->as.console.arg));
+        if (expr->as.console.newline)
           c_out_write(b, "\\n");
         c_out_write(b, "\", ");
-        cg_emit_expr(ctx, b, call->as.console.arg);
+        cg_emit_expr(ctx, b, expr->as.console.arg);
         c_out_write(b, ");");
         c_out_newline(b);
       }
-    } else if (adopts_string_call(ctx, n->as.expr_stmt.expr)) {
+    } else if (adopts_string_call(ctx, expr)) {
       // The discarded result has no destination to own its transferred reference.
       c_out_write(b, "dr_release((void *)");
-      cg_emit_expr(ctx, b, n->as.expr_stmt.expr);
+      cg_emit_expr(ctx, b, expr);
       c_out_write(b, ");");
       c_out_newline(b);
     } else {
-      cg_emit_expr(ctx, b, n->as.expr_stmt.expr);
+      cg_emit_expr(ctx, b, expr);
       c_out_write(b, ";");
       c_out_newline(b);
     }

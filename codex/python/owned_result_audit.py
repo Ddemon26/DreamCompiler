@@ -9,6 +9,8 @@ isolated assignment probe and reduces other_consumers survivors from five to fou
 P0054 adds isolated discard and reduces other_consumers survivors to three.
 P0055 isolates synchronous argument consumption and checks two exclusion cases.
 P0056 releases eligible wrapper arguments and leaves two other_consumers survivors.
+P0057 isolates and releases eligible direct Console arguments, leaving append as
+the remaining other_consumers survivor.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -25,11 +27,29 @@ COMMON = '''
 func string owned() { string result = "owned"; return result; }
 func string borrowed(string source) { return source; }
 '''
-ARGUMENT_RELEASE = (
-    "{constchar*dreamOwnedArgument0=@entry@owned();"
-    "@entry@view(dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}"
-)
+
+
+def argument_release(consumer):
+    return ("{constchar*dreamOwnedArgument0=@entry@owned();"
+            f"{consumer}(dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}}")
+
+
+ARGUMENT_RELEASE = argument_release("@entry@view")
 CASES = [
+    {
+        "name": "isolated_console_write",
+        "releases": 8, "live": 0,
+        "source": COMMON + 'for (int i = 0; i < 8; i++) Console.Write(owned());',
+        "output": "owned" * 8,
+        "c": [argument_release("dr_console_write")],
+    },
+    {
+        "name": "isolated_console_writeln",
+        "releases": 8, "live": 0,
+        "source": COMMON + 'for (int i = 0; i < 8; i++) Console.WriteLine(owned());',
+        "output": "owned\n" * 8,
+        "c": [argument_release("dr_console_writeln")],
+    },
     {
         "name": "isolated_argument",
         "releases": 8, "live": 0,
@@ -149,7 +169,7 @@ exercise();
               'if(result!=__dream_return_0)dr_release(result);'],
     },
     {
-        "name": "other_consumers", "releases": 5, "live": 2,
+        "name": "other_consumers", "releases": 6, "live": 1,
         "source": COMMON + '''
 func void view(string source) { Console.WriteLine(source); }
 func void exercise() {
@@ -163,6 +183,7 @@ exercise();
         "output": "owned\nowned\nownedowned\n",
         "c": ['(char*)@entry@owned();dr_release(text);text=__dream_owned_0;',
               '__dream_string_append(&text,@entry@owned());',
+              argument_release("dr_console_writeln"),
               ARGUMENT_RELEASE,
               'dr_release((void*)@entry@owned());'],
     },

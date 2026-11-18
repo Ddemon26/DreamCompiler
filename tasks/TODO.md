@@ -629,10 +629,17 @@ now eight releases and zero survivors, and the aggregate probe is five
 releases and two survivors. Static-field escape and sibling-argument probes
 retain their prior measurements. See [P0056](passes/P0056-owned-call-argument.md).
 
-Broader T011 remains open. Verify P0056 publication and available CI, then
-isolate direct Console output with a proven factory result and measure its
-lifetime before selecting a release rule. Keep append and general argument
-and assignment expressions separate.
+P0057 releases a proven factory result immediately after it is printed by a
+complete `Console.Write` or `Console.WriteLine` statement. In each mode, each
+writer's isolated audit moves from zero releases/eight survivors to eight
+releases/zero survivors. The aggregate reaches six releases and one survivor.
+See [P0057](passes/P0057-direct-console-ownership.md).
+
+Broader T011 remains open. Verify P0057 publication and available CI, then
+isolate proven factory results used by a complete `+=` statement on an owned
+scalar string identifier. Measure lifetime in both modes and audit read and
+replacement order before selecting an append release rule. Keep nested append
+and general argument and assignment expressions separate.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller
