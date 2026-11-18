@@ -92,7 +92,7 @@ static void emit_c(Node *root, FILE *out, const char *src_file, bool object_mode
   c_out_write(&builder, "    *slot = joined;\n    return joined;\n}\n\n");
 
   // A proven factory transfers its original reference. The joined allocation
-  // belongs to the slot and stays live for the caller's independent snapshot.
+  // belongs to the slot, which keeps it live for copying or printing.
   c_out_write(&builder, "static char *__dream_string_append_owned(const char **slot, const char *text) {\n");
   c_out_write(&builder, "    char *joined = __dream_string_append(slot, text);\n");
   c_out_write(&builder, "    dr_release((void *)text);\n    return joined;\n}\n\n");

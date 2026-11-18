@@ -647,10 +647,16 @@ and the initializer takes an independent copy. The isolated eight-iteration audi
 goes from 32 releases and eight survivors to 40 releases and zero survivors in
 each mode. See [P0059](passes/P0059-owned-append-initializer.md).
 
-Broader T011 remains open. Verify P0059 publication and native CI, then isolate
-`Console.WriteLine(text += owned());` in both modes. Measure the original
-factory allocation and confirm the installed destination survives printing
-before selecting a release rule for that consumer.
+P0060 releases a proven factory operand when a complete `Console.Write` or
+`Console.WriteLine` statement prints the append result directly. The destination
+keeps the installed join. In each mode the eight-iteration audit goes from
+16 releases and eight survivors to 24 releases and zero survivors. See
+[P0060](passes/P0060-owned-append-console.md).
+
+Broader T011 remains open. Verify P0060 publication and native CI, then isolate
+`view(text += owned());` in both modes with a one-parameter user function that
+prints its argument. Measure the original factory allocation and confirm the
+joined destination survives the call before selecting a release rule.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

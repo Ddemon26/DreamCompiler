@@ -98,8 +98,9 @@ For this append operation, null on either side contributes empty text. Null plus
 null and empty plus empty produce a nonnull managed empty string. Borrowed
 sources remain readable, and fresh concatenation or unproven call results can
 remain registered until shutdown. Proven factory operands are released in
-[complete append statements](#append-of-proven-factory-results-p0058) and
-[direct append initializers](#append-initializers-with-proven-factory-results-p0059).
+[complete append statements](#append-of-proven-factory-results-p0058),
+[direct append initializers](#append-initializers-with-proven-factory-results-p0059),
+and [direct Console output of append results](#console-output-of-append-results-p0060).
 Allocation failure and size limits follow `dream_concat`. Const
 identifier updates and non-string/non-null operands receive Dream diagnostics
 before artifacts. Numeric `+=` retains its existing emission. Parameter/field/index
@@ -883,6 +884,22 @@ Null still contributes empty text.
 Each eight-iteration audit went from 32 nonnull releases and eight live factory
 allocations to 40 releases and zero live allocations. The checked regression
 exercises 10,000 repetitions per mode, including operand effects, borrowed
-self-append, null, and zero-iteration header cleanup. An append under another
-operator, passed as an argument, or returned still uses the general expression
-path. See the [P0059 pass record](../../tasks/passes/P0059-owned-append-initializer.md).
+self-append, null, and zero-iteration header cleanup. See the
+[P0059 pass record](../../tasks/passes/P0059-owned-append-initializer.md).
+
+## Console output of append results (P0060)
+
+In a complete `Console.Write(text += makeText());` or
+`Console.WriteLine(text += makeText());` statement, the same owned destination
+and factory proof allow the append helper to consume the original operand. It
+finishes the append and releases that operand before the writer receives the
+joined string. The destination owns the join, so later reads and replacements
+still work. A null operand contributes empty text, and a borrowed operand uses
+the ordinary append path.
+
+The eight-iteration audit measures 24 nonnull releases and zero survivors in
+each mode, up from 16 releases and eight survivors. The stress regression also
+checks both writers, an argument that replaces the destination and increments a
+counter once, null, and borrowed self-append. Appends nested under another
+operator, passed to user functions, or returned remain on general expression
+emission. See the [P0060 pass record](../../tasks/passes/P0060-owned-append-console.md).

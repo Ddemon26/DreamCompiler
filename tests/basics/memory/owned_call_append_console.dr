@@ -1,0 +1,47 @@
+// Expected: newnew
+// Expected: newnew!
+// Expected: 1
+// Expected: []
+// Expected: samesame
+
+func string empty() {
+    string result = "";
+    return result;
+}
+
+func string clone(string source, int effect) {
+    string result = source;
+    return result;
+}
+
+func string absent() {
+    string result;
+    return result;
+}
+
+func string borrowed(string source) { return source; }
+
+func void exercise() {
+    for (int i = 0; i < 10000; i++) {
+        string text;
+        Console.Write(text += empty());
+    }
+
+    string changed = "old";
+    int count = 0;
+    if (true) Console.WriteLine(changed += clone((changed = "new"), count++));
+    changed += "!";
+    Console.WriteLine(changed);
+    Console.WriteLine(count);
+
+    string nullable;
+    Console.Write("[");
+    Console.Write(nullable += absent());
+    if (nullable != null) Console.WriteLine("]");
+
+    string alias = "same";
+    Console.Write(alias += borrowed(alias));
+    Console.WriteLine("");
+}
+
+exercise();

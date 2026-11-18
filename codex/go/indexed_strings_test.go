@@ -315,6 +315,15 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		`(number+=2);`, `(real+=2.0);`,
 	}, "start literal\nstart literalstart literal\nstart literalstart literal\nchanged\nonce\nleft borrowed\n1\nleft borrowed field\nborrowed\nalive source\nempty\nnull left\nnull left\nABAB\nABAB\nplain expressionplain expression\nfresh value\nloopx\nloopxx\nstopx\n7\n3.500000\nstatic value\ninstance value\ntop value\nborrowed\n")
 
+	t.Run("owned_factory_console", func(t *testing.T) {
+		checkStorageOwnership(t, "owned_call_append_console.dr", 20008, []string{
+			`dr_console_write(__dream_string_append_owned(&text,@entry@empty()));`,
+			`dr_console_writeln(__dream_string_append_owned(&changed,@entry@clone(__dream_string_assign(&changed,"new"),(count++))));`,
+			`dr_console_write(__dream_string_append_owned(&nullable,@entry@absent()));`,
+			`dr_console_write(__dream_string_append(&alias,@entry@borrowed(alias)));`,
+		}, "newnew\nnewnew!\n1\n[]\nsamesame\n", true)
+	})
+
 	t.Run("owned_factory_operand", func(t *testing.T) {
 		checkStorageOwnership(t, "owned_call_append.dr", 30012, []string{
 			`{constchar*dreamOwnedArgument0=@entry@factory();__dream_string_append(&text,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,

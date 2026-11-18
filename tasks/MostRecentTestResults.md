@@ -2,6 +2,35 @@
 
 **Date:** November 18, 2026 UTC
 
+**Pass:** P0060 - release proven factory operands in printed string appends
+
+**Platform/toolchain:** Windows, Zig 0.17.1.
+
+- P0059 exact-parent native Linux and Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44315369022)
+  passed.
+- `zig build test`: **180 discovered, 162 passed, 18 skipped, zero failures
+  or errors** (53.92s). Report: `test_results_20261118_072040_windows.json`.
+- Focused append, initializer, argument, and assignment Go groups: **four
+  passed** (21.628s). The new regression checks 10,000 printed appends per
+  mode, 20,008 nonnull releases, zero allocations live before shutdown, and
+  successful destination reuse after printing.
+- `python codex/python/owned_result_audit.py`: **28 probes passed** (32.914s).
+  The isolated printed append moved from **16 releases and eight survivors**
+  in P0059 to **24 releases and zero survivors** in each mode.
+- Python test-runner unit tests: **5 passed** (0.047s).
+- Windows Go quick protocol: **43 groups passed** (120.827s, `-count=1`).
+- Native build and Linux cross-build: **15/15** steps succeeded each. Native
+  Linux runtime validation for P0060 is tracked in CI.
+
+See the [P0060 record](passes/P0060-owned-append-console.md) for details and
+the remaining ownership cases.
+
+---
+
+## Historical P0059 checkpoint
+
+**Date:** November 18, 2026 UTC
+
 **Pass:** P0059 - release proven factory operands in string append initializers
 
 **Platform/toolchain:** Windows, Zig 0.17.1.

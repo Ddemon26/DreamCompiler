@@ -10,6 +10,11 @@ When a complete `Write` or `WriteLine` statement takes the direct result of a
 [proven string factory](../../development/string-ownership.md#direct-console-output-of-proven-factory-results-p0057),
 the compiler releases that result after printing it.
 
+In `Console.WriteLine(text += makeText());` or `Console.Write(text += makeText());`,
+an owned scalar `text` keeps the joined value. If `makeText()` passes the factory
+proof, the compiler releases the original operand after appending and before
+printing the join. See [string append ownership](../../development/string-ownership.md#console-output-of-append-results-p0060).
+
 ```dream
 Console.Write("Enter name: ");
 string name = Console.ReadLine();

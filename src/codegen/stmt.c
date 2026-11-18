@@ -818,6 +818,14 @@ static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr) {
   return NULL;
 }
 
+static void emit_owned_factory_append(CGCtx *ctx, COut *b, Node *slot, Node *operand) {
+  c_out_write(b, "__dream_string_append_owned(&");
+  cg_emit_expr(ctx, b, slot);
+  c_out_write(b, ", ");
+  cg_emit_expr(ctx, b, operand);
+  c_out_write(b, ")");
+}
+
 static Node *owned_console_wrapper_argument(CGCtx *ctx, Node *call) {
   if (call->kind != ND_CALL || call->as.call.len != 1 ||
       !call->as.call.callee || call->as.call.callee->kind != ND_IDENT) return NULL;
@@ -978,11 +986,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init) : NULL;
         if (copy_string) c_out_write(b, "dream_string_copy(");
         if (append_slot) {
-          c_out_write(b, "__dream_string_append_owned(&");
-          cg_emit_expr(ctx, b, append_slot);
-          c_out_write(b, ", ");
-          cg_emit_expr(ctx, b, init->as.bin.rhs);
-          c_out_write(b, ")");
+          emit_owned_factory_append(ctx, b, append_slot, init->as.bin.rhs);
         } else {
           cg_emit_value_as(ctx, b, n->as.var_decl.type_name, init);
         }
@@ -1297,8 +1301,13 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         c_out_write(b, "dream_readline();");
         c_out_newline(b);
       } else if (cg_is_string_expr(ctx, expr->as.console.arg)) {
+        Node *arg = expr->as.console.arg;
+        Node *printed_append_slot = owned_factory_append_slot(ctx, arg);
         c_out_write(b, "%s(", console_writer);
-        cg_emit_expr(ctx, b, expr->as.console.arg);
+        if (printed_append_slot)
+          emit_owned_factory_append(ctx, b, printed_append_slot, arg->as.bin.rhs);
+        else
+          cg_emit_expr(ctx, b, arg);
         c_out_write(b, ");");
         c_out_newline(b);
       } else {
