@@ -1,32 +1,29 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0054 - release discarded proven factory results**.
-- Record: [P0054](passes/P0054-owned-call-discard.md).
-- Parent/fetched approved remote: `a1e09c068f5e059171459f7db20354c8cd759061` (P0053).
-- Resolve this pass commit by its exact `Pass-ID: P0054` trailer.
+- Current pass: **P0055 - audit proven factory results passed as arguments**.
+- Record: [P0055](passes/P0055-owned-call-argument-audit.md).
+- Parent/fetched approved remote: `04daec85aeee2d7c2a352e7d498bd5c24f7ac914` (P0054).
+- Resolve this pass commit by its exact `Pass-ID: P0055` trailer.
 - Delivery requires push and matching `git ls-remote`.
 
-Complete direct call statements accepted by the unchanged `adopts_string_call`
-proof release the original pointer after the call. The checked allocator shows
-zero survivors and peak live count one across 10,000 repeats in each mode.
-The isolated eight-call case drops from eight survivors to zero, and the
-aggregate case retains three results from append, Console output and argument
-consumption. See the [discard boundary](../docs/development/owned-call-discard.md)
-and [measured tests](MostRecentTestResults.md).
+Eight isolated `view(owned())` calls leave eight original allocations live
+before shutdown in each mode. A separate wrapper stores the pointer in a
+static field and reads it after the call. A two-argument control verifies both
+arguments stay in the same C call and the sibling effect occurs once.
+Compiler emission is unchanged. The [argument contract](../docs/development/owned-call-argument.md)
+selects a single-argument `void` free function whose entire body writes the
+scalar string parameter to Console.
 
-Approved clean checkout, attached branch, origin and fetched parent matched.
-The schedule uses the local checkout and available chats showed one writer.
-P0053 exact-commit native Linux/Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44155266595)
-passed. Eighteen unannotated entries and the prior grammar/operator/shape limits
-remain.
+P0054 passed exact-commit native Linux/Windows [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44193733124).
+The updated checked audit passed 18 probes. See [measured tests](MostRecentTestResults.md).
+Eighteen unannotated entries remain skipped in the reused full-suite result.
 
 Next invocation:
 
-1. Verify P0054 publication and inspect its exact-commit CI. Repair failures first.
-2. Audit direct proven factory results passed to a synchronous string parameter.
-   Start with the retained `view(owned())` case. Measure isolated retention and
-   trace parameter escape and argument evaluation before selecting an implementation.
-3. Keep append, Console, general/mixed/method result flow, nested owned argument
-   cleanup, pointer/class transfer, aliases/containers/destructors/fields and
-   async/exception unwinding outside the completed discard slice.
+1. Verify P0055 publication and inspect its exact-commit CI if available.
+2. Implement the selected statement-only rule with unchanged factory proof.
+   Gate it on actual destination definition and require original-pointer
+   release, peak live count one and no survivors across repeated calls.
+3. Preserve the pointer-escape and sibling controls. General argument flow,
+   direct Console/append consumption, and async/exception cleanup remain open.

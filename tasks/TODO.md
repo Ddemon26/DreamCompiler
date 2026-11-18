@@ -613,11 +613,18 @@ at peak live count one, null and argument effects, and exact checked/linked outp
 The aggregate audit now has four releases and three survivors for append, Console
 output and argument consumption. See [P0054](passes/P0054-owned-call-discard.md).
 
-Broader T011 remains open. Verify P0054 publication/CI and repair failures first.
-Next audit direct proven factory results passed to a synchronous string parameter.
-Start with the retained `view(owned())` case and trace parameter escape and argument
-evaluation before choosing a bounded release rule. Keep append, Console and general
-assignment expressions separate.
+P0055 measures isolated `view(owned())` at zero releases and eight retained
+originals per mode. The static-store control shows a synchronous void callee can
+let a parameter escape without rebinding it. The sibling control preserves both
+C argument expressions and checks the sibling side effect once. The
+[argument contract](../docs/development/owned-call-argument.md) selects a single
+scalar string parameter and an exact Console-write body. Compiler emission is
+unchanged. See [P0055](passes/P0055-owned-call-argument-audit.md).
+
+Broader T011 remains open. Verify P0055 publication and available CI, then
+implement the selected complete-statement rule with checked original-pointer
+release after the wrapper returns. Keep pointer-escape and sibling fallbacks,
+append, direct Console and general assignment expressions separate.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

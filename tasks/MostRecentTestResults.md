@@ -1,5 +1,34 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 18, 2026 UTC
+
+**Pass:** P0055 - audit proven factory results passed as arguments
+
+**Platform/toolchain:** Windows, Zig 0.17.1.
+
+- P0054 exact-parent [CI 44193733124](https://github.com/Ddemon26/DreamCompiler/actions/runs/44193733124)
+  passed natively on Linux and Windows.
+- `zig build --summary all`: **15/15 succeeded**.
+- `python codex/python/owned_result_audit.py`: **18 probes passed** (23.658s).
+  Per mode, eight isolated `view(owned())` calls left **zero nonnull releases
+  and eight live originals** before shutdown. The static-store and sibling
+  controls each left **zero releases and one live original**. Existing
+  initializer, assignment, discard, and aggregate counts were unchanged.
+  Generated-C and exact stdout checks, native UBSan execution, normal linking
+  and Windows-to-Linux harness cross-links passed in both modes.
+- Reused P0054's November 17 full Dream suite (**158 passed, 18 skipped,
+  zero failures or errors**), **42 Go quick groups**, **five Python runner
+  tests**, and **15/15 Linux cross-build steps**. Those suites and the full
+  cross-build were not rerun in this audit.
+
+See the [argument contract](../docs/development/owned-call-argument.md) and
+[P0055 record](passes/P0055-owned-call-argument-audit.md). Compiler emission is
+unchanged. Release after the selected wrapper returns remains to be implemented.
+
+---
+
+## Historical P0054 checkpoint
+
 **Date:** November 17, 2026 UTC
 
 **Pass:** P0054 - release discarded proven factory results

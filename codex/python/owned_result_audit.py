@@ -1,4 +1,4 @@
-"""Check ownership probes with initializer, assignment and discard consumption.
+"""Check ownership of factory results across caller consumption paths.
 
 Run from the checkout with an already built compiler, with no competing writer:
     python codex/python/owned_result_audit.py
@@ -7,6 +7,7 @@ P0049's original retention measurements remain in its pass/contract. P0050
 supersedes owned_initializers: callers adopt the five originals. P0052 adds an
 isolated assignment probe and reduces other_consumers survivors from five to four.
 P0054 adds isolated discard and reduces other_consumers survivors to three.
+P0055 isolates synchronous argument consumption and checks two exclusion cases.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -24,6 +25,46 @@ func string owned() { string result = "owned"; return result; }
 func string borrowed(string source) { return source; }
 '''
 CASES = [
+    {
+        "name": "isolated_argument",
+        "releases": 0, "live": 8,
+        "source": COMMON + '''
+func void view(string source) { Console.WriteLine(source); }
+for (int i = 0; i < 8; i++) view(owned());
+''',
+        "output": "owned\n" * 8,
+        "c": ["@entry@view(@entry@owned());", "dr_console_writeln(source);"],
+    },
+    {
+        "name": "argument_stored_by_consumer",
+        "releases": 0, "live": 1,
+        "source": COMMON + '''
+class Vault { static string saved; }
+func void view(string source) {
+    Console.WriteLine(source);
+    Vault.saved = source;
+}
+view(owned());
+Console.WriteLine(Vault.saved);
+''',
+        "output": "owned\nowned\n",
+        "c": ["@entry@view(@entry@owned());",
+              "(Vault_saved=source);", "dr_console_writeln(Vault_saved);"],
+    },
+    {
+        "name": "argument_with_sibling",
+        "releases": 0, "live": 1,
+        "source": COMMON + '''
+func int sibling() { Console.WriteLine("sibling"); return 7; }
+func void view(string source, int number) {
+    Console.WriteLine(source);
+    Console.WriteLine(number);
+}
+view(owned(), sibling());
+''',
+        "output": "sibling\nowned\n7\n",
+        "c": ["@entry@view(@entry@owned(),@entry@sibling());"],
+    },
     {"name": "isolated_discard", "releases": 8, "live": 0,
      "source": COMMON + 'for (int i = 0; i < 8; i++) owned();',
      "output": "", "c": ["dr_release((void*)@entry@owned());"]},
