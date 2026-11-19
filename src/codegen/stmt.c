@@ -764,26 +764,40 @@ static int copies_string_initializer(Node *init) {
                    (init->as.bin.op == TK_EQ || init->as.bin.op == TK_PLUSEQ)));
 }
 
-/* A separate, intentionally small transfer proof. Return cleanup eligibility
- * does not imply ownership: literals, parameters and fields may be borrowed. */
-static int adopts_string_call(CGCtx *ctx, Node *call) {
+static Node *string_factory_definition(Node *call) {
   if (!call || call->kind != ND_CALL || !call->as.call.callee ||
-      call->as.call.callee->kind != ND_IDENT) return 0;
-  Slice name = call->as.call.callee->as.ident;
-  if (cgctx_has_var(ctx, name.start, name.len)) return 0;
-  Node *fn = cg_function(name);
+      call->as.call.callee->kind != ND_IDENT) return NULL;
+  Node *fn = cg_function(call->as.call.callee->as.ident);
   if (!fn || fn->as.func.is_async || fn->as.func.ret_type != TK_KW_STRING ||
-      fn->as.func.param_len != call->as.call.len) return 0;
+      fn->as.func.param_len != call->as.call.len) return NULL;
+  return fn;
+}
+
+/* Return cleanup eligibility alone does not prove ownership. A declaration
+ * may also adopt the fresh join of a direct append with a proven operand. */
+static int string_factory_result(Node *fn, int allow_append) {
   Node *body = fn->as.func.body;
   if (!body || body->kind != ND_BLOCK || body->as.block.len != 2) return 0;
   Node *local = body->as.block.items[0], *ret = body->as.block.items[1];
   if (!local || local->kind != ND_VAR_DECL ||
       local->as.var_decl.type != TK_KW_STRING || local->as.var_decl.is_static ||
       local->as.var_decl.is_pointer || local->as.var_decl.array_len ||
-      !ret || ret->kind != ND_RETURN || !ret->as.ret.expr ||
-      ret->as.ret.expr->kind != ND_IDENT) return 0;
-  Slice slot = local->as.var_decl.name, result = ret->as.ret.expr->as.ident;
+      !ret || ret->kind != ND_RETURN || !ret->as.ret.expr) return 0;
+  Node *value = ret->as.ret.expr;
+  Node *operand_fn = NULL;
+  Slice operand_name = {0};
+  if (allow_append && value->kind == ND_BINOP && value->as.bin.op == TK_PLUSEQ) {
+    Node *operand = value->as.bin.rhs;
+    operand_fn = string_factory_definition(operand);
+    if (!operand_fn || local->as.var_decl.is_const) return 0;
+    operand_name = operand->as.call.callee->as.ident;
+    value = value->as.bin.lhs;
+  }
+  if (value->kind != ND_IDENT) return 0;
+  Slice slot = local->as.var_decl.name, result = value->as.ident;
   if (slot.len != result.len || memcmp(slot.start, result.start, slot.len)) return 0;
+  if (operand_fn && slot.len == operand_name.len &&
+      !memcmp(slot.start, operand_name.start, slot.len)) return 0;
   Node *init = local->as.var_decl.init;
   int source_is_parameter = 0;
   for (size_t i = 0; i < fn->as.func.param_len; i++) {
@@ -796,14 +810,31 @@ static int adopts_string_call(CGCtx *ctx, Node *call) {
     // Same-spelled local/parameter cannot establish either binding's identity.
     if (slot.len == parameter.len &&
         !memcmp(slot.start, parameter.start, slot.len)) return 0;
+    if (operand_fn && parameter.len == operand_name.len &&
+        !memcmp(parameter.start, operand_name.start, parameter.len)) return 0;
     if (init && init->kind == ND_IDENT &&
         p->as.var_decl.type == TK_KW_STRING &&
         init->as.ident.len == parameter.len &&
         !memcmp(init->as.ident.start, parameter.start, parameter.len))
       source_is_parameter = 1;
   }
-  return !init || init->kind == ND_STRING || init->kind == ND_NULL ||
-         source_is_parameter;
+  // The append operand must satisfy the original two-statement proof.
+  // Disabling append here bounds the check even for recursive calls.
+  return (!init || init->kind == ND_STRING || init->kind == ND_NULL ||
+          source_is_parameter) &&
+         (!operand_fn || string_factory_result(operand_fn, 0));
+}
+
+static int adopts_string_call_result(CGCtx *ctx, Node *call, int allow_append) {
+  Node *fn = string_factory_definition(call);
+  if (!fn) return 0;
+  Slice name = call->as.call.callee->as.ident;
+  return !cgctx_has_var(ctx, name.start, name.len) &&
+         string_factory_result(fn, allow_append);
+}
+
+static int adopts_string_call(CGCtx *ctx, Node *call) {
+  return adopts_string_call_result(ctx, call, 0);
 }
 
 static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr) {
@@ -980,7 +1011,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         int copy_string = n->as.var_decl.type == TK_KW_STRING &&
                           !n->as.var_decl.is_pointer &&
                           copies_string_initializer(n->as.var_decl.init) &&
-                          !adopts_string_call(ctx, n->as.var_decl.init);
+                          !adopts_string_call_result(ctx, n->as.var_decl.init, 1);
         Node *init = n->as.var_decl.init;
         Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init) : NULL;
         if (copy_string) c_out_write(b, "dream_string_copy(");

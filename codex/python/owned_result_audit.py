@@ -16,6 +16,7 @@ P0059 isolates an append that initializes an independent string snapshot.
 P0060 isolates an append that passes its joined value directly to Console output.
 P0061 isolates an append that passes its joined value to a Console wrapper.
 P0063 isolates an append that returns its joined value to the caller.
+P0064 adopts the proven returned join in a complete scalar string initializer.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -44,7 +45,7 @@ APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
     {
         "name": "append_return",
-        "releases": 24, "live": 8,
+        "releases": 24, "live": 0,
         "source": COMMON + '''
 func string joined() {
     string text = "start";
@@ -60,7 +61,7 @@ exercise();
 ''',
         "output": "startowned\n" * 8,
         "c": ["return__dream_string_append_owned(&text,@entry@owned());",
-              "snapshot=dream_string_copy(@entry@joined());"],
+              "snapshot=@entry@joined();"],
     },
     {
         "name": "append_wrapper",

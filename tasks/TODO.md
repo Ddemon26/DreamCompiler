@@ -670,11 +670,16 @@ moves from 16 releases and 16 survivors to 24 releases and eight survivors in
 each mode. The eight joins remain registered after the caller copies them.
 See [P0063](passes/P0063-owned-append-return.md).
 
-Broader T011 remains open. Verify P0063 publication and native CI, then
-measure allocation identity for `string snapshot = joined();` when
-`joined` consists of an owned scalar declaration and a direct append return.
-Compare the returned join and caller copy in both modes before extending the
-factory proof to this shape.
+P0064 measures and fixes the extra copy in `string snapshot = joined();`
+when the resolved function declares one qualifying scalar local and returns
+an append of a proven factory result to that local. The original join is
+released at declaration scope exit in 10,000 checked calls per mode. The
+eight-call audit now has zero survivors. See
+[P0064](passes/P0064-adopt-returned-joins.md).
+
+Broader T011 remains open. Verify P0064 publication and native CI, then
+measure join identity and release order for `target = joined();` as a
+complete assignment to an owned scalar in both modes.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

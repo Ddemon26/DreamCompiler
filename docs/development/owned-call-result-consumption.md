@@ -211,3 +211,8 @@ P0054 implements immediate release of the original result after normal call
 completion under the same factory proof. The aggregate audit now measures four
 nonnull releases and three retained originals per mode, from append, Console
 output and argument consumption.
+
+P0064 extends declaration adoption to a [direct append return with a proven
+factory operand](string-ownership.md#scalar-initializers-that-adopt-returned-joins-p0064).
+The caller releases the same allocation that concatenation created. Assignment,
+discard, and argument paths continue to use the original factory proof.

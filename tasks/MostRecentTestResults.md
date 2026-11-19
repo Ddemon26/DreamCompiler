@@ -2,6 +2,36 @@
 
 **Date:** November 19, 2026 UTC
 
+**Pass:** P0064 - adopt proven returned joins in scalar string initializers
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0063 [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44477695219)
+  passed on Windows and Linux at the verified parent SHA.
+- `zig build test` discovered **182** entries. **164 passed**, **18 skipped**,
+  with zero failures or errors (60.27s). Report
+  `test_results_20261119_060528_windows.json`.
+- Focused Go initializer and return-append regressions passed (7.550s).
+  Ordinary and imported module calls each ran **10,000** checked declarations.
+  Each declaration released the original join at reference count one and left
+  the registry empty. Both checked and normally linked programs matched exact
+  output. The P0063 return-append regression still measured 29 releases and
+  12 survivors per mode.
+- The ownership audit passed **34** probes (33.860s). Eight isolated calls in
+  each mode had 24 releases, with survivors down from eight to zero.
+- Python runner unit tests passed **5/5** (0.068s).
+- Windows Go quick protocol passed all **43** groups (141.473s, `-count=1`).
+- Windows native build and Linux cross-build passed **15/15** steps each.
+  Native Linux runtime verification comes from CI.
+
+See the [P0064 record](passes/P0064-adopt-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0063 checkpoint
+
+**Date:** November 19, 2026 UTC
+
 **Pass:** P0063 - release proven factory operands in direct append returns
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

@@ -25,17 +25,19 @@ func TestCompiler_OwnedCallInitializer(t *testing.T) {
 			text := string(data)
 			options := []string{}
 			entry, identity, clone := "", "owned", "clone"
-			copies := 16
+			copies := 18
 			if modules {
 				copies++ // Independent copy of the imported borrowed result.
 				entry, identity, clone = "__dream_module_0_", "__dream_module_1_owned", "__dream_module_1_clone"
 				options = append(options, "--multi-file")
 				text = "import labels;\n" + strings.ReplaceAll(text, "string identity = owned();", "string identity = labels.owned();")
 				text = strings.ReplaceAll(text, "snapshot = clone(backing)", "snapshot = labels.clone(backing)")
+				text = strings.ReplaceAll(text, " = joined()", " = labels.joined()")
 				text = strings.ReplaceAll(text, "string first =", "string importedBorrow = labels.emptyFactory(); string first =")
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(`module labels;
 export func string owned() { string result = "owned"; return result; }
 export func string clone(string source) { const string result = source; return result; }
+export func string joined() { string result = "start"; return (result += owned()); }
 export func string emptyFactory() { return ""; }`), 0644); err != nil {
 					t.Fatal(err)
 				}
@@ -91,12 +93,14 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 			if err := os.WriteFile(generated, []byte(checked), 0644); err != nil {
 				t.Fatal(err)
 			}
-			// Independent tally: 15 nonnull factory/backing copies in exercise,
+			// Independent tally: 17 nonnull factory/backing copies in exercise,
+			// including the append's old slot and operand,
 			// plus one global (and one imported borrowed copy in module mode).
 			// Null factories allocate/release nothing. The identity
 			// and transfer probes run separately with explicit original-pointer checks.
 			args := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
 				fmt.Sprintf("-DDREAM_EXPECTED_COPIES=%d", copies), "-DDREAM_IDENTITY_PROBE=" + entry + "identityProbe",
+				"-DDREAM_APPEND_PROBE=" + entry + "appendProbe",
 				"-DDREAM_TRANSFER_PROBE=" + entry + "transfer",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"), "-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -112,7 +116,15 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 				binary += ".exe"
 			}
 			command("zig", append(args, "-o", binary)...)
-			want := "owned\nescaped \"value\"\nempty\nnull\nbacking\nchanged\nowned\n7\nglobal\n"
+			join := entry + "joined"
+			if modules {
+				join = "__dream_module_1_joined"
+			}
+			if !strings.Contains(c, "snapshot="+join+"();dr_release(snapshot);") ||
+				!strings.Contains(c, "appended="+join+"();") {
+				t.Fatalf("direct append-return initializers must adopt %s", join)
+			}
+			want := "owned\nescaped \"value\"\nempty\nnull\nbacking\nchanged\nowned\n7\nstartowned\nglobal\n"
 			if got := strings.ReplaceAll(string(command(binary)), "\r\n", "\n"); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -165,6 +177,10 @@ func checkOwnedCallFallbacks(t *testing.T, tr *TestRunner) {
 			{"write_body", `func string factory() { string result = "owned"; result = "changed"; return result; }`, `factory()`},
 			{"alias_body", `func string factory() { string result = "owned"; string alias = result; return result; }`, `factory()`},
 			{"exception_body", `func string factory() { string result = "owned"; try { return result; } catch { return result; } }`, `factory()`},
+			{"append_borrowed_operand", `func string borrowed(string source) { return source; } func string factory() { string result = "start"; return (result += borrowed(result)); }`, `factory()`},
+			{"append_other_destination", `func string owned() { string result = "owned"; return result; } string outer = "outer"; func string factory() { string result = "start"; return (outer += owned()); }`, `factory()`},
+			{"append_extra_statement", `func string owned() { string result = "owned"; return result; } func string factory() { string result = "start"; Console.WriteLine(result); return (result += owned()); }`, `factory()`},
+			{"append_nested_factory", `func string owned() { string result = "owned"; return result; } func string joined() { string result = "start"; return (result += owned()); } func string factory() { string result = "start"; return (result += joined()); }`, `factory()`},
 		} {
 			t.Run(fmt.Sprintf("fallback_%s/modules=%v", tc.name, modules), func(t *testing.T) {
 				c := memberReturnEmission(t, tr, tc.definition+` string probe = `+tc.call+`;`, modules)
@@ -196,7 +212,10 @@ string target = "start"; target = factory(); target += factory();
 string appended = (target += factory());
 string nestedAppend = true ? (target += factory()) : "literal";
 string compound = true ? factory() : "literal";
-Console.WriteLine(factory()); factory(); view(factory());`, modules)
+Console.WriteLine(factory()); factory(); view(factory());
+func string joined() { string result = "start"; return (result += factory()); }
+string direct = joined(); target = joined(); joined(); Console.WriteLine(joined());
+string nestedJoin = true ? joined() : "literal";`, modules)
 			for _, want := range []string{
 				"(char*)" + prefix + "factory();dr_release(target);target=__dream_owned_0;",
 				"{constchar*dreamOwnedArgument0=" + prefix + "factory();__dream_string_append(&target,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}",
@@ -207,6 +226,11 @@ Console.WriteLine(factory()); factory(); view(factory());`, modules)
 				ownedArgumentBlock(prefix+"factory()", "dr_console_writeln", "dreamOwnedArgument0"),
 				prefix + "view(" + prefix + "factory());",
 				"dr_release((void*)" + prefix + "factory());",
+				"direct=" + prefix + "joined();",
+				"__dream_string_assign(&target," + prefix + "joined());",
+				"*/" + prefix + "joined();",
+				"dr_console_writeln(" + prefix + "joined());",
+				"nestedJoin=dream_string_copy((1?" + prefix + `joined():"literal"));`,
 			} {
 				if !strings.Contains(c, want) {
 					t.Fatalf("other consumer changed: missing %q", want)

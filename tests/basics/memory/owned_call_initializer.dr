@@ -6,9 +6,11 @@
 // Expected: changed
 // Expected: owned
 // Expected: 7
+// Expected: startowned
 // Expected: global
 // This function is also invoked independently by the identity/peak harness.
 func void identityProbe() { string identity = owned(); }
+func void appendProbe() { string snapshot = joined(); }
 func void bare() { string early = owned(); return; }
 func int scalar() { string earlyScalar = owned(); return 7; }
 func string transfer() { string forwarded = owned(); return forwarded; }
@@ -32,10 +34,12 @@ func void exercise() {
         if (i == 2) break;
     }
     bare(); Console.WriteLine(first); Console.WriteLine(scalar());
+    string appended = joined(); Console.WriteLine(appended);
     string __dream_return_0 = owned();
 }
 // Definitions after their uses must be proved from the registered program.
 func string owned() { string result = "owned"; return result; }
+func string joined() { string result = "start"; return (result += owned()); }
 func string escapedFactory() { const string result = "escaped \"value\""; return (result); }
 func string emptyFactory() { string result = ""; return result; }
 func string absentFactory() { string result; return result; }

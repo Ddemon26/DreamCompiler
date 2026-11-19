@@ -931,9 +931,24 @@ local value and releases the factory operand. The return hands the original
 joined pointer to the caller. Null contributes empty text, and a borrowed
 operand follows ordinary append emission.
 
-The eight-call audit measures 24 nonnull releases and eight live joins in each
-mode. Before this pass it measured 16 releases and 16 live allocations, including
-eight factory operands. Caller locals still copy these results and the returned
-originals stay registered until shutdown. Cleanup of other locals at these
-returns, nested result expressions, async and exception unwinding remain open.
+At P0063 the eight-call audit measured 24 nonnull releases and eight live joins
+in each mode. Before P0063 it measured 16 releases and 16 live allocations,
+including eight factory operands. Cleanup of other locals at these returns,
+nested result expressions, async and exception unwinding remain open.
 See the [P0063 pass record](../../tasks/passes/P0063-owned-append-return.md).
+
+## Scalar initializers that adopt returned joins (P0064)
+
+In `string snapshot = joined();`, the declaration can take the original
+joined allocation. The resolved synchronous free function must have exactly one
+mutable scalar string local declared from a literal, an omitted initializer,
+or a scalar string parameter, followed by a direct return appending to that
+local. The entire append operand must meet the original factory proof.
+Lowered imports qualify under the same checks.
+
+The caller evaluates the call once and normal declaration cleanup releases
+the original join. The eight-call audit now sees 24 releases and zero survivors
+in each mode. The checked regression verifies the exact allocation base and
+an empty allocation registry after each of 10,000 calls per mode. Conditional
+initializers and other consumers of returned joins keep their existing behavior.
+See the [P0064 pass record](../../tasks/passes/P0064-adopt-returned-joins.md).
