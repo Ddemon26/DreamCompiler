@@ -66,8 +66,9 @@
 | [P0062](P0062-ci-python-setup.md) | 2026-11-19 | Restore CI Python setup on Ubuntu 26.04 | `Pass-ID: P0062` |
 | [P0063](P0063-owned-append-return.md) | 2026-11-19 | Release proven factory operands in direct append returns | `Pass-ID: P0063` |
 | [P0064](P0064-adopt-returned-joins.md) | 2026-11-19 | Adopt a proven returned join in a direct scalar string initializer | `Pass-ID: P0064` |
+| [P0065](P0065-assign-returned-joins.md) | 2026-11-19 | Adopt a proven returned join in a complete scalar string assignment | `Pass-ID: P0065` |
 
-**Verify P0064 publication and native CI, then measure join identity and release order in a complete assignment.**
+**Verify P0065 publication and native CI, then measure join retention in a complete discard statement.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

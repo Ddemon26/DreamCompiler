@@ -282,11 +282,14 @@ variable, releasing its previous value after the call finishes. A standalone
 `getText();` statement releases the proven factory result immediately after the
 call. The call and its arguments still run, and a null result needs no storage.
 
-A scalar declaration can also adopt a returned join when the function declares
-one mutable string local as above and then returns `(local += makeText())`.
-The append operand must be a direct call to a factory that returns its own
-local. The declaration owns the join and releases it when its scope exits.
-See the [returned join rules](../development/string-ownership.md#scalar-initializers-that-adopt-returned-joins-p0064).
+A scalar declaration or a complete assignment to an owned scalar string can
+also adopt a returned join when the function declares one mutable string local
+as above and then returns `(local += makeText())`. The append operand must be
+a direct call to a factory that returns its own local. The destination owns
+the join. In an assignment, the previous value stays live until the call
+finishes, unless an argument itself replaces it.
+See the [declaration](../development/string-ownership.md#scalar-initializers-that-adopt-returned-joins-p0064)
+and [assignment rules](../development/string-ownership.md#complete-assignments-that-adopt-returned-joins-p0065).
 
 In a complete `show(getText());` statement, the caller passes the original
 result and releases it after `show` returns if `show` is a synchronous void

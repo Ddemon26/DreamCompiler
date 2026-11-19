@@ -17,6 +17,7 @@ P0060 isolates an append that passes its joined value directly to Console output
 P0061 isolates an append that passes its joined value to a Console wrapper.
 P0063 isolates an append that returns its joined value to the caller.
 P0064 adopts the proven returned join in a complete scalar string initializer.
+P0065 adopts the proven returned join in a complete scalar string assignment.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -43,6 +44,27 @@ def argument_release(consumer, leading_args=""):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "returned_join_assignment",
+        "releases": 32, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "start";
+    return (text += owned());
+}
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string target = "old";
+        target = joined();
+        Console.WriteLine(target);
+    }
+}
+exercise();
+''',
+        "output": "startowned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@owned());",
+              "(char*)@entry@joined();dr_release(target);target=__dream_owned_0;"],
+    },
     {
         "name": "append_return",
         "releases": 24, "live": 0,

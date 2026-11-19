@@ -25,12 +25,16 @@ func TestCompiler_OwnedCallAssignment(t *testing.T) {
 			text := string(data)
 			options := []string{}
 			entry, factory := "", "factory"
+			joined := "joined"
 			if modules {
 				entry, factory = "__dream_module_0_", "__dream_module_1_factory"
+				joined = "__dream_module_1_joined"
 				options = append(options, "--multi-file")
 				text = "import labels;\n" + strings.ReplaceAll(text, "= factory();", "= labels.factory();")
+				text = strings.ReplaceAll(text, "= joined(", "= labels.joined(")
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(`module labels;
-export func string factory() { string result = "owned"; return result; }`), 0644); err != nil {
+export func string factory() { string result = "owned"; return result; }
+export func string joined(string source) { string result = source; return (result += factory()); }`), 0644); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -62,6 +66,8 @@ export func string factory() { string result = "owned"; return result; }`), 0644
 				"(char*)" + entry + "clone(__dream_string_assign(&text,\"changed\"));dr_release(text);",
 				"(char*)" + entry + "effect((count++));dr_release(text);",
 				"(char*)" + entry + "clone(\"global\");dr_release(global);",
+				"(char*)" + joined + "(target);dr_release(target);target=__dream_owned_0;",
+				"(char*)" + joined + `(__dream_string_assign(&target,"new"));dr_release(target);target=__dream_owned_0;`,
 			} {
 				if !strings.Contains(c, want) {
 					t.Errorf("missing assignment %q", want)
@@ -83,6 +89,7 @@ export func string factory() { string result = "owned"; return result; }`), 0644
 
 			args := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
 				"-DDREAM_IDENTITY_PROBE=" + entry + "identityProbe",
+				"-DDREAM_JOIN_ASSIGNMENT_PROBE=" + entry + "joinAssignmentProbe",
 				"-DDREAM_TRANSFER_PROBE=" + entry + "transfer",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"), "-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -127,9 +134,16 @@ func checkOwnedAssignmentContexts(t *testing.T, tr *TestRunner) {
 			{"chained", `string slot; string other; other = (slot=factory());`, `__dream_string_assign(&other,__dream_string_assign(&slot,` + prefix + `factory()))`},
 			{"borrowed", `string slot; slot=borrow();`, `__dream_string_assign(&slot,` + prefix + `borrow())`},
 			{"parameter", `func void view(string slot) { slot=factory(); }`, `slot=` + prefix + `factory()`},
+			{"join_header", `string slot; for(int i=0;i<1;slot=joined()) { i++; }`, `__dream_string_assign(&slot,` + prefix + `joined())`},
+			{"join_initializer", `string slot; string other = (slot=joined());`, `dream_string_copy(__dream_string_assign(&slot,` + prefix + `joined()))`},
+			{"join_chained", `string slot; string other; other = (slot=joined());`, `__dream_string_assign(&other,__dream_string_assign(&slot,` + prefix + `joined()))`},
+			{"join_parameter", `func void view(string slot) { slot=joined(); }`, `slot=` + prefix + `joined()`},
 		} {
 			t.Run(fmt.Sprintf("%s/modules=%v", tc.name, modules), func(t *testing.T) {
-				c := memberReturnEmission(t, tr, `func string factory(){string result="owned";return result;} func string borrow(){return "borrowed";} `+tc.body, modules)
+				c := memberReturnEmission(t, tr, `func string factory(){string result="owned";return result;}
+func string borrow(){return "borrowed";}
+func string joined(){string result="start";return (result += factory());}
+`+tc.body, modules)
 				if !strings.Contains(c, tc.want) {
 					t.Fatalf("missing fallback %q: %s", tc.want, c)
 				}

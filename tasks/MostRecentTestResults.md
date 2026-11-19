@@ -2,6 +2,35 @@
 
 **Date:** November 19, 2026 UTC
 
+**Pass:** P0065 - adopt proven returned joins in scalar string assignments
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0064 CI passed on Windows and Linux at the verified parent SHA.
+  See the [P0064 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44530574682).
+- `zig build test` discovered **182** entries. **164 passed**, **18 skipped**,
+  with zero failures or errors (41.04s). Report
+  `test_results_20261119_120914_windows.json`.
+- Focused Go assignment, initializer and append regressions passed (19.207s).
+  Ordinary and imported module calls each ran **10,000** checked scopes with
+  two join assignments per scope. Each scope verified the exact allocation
+  bases and release order, reference count one, a peak of four live
+  allocations and an empty registry.
+- The ownership audit passed **36** probes (31.375s). Eight isolated assignments
+  in each mode made 32 releases, with survivors down from eight to zero.
+- Python runner unit tests passed **5/5** (0.036s).
+- Windows Go quick protocol passed all **43** groups (108.450s, `-count=1`).
+- Windows native build and Linux cross-build passed **15/15** steps each.
+  Native Linux runtime verification comes from CI.
+
+See the [P0065 record](passes/P0065-assign-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0064 checkpoint
+
+**Date:** November 19, 2026 UTC
+
 **Pass:** P0064 - adopt proven returned joins in scalar string initializers
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

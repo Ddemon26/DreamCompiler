@@ -773,8 +773,8 @@ static Node *string_factory_definition(Node *call) {
   return fn;
 }
 
-/* Return cleanup eligibility alone does not prove ownership. A declaration
- * may also adopt the fresh join of a direct append with a proven operand. */
+/* Return cleanup eligibility alone does not prove ownership. A scalar
+ * declaration or complete assignment may adopt a proven direct append. */
 static int string_factory_result(Node *fn, int allow_append) {
   Node *body = fn->as.func.body;
   if (!body || body->kind != ND_BLOCK || body->as.block.len != 2) return 0;
@@ -1277,7 +1277,8 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       Slice name = expr->as.bin.lhs->as.ident;
       const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
       if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
-          slot->indirections == 0 && adopts_string_call(ctx, expr->as.bin.rhs)) {
+          slot->indirections == 0 &&
+          adopts_string_call_result(ctx, expr->as.bin.rhs, 1)) {
         // A statement-local temporary avoids a new global helper namespace.
         // Finish the RHS before reading/releasing the current destination: an
         // argument may itself replace that destination or snapshot its backing.

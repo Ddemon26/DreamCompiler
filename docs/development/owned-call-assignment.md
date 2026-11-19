@@ -143,3 +143,13 @@ linked exact output are checked; cross-linking is not Linux execution.
 See [P0052](../../tasks/passes/P0052-owned-call-assignment.md) for measured checks.
 General assignment expressions and the remaining consumers still require their own
 provenance and lifetime audits; no blanket result release is justified.
+
+## P0065 returned join assignments
+
+The complete-statement emitter also adopts an original join from a function
+that meets the [P0064 append proof](string-ownership.md#scalar-initializers-that-adopt-returned-joins-p0064).
+It uses the existing temporary and destination release sequence. The checked
+regression covers both a snapshot of the old destination and a nested
+assignment that replaces the destination before the outer call copies it.
+The broader expression boundary from P0052 still applies. See the
+[P0065 pass record](../../tasks/passes/P0065-assign-returned-joins.md).

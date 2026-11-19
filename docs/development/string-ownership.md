@@ -949,6 +949,22 @@ Lowered imports qualify under the same checks.
 The caller evaluates the call once and normal declaration cleanup releases
 the original join. The eight-call audit now sees 24 releases and zero survivors
 in each mode. The checked regression verifies the exact allocation base and
-an empty allocation registry after each of 10,000 calls per mode. Conditional
-initializers and other consumers of returned joins keep their existing behavior.
+an empty allocation registry after each of 10,000 calls per mode.
 See the [P0064 pass record](../../tasks/passes/P0064-adopt-returned-joins.md).
+
+## Complete assignments that adopt returned joins (P0065)
+
+In `target = joined();`, a complete assignment to an already-owned scalar
+string can adopt an original join under the same proof as a declaration. The
+call runs once in a statement-local temporary. Once the call finishes, the
+assignment releases the current destination and installs the returned pointer.
+In `target = joined(target)`, the callee can copy the old contents while they
+are live. In `target = joined(target = "new")`, the outer assignment releases
+the value installed by the inner assignment.
+
+The eight-call audit measures 32 nonnull releases per mode, with survivors
+down from eight to zero. Each mode checks 10,000 scopes with two assignments
+each, verifying the release order, original allocation bases, and a peak of
+four live allocations. Assignments to owned scalars inside headers,
+initializers and chained expressions use the string copying helper.
+See the [P0065 pass record](../../tasks/passes/P0065-assign-returned-joins.md).

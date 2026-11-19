@@ -677,9 +677,15 @@ released at declaration scope exit in 10,000 checked calls per mode. The
 eight-call audit now has zero survivors. See
 [P0064](passes/P0064-adopt-returned-joins.md).
 
-Broader T011 remains open. Verify P0064 publication and native CI, then
-measure join identity and release order for `target = joined();` as a
-complete assignment to an owned scalar in both modes.
+P0065 extends the same proof to `target = joined();` as a complete assignment
+to an already-owned scalar. It installs the original join after evaluating the
+call and releasing the current destination. In each mode, 10,000 scopes check
+both a snapshot of the old value and a nested argument replacement. The isolated
+eight-call audit retains zero original joins, down from eight, with 32 releases
+per mode. See [P0065](passes/P0065-assign-returned-joins.md).
+
+Broader T011 remains open. Verify P0065 publication and native CI, then measure
+original join retention for a complete discarded `joined();` in both modes.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

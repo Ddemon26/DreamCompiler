@@ -227,7 +227,7 @@ string nestedJoin = true ? joined() : "literal";`, modules)
 				prefix + "view(" + prefix + "factory());",
 				"dr_release((void*)" + prefix + "factory());",
 				"direct=" + prefix + "joined();",
-				"__dream_string_assign(&target," + prefix + "joined());",
+				"(char*)" + prefix + "joined();dr_release(target);target=__dream_owned_0;",
 				"*/" + prefix + "joined();",
 				"dr_console_writeln(" + prefix + "joined());",
 				"nestedJoin=dream_string_copy((1?" + prefix + `joined():"literal"));`,
