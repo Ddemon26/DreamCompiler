@@ -1,5 +1,28 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 19, 2026 UTC
+
+**Pass:** P0062 - restore CI Python setup on Ubuntu 26.04
+
+**Platform/toolchain:** Windows, Zig 0.17.1, Python 3.13.17.
+
+- P0061 [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44376422082)
+  failed during Python 3.8 setup on Ubuntu 26.04. The Windows job was canceled.
+- Updated workflow passed `actionlint` v1.7.11 with identical 43-group Go
+  selectors in CI, Make, and PowerShell.
+- `zig build test`: **181 discovered, 163 passed, 18 skipped, zero failures
+  or errors** (58.35s). Report: `test_results_20261118_180634_windows.json`.
+- Python test-runner unit tests: **5 passed** (0.047s).
+- Windows Go quick protocol: **43 groups passed** (127.753s, `-count=1`).
+- Linux cross-build: **15/15** build steps succeeded.
+
+See the [P0062 record](passes/P0062-ci-python-setup.md). Native Linux validation
+of P0062 comes from CI.
+
+---
+
+## Historical P0061 checkpoint
+
 **Date:** November 18, 2026 UTC
 
 **Pass:** P0061 - release proven factory operands in appends passed to Console wrappers

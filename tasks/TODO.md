@@ -660,7 +660,11 @@ moves from 16 releases and eight survivors to 24 releases and zero survivors in
 each mode. The two-statement wrapper control retains one original factory
 operand. See [P0061](passes/P0061-owned-append-wrapper.md).
 
-Broader T011 remains open. Verify P0061 publication and native CI, then isolate
+P0062 addresses the failed P0061 CI baseline. Ubuntu 26.04 could not install
+Python 3.8, and the workflow now uses Python 3.13 on both platforms with the
+v6 checkout and Python setup actions. See [P0062](passes/P0062-ci-python-setup.md).
+
+Broader T011 remains open. Verify P0062 publication and native CI, then isolate
 `return (text += owned());` from a synchronous string function with an owned
 local in both modes. Measure the factory operand and verify that a caller can
 read the join before choosing a release rule.

@@ -63,8 +63,9 @@
 | [P0059](P0059-owned-append-initializer.md) | 2026-11-18 | Release proven factory operands in direct string append initializers | `Pass-ID: P0059` |
 | [P0060](P0060-owned-append-console.md) | 2026-11-18 | Release proven factory operands in string appends printed directly by Console | `Pass-ID: P0060` |
 | [P0061](P0061-owned-append-wrapper.md) | 2026-11-18 | Release proven factory operands in string appends passed to Console wrappers | `Pass-ID: P0061` |
+| [P0062](P0062-ci-python-setup.md) | 2026-11-19 | Restore CI Python setup on Ubuntu 26.04 | `Pass-ID: P0062` |
 
-**Verify P0061 publication and available CI, then isolate a proven factory operand in an append returned from a synchronous string function.**
+**Verify P0062 publication and native CI, then isolate a proven factory operand in an append returned from a synchronous string function.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

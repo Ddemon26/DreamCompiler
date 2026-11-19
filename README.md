@@ -49,6 +49,9 @@ The steps below show how to build and use Dream on Linux **or Windows**.
    zig build run -- path/to/file.dr
    ```
 5. **Run the tests**
+
+   GitHub Actions uses Python 3.13 for the test runner on Linux and Windows.
+
    ```bash
    python codex/test_cli.py run
    ```
