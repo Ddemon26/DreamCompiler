@@ -664,10 +664,17 @@ P0062 addresses the failed P0061 CI baseline. Ubuntu 26.04 could not install
 Python 3.8, and the workflow now uses Python 3.13 on both platforms with the
 v6 checkout and Python setup actions. See [P0062](passes/P0062-ci-python-setup.md).
 
-Broader T011 remains open. Verify P0062 publication and native CI, then isolate
-`return (text += owned());` from a synchronous string function with an owned
-local in both modes. Measure the factory operand and verify that a caller can
-read the join before choosing a release rule.
+P0063 releases a proven factory operand when a synchronous string function
+directly returns an append to a known-owned local. The isolated eight-call audit
+moves from 16 releases and 16 survivors to 24 releases and eight survivors in
+each mode. The eight joins remain registered after the caller copies them.
+See [P0063](passes/P0063-owned-append-return.md).
+
+Broader T011 remains open. Verify P0063 publication and native CI, then
+measure allocation identity for `string snapshot = joined();` when
+`joined` consists of an owned scalar declaration and a direct append return.
+Compare the returned join and caller copy in both modes before extending the
+factory proof to this shape.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

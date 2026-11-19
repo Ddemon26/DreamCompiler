@@ -1185,11 +1185,19 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       c_out_dedent(b);
       c_out_write(b, "}");
     } else {
-      // Other result expressions and exception unwinding remain separate.
+      Node *expr = n->as.ret.expr;
+      Node *append_slot = ctx->is_sync_function && ctx->ret_type == TK_KW_STRING &&
+                          ctx->exception_depth == 0
+                              ? owned_factory_append_slot(ctx, expr) : NULL;
       c_out_write(b, "return");
-      if (n->as.ret.expr) {
+      if (expr) {
         c_out_write(b, " ");
-        cg_emit_expr(ctx, b, n->as.ret.expr);
+        if (append_slot && owned_string_result(ctx, append_slot)) {
+          // Consume the factory operand and return the local's installed join.
+          emit_owned_factory_append(ctx, b, append_slot, expr->as.bin.rhs);
+        } else {
+          cg_emit_expr(ctx, b, expr);
+        }
       } else if (ctx->ret_type != TK_KW_VOID) {
         c_out_write(b, " 0");
       }

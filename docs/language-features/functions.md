@@ -170,6 +170,12 @@ selected owned storage. Other static qualifiers and pointer/array fields remain
 outside this slice. See the
 [static-field contract](../development/static-member-return-cleanup.md).
 
+A direct `return (text += makeText());` from a synchronous string function
+releases the factory operand after concatenation when `text` is an owned
+local scalar string and the call passes the factory proof. The caller receives
+the joined value. Caller string declarations still take their own copy. See
+the [append return ownership rule](../development/string-ownership.md#direct-append-returns-with-proven-factory-operands-p0063).
+
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership
 remain unqualified. Primitive return shape checking remains a separate limitation.

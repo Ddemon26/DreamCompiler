@@ -917,6 +917,23 @@ destination keeps it for later reads and updates.
 Eight isolated calls per mode moved from 16 releases and eight live
 allocations to 24 releases and zero live allocations. The two-statement
 wrapper control follows general expression emission and retains its original
-factory allocation until shutdown. General calls, nested expressions, and
-returned appends remain open.
+factory allocation until shutdown. General calls and nested expressions remain
+open.
 See the [P0061 pass record](../../tasks/passes/P0061-owned-append-wrapper.md).
+
+## Direct append returns with proven factory operands (P0063)
+
+In `return (text += makeText());`, a synchronous string function can consume
+the factory operand when `text` is a known-owned local scalar string and the
+entire operand passes the existing factory proof. After argument evaluation,
+the append helper reads the current local, creates the join, replaces the old
+local value and releases the factory operand. The return hands the original
+joined pointer to the caller. Null contributes empty text, and a borrowed
+operand follows ordinary append emission.
+
+The eight-call audit measures 24 nonnull releases and eight live joins in each
+mode. Before this pass it measured 16 releases and 16 live allocations, including
+eight factory operands. Caller locals still copy these results and the returned
+originals stay registered until shutdown. Cleanup of other locals at these
+returns, nested result expressions, async and exception unwinding remain open.
+See the [P0063 pass record](../../tasks/passes/P0063-owned-append-return.md).

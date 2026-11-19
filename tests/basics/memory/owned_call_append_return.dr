@@ -1,0 +1,58 @@
+// Expected: startowned
+// Expected: startowned
+// Expected: startowned
+// Expected: startowned
+// Expected: startowned
+// Expected: startowned
+// Expected: startowned
+// Expected: startowned
+// Expected: start
+// Expected: once
+// Expected: newnew
+// Expected: []
+// Expected: leftright
+// Expected: right
+
+func string owned() { string result = "owned"; return result; }
+func string clone(string source, int effect) { string result = source; return result; }
+func string absent() { string result; return result; }
+func string borrowed(string source) { return source; }
+func int announce() { Console.WriteLine("once"); return 0; }
+
+func string join(bool append) {
+    string text = "start";
+    if (append) return (text += owned());
+    return text;
+}
+
+func string updated() {
+    string text = "old";
+    return (text += clone((text = "new"), announce()));
+}
+
+func string emptyJoin() {
+    string text;
+    return (text += absent());
+}
+
+func string borrowedJoin(string source) {
+    string text = "left";
+    return (text += borrowed(source));
+}
+
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string snapshot = join(true);
+        Console.WriteLine(snapshot);
+    }
+    Console.WriteLine(join(false));
+    Console.WriteLine(updated());
+    Console.Write("[");
+    Console.Write(emptyJoin());
+    Console.WriteLine("]");
+    string backing = "right";
+    Console.WriteLine(borrowedJoin(backing));
+    Console.WriteLine(backing);
+}
+
+exercise();

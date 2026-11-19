@@ -2,6 +2,34 @@
 
 **Date:** November 19, 2026 UTC
 
+**Pass:** P0063 - release proven factory operands in direct append returns
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0062 [CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/44434733409)
+  passed on Windows and Linux at the verified parent SHA.
+- `zig build test` discovered **182** entries. **164 passed**, **18 skipped**,
+  with zero failures or errors (58.44s). Report
+  `test_results_20261119_000727_windows.json`.
+- Focused Go return-append regression passed in ordinary and module-entry modes
+  (4.457s). Each mode verified exact output, **29** nonnull releases, and
+  **12** live returned allocations before shutdown.
+- The ownership audit passed **34 probes** (41.896s). The isolated eight-call
+  return went from **16 releases and 16 survivors** to **24 releases and eight
+  survivors** in each mode. The caller could read the join throughout.
+- Python test-runner unit tests passed **5/5** (0.059s).
+- Windows Go quick protocol passed **43** groups (164.436s, `-count=1`).
+- Windows native build and Linux cross-build passed **15/15** build steps each.
+
+See the [P0063 record](passes/P0063-owned-append-return.md) for the remaining
+caller ownership limits. Native Linux runtime verification comes from CI.
+
+---
+
+## Historical P0062 checkpoint
+
+**Date:** November 19, 2026 UTC
+
 **Pass:** P0062 - restore CI Python setup on Ubuntu 26.04
 
 **Platform/toolchain:** Windows, Zig 0.17.1, Python 3.13.17.

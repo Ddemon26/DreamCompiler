@@ -15,6 +15,7 @@ P0058 releases eligible append operands and leaves the aggregate with zero survi
 P0059 isolates an append that initializes an independent string snapshot.
 P0060 isolates an append that passes its joined value directly to Console output.
 P0061 isolates an append that passes its joined value to a Console wrapper.
+P0063 isolates an append that returns its joined value to the caller.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -41,6 +42,26 @@ def argument_release(consumer, leading_args=""):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "append_return",
+        "releases": 24, "live": 8,
+        "source": COMMON + '''
+func string joined() {
+    string text = "start";
+    return (text += owned());
+}
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string snapshot = joined();
+        Console.WriteLine(snapshot);
+    }
+}
+exercise();
+''',
+        "output": "startowned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@owned());",
+              "snapshot=dream_string_copy(@entry@joined());"],
+    },
     {
         "name": "append_wrapper",
         "releases": 24, "live": 0,
@@ -316,7 +337,10 @@ def main():
                 source.write_text(text, encoding="utf-8")
                 command([compiler, *options, "--dev", source])
                 generated = (ROOT / "build/bin/dream.c").read_text(encoding="utf-8")
-                compact = "".join(generated.split())
+                compact = "".join(
+                    "".join(line.split()) for line in generated.splitlines()
+                    if not line.lstrip().startswith(("#line ", "/* Debug:"))
+                )
                 for expected in case["c"]:
                     expected = expected.replace("@entry@", "__dream_module_0_" if modules else "")
                     if expected not in compact:

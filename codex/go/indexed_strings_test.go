@@ -344,6 +344,20 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "A+B\nnewnew\n1\n[]\nB\nB BB B\nBB B\n", true)
 	})
 
+	t.Run("owned_factory_return", func(t *testing.T) {
+		// Eight old slots, factory operands and copied snapshots, plus five
+		// other releases. Eleven joins and the untaken branch's local survive
+		// for the caller, which has no proof to consume these originals yet.
+		checkStorageOwnershipWithLiveCount(t, "owned_call_append_return.dr", 29, []string{
+			`char*joined=__dream_string_append(slot,text);dr_release((void*)text);returnjoined;`,
+			`return__dream_string_append_owned(&text,@entry@owned());`,
+			`return__dream_string_append_owned(&text,@entry@clone(__dream_string_assign(&text,"new"),@entry@announce()));`,
+			`return__dream_string_append_owned(&text,@entry@absent());`,
+			`return__dream_string_append(&text,@entry@borrowed(source));`,
+			`snapshot=dream_string_copy(@entry@join(1));`,
+		}, strings.Repeat("startowned\n", 8)+"start\nonce\nnewnew\n[]\nleftright\nright\n", 12)
+	})
+
 	t.Run("owned_factory_initializer", func(t *testing.T) {
 		checkStorageOwnership(t, "owned_call_append_initializer.dr", 50013, []string{
 			`char*joined=__dream_string_append(slot,text);dr_release((void*)text);returnjoined;`,
