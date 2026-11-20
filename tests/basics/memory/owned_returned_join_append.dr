@@ -1,0 +1,35 @@
+// Expected: A+B
+// Expected: newnewB
+// Expected: 1
+// Expected: newnewBnewnewB
+
+func string owned() {
+    string result = "B";
+    return result;
+}
+
+func string joined(string source, int effect) {
+    string result = source;
+    return (result += owned());
+}
+
+func string borrowed(string source) { return source; }
+
+func void exercise() {
+    for (int i = 0; i < 10000; i++) {
+        string text = "A+";
+        text += joined("", 0);
+        if (i == 9999) Console.WriteLine(text);
+    }
+
+    string changed = "old";
+    int count = 0;
+    if (true) changed += joined((changed = "new"), count++);
+    Console.WriteLine(changed);
+    Console.WriteLine(count);
+
+    changed += borrowed(changed);
+    Console.WriteLine(changed);
+}
+
+exercise();

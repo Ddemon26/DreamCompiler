@@ -2,6 +2,35 @@
 
 **Date:** November 20, 2026 UTC
 
+**Pass:** P0069 - release proven returned joins after complete append statements
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0068 CI passed on Windows and Linux at the verified parent SHA.
+  See the [P0068 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44693285083).
+- `zig build test` discovered **183** entries. **165 passed**, **18 skipped**,
+  with zero failures or errors (53.23s). Report
+  `test_results_20261120_060253_windows.json` confirms exact output for the
+  new append fixture and the same skip paths and reasons as P0068.
+- Four focused Go groups passed (28.877s, `-count=1`). In each mode the new
+  regression verified 10,000 repeated appends, post-argument destination
+  reads, 50,007 checked releases and zero live allocations before shutdown.
+- All **44** ownership audit probes passed (48.313s). Eight appends per mode
+  went from 32 releases and eight live joins to 40 releases and zero live joins.
+  The other 42 measurements matched baseline.
+- Windows Go quick passed all **43** groups (127.214s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is checked separately by CI.
+- Python runner unit tests passed **5/5** (0.038s).
+
+See the [P0069 record](passes/P0069-append-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0068 checkpoint
+
+**Date:** November 20, 2026 UTC
+
 **Pass:** P0068 - release proven returned joins after Console wrapper calls
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

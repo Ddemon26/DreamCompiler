@@ -870,6 +870,7 @@ destination replacement during argument evaluation, a once-only side effect,
 null operands, borrowed self-append, and temporary name shadowing. The isolated
 eight-call audit now finds 24 nonnull releases and zero survivors in each mode.
 See the [P0058 pass record](../../tasks/passes/P0058-owned-call-append.md).
+P0069 extends complete statements to [proven returned joins](#complete-appends-with-proven-returned-joins-p0069).
 
 ## Append initializers with proven factory results (P0059)
 
@@ -1011,3 +1012,17 @@ both writers and is released at reference count one. Conditional arguments,
 forwarding wrappers, unproven factories, and calls inside larger expressions
 continue to use general expression emission.
 See the [P0068 pass record](../../tasks/passes/P0068-wrap-returned-joins.md).
+
+## Complete appends with proven returned joins (P0069)
+
+In a complete `text += joined();` statement to an owned scalar string
+identifier, the caller consumes the operand if it satisfies the
+[returned join proof](#scalar-initializers-that-adopt-returned-joins-p0064).
+The caller evaluates the call once, appends its original result to the
+value currently in the destination, then releases the original result.
+The destination owns the newly concatenated allocation. Argument evaluation
+can replace the destination before the append.
+
+Eight isolated statements per mode go from 32 releases and eight live joins
+to 40 releases and zero live joins.
+See the [P0069 pass record](../../tasks/passes/P0069-append-returned-joins.md).

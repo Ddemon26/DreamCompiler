@@ -773,9 +773,8 @@ static Node *string_factory_definition(Node *call) {
   return fn;
 }
 
-/* Return cleanup eligibility alone does not prove ownership. Declarations,
- * complete assignments, standalone calls, direct Console statements and
- * proven Console wrapper statements can consume a proven direct append. */
+/* Return cleanup eligibility alone does not prove ownership. Only callers
+ * with a qualified consumption path can opt in to the direct append proof. */
 static int string_factory_result(Node *fn, int allow_append) {
   Node *body = fn->as.func.body;
   if (!body || body->kind != ND_BLOCK || body->as.block.len != 2) return 0;
@@ -834,18 +833,15 @@ static int adopts_string_call_result(CGCtx *ctx, Node *call, int allow_append) {
          string_factory_result(fn, allow_append);
 }
 
-static int adopts_string_call(CGCtx *ctx, Node *call) {
-  return adopts_string_call_result(ctx, call, 0);
-}
-
-static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr) {
+static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr, int allow_returned_join) {
   if (!expr || expr->kind != ND_BINOP || expr->as.bin.op != TK_PLUSEQ ||
       expr->as.bin.lhs->kind != ND_IDENT) return NULL;
   Node *lhs = expr->as.bin.lhs;
   Slice name = lhs->as.ident;
   const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
   if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
-      slot->indirections == 0 && adopts_string_call(ctx, expr->as.bin.rhs))
+      slot->indirections == 0 &&
+      adopts_string_call_result(ctx, expr->as.bin.rhs, allow_returned_join))
     return lhs;
   return NULL;
 }
@@ -1014,7 +1010,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
                           copies_string_initializer(n->as.var_decl.init) &&
                           !adopts_string_call_result(ctx, n->as.var_decl.init, 1);
         Node *init = n->as.var_decl.init;
-        Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init) : NULL;
+        Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init, 0) : NULL;
         if (copy_string) c_out_write(b, "dream_string_copy(");
         if (append_slot) {
           emit_owned_factory_append(ctx, b, append_slot, init->as.bin.rhs);
@@ -1220,7 +1216,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       Node *expr = n->as.ret.expr;
       Node *append_slot = ctx->is_sync_function && ctx->ret_type == TK_KW_STRING &&
                           ctx->exception_depth == 0
-                              ? owned_factory_append_slot(ctx, expr) : NULL;
+                              ? owned_factory_append_slot(ctx, expr, 0) : NULL;
       c_out_write(b, "return");
       if (expr) {
         c_out_write(b, " ");
@@ -1271,7 +1267,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   }
   case ND_EXPR_STMT: {
     Node *expr = n->as.expr_stmt.expr;
-    Node *append_slot = owned_factory_append_slot(ctx, expr);
+    Node *append_slot = owned_factory_append_slot(ctx, expr, 1);
     Node *owned_arg = append_slot ? expr->as.bin.rhs : NULL;
     if (expr->kind == ND_BINOP && expr->as.bin.op == TK_EQ &&
         expr->as.bin.lhs->kind == ND_IDENT) {
@@ -1308,7 +1304,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         owned_arg = expr->as.console.arg;
     } else if (!append_slot) {
       Node *arg = console_wrapper_argument(ctx, expr);
-      Node *wrapped_append_slot = owned_factory_append_slot(ctx, arg);
+      Node *wrapped_append_slot = owned_factory_append_slot(ctx, arg, 0);
       if (wrapped_append_slot) {
         // Pass the destination-owned join after consuming the factory operand.
         cg_emit_expr(ctx, b, expr->as.call.callee);
@@ -1354,7 +1350,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         c_out_newline(b);
       } else if (cg_is_string_expr(ctx, expr->as.console.arg)) {
         Node *arg = expr->as.console.arg;
-        Node *printed_append_slot = owned_factory_append_slot(ctx, arg);
+        Node *printed_append_slot = owned_factory_append_slot(ctx, arg, 0);
         c_out_write(b, "%s(", console_writer);
         if (printed_append_slot)
           emit_owned_factory_append(ctx, b, printed_append_slot, arg->as.bin.rhs);

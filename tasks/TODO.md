@@ -701,9 +701,14 @@ one-parameter Console wrapper. Eight isolated calls in each mode go from
 16 releases and eight live joins to 24 releases and zero live joins. See
 [P0068](passes/P0068-wrap-returned-joins.md).
 
-Broader T011 remains open. Verify P0068 publication and native CI, then measure
-retention of the factory's original join in a complete `text += joined();`
-statement to an owned local string in both modes.
+P0069 releases a proven returned join after a complete `text += joined();`
+statement to an owned scalar string. Eight isolated appends per mode go from
+32 releases and eight live joins to 40 releases and zero live joins. See
+[P0069](passes/P0069-append-returned-joins.md).
+
+Broader T011 remains open. Verify P0069 publication and native CI, then measure
+retention in `string snapshot = (text += joined());` and check independent
+destination and snapshot storage in both modes.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

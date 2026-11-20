@@ -206,6 +206,9 @@ bool or char operands are rejected. Numeric `+=` keeps its existing behavior.
 An append also releases a proven factory operand when it directly initializes
 a scalar string or supplies the sole argument to a supported Console wrapper.
 See the [append ownership rules](../development/string-ownership.md#append-arguments-to-console-wrappers-p0061).
+A complete `text += joined();` statement releases a proven returned join
+after appending it. The destination owns the newly concatenated string.
+See the [returned join rule](../development/string-ownership.md#complete-appends-with-proven-returned-joins-p0069).
 Borrowed parameter/field/index destinations and conditional operands remain
 unqualified; see the [string ownership contract](../development/string-ownership.md).
 
