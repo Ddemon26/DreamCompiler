@@ -67,8 +67,9 @@
 | [P0063](P0063-owned-append-return.md) | 2026-11-19 | Release proven factory operands in direct append returns | `Pass-ID: P0063` |
 | [P0064](P0064-adopt-returned-joins.md) | 2026-11-19 | Adopt a proven returned join in a direct scalar string initializer | `Pass-ID: P0064` |
 | [P0065](P0065-assign-returned-joins.md) | 2026-11-19 | Adopt a proven returned join in a complete scalar string assignment | `Pass-ID: P0065` |
+| [P0066](P0066-discard-returned-joins.md) | 2026-11-20 | Release a proven returned join after a standalone call | `Pass-ID: P0066` |
 
-**Verify P0065 publication and native CI, then measure join retention in a complete discard statement.**
+**Verify P0066 publication and native CI, then measure join retention in direct Console output.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

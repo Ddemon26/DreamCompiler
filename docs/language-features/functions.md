@@ -173,8 +173,8 @@ outside this slice. See the
 A direct `return (text += makeText());` from a synchronous string function
 releases the factory operand after concatenation when `text` is an owned
 local scalar string and the call passes the factory proof. The caller receives
-the joined value. Caller string declarations still take their own copy. See
-the [append return ownership rule](../development/string-ownership.md#direct-append-returns-with-proven-factory-operands-p0063).
+the joined value. See the [caller ownership rules](#scalar-string-call-results)
+and the [append return rule](../development/string-ownership.md#direct-append-returns-with-proven-factory-operands-p0063).
 
 Returns inside active try/catch/finally contexts retain their previous behavior;
 exception unwinding, async exits and general string/pointer/class result ownership
@@ -290,6 +290,9 @@ the join. In an assignment, the previous value stays live until the call
 finishes, unless an argument itself replaces it.
 See the [declaration](../development/string-ownership.md#scalar-initializers-that-adopt-returned-joins-p0064)
 and [assignment rules](../development/string-ownership.md#complete-assignments-that-adopt-returned-joins-p0065).
+A standalone `joined();` call under the same proof releases the join
+immediately after the call returns. See the
+[discard rules](../development/string-ownership.md#standalone-calls-that-discard-returned-joins-p0066).
 
 In a complete `show(getText());` statement, the caller passes the original
 result and releases it after `show` returns if `show` is a synchronous void

@@ -122,3 +122,6 @@ native harness independently verifies 10,000 calls per mode, one live allocation
 at peak and zero after each call. Each release uses the original pointer at
 reference count one. See the [pass record](../../tasks/passes/P0054-owned-call-discard.md)
 for commands and remaining limits.
+
+P0066 applies the same release to standalone calls that return a proven join.
+See [standalone calls that discard returned joins](string-ownership.md#standalone-calls-that-discard-returned-joins-p0066).

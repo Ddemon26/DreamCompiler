@@ -684,8 +684,15 @@ both a snapshot of the old value and a nested argument replacement. The isolated
 eight-call audit retains zero original joins, down from eight, with 32 releases
 per mode. See [P0065](passes/P0065-assign-returned-joins.md).
 
-Broader T011 remains open. Verify P0065 publication and native CI, then measure
-original join retention for a complete discarded `joined();` in both modes.
+P0066 releases the original join when the entire statement is a call to a
+proven join factory. The isolated eight-call audit goes from 16 releases and
+eight survivors to 24 releases and zero survivors per mode. Ordinary and
+imported calls each pass 10,000 checks of release identity and once-only
+argument evaluation. See [P0066](passes/P0066-discard-returned-joins.md).
+
+Broader T011 remains open. Verify P0066 publication and native CI, then measure
+original join retention in a complete `Console.WriteLine(joined());` statement
+in both modes.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

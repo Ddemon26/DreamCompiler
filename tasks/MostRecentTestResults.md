@@ -1,5 +1,35 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 20, 2026 UTC
+
+**Pass:** P0066 - release proven returned joins after standalone calls
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0065 CI passed on Windows and Linux at the verified parent SHA.
+  See the [P0065 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44595800169).
+- `zig build test` discovered **182** entries. **164 passed**, **18 skipped**,
+  with zero failures or errors (102.63s). Report
+  `test_results_20261119_171916_windows.json` confirms the discard fixture
+  passed and the skip paths match P0065.
+- Focused Go discard, initializer, assignment, and argument groups passed
+  (26.331s, `-count=1`). Ordinary and imported module calls each passed
+  **10,000** checked discards, verifying once-only argument evaluation,
+  release of the original join at reference count one, and an empty registry.
+- The ownership audit passed **38** probes (64.188s). In each mode, eight
+  isolated discards went from 16 releases and eight surviving joins to
+  24 releases and zero survivors. The other 36 measurements matched baseline.
+- Python runner unit tests passed **5/5** (0.065s).
+- Windows Go quick passed all **43** groups (207.748s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is verified separately by CI.
+
+See the [P0066 record](passes/P0066-discard-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0065 checkpoint
+
 **Date:** November 19, 2026 UTC
 
 **Pass:** P0065 - adopt proven returned joins in scalar string assignments

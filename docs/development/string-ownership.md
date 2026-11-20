@@ -968,3 +968,18 @@ each, verifying the release order, original allocation bases, and a peak of
 four live allocations. Assignments to owned scalars inside headers,
 initializers and chained expressions use the string copying helper.
 See the [P0065 pass record](../../tasks/passes/P0065-assign-returned-joins.md).
+
+## Standalone calls that discard returned joins (P0066)
+
+In a standalone `joined();` statement, the caller can release the original
+join immediately after the call returns. The same two-statement factory proof
+used for declarations and assignments applies, including to lowered imports.
+The call and its arguments are evaluated once. The append helper releases
+both operands before the caller releases the join at reference count one.
+
+The isolated eight-call audit in each mode went from 16 releases and eight
+live joins to 24 releases and zero survivors. The checked harness also verifies
+the original allocation and an empty registry after each of 10,000 calls per
+mode. Calls in `for` headers, conditional expressions and nested arguments
+continue to use general expression emission.
+See the [P0066 pass record](../../tasks/passes/P0066-discard-returned-joins.md).

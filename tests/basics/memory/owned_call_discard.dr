@@ -1,8 +1,15 @@
 // Expected: backing
 // Expected: changed
 // Expected: 1
+// Expected: 1
 func void identityProbe() { factory(); }
+func int joinDiscardProbe() {
+    int count = 0;
+    (joined(count++));
+    return count;
+}
 func string factory() { string result = "owned"; return result; }
+func string joined(int value) { string result = "start"; return (result += factory()); }
 func string clone(string source) { const string result = source; return result; }
 func string empty() { string result = ""; return result; }
 func string escaped() { const string result = "escaped \"value\""; return result; }
@@ -52,3 +59,4 @@ func void exercise() {
 factory();
 early(true);
 exercise();
+Console.WriteLine(joinDiscardProbe());

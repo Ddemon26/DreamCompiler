@@ -773,8 +773,8 @@ static Node *string_factory_definition(Node *call) {
   return fn;
 }
 
-/* Return cleanup eligibility alone does not prove ownership. A scalar
- * declaration or complete assignment may adopt a proven direct append. */
+/* Return cleanup eligibility alone does not prove ownership. Declarations,
+ * complete assignments and standalone calls can consume a proven direct append. */
 static int string_factory_result(Node *fn, int allow_append) {
   Node *body = fn->as.func.body;
   if (!body || body->kind != ND_BLOCK || body->as.block.len != 2) return 0;
@@ -1371,7 +1371,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         c_out_write(b, ");");
         c_out_newline(b);
       }
-    } else if (adopts_string_call(ctx, expr)) {
+    } else if (adopts_string_call_result(ctx, expr, 1)) {
       // The discarded result has no destination to own its transferred reference.
       c_out_write(b, "dr_release((void *)");
       cg_emit_expr(ctx, b, expr);
