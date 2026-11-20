@@ -2,6 +2,36 @@
 
 **Date:** November 20, 2026 UTC
 
+**Pass:** P0070 - release proven returned joins in append initializers
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0069 CI passed on Windows and Linux at the verified parent SHA.
+  See the [P0069 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44741352440).
+- `zig build test` discovered **184** entries. **166 passed**, **18 skipped**,
+  with zero failures or errors (49.98s). Report
+  `test_results_20261120_120858_windows.json` confirms exact output for the
+  new initializer fixture and the same skip paths and reasons as P0069.
+- Four focused Go groups passed (28.555s, `-count=1`). In each mode the new
+  regression verified 10,000 repeated initializers, independent destination
+  and snapshot lifetimes, 70,015 checked releases, and zero live allocations
+  before shutdown.
+- All **46** ownership audit probes passed (46.217s). Eight initializers per
+  mode went from 48 releases and eight live joins to 56 releases and zero
+  live joins. The other 44 measurements matched baseline.
+- Windows Go quick passed all **43** groups (115.464s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is checked separately by CI.
+- Python runner unit tests passed **5/5** (0.044s).
+
+See the [P0070 record](passes/P0070-initialize-from-returned-join-appends.md) for scope and limits.
+
+---
+
+## Historical P0069 checkpoint
+
+**Date:** November 20, 2026 UTC
+
 **Pass:** P0069 - release proven returned joins after complete append statements
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

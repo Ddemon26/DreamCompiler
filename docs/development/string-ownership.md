@@ -888,6 +888,7 @@ allocations to 40 releases and zero live allocations. The checked regression
 exercises 10,000 repetitions per mode, including operand effects, borrowed
 self-append, null, and zero-iteration header cleanup. See the
 [P0059 pass record](../../tasks/passes/P0059-owned-append-initializer.md).
+P0070 extends this initializer rule to [proven returned joins](#append-initializers-with-proven-returned-joins-p0070).
 
 ## Console output of append results (P0060)
 
@@ -1026,3 +1027,20 @@ can replace the destination before the append.
 Eight isolated statements per mode go from 32 releases and eight live joins
 to 40 releases and zero live joins.
 See the [P0069 pass record](../../tasks/passes/P0069-append-returned-joins.md).
+
+## Append initializers with proven returned joins (P0070)
+
+In `string snapshot = (text += joined());`, an append to an owned scalar string
+identifier can consume an operand that satisfies the
+[returned join proof](#scalar-initializers-that-adopt-returned-joins-p0064).
+The helper reads the destination after the call's arguments run, installs the
+concatenation, and releases the original returned join. The declaration then
+copies the installed value into its own managed allocation. Const snapshots
+and `for`-header declarations follow the same rule.
+
+The [checked regression](../../tests/basics/memory/owned_returned_join_append_initializer.dr)
+verifies that changing the destination leaves the snapshot readable and that
+releasing the snapshot leaves the destination readable. It also covers a
+destination replaced during argument evaluation, a once-only side effect,
+borrowed self-append, and cleanup after a zero-iteration loop.
+See the [P0070 pass record](../../tasks/passes/P0070-initialize-from-returned-join-appends.md).

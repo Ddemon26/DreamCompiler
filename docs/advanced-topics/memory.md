@@ -23,9 +23,10 @@ or array-element ownership. Qualified mutable owned scalar identifiers also supp
 value, and yield the new pointer. Null contributes empty text. Declaration results
 are copied independently. A complete append statement or an append that directly
 initializes a scalar string releases its operand when the operand is an eligible
-factory call. Other fresh managed operands can remain until shutdown. Const
-updates and non-string operands are rejected. See the checkpoint for remaining
-destination, expression and allocation limits.
+factory call, including a [proven returned join](../development/string-ownership.md#append-initializers-with-proven-returned-joins-p0070).
+Other fresh managed operands can remain until shutdown. Const updates and
+non-string operands are rejected. See the checkpoint for remaining destination,
+expression and allocation limits.
 Break/continue release qualified owned scalar strings and class locals in the scopes they leave.
 Loop headers survive continue/update and are released after the loop; switch
 breaks preserve enclosing loop locals, and switch continues target the enclosing

@@ -386,6 +386,22 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "AB\nAB!\nnewnew\n1\n[]\nsamesame\nsamesameB\n", true)
 	})
 
+	t.Run("returned_join_initializer", func(t *testing.T) {
+		// Seven releases per iteration, plus seven for the changed slot
+		// and eight for the borrowed self-append and header.
+		checkStorageOwnership(t, "owned_returned_join_append_initializer.dr", 70015, []string{
+			`char*joined=__dream_string_append(slot,text);dr_release((void*)text);returnjoined;`,
+			`return__dream_string_append_owned(&result,@entry@owned());`,
+			`snapshot=dream_string_copy(__dream_string_append_owned(&text,@entry@joined("",0)));`,
+			`__dream_string_append(&text,"!");`,
+			`dr_release(snapshot);}`,
+			`snapshot=dream_string_copy(__dream_string_append_owned(&changed,@entry@joined(__dream_string_assign(&changed,"new"),(count++))));`,
+			`borrowedCopy=dream_string_copy(__dream_string_append(&alias,@entry@borrowed(alias)));`,
+			`header=dream_string_copy(__dream_string_append_owned(&alias,@entry@joined("",0)));`,
+			`}dr_release(header);}`,
+		}, "A+B\nA+B!\nnewnewB\n1\nnewnewB\nsamesame\nsamesameB\n", true)
+	})
+
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
 	for _, modules := range []bool{false, true} {

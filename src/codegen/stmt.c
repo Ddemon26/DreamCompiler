@@ -1010,7 +1010,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
                           copies_string_initializer(n->as.var_decl.init) &&
                           !adopts_string_call_result(ctx, n->as.var_decl.init, 1);
         Node *init = n->as.var_decl.init;
-        Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init, 0) : NULL;
+        Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init, 1) : NULL;
         if (copy_string) c_out_write(b, "dream_string_copy(");
         if (append_slot) {
           emit_owned_factory_append(ctx, b, append_slot, init->as.bin.rhs);

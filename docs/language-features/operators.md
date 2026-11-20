@@ -209,6 +209,9 @@ See the [append ownership rules](../development/string-ownership.md#append-argum
 A complete `text += joined();` statement releases a proven returned join
 after appending it. The destination owns the newly concatenated string.
 See the [returned join rule](../development/string-ownership.md#complete-appends-with-proven-returned-joins-p0069).
+A direct scalar initializer such as `string snapshot = (text += joined());`
+also releases a proven returned join. The snapshot owns a copy of the new
+destination value. See the [initializer rule](../development/string-ownership.md#append-initializers-with-proven-returned-joins-p0070).
 Borrowed parameter/field/index destinations and conditional operands remain
 unqualified; see the [string ownership contract](../development/string-ownership.md).
 

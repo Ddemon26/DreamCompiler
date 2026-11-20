@@ -706,9 +706,15 @@ statement to an owned scalar string. Eight isolated appends per mode go from
 32 releases and eight live joins to 40 releases and zero live joins. See
 [P0069](passes/P0069-append-returned-joins.md).
 
-Broader T011 remains open. Verify P0069 publication and native CI, then measure
-retention in `string snapshot = (text += joined());` and check independent
-destination and snapshot storage in both modes.
+P0070 releases a proven returned join in `string snapshot = (text += joined());`.
+The destination and snapshot remain independently readable across replacement
+and scope exit. The eight-initializer audit in each mode goes from 48 releases
+and eight live joins to 56 releases and zero live joins.
+See [P0070](passes/P0070-initialize-from-returned-join-appends.md).
+
+Broader T011 remains open. Verify P0070 publication and native CI, then measure
+retention in `Console.WriteLine(text += joined());` and verify destination
+survival after printing in both modes.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller
