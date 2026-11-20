@@ -6,6 +6,8 @@ normal return for a complete call statement to a synchronous, single-parameter
 Console wrapper. It preserves the existing factory proof.
 P0057 uses the same statement release sequence for
 [direct Console output](string-ownership.md#direct-console-output-of-proven-factory-results-p0057).
+P0068 also qualifies [proven returned joins](string-ownership.md#returned-joins-passed-to-console-wrappers-p0068)
+as arguments to these wrappers.
 
 ## P0055 source audit and before measurements
 

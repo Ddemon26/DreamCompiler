@@ -992,6 +992,22 @@ same two-statement proof as a standalone discard. The call runs once, including
 its arguments. The Console writer reads the original joined allocation, then
 the caller releases that allocation. The proof also applies to lowered imports.
 
-Conditional operands, unproven join factories, and joins passed to a Console
-wrapper still use general expression emission.
+Conditional operands and unproven join factories use general expression emission.
 See the [P0067 pass record](../../tasks/passes/P0067-print-returned-joins.md).
+
+## Returned joins passed to Console wrappers (P0068)
+
+A complete `view(joined());` statement releases the original join after
+`view` returns when both the factory and the wrapper pass their ownership
+checks. The synchronous void wrapper takes one scalar string and its entire
+body prints that parameter with `Console.Write` or `Console.WriteLine`.
+The caller evaluates the factory and its arguments once, then passes the
+original allocation to the wrapper before releasing it. Imported functions
+use the same checks after module lowering.
+
+Eight isolated wrapper calls per mode now make 24 releases and leave no
+live joins. The checked harness verifies the original pointer is live through
+both writers and is released at reference count one. Conditional arguments,
+forwarding wrappers, unproven factories, and calls inside larger expressions
+continue to use general expression emission.
+See the [P0068 pass record](../../tasks/passes/P0068-wrap-returned-joins.md).

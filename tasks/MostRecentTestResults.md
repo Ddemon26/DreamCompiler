@@ -2,6 +2,35 @@
 
 **Date:** November 20, 2026 UTC
 
+**Pass:** P0068 - release proven returned joins after Console wrapper calls
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0067 CI passed on Windows and Linux at the verified parent SHA.
+  See the [P0067 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44653585390).
+- `zig build test` discovered **182** entries. **164 passed**, **18 skipped**,
+  with zero failures or errors (64.58s). Report
+  `test_results_20261120_000920_windows.json` confirms exact output for the
+  wrapper fixture and the same skip paths as P0067.
+- Four focused Go groups passed (17.580s, `-count=1`). Each writer passed
+  10,000 original-pointer checks through the wrapper per mode, with once-only
+  argument evaluation and no retained joins.
+- The ownership audit passed **42** probes (55.628s). Eight isolated wrapper
+  calls per mode went from 16 releases and eight survivors to 24 releases
+  and zero survivors. The other 40 measurements matched baseline.
+- Python runner unit tests passed **5/5** (0.075s).
+- Windows Go quick passed all **43** groups (144.413s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is checked separately by CI.
+
+See the [P0068 record](passes/P0068-wrap-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0067 checkpoint
+
+**Date:** November 20, 2026 UTC
+
 **Pass:** P0067 - release proven returned joins after direct Console output
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

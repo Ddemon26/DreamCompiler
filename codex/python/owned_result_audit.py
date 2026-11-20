@@ -20,6 +20,7 @@ P0064 adopts the proven returned join in a complete scalar string initializer.
 P0065 adopts the proven returned join in a complete scalar string assignment.
 P0066 releases the proven returned join after a standalone call.
 P0067 releases the proven returned join after direct Console output.
+P0068 releases the proven returned join after a Console wrapper returns.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -46,6 +47,21 @@ def argument_release(consumer, leading_args="", call="@entry@owned()"):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "returned_join_wrapper",
+        "releases": 24, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "start";
+    return (text += owned());
+}
+func void view(string source) { Console.WriteLine(source); }
+for (int i = 0; i < 8; i++) view(joined());
+''',
+        "output": "startowned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@owned());",
+              argument_release("@entry@view", call="@entry@joined()")],
+    },
     {
         "name": "returned_join_console",
         "releases": 24, "live": 0,

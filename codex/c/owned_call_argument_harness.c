@@ -102,14 +102,14 @@ int main(void) {
     checking_join = 1;
     copies = releases = writes = lines = 0;
     for (size_t i = 1; i <= 10000; i++) {
-        assert(DREAM_JOIN_OUTPUT_PROBE() == 2);
+        assert(DREAM_JOIN_OUTPUT_PROBE() == 4);
         assert(!original && !observed && !dr_head);
-        assert(copies == 4 * i && joins == 2 * i && releases == 6 * i);
-        assert(writes == i && lines == i);
+        assert(copies == 8 * i && joins == 4 * i && releases == 12 * i);
+        assert(writes == 2 * i && lines == 2 * i);
     }
     checking_join = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 11 && releases == 13 && !dr_head);
+    assert(copies == 15 && releases == 19 && !dr_head);
     return 0;
 }

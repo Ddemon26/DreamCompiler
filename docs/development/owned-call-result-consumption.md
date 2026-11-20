@@ -214,5 +214,8 @@ output and argument consumption.
 
 P0064 extends declaration adoption to a [direct append return with a proven
 factory operand](string-ownership.md#scalar-initializers-that-adopt-returned-joins-p0064).
-The caller releases the same allocation that concatenation created. Assignment,
-discard, and argument paths continue to use the original factory proof.
+The caller releases the same allocation that concatenation created. Later
+passes apply the returned-join proof to [assignments](string-ownership.md#complete-assignments-that-adopt-returned-joins-p0065),
+[discards](string-ownership.md#standalone-calls-that-discard-returned-joins-p0066),
+[direct Console output](string-ownership.md#direct-console-output-of-returned-joins-p0067),
+and [Console wrapper arguments](string-ownership.md#returned-joins-passed-to-console-wrappers-p0068).

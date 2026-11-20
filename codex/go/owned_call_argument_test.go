@@ -42,6 +42,7 @@ func TestCompiler_OwnedCallArgument(t *testing.T) {
 				program = "import labels;\n" + strings.Replace(program, "view(factory());", "labels.view(labels.factory());", 1)
 				program = strings.Replace(program, "Console.Write(factory());", "Console.Write(labels.factory());", 1)
 				program = strings.ReplaceAll(program, "joined(count++)", "labels.joined(count++)")
+				program = strings.Replace(program, "view(labels.joined(count++));", "labels.view(labels.joined(count++));", 1)
 				program = strings.Replace(program, "Console.Write(source);", "Console.Write(source); Console.Write(source);", 1)
 				program += "\nfunc void importControls() { view(factory()); labels.line(factory()); }\n"
 				imported := `module labels;
@@ -92,14 +93,16 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 				ownedArgumentBlock(entry+"effect((count++))", entry+"line", temp1),
 				"if(1)" + ownedArgumentBlock(joined+"((count++))", "dr_console_write", temp0),
 				ownedArgumentBlock(joined+"((count++))", "dr_console_writeln", temp0),
+				"if(1)" + ownedArgumentBlock(joined+"((count++))", wrapper, temp0),
+				ownedArgumentBlock(joined+"((count++))", entry+"line", temp0),
 			} {
 				if got := strings.Count(c, want); got != 1 {
 					t.Errorf("expected one %q, got %d", want, got)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 12 ||
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 14 ||
 				strings.Contains(c, "dr_retain(") {
-				t.Error("expected six wrapper and six direct Console release sites without any retains")
+				t.Error("expected eight wrapper and six direct Console release sites without any retains")
 			}
 			if modules && (!strings.Contains(c, entry+"view("+entry+"factory());") ||
 				!strings.Contains(c, "__dream_module_1_line("+entry+"factory());")) {
@@ -131,7 +134,7 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			}
 			binary := filepath.Join(work, "checked"+suffix)
 			command("zig", append(args, "-o", binary)...)
-			const want = "snapshot\neffect\n1\nowned\nowned\neffectowned\n2\nstartownedstartowned\n2\n"
+			const want = "snapshot\neffect\n1\nowned\nowned\neffectowned\n2\nstartownedstartowned\nstartownedstartowned\n4\n"
 			if got := command(binary); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -173,6 +176,8 @@ func void probe(string* values) {
     Console.Write(joined() + "!");
     Console.WriteLine(unproven("source"));
     line(joined());
+    forward(joined());
+    line(unproven("source"));
     line(true ? joined() : "other");
     Console.Write(pointerFactory(values));
     line(pointerFactory(values));
@@ -196,7 +201,9 @@ func void probe(string* values) {
 				"dr_console_write((dream_concat(" + factory + ",\"!\")));",
 				"dr_console_write((dream_concat(" + entry + "joined(),\"!\")));",
 				"dr_console_writeln(" + entry + "unproven(\"source\"));",
-				wrapper + "(" + entry + "joined());",
+				ownedArgumentBlock(entry+"joined()", wrapper, "dreamOwnedArgument0"),
+				entry + "forward(" + entry + "joined());",
+				wrapper + "(" + entry + "unproven(\"source\"));",
 				wrapper + "((1?" + entry + "joined():\"other\"));",
 				"dr_console_write(" + entry + "pointerFactory(values));",
 				wrapper + "(" + entry + "pointerFactory(values));",
@@ -206,8 +213,8 @@ func void probe(string* values) {
 					t.Errorf("missing context %q", want)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 3 {
-				t.Error("only the three eligible complete statements should release")
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 4 {
+				t.Error("only the four eligible complete statements should release")
 			}
 		})
 	}

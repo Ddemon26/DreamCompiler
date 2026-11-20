@@ -6,7 +6,8 @@
 // Expected: effectowned
 // Expected: 2
 // Expected: startownedstartowned
-// Expected: 2
+// Expected: startownedstartowned
+// Expected: 4
 func string factory() { string result = "owned"; return result; }
 func string joined(int value) { string result = "start"; return (result += factory()); }
 func string clone(string source) { string result = source; return result; }
@@ -24,6 +25,8 @@ func int joinOutputProbe() {
     int count = 0;
     if (true) Console.Write(joined(count++));
     Console.WriteLine(joined(count++));
+    if (true) view(joined(count++));
+    line(joined(count++));
     return count;
 }
 func void exercise() {
