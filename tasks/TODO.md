@@ -690,9 +690,15 @@ eight survivors to 24 releases and zero survivors per mode. Ordinary and
 imported calls each pass 10,000 checks of release identity and once-only
 argument evaluation. See [P0066](passes/P0066-discard-returned-joins.md).
 
-Broader T011 remains open. Verify P0066 publication and native CI, then measure
-original join retention in a complete `Console.WriteLine(joined());` statement
-in both modes.
+P0067 releases the proven original join after direct `Console.Write` and
+`Console.WriteLine` statements. In both modes, eight isolated calls go from
+16 releases and eight surviving joins to 24 releases and zero survivors.
+The checked regression verifies original-pointer identity through each writer
+and once-only argument evaluation. See [P0067](passes/P0067-print-returned-joins.md).
+
+Broader T011 remains open. Verify P0067 publication and native CI, then measure
+original join retention in a complete `view(joined());` call to a proven
+Console wrapper in both modes.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

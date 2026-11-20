@@ -983,3 +983,15 @@ the original allocation and an empty registry after each of 10,000 calls per
 mode. Calls in `for` headers, conditional expressions and nested arguments
 continue to use general expression emission.
 See the [P0066 pass record](../../tasks/passes/P0066-discard-returned-joins.md).
+
+## Direct Console output of returned joins (P0067)
+
+A complete `Console.Write(joined());` or `Console.WriteLine(joined());`
+statement can consume the original join when the resolved function passes the
+same two-statement proof as a standalone discard. The call runs once, including
+its arguments. The Console writer reads the original joined allocation, then
+the caller releases that allocation. The proof also applies to lowered imports.
+
+Conditional operands, unproven join factories, and joins passed to a Console
+wrapper still use general expression emission.
+See the [P0067 pass record](../../tasks/passes/P0067-print-returned-joins.md).

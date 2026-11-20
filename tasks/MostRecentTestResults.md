@@ -2,6 +2,35 @@
 
 **Date:** November 20, 2026 UTC
 
+**Pass:** P0067 - release proven returned joins after direct Console output
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0066 CI passed on Windows and Linux at the verified parent SHA.
+  See the [P0066 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44645544287).
+- `zig build test` discovered **182** entries. **164 passed**, **18 skipped**,
+  with zero failures or errors (114.94s). Report
+  `test_results_20261119_181621_windows.json` confirms exact output for the
+  updated Console fixture and the same skip paths as P0066.
+- Five focused Go groups passed (92.346s, `-count=1`). Each Console writer
+  passed 10,000 original-pointer checks per mode with once-only argument
+  evaluation and no retained joins.
+- The ownership audit passed **40** probes (102.430s). Eight isolated Console
+  calls per mode moved from 16 releases and eight survivors to 24 releases
+  and zero survivors. The other 38 measurements matched the baseline.
+- Python runner unit tests passed **5/5** (0.112s).
+- Windows Go quick passed all **43** groups (496.996s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is checked separately by CI.
+
+See the [P0067 record](passes/P0067-print-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0066 checkpoint
+
+**Date:** November 20, 2026 UTC
+
 **Pass:** P0066 - release proven returned joins after standalone calls
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

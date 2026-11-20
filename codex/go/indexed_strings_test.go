@@ -345,17 +345,21 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 	})
 
 	t.Run("owned_factory_return", func(t *testing.T) {
-		// Eight old slots, factory operands and copied snapshots, plus five
-		// other releases. Eleven joins and the untaken branch's local survive
-		// for the caller, which has no proof to consume these originals yet.
-		checkStorageOwnershipWithLiveCount(t, "owned_call_append_return.dr", 29, []string{
+		// The two proven direct Console calls now release their original joins.
+		// The eight joins from join(true), the result from join(false) and the
+		// unproven borrowedJoin result still reach shutdown.
+		checkStorageOwnershipWithLiveCount(t, "owned_call_append_return.dr", 31, []string{
 			`char*joined=__dream_string_append(slot,text);dr_release((void*)text);returnjoined;`,
 			`return__dream_string_append_owned(&text,@entry@owned());`,
 			`return__dream_string_append_owned(&text,@entry@clone(__dream_string_assign(&text,"new"),@entry@announce()));`,
 			`return__dream_string_append_owned(&text,@entry@absent());`,
 			`return__dream_string_append(&text,@entry@borrowed(source));`,
 			`snapshot=dream_string_copy(@entry@join(1));`,
-		}, strings.Repeat("startowned\n", 8)+"start\nonce\nnewnew\n[]\nleftright\nright\n", 12)
+			ownedArgumentBlock("@entry@updated()", "dr_console_writeln", "dreamOwnedArgument0"),
+			ownedArgumentBlock("@entry@emptyJoin()", "dr_console_write", "dreamOwnedArgument0"),
+			`dr_console_writeln(@entry@join(0));`,
+			`dr_console_writeln(@entry@borrowedJoin(backing));`,
+		}, strings.Repeat("startowned\n", 8)+"start\nonce\nnewnew\n[]\nleftright\nright\n", 10)
 	})
 
 	t.Run("owned_factory_initializer", func(t *testing.T) {

@@ -34,16 +34,19 @@ func TestCompiler_OwnedCallArgument(t *testing.T) {
 			source := filepath.Join(work, "input.dr")
 			program := string(fixture)
 			var options []string
-			factory, wrapper := "factory()", "view"
+			factory, wrapper, joined := "factory()", "view", "joined"
 			if modules {
 				factory, wrapper = "__dream_module_1_factory()", "__dream_module_1_view"
+				joined = "__dream_module_1_joined"
 				options = append(options, "--multi-file")
 				program = "import labels;\n" + strings.Replace(program, "view(factory());", "labels.view(labels.factory());", 1)
 				program = strings.Replace(program, "Console.Write(factory());", "Console.Write(labels.factory());", 1)
+				program = strings.ReplaceAll(program, "joined(count++)", "labels.joined(count++)")
 				program = strings.Replace(program, "Console.Write(source);", "Console.Write(source); Console.Write(source);", 1)
 				program += "\nfunc void importControls() { view(factory()); labels.line(factory()); }\n"
 				imported := `module labels;
 export func string factory() { string result = "owned"; return result; }
+export func string joined(int value) { string result = "start"; return (result += factory()); }
 export func void view(string source) { Console.Write(source); }
 export func void line(string source) { Console.WriteLine(source); Console.WriteLine(source); }`
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(imported), 0644); err != nil {
@@ -87,14 +90,16 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 				ownedArgumentBlock(entry+"factory()", "dr_console_writeln", temp1),
 				"if(1)" + ownedArgumentBlock(entry+"clone("+temp0+")", entry+"line", temp1),
 				ownedArgumentBlock(entry+"effect((count++))", entry+"line", temp1),
+				"if(1)" + ownedArgumentBlock(joined+"((count++))", "dr_console_write", temp0),
+				ownedArgumentBlock(joined+"((count++))", "dr_console_writeln", temp0),
 			} {
 				if got := strings.Count(c, want); got != 1 {
 					t.Errorf("expected one %q, got %d", want, got)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 10 ||
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 12 ||
 				strings.Contains(c, "dr_retain(") {
-				t.Error("expected six wrapper and four direct Console release sites without any retains")
+				t.Error("expected six wrapper and six direct Console release sites without any retains")
 			}
 			if modules && (!strings.Contains(c, entry+"view("+entry+"factory());") ||
 				!strings.Contains(c, "__dream_module_1_line("+entry+"factory());")) {
@@ -111,6 +116,7 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			}
 			args := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
 				"-DDREAM_IDENTITY_PROBE=" + entry + "identityProbe",
+				"-DDREAM_JOIN_OUTPUT_PROBE=" + entry + "joinOutputProbe",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"),
 				"-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -125,7 +131,7 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			}
 			binary := filepath.Join(work, "checked"+suffix)
 			command("zig", append(args, "-o", binary)...)
-			const want = "snapshot\neffect\n1\nowned\nowned\neffectowned\n2\n"
+			const want = "snapshot\neffect\n1\nowned\nowned\neffectowned\n2\nstartownedstartowned\n2\n"
 			if got := command(binary); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -137,6 +143,8 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 		t.Run(fmt.Sprintf("contexts/modules=%v", modules), func(t *testing.T) {
 			c := memberReturnEmission(t, tr, `
 func string factory() { string result = "owned"; return result; }
+func string joined() { string result = "start"; return (result += factory()); }
+func string unproven(string source) { string result = "start"; return (result += source); }
 func string absent() { string result; return result; }
 func string borrowed(string value) { return value; }
 func void line(string value) { Console.WriteLine(value); }
@@ -162,6 +170,10 @@ func void probe(string* values) {
     Console.Write(borrowed("source"));
     Console.WriteLine("literal");
     Console.Write(factory() + "!");
+    Console.Write(joined() + "!");
+    Console.WriteLine(unproven("source"));
+    line(joined());
+    line(true ? joined() : "other");
     Console.Write(pointerFactory(values));
     line(pointerFactory(values));
     pointerView(factory());
@@ -182,6 +194,10 @@ func void probe(string* values) {
 				"dr_console_write(" + entry + "borrowed(\"source\"));",
 				"dr_console_writeln(\"literal\");",
 				"dr_console_write((dream_concat(" + factory + ",\"!\")));",
+				"dr_console_write((dream_concat(" + entry + "joined(),\"!\")));",
+				"dr_console_writeln(" + entry + "unproven(\"source\"));",
+				wrapper + "(" + entry + "joined());",
+				wrapper + "((1?" + entry + "joined():\"other\"));",
 				"dr_console_write(" + entry + "pointerFactory(values));",
 				wrapper + "(" + entry + "pointerFactory(values));",
 				entry + "pointerView(" + factory + ");",

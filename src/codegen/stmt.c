@@ -774,7 +774,8 @@ static Node *string_factory_definition(Node *call) {
 }
 
 /* Return cleanup eligibility alone does not prove ownership. Declarations,
- * complete assignments and standalone calls can consume a proven direct append. */
+ * complete assignments, standalone calls and direct Console statements can
+ * consume a proven direct append. */
 static int string_factory_result(Node *fn, int allow_append) {
   Node *body = fn->as.func.body;
   if (!body || body->kind != ND_BLOCK || body->as.block.len != 2) return 0;
@@ -1303,7 +1304,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     if (expr->kind == ND_CONSOLE_CALL && !expr->as.console.read) {
       console_writer = expr->as.console.newline ? "dr_console_writeln" : "dr_console_write";
       // The runtime prints synchronously and does not store the pointer.
-      if (adopts_string_call(ctx, expr->as.console.arg))
+      if (adopts_string_call_result(ctx, expr->as.console.arg, 1))
         owned_arg = expr->as.console.arg;
     } else if (!append_slot) {
       Node *arg = console_wrapper_argument(ctx, expr);

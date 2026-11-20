@@ -5,7 +5,10 @@
 // Expected: owned
 // Expected: effectowned
 // Expected: 2
+// Expected: startownedstartowned
+// Expected: 2
 func string factory() { string result = "owned"; return result; }
+func string joined(int value) { string result = "start"; return (result += factory()); }
 func string clone(string source) { string result = source; return result; }
 func string effect(int value) { string result = "effect"; return result; }
 func void view(string source) { Console.Write(source); }
@@ -16,6 +19,12 @@ func void identityProbe() {
     view(factory());
     Console.Write(factory());
     Console.WriteLine(factory());
+}
+func int joinOutputProbe() {
+    int count = 0;
+    if (true) Console.Write(joined(count++));
+    Console.WriteLine(joined(count++));
+    return count;
 }
 func void exercise() {
     string dreamOwnedArgument0 = "snapshot";
@@ -33,3 +42,4 @@ func void exercise() {
 }
 
 exercise();
+Console.WriteLine(joinOutputProbe());

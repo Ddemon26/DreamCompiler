@@ -229,7 +229,7 @@ string nestedJoin = true ? joined() : "literal";`, modules)
 				"direct=" + prefix + "joined();",
 				"(char*)" + prefix + "joined();dr_release(target);target=__dream_owned_0;",
 				"dr_release((void*)" + prefix + "joined());",
-				"dr_console_writeln(" + prefix + "joined());",
+				ownedArgumentBlock(prefix+"joined()", "dr_console_writeln", "dreamOwnedArgument0"),
 				"nestedJoin=dream_string_copy((1?" + prefix + `joined():"literal"));`,
 			} {
 				if !strings.Contains(c, want) {
