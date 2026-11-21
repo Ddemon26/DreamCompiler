@@ -731,10 +731,15 @@ value in both modes. In the isolated audit, eight calls release eight more
 allocations and leave only their eight final results registered.
 See [P0073](passes/P0073-return-appends-with-returned-joins.md).
 
-Broader T011 remains open. Verify P0073 publication and native CI, then measure
-final-result retention in a scalar initializer calling a two-statement function
-that returns an append of a proven returned join. Check pointer identity if a
-bounded caller adoption proof qualifies it.
+P0074 lets a direct scalar initializer adopt the final result of two qualifying
+returned appends. The eight-call audit leaves zero allocations live instead of
+eight, and checked ordinary and imported calls release the original pointer.
+See [P0074](passes/P0074-adopt-nested-returned-joins.md).
+
+Broader T011 remains open. Verify P0074 publication and native CI, then measure
+final-result retention in a complete assignment to an already-owned scalar
+using the same two-append return. Check original-pointer identity and replacement
+ordering if the assignment qualifies.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

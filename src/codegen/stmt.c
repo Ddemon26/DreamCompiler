@@ -775,7 +775,7 @@ static Node *string_factory_definition(Node *call) {
 
 /* Return cleanup eligibility alone does not prove ownership. Only callers
  * with a qualified consumption path can opt in to the direct append proof. */
-static int string_factory_result(Node *fn, int allow_append) {
+static int string_factory_result(Node *fn, int append_depth) {
   Node *body = fn->as.func.body;
   if (!body || body->kind != ND_BLOCK || body->as.block.len != 2) return 0;
   Node *local = body->as.block.items[0], *ret = body->as.block.items[1];
@@ -786,7 +786,7 @@ static int string_factory_result(Node *fn, int allow_append) {
   Node *value = ret->as.ret.expr;
   Node *operand_fn = NULL;
   Slice operand_name = {0};
-  if (allow_append && value->kind == ND_BINOP && value->as.bin.op == TK_PLUSEQ) {
+  if (append_depth > 0 && value->kind == ND_BINOP && value->as.bin.op == TK_PLUSEQ) {
     Node *operand = value->as.bin.rhs;
     operand_fn = string_factory_definition(operand);
     if (!operand_fn || local->as.var_decl.is_const) return 0;
@@ -818,19 +818,19 @@ static int string_factory_result(Node *fn, int allow_append) {
         !memcmp(init->as.ident.start, parameter.start, parameter.len))
       source_is_parameter = 1;
   }
-  // The append operand must satisfy the original two-statement proof.
-  // Disabling append here bounds the check even for recursive calls.
+  // Each operand must satisfy the same proof one level down. Decreasing
+  // the budget bounds the check even for recursive calls.
   return (!init || init->kind == ND_STRING || init->kind == ND_NULL ||
           source_is_parameter) &&
-         (!operand_fn || string_factory_result(operand_fn, 0));
+         (!operand_fn || string_factory_result(operand_fn, append_depth - 1));
 }
 
-static int adopts_string_call_result(CGCtx *ctx, Node *call, int allow_append) {
+static int adopts_string_call_result(CGCtx *ctx, Node *call, int append_depth) {
   Node *fn = string_factory_definition(call);
   if (!fn) return 0;
   Slice name = call->as.call.callee->as.ident;
   return !cgctx_has_var(ctx, name.start, name.len) &&
-         string_factory_result(fn, allow_append);
+         string_factory_result(fn, append_depth);
 }
 
 static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr, int allow_returned_join) {
@@ -1004,11 +1004,12 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         // Literals have static storage; indexed, identifier, member and call
         // values may be borrowed, including conditional and assignment results.
         // Only a proven free-function factory transfers its original allocation.
+        // Direct initializers can adopt a returned append of a proven join.
         // Give all other scalar declarations an independent copy for cleanup.
         int copy_string = n->as.var_decl.type == TK_KW_STRING &&
                           !n->as.var_decl.is_pointer &&
                           copies_string_initializer(n->as.var_decl.init) &&
-                          !adopts_string_call_result(ctx, n->as.var_decl.init, 1);
+                          !adopts_string_call_result(ctx, n->as.var_decl.init, 2);
         Node *init = n->as.var_decl.init;
         Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init, 1) : NULL;
         if (copy_string) c_out_write(b, "dream_string_copy(");

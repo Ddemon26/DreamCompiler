@@ -948,7 +948,8 @@ joined allocation. The resolved synchronous free function must have exactly one
 mutable scalar string local declared from a literal, an omitted initializer,
 or a scalar string parameter, followed by a direct return appending to that
 local. The entire append operand must meet the original factory proof.
-Lowered imports qualify under the same checks.
+Lowered imports qualify under the same checks. P0074 extends direct declarations
+to [one additional returned append](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074).
 
 The caller evaluates the call once and normal declaration cleanup releases
 the original join. The eight-call audit now sees 24 releases and zero survivors
@@ -959,7 +960,7 @@ See the [P0064 pass record](../../tasks/passes/P0064-adopt-returned-joins.md).
 ## Complete assignments that adopt returned joins (P0065)
 
 In `target = joined();`, a complete assignment to an already-owned scalar
-string can adopt an original join under the same proof as a declaration. The
+string can adopt an original join under the one-append proof from P0064. The
 call runs once in a statement-local temporary. Once the call finishes, the
 assignment releases the current destination and installs the returned pointer.
 In `target = joined(target)`, the callee can copy the old contents while they
@@ -1088,10 +1089,24 @@ The helper reads the current destination after evaluating the call, installs
 the concatenation, and releases the operand. The caller receives the new
 concatenation. An unproven operand follows ordinary append emission.
 
-Caller adoption still requires the original bounded proof. A function that
-returns an append of a returned join can therefore leave its final result
-registered until shutdown even when its intermediate join is released.
+At P0073, a caller that copied the final result left the original registered
+until shutdown. P0074 qualifies direct scalar initializers for adoption.
 The [checked fixture](../../tests/basics/memory/owned_returned_join_append_return.dr)
 verifies caller access, destination replacement during argument evaluation,
 and a once-only side effect in both compiler modes. See the
 [P0073 pass record](../../tasks/passes/P0073-return-appends-with-returned-joins.md).
+
+## Scalar initializers that adopt a join of a returned join (P0074)
+
+In `string snapshot = nested();`, the initializer adopts the final join when
+`nested()` declares one qualifying mutable scalar string local and directly
+returns `return (local += joined());`. The operand call must meet the
+[one-append factory proof](#scalar-initializers-that-adopt-returned-joins-p0064).
+Both functions must satisfy the existing binding and parameter checks, including
+for imported functions. Each append releases its operand and the caller's scope
+cleanup releases the original final join at reference count one.
+
+The initializer proof permits at most two returned appends. Complete assignments,
+standalone calls and argument consumers still use the one-append proof. A
+conditional initializer keeps its independent copy. See the
+[P0074 pass record](../../tasks/passes/P0074-adopt-nested-returned-joins.md).

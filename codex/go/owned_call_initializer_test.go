@@ -33,11 +33,13 @@ func TestCompiler_OwnedCallInitializer(t *testing.T) {
 				text = "import labels;\n" + strings.ReplaceAll(text, "string identity = owned();", "string identity = labels.owned();")
 				text = strings.ReplaceAll(text, "snapshot = clone(backing)", "snapshot = labels.clone(backing)")
 				text = strings.ReplaceAll(text, " = joined()", " = labels.joined()")
+				text = strings.ReplaceAll(text, " = nestedJoin()", " = labels.nestedJoin()")
 				text = strings.ReplaceAll(text, "string first =", "string importedBorrow = labels.emptyFactory(); string first =")
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(`module labels;
 export func string owned() { string result = "owned"; return result; }
 export func string clone(string source) { const string result = source; return result; }
 export func string joined() { string result = "start"; return (result += owned()); }
+export func string nestedJoin() { string result = "outer-"; return (result += joined()); }
 export func string emptyFactory() { return ""; }`), 0644); err != nil {
 					t.Fatal(err)
 				}
@@ -101,6 +103,7 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 			args := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
 				fmt.Sprintf("-DDREAM_EXPECTED_COPIES=%d", copies), "-DDREAM_IDENTITY_PROBE=" + entry + "identityProbe",
 				"-DDREAM_APPEND_PROBE=" + entry + "appendProbe",
+				"-DDREAM_NESTED_APPEND_PROBE=" + entry + "nestedAppendProbe",
 				"-DDREAM_TRANSFER_PROBE=" + entry + "transfer",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"), "-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -117,8 +120,10 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 			}
 			command("zig", append(args, "-o", binary)...)
 			join := entry + "joined"
+			nestedJoin := entry + "nestedJoin"
 			if modules {
 				join = "__dream_module_1_joined"
+				nestedJoin = "__dream_module_1_nestedJoin"
 			}
 			if !strings.Contains(c, "snapshot="+join+"();dr_release(snapshot);") ||
 				!strings.Contains(c, "appended="+join+"();") {
@@ -127,6 +132,9 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 			want := "owned\nescaped \"value\"\nempty\nnull\nbacking\nchanged\nowned\n7\nstartowned\nglobal\n"
 			if got := strings.ReplaceAll(string(command(binary)), "\r\n", "\n"); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
+			}
+			if !strings.Contains(c, "snapshot="+nestedJoin+"();dr_release(snapshot);") {
+				t.Fatalf("nested append-return initializer must adopt %s", nestedJoin)
 			}
 			command(tr.compilerPath, append(options, source)...)
 			binary = filepath.Join(tr.projectRoot, "dream")
@@ -180,7 +188,7 @@ func checkOwnedCallFallbacks(t *testing.T, tr *TestRunner) {
 			{"append_borrowed_operand", `func string borrowed(string source) { return source; } func string factory() { string result = "start"; return (result += borrowed(result)); }`, `factory()`},
 			{"append_other_destination", `func string owned() { string result = "owned"; return result; } string outer = "outer"; func string factory() { string result = "start"; return (outer += owned()); }`, `factory()`},
 			{"append_extra_statement", `func string owned() { string result = "owned"; return result; } func string factory() { string result = "start"; Console.WriteLine(result); return (result += owned()); }`, `factory()`},
-			{"append_nested_factory", `func string owned() { string result = "owned"; return result; } func string joined() { string result = "start"; return (result += owned()); } func string factory() { string result = "start"; return (result += joined()); }`, `factory()`},
+			{"append_beyond_initializer_proof", `func string owned() { string result = "owned"; return result; } func string joined() { string result = "start"; return (result += owned()); } func string nested() { string result = "outer"; return (result += joined()); } func string factory() { string result = "third"; return (result += nested()); }`, `factory()`},
 		} {
 			t.Run(fmt.Sprintf("fallback_%s/modules=%v", tc.name, modules), func(t *testing.T) {
 				c := memberReturnEmission(t, tr, tc.definition+` string probe = `+tc.call+`;`, modules)
@@ -215,7 +223,10 @@ string compound = true ? factory() : "literal";
 Console.WriteLine(factory()); factory(); view(factory());
 func string joined() { string result = "start"; return (result += factory()); }
 string direct = joined(); target = joined(); joined(); Console.WriteLine(joined());
-string nestedJoin = true ? joined() : "literal";`, modules)
+string nestedJoin = true ? joined() : "literal";
+func string nested() { string result = "outer"; return (result += joined()); }
+string snapshot = nested(); target = nested(); nested(); Console.WriteLine(nested());
+string conditional = true ? nested() : "literal";`, modules)
 			for _, want := range []string{
 				"(char*)" + prefix + "factory();dr_release(target);target=__dream_owned_0;",
 				"{constchar*dreamOwnedArgument0=" + prefix + "factory();__dream_string_append(&target,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}",
@@ -231,6 +242,11 @@ string nestedJoin = true ? joined() : "literal";`, modules)
 				"dr_release((void*)" + prefix + "joined());",
 				ownedArgumentBlock(prefix+"joined()", "dr_console_writeln", "dreamOwnedArgument0"),
 				"nestedJoin=dream_string_copy((1?" + prefix + `joined():"literal"));`,
+				"snapshot=" + prefix + "nested();",
+				"__dream_string_assign(&target," + prefix + "nested());",
+				"*/" + prefix + "nested();",
+				"dr_console_writeln(" + prefix + "nested());",
+				"conditional=dream_string_copy((1?" + prefix + `nested():"literal"));`,
 			} {
 				if !strings.Contains(c, want) {
 					t.Fatalf("other consumer changed: missing %q", want)

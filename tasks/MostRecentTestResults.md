@@ -2,7 +2,34 @@
 
 **Date:** November 21, 2026 UTC
 
-**Pass:** P0073 - release proven returned joins in directly returned appends
+**Pass:** P0074 - adopt the final join from two returned appends
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0073 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0073 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44907693639).
+- `zig build test` discovered **187** entries. **169 passed**, **18 skipped**,
+  with zero failures or errors (50.34s). Report `test_results_20261121_120323_windows.json`
+  shows the same skip paths and reasons as P0073.
+- The focused Go initializer and append regressions passed (29.915s, `-count=1`).
+  Each of 10,000 nested initializer calls per mode released the original final
+  join at reference count one and emptied the allocation registry. The existing
+  append-return fixture made 49 releases per mode and left two unproven final
+  results live before shutdown.
+- All **56** ownership audit probes passed (56.143s). The eight calls went from
+  eight live joins to zero in each mode. The other 54 measurements matched P0073.
+- Windows Go quick passed all **43** groups (123.073s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is checked separately by CI.
+- Python runner unit tests passed **5/5** (0.043s).
+
+See the [P0074 record](passes/P0074-adopt-nested-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0073 checkpoint
+
+**Date:** November 21, 2026 UTC
 
 **Platform/toolchain:** Windows with Zig 0.17.1.
 

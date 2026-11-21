@@ -5,14 +5,14 @@
 static size_t copies, joins, releases, peak;
 static void *original;
 static int identity_probe;
-static int append_probe;
+static const char *append_result;
 static char *join;
 
 static char *checked_concat(const char *left, const char *right) {
     char *result = dream_concat(left, right);
     joins++;
-    if (append_probe) {
-        assert(join == NULL && "the factory must join once");
+    if (append_result && strcmp(result, append_result) == 0) {
+        assert(join == NULL && "the factory must create its final join once");
         join = result;
     }
     return result;
@@ -41,7 +41,7 @@ static void checked_release(void *ptr) {
     assert(ref->refcount == 1 && "adoption preserves the original reference");
     if (identity_probe)
         assert(ptr == original && "caller releases the original factory allocation");
-    if (append_probe && strcmp(ptr, "startowned") == 0) {
+    if (append_result && strcmp(ptr, append_result) == 0) {
         if (ptr != join)
             fprintf(stderr, "caller released a copy while the returned join was still live\n");
         assert(ptr == join && "caller must release the original join");
@@ -86,13 +86,20 @@ int main(void) {
     assert(dr_head == NULL);
     identity_probe = 0;
     copies = joins = releases = peak = 0;
-    append_probe = 1;
+    append_result = "startowned";
     for (size_t i = 0; i < 10000; i++) {
         DREAM_APPEND_PROBE();
         assert(join == NULL && dr_head == NULL);
         assert(copies == 2 * (i + 1) && joins == i + 1 && releases == 3 * (i + 1));
     }
-    append_probe = 0;
+    copies = joins = releases = peak = 0;
+    append_result = "outer-startowned";
+    for (size_t i = 0; i < 10000; i++) {
+        DREAM_NESTED_APPEND_PROBE();
+        assert(join == NULL && dr_head == NULL);
+        assert(copies == 3 * (i + 1) && joins == 2 * (i + 1) && releases == 5 * (i + 1));
+    }
+    append_result = NULL;
     copies = joins = releases = peak = 0;
     assert(dream_entry_main() == 0);
     assert(copies == DREAM_EXPECTED_COPIES);

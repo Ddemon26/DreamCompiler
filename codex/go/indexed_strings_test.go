@@ -360,15 +360,15 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 
 	t.Run("returned_join_return", func(t *testing.T) {
 		// Each nested call releases two initial strings, two append operands,
-		// and the caller's copy. The outer results remain registered.
+		// and the adopted outer join. Only the unproven returns stay registered.
 		checkStorageOwnershipWithLiveCount(t, "owned_returned_join_append_return.dr", 49, []string{
 			`return__dream_string_append_owned(&result,@entry@owned());`,
 			`return__dream_string_append_owned(&text,@entry@joined("inner-",0));`,
 			`return__dream_string_append_owned(&text,@entry@joined(__dream_string_assign(&text,"new"),@entry@announce()));`,
-			`snapshot=dream_string_copy(@entry@nested());`,
+			`snapshot=@entry@nested();`,
 			`changed=dream_string_copy(@entry@updated(1));`,
 			`return__dream_string_append(&text,@entry@borrowed(source));`,
-		}, strings.Repeat("outer-inner-value\n", 8)+"once\nnewnewvalue!\nleftright\nright\n", 10)
+		}, strings.Repeat("outer-inner-value\n", 8)+"once\nnewnewvalue!\nleftright\nright\n", 2)
 	})
 
 	t.Run("owned_factory_operand", func(t *testing.T) {
