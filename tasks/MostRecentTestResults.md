@@ -2,6 +2,36 @@
 
 **Date:** November 21, 2026 UTC
 
+**Pass:** P0073 - release proven returned joins in directly returned appends
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0072 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0072 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44879397034).
+- `zig build test` discovered **187** entries. **169 passed**, **18 skipped**,
+  with zero failures or errors (53.81s). Report
+  `test_results_20261121_060912_windows.json` confirms exact output for the
+  new fixture and the same skip paths and reasons as P0072.
+- The focused Go regression passed in ordinary and module-entry modes
+  (2.930s, `-count=1`). Both checked and normally linked programs produced
+  the expected output. Each mode made **49** checked releases and had **10**
+  final results registered before shutdown.
+- All **54** ownership audit probes passed (58.677s). In each new probe,
+  eight calls went from 24 releases and 16 live allocations to 32 releases
+  and eight final results. The other 52 measurements matched P0072.
+- Windows Go quick passed all **43** groups (135.255s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is checked separately by CI.
+- Python runner unit tests passed **5/5** (0.047s).
+
+See the [P0073 record](passes/P0073-return-appends-with-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0072 checkpoint
+
+**Date:** November 21, 2026 UTC
+
 **Pass:** P0072 - release proven returned joins in appends passed to Console wrappers
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

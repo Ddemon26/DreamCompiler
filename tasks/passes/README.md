@@ -74,8 +74,9 @@
 | [P0070](P0070-initialize-from-returned-join-appends.md) | 2026-11-20 | Release a proven returned join in a scalar string append initializer | `Pass-ID: P0070` |
 | [P0071](P0071-print-appends-with-returned-joins.md) | 2026-11-21 | Release a proven returned join in a string append printed by Console | `Pass-ID: P0071` |
 | [P0072](P0072-wrap-appends-with-returned-joins.md) | 2026-11-21 | Release a proven returned join in a string append passed to a Console wrapper | `Pass-ID: P0072` |
+| [P0073](P0073-return-appends-with-returned-joins.md) | 2026-11-21 | Release a proven returned join in a directly returned append | `Pass-ID: P0073` |
 
-**Verify P0072 publication and native CI, then measure join retention in an append returned directly from a synchronous function.**
+**Verify P0073 publication and native CI, then measure caller initializer retention for a direct append return that consumes a returned join.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

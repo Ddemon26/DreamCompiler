@@ -1078,3 +1078,20 @@ expression emission. The [checked fixture](../../tests/basics/memory/owned_retur
 covers both writers, replacement during operand evaluation, and a once-only
 side effect in ordinary and module-entry programs. See the
 [P0072 pass record](../../tasks/passes/P0072-wrap-appends-with-returned-joins.md).
+
+## Direct append returns with proven returned joins (P0073)
+
+In `return (text += joined());`, a synchronous string function can consume
+the operand if `text` is an owned scalar string local and `joined()` meets
+the [returned join proof](#scalar-initializers-that-adopt-returned-joins-p0064).
+The helper reads the current destination after evaluating the call, installs
+the concatenation, and releases the operand. The caller receives the new
+concatenation. An unproven operand follows ordinary append emission.
+
+Caller adoption still requires the original bounded proof. A function that
+returns an append of a returned join can therefore leave its final result
+registered until shutdown even when its intermediate join is released.
+The [checked fixture](../../tests/basics/memory/owned_returned_join_append_return.dr)
+verifies caller access, destination replacement during argument evaluation,
+and a once-only side effect in both compiler modes. See the
+[P0073 pass record](../../tasks/passes/P0073-return-appends-with-returned-joins.md).

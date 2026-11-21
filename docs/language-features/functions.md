@@ -290,6 +290,12 @@ the join. In an assignment, the previous value stays live until the call
 finishes, unless an argument itself replaces it.
 See the [declaration](../development/string-ownership.md#scalar-initializers-that-adopt-returned-joins-p0064)
 and [assignment rules](../development/string-ownership.md#complete-assignments-that-adopt-returned-joins-p0065).
+
+A synchronous string function can also consume a proven `joined()` operand
+in `return (local += joined());` when `local` is an owned scalar string. The
+caller receives the concatenation after the intermediate join is released.
+See the [direct append return rule](../development/string-ownership.md#direct-append-returns-with-proven-returned-joins-p0073).
+
 A standalone `joined();` call under the same proof releases the join
 immediately after the call returns. See the
 [discard rules](../development/string-ownership.md#standalone-calls-that-discard-returned-joins-p0066).

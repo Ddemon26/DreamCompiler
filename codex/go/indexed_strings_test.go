@@ -358,6 +358,19 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "newnew\nnewnew!\n1\nsamesame\nsamesame\n", true)
 	})
 
+	t.Run("returned_join_return", func(t *testing.T) {
+		// Each nested call releases two initial strings, two append operands,
+		// and the caller's copy. The outer results remain registered.
+		checkStorageOwnershipWithLiveCount(t, "owned_returned_join_append_return.dr", 49, []string{
+			`return__dream_string_append_owned(&result,@entry@owned());`,
+			`return__dream_string_append_owned(&text,@entry@joined("inner-",0));`,
+			`return__dream_string_append_owned(&text,@entry@joined(__dream_string_assign(&text,"new"),@entry@announce()));`,
+			`snapshot=dream_string_copy(@entry@nested());`,
+			`changed=dream_string_copy(@entry@updated(1));`,
+			`return__dream_string_append(&text,@entry@borrowed(source));`,
+		}, strings.Repeat("outer-inner-value\n", 8)+"once\nnewnewvalue!\nleftright\nright\n", 10)
+	})
+
 	t.Run("owned_factory_operand", func(t *testing.T) {
 		checkStorageOwnership(t, "owned_call_append.dr", 30012, []string{
 			`{constchar*dreamOwnedArgument0=@entry@factory();__dream_string_append(&text,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,

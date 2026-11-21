@@ -1216,12 +1216,12 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       Node *expr = n->as.ret.expr;
       Node *append_slot = ctx->is_sync_function && ctx->ret_type == TK_KW_STRING &&
                           ctx->exception_depth == 0
-                              ? owned_factory_append_slot(ctx, expr, 0) : NULL;
+                              ? owned_factory_append_slot(ctx, expr, 1) : NULL;
       c_out_write(b, "return");
       if (expr) {
         c_out_write(b, " ");
         if (append_slot && owned_string_result(ctx, append_slot)) {
-          // Consume the factory operand and return the local's installed join.
+          // Consume the proven operand and return the local's installed join.
           emit_owned_factory_append(ctx, b, append_slot, expr->as.bin.rhs);
         } else {
           cg_emit_expr(ctx, b, expr);

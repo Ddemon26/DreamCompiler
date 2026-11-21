@@ -725,9 +725,16 @@ destination stays readable after the call. A wrapper with two statements keeps
 its original operand until shutdown in the checked control.
 See [P0072](passes/P0072-wrap-appends-with-returned-joins.md).
 
-Broader T011 remains open. Verify P0072 publication and native CI, then measure
-join retention in `return (text += joined());` from an owned local in a
-synchronous function and verify caller access in both modes.
+P0073 releases the intermediate join in `return (text += joined());` from an
+owned local in a synchronous string function. The caller can read the final
+value in both modes. In the isolated audit, eight calls release eight more
+allocations and leave only their eight final results registered.
+See [P0073](passes/P0073-return-appends-with-returned-joins.md).
+
+Broader T011 remains open. Verify P0073 publication and native CI, then measure
+final-result retention in a scalar initializer calling a two-statement function
+that returns an append of a proven returned join. Check pointer identity if a
+bounded caller adoption proof qualifies it.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

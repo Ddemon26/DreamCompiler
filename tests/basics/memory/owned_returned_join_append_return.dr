@@ -1,0 +1,52 @@
+// Expected: outer-inner-value
+// Expected: outer-inner-value
+// Expected: outer-inner-value
+// Expected: outer-inner-value
+// Expected: outer-inner-value
+// Expected: outer-inner-value
+// Expected: outer-inner-value
+// Expected: outer-inner-value
+// Expected: once
+// Expected: newnewvalue!
+// Expected: leftright
+// Expected: right
+
+func string owned() { string result = "value"; return result; }
+func string borrowed(string source) { return source; }
+func int announce() { Console.WriteLine("once"); return 0; }
+
+func string joined(string source, int effect) {
+    string result = source;
+    return (result += owned());
+}
+
+func string nested() {
+    string text = "outer-";
+    return (text += joined("inner-", 0));
+}
+
+func string updated(bool append) {
+    string text = "old";
+    if (append) return (text += joined((text = "new"), announce()));
+    return text;
+}
+
+func string borrowedJoin(string source) {
+    string text = "left";
+    return (text += borrowed(source));
+}
+
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string snapshot = nested();
+        Console.WriteLine(snapshot);
+    }
+    string changed = updated(true);
+    changed += "!";
+    Console.WriteLine(changed);
+    string backing = "right";
+    Console.WriteLine(borrowedJoin(backing));
+    Console.WriteLine(backing);
+}
+
+exercise();
