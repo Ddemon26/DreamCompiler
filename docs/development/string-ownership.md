@@ -905,6 +905,7 @@ each mode, up from 16 releases and eight survivors. The stress regression also
 checks both writers, an argument that replaces the destination and increments a
 counter once, null, and borrowed self-append.
 See the [P0060 pass record](../../tasks/passes/P0060-owned-append-console.md).
+P0071 extends this rule to [operands that return a proven join](#console-output-of-appends-with-proven-returned-joins-p0071).
 
 ## Append arguments to Console wrappers (P0061)
 
@@ -1044,3 +1045,19 @@ releasing the snapshot leaves the destination readable. It also covers a
 destination replaced during argument evaluation, a once-only side effect,
 borrowed self-append, and cleanup after a zero-iteration loop.
 See the [P0070 pass record](../../tasks/passes/P0070-initialize-from-returned-join-appends.md).
+
+## Console output of appends with proven returned joins (P0071)
+
+In a complete `Console.Write(text += joined());` or
+`Console.WriteLine(text += joined());` statement, an append to an owned scalar
+string identifier can consume an operand that satisfies the
+[returned join proof](#scalar-initializers-that-adopt-returned-joins-p0064).
+The append helper reads the destination after evaluating the call, installs
+the concatenation, and releases the original returned join before the writer
+receives the new value. The destination owns that value for later reads and
+updates. Borrowed operands follow the ordinary append path.
+
+The [checked fixture](../../tests/basics/memory/owned_returned_join_append_console.dr)
+exercises both writers, destination replacement during argument evaluation,
+a once-only increment, and borrowed self-append in ordinary and module-entry
+programs. See the [P0071 pass record](../../tasks/passes/P0071-print-appends-with-returned-joins.md).

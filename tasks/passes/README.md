@@ -72,8 +72,9 @@
 | [P0068](P0068-wrap-returned-joins.md) | 2026-11-20 | Release a proven returned join after a Console wrapper call | `Pass-ID: P0068` |
 | [P0069](P0069-append-returned-joins.md) | 2026-11-20 | Release a proven returned join after a complete append statement | `Pass-ID: P0069` |
 | [P0070](P0070-initialize-from-returned-join-appends.md) | 2026-11-20 | Release a proven returned join in a scalar string append initializer | `Pass-ID: P0070` |
+| [P0071](P0071-print-appends-with-returned-joins.md) | 2026-11-21 | Release a proven returned join in a string append printed by Console | `Pass-ID: P0071` |
 
-**Verify P0070 publication and native CI, then measure join retention in an append printed by Console.**
+**Verify P0071 publication and native CI, then measure join retention in an append passed to a proven Console wrapper.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

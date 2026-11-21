@@ -1,5 +1,35 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 21, 2026 UTC
+
+**Pass:** P0071 - release proven returned joins in appends printed by Console
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0070 CI passed on Windows and Linux at the verified parent SHA.
+  See the [P0070 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44799863088).
+- `zig build test` discovered **185** entries. **167 passed**, **18 skipped**,
+  with zero failures or errors (51.96s). Report
+  `test_results_20261120_180917_windows.json` confirms the new fixture's exact
+  output and the same skip paths and reasons as P0070.
+- Four focused Go groups passed (34.786s, `-count=1`). The new regression
+  verified both Console writers, 10,000 repeated writes, 40,009 checked releases,
+  and zero live allocations before shutdown per mode. The updated destination
+  remained readable after printing.
+- All **48** ownership audit probes passed (54.564s). Eight printed appends per
+  mode went from 32 releases and eight live joins to 40 releases and zero live
+  joins. The other 46 measurements matched baseline.
+- Windows Go quick passed all **43** groups (129.200s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is checked separately by CI.
+- Python runner unit tests passed **5/5** (0.063s).
+
+See the [P0071 record](passes/P0071-print-appends-with-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0070 checkpoint
+
 **Date:** November 20, 2026 UTC
 
 **Pass:** P0070 - release proven returned joins in append initializers

@@ -176,6 +176,9 @@ and independently readable destination and snapshot in each mode.
 P0060 covers appends printed directly by `Console.Write` or `Console.WriteLine`,
 checking 20,008 nonnull releases and zero live allocations before shutdown per
 mode, including a destination update after printing.
+P0071 extends both writers to appends with proven returned joins. The checked
+fixture makes 10,000 repeated writes and verifies destination replacement and
+post-print updates, borrowed self-append, and zero live allocations in each mode.
 
 `TestCompiler_ScalarReturnCleanup` checks synchronous primitive scalar returns
 in both modes: 47 nonnull releases (21 classes, 26 strings), 23 output lines,

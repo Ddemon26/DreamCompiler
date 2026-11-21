@@ -13,7 +13,8 @@ the compiler releases that result after printing it.
 In `Console.WriteLine(text += makeText());` or `Console.Write(text += makeText());`,
 an owned scalar `text` keeps the joined value. If `makeText()` passes the factory
 proof, the compiler releases the original operand after appending and before
-printing the join. See [string append ownership](../../development/string-ownership.md#console-output-of-append-results-p0060).
+printing the join. The rule includes factories that return a proven join.
+See [string append ownership](../../development/string-ownership.md#console-output-of-appends-with-proven-returned-joins-p0071).
 
 ```dream
 Console.Write("Enter name: ");

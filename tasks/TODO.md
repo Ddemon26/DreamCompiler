@@ -712,9 +712,16 @@ and scope exit. The eight-initializer audit in each mode goes from 48 releases
 and eight live joins to 56 releases and zero live joins.
 See [P0070](passes/P0070-initialize-from-returned-join-appends.md).
 
-Broader T011 remains open. Verify P0070 publication and native CI, then measure
-retention in `Console.WriteLine(text += joined());` and verify destination
-survival after printing in both modes.
+P0071 releases the original returned join in a complete
+`Console.Write(text += joined());` or `Console.WriteLine(text += joined());`
+statement. The destination keeps the printed value. Checked ordinary and
+module-entry runs cover replacement during operand evaluation, post-print
+updates, and borrowed self-append.
+See [P0071](passes/P0071-print-appends-with-returned-joins.md).
+
+Broader T011 remains open. Verify P0071 publication and native CI, then measure
+retention in `view(text += joined());` through a proven Console wrapper and
+verify destination survival after the wrapper returns in both modes.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

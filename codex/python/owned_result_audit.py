@@ -23,6 +23,7 @@ P0067 releases the proven returned join after direct Console output.
 P0068 releases the proven returned join after a Console wrapper returns.
 P0069 releases the proven returned join after a complete append statement.
 P0070 releases the proven returned join in an append that initializes a snapshot.
+P0071 releases the proven returned join in an append printed directly by Console.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -49,6 +50,27 @@ def argument_release(consumer, leading_args="", call="@entry@owned()"):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "returned_join_append_console",
+        "releases": 40, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "start";
+    return (text += owned());
+}
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "outer-";
+        Console.WriteLine(text += joined());
+        Console.WriteLine(text);
+    }
+}
+exercise();
+''',
+        "output": "outer-startowned\nouter-startowned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@owned());",
+              "dr_console_writeln(__dream_string_append_owned(&text,@entry@joined()));"],
+    },
     {
         "name": "returned_join_append_initializer",
         "releases": 56, "live": 0,
