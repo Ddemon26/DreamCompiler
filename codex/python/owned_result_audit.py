@@ -24,6 +24,7 @@ P0068 releases the proven returned join after a Console wrapper returns.
 P0069 releases the proven returned join after a complete append statement.
 P0070 releases the proven returned join in an append that initializes a snapshot.
 P0071 releases the proven returned join in an append printed directly by Console.
+P0072 releases the proven returned join in an append passed to a Console wrapper.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -50,6 +51,51 @@ def argument_release(consumer, leading_args="", call="@entry@owned()"):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "returned_join_append_wrapper",
+        "releases": 40, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "start";
+    return (text += owned());
+}
+func void view(string source) { Console.WriteLine(source); }
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "outer-";
+        view(text += joined());
+        Console.WriteLine(text);
+    }
+}
+exercise();
+''',
+        "output": "outer-startowned\nouter-startowned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@owned());",
+              "@entry@view(__dream_string_append_owned(&text,@entry@joined()));"],
+    },
+    {
+        "name": "returned_join_append_unqualified_wrapper",
+        "releases": 4, "live": 1,
+        "source": COMMON + '''
+func string joined() {
+    string text = "start";
+    return (text += owned());
+}
+func void view(string source) {
+    Console.Write(source);
+    Console.WriteLine(source);
+}
+func void exercise() {
+    string text = "outer-";
+    view(text += joined());
+    Console.WriteLine(text);
+}
+exercise();
+''',
+        "output": "outer-startownedouter-startowned\nouter-startowned\n",
+        "c": ["return__dream_string_append_owned(&text,@entry@owned());",
+              "@entry@view(__dream_string_append(&text,@entry@joined()));"],
+    },
     {
         "name": "returned_join_append_console",
         "releases": 40, "live": 0,

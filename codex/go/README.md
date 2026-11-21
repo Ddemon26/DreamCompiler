@@ -179,6 +179,9 @@ mode, including a destination update after printing.
 P0071 extends both writers to appends with proven returned joins. The checked
 fixture makes 10,000 repeated writes and verifies destination replacement and
 post-print updates, borrowed self-append, and zero live allocations in each mode.
+P0072 exercises the same operand through both supported Console wrappers.
+Each mode checks 10,000 repeated wrapper calls, 40,009 nonnull releases, and
+zero live allocations, including use of the destination after the wrapper returns.
 
 `TestCompiler_ScalarReturnCleanup` checks synchronous primitive scalar returns
 in both modes: 47 nonnull releases (21 classes, 26 strings), 23 output lines,

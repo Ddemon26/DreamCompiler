@@ -346,6 +346,18 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "newnew\nnewnew!\n1\n[]\nsamesame\n", true)
 	})
 
+	t.Run("returned_join_wrapper", func(t *testing.T) {
+		// Four releases per iteration, plus seven for the replaced destination
+		// and two for the borrowed self-append and its cleanup.
+		checkStorageOwnership(t, "owned_returned_join_append_wrapper.dr", 40009, []string{
+			`return__dream_string_append_owned(&result,@entry@empty());`,
+			`@entry@showText(__dream_string_append_owned(&text,@entry@joined("",0)));`,
+			`@entry@view(__dream_string_append_owned(&changed,@entry@joined(__dream_string_assign(&changed,"new"),(count++))));`,
+			`__dream_string_append(&changed,"!");`, `dr_console_writeln(changed);`,
+			`@entry@view(__dream_string_append(&alias,@entry@borrowed(alias)));`, `dr_console_writeln(alias);`,
+		}, "newnew\nnewnew!\n1\nsamesame\nsamesame\n", true)
+	})
+
 	t.Run("owned_factory_operand", func(t *testing.T) {
 		checkStorageOwnership(t, "owned_call_append.dr", 30012, []string{
 			`{constchar*dreamOwnedArgument0=@entry@factory();__dream_string_append(&text,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,

@@ -1,0 +1,39 @@
+// Expected: newnew
+// Expected: newnew!
+// Expected: 1
+// Expected: samesame
+// Expected: samesame
+
+func string empty() {
+    string result = "";
+    return result;
+}
+
+func string joined(string source, int effect) {
+    string result = source;
+    return (result += empty());
+}
+
+func string borrowed(string source) { return source; }
+func void showText(string source) { Console.Write(source); }
+func void view(string source) { Console.WriteLine(source); }
+
+func void exercise() {
+    for (int i = 0; i < 10000; i++) {
+        string text;
+        showText(text += joined("", 0));
+    }
+
+    string changed = "old";
+    int count = 0;
+    if (true) view(changed += joined((changed = "new"), count++));
+    changed += "!";
+    Console.WriteLine(changed);
+    Console.WriteLine(count);
+
+    string alias = "same";
+    view(alias += borrowed(alias));
+    Console.WriteLine(alias);
+}
+
+exercise();

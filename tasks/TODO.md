@@ -719,9 +719,15 @@ module-entry runs cover replacement during operand evaluation, post-print
 updates, and borrowed self-append.
 See [P0071](passes/P0071-print-appends-with-returned-joins.md).
 
-Broader T011 remains open. Verify P0071 publication and native CI, then measure
-retention in `view(text += joined());` through a proven Console wrapper and
-verify destination survival after the wrapper returns in both modes.
+P0072 releases a proven returned join in `view(text += joined());` when the
+entire statement calls a proven one-parameter Console wrapper. The updated
+destination stays readable after the call. A wrapper with two statements keeps
+its original operand until shutdown in the checked control.
+See [P0072](passes/P0072-wrap-appends-with-returned-joins.md).
+
+Broader T011 remains open. Verify P0072 publication and native CI, then measure
+join retention in `return (text += joined());` from an owned local in a
+synchronous function and verify caller access in both modes.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

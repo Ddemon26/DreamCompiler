@@ -923,6 +923,7 @@ wrapper control follows general expression emission and retains its original
 factory allocation until shutdown. General calls and nested expressions remain
 open.
 See the [P0061 pass record](../../tasks/passes/P0061-owned-append-wrapper.md).
+P0072 extends this wrapper rule to [proven returned joins](#append-arguments-with-proven-returned-joins-p0072).
 
 ## Direct append returns with proven factory operands (P0063)
 
@@ -1061,3 +1062,19 @@ The [checked fixture](../../tests/basics/memory/owned_returned_join_append_conso
 exercises both writers, destination replacement during argument evaluation,
 a once-only increment, and borrowed self-append in ordinary and module-entry
 programs. See the [P0071 pass record](../../tasks/passes/P0071-print-appends-with-returned-joins.md).
+
+## Append arguments with proven returned joins (P0072)
+
+In a complete `view(text += joined());` statement, an append to an owned scalar
+string identifier consumes the operand when it satisfies the
+[returned join proof](#scalar-initializers-that-adopt-returned-joins-p0064)
+and the callee satisfies the [Console wrapper proof](#append-arguments-to-console-wrappers-p0061).
+The caller evaluates the operand once, appends it to the current destination,
+and releases the original join before the wrapper receives the new value.
+The destination owns that value for subsequent reads and updates.
+
+Borrowed operands and wrappers with additional statements follow ordinary
+expression emission. The [checked fixture](../../tests/basics/memory/owned_returned_join_append_wrapper.dr)
+covers both writers, replacement during operand evaluation, and a once-only
+side effect in ordinary and module-entry programs. See the
+[P0072 pass record](../../tasks/passes/P0072-wrap-appends-with-returned-joins.md).
