@@ -125,3 +125,5 @@ for commands and remaining limits.
 
 P0066 applies the same release to standalone calls that return a proven join.
 See [standalone calls that discard returned joins](string-ownership.md#standalone-calls-that-discard-returned-joins-p0066).
+P0076 extends the same release to
+[two qualifying returned appends](string-ownership.md#standalone-calls-that-discard-two-returned-appends-p0076).

@@ -26,19 +26,22 @@ func TestCompiler_OwnedCallDiscard(t *testing.T) {
 			program := string(data)
 			var options []string
 			entry, identity := "", "factory"
-			joined := "joined"
+			joined, nested := "joined", "nested"
 			entryDiscards := 10
 			if modules {
 				entry, identity = "__dream_module_0_", "__dream_module_1_factory"
 				joined = "__dream_module_1_joined"
+				nested = "__dream_module_1_nested"
 				entryDiscards-- // The identity probe calls the imported definition.
 				options = append(options, "--multi-file")
 				program = "import labels;\n" + strings.Replace(program, "{ factory(); }", "{ labels.factory(); }", 1)
 				program = strings.Replace(program, "(joined(count++))", "(labels.joined(count++))", 1)
+				program = strings.Replace(program, "(nested(count++))", "(labels.nested(count++))", 1)
 				program += "\nlabels.empty();\n"
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(`module labels;
 export func string factory() { string result = "owned"; return result; }
 export func string joined(int value) { string result = "start"; return (result += factory()); }
+export func string nested(int value) { string result = "outer-"; return (result += joined(value)); }
 export func string empty() { return ""; }`), 0644); err != nil {
 					t.Fatal(err)
 				}
@@ -100,6 +103,7 @@ export func string empty() { return ""; }`), 0644); err != nil {
 			args := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
 				"-DDREAM_IDENTITY_PROBE=" + entry + "identityProbe",
 				"-DDREAM_JOIN_DISCARD_PROBE=" + entry + "joinDiscardProbe",
+				"-DDREAM_NESTED_JOIN_DISCARD_PROBE=" + entry + "nestedJoinDiscardProbe",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"),
 				"-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -114,13 +118,15 @@ export func string empty() { return ""; }`), 0644); err != nil {
 			}
 			binary := filepath.Join(work, "checked"+suffix)
 			command("zig", append(args, "-o", binary)...)
-			const want = "backing\nchanged\n1\n1\n"
+			const want = "backing\nchanged\n1\n1\n1\n"
 			if got := command(binary); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
-			joinedCall := "dr_release((void*)" + joined + "((count++)));"
-			if strings.Count(c, joinedCall) != 1 {
-				t.Errorf("expected one direct release of the joined result: %q", joinedCall)
+			for _, name := range []string{joined, nested} {
+				call := name + "((count++))"
+				if strings.Count(c, call) != 1 || strings.Count(c, "dr_release((void*)"+call+");") != 1 {
+					t.Errorf("expected one call and direct release of %q", call)
+				}
 			}
 			command(tr.compilerPath, append(options, source)...)
 			if got := command(filepath.Join(tr.projectRoot, "dream"+suffix)); got != want {
@@ -135,6 +141,8 @@ export func string empty() { return ""; }`), 0644); err != nil {
 			c := memberReturnEmission(t, tr, `func string factory() { string result = "owned"; return result; }
 func string clone(string source) { string result = source; return result; }
 func string joined() { string result = "start"; return (result += factory()); }
+func string nested() { string result = "outer-"; return (result += joined()); }
+func string deeper() { string result = "third-"; return (result += nested()); }
 func string unproven(string source) { string result = "start"; return (result += source); }
 async func string later() { string result = "async"; return result; }
 func void run() {
@@ -144,11 +152,16 @@ func void run() {
     for (joined(); false; joined()) { }
     true ? joined() : "borrowed";
     clone(joined());
+    for (nested(); false; nested()) { }
+    true ? nested() : "borrowed";
+    clone(nested());
+    deeper();
     unproven("borrowed");
     later();
 }`, modules)
 			factory := entry + "factory()"
 			joined := entry + "joined()"
+			nested := entry + "nested()"
 			for _, want := range []string{
 				"for(" + factory + ";0;" + factory + ")",
 				"(1?" + factory + ":\"borrowed\");",
@@ -156,6 +169,10 @@ func void run() {
 				"for(" + joined + ";0;" + joined + ")",
 				"(1?" + joined + ":\"borrowed\");",
 				"dr_release((void*)" + entry + "clone(" + joined + "));",
+				"for(" + nested + ";0;" + nested + ")",
+				"(1?" + nested + ":\"borrowed\");",
+				"dr_release((void*)" + entry + "clone(" + nested + "));",
+				entry + "deeper();",
 				entry + "unproven(\"borrowed\");",
 				entry + "later();",
 			} {
@@ -165,6 +182,8 @@ func void run() {
 			}
 			if strings.Contains(c, "dr_release((void*)"+factory) ||
 				strings.Contains(c, "dr_release((void*)"+joined) ||
+				strings.Contains(c, "dr_release((void*)"+nested) ||
+				strings.Contains(c, "dr_release((void*)"+entry+"deeper(") ||
 				strings.Contains(c, "dr_release((void*)"+entry+"unproven(") ||
 				strings.Contains(c, "dr_release((void*)"+entry+"later(") {
 				t.Error("discard release must exclude inner calls, headers, compound expressions and async results")

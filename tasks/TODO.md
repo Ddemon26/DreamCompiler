@@ -742,10 +742,15 @@ eight. Checked ordinary and imported calls release the original allocations in
 order, including when a nested argument replaces the destination.
 See [P0075](passes/P0075-assign-nested-returned-joins.md).
 
-Broader T011 remains open. Verify P0075 publication and native CI, then measure
-final-result retention for a standalone call using the same two-append return.
-Check original-pointer release and once-only argument evaluation if the discard
-path qualifies.
+P0076 applies the two-append proof to standalone calls. The eight-call audit
+leaves zero final joins live instead of eight. Checked ordinary and imported
+calls evaluate the argument once and release the original final pointer.
+See [P0076](passes/P0076-discard-nested-returned-joins.md).
+
+Broader T011 remains open. Verify P0076 publication and native CI, then
+qualify release after direct Console output of `nested()` for both writers.
+The `returned_join_append_return` audit still retains eight final joins
+after eight calls per mode.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

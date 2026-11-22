@@ -4,17 +4,17 @@
 
 static size_t copies, joins, releases;
 static int checking_identity;
-static int checking_join;
+static size_t expected_joins;
 static void *original;
-static char *join;
+static char *join[2];
 
 static char *checked_concat(const char *left, const char *right) {
     char *result = dream_concat(left, right);
-    if (checking_join) {
-        assert(join == NULL && result && strcmp(result, "startowned") == 0);
+    if (expected_joins) {
+        assert(joins < expected_joins && join[joins] == NULL && result);
+        assert(strcmp(result, joins == 0 ? "startowned" : "outer-startowned") == 0);
         assert(dr_head && (void *)(dr_head + 1) == result && dr_head->refcount == 1);
-        joins++;
-        join = result;
+        join[joins++] = result;
     }
     return result;
 }
@@ -41,10 +41,16 @@ static void checked_release(void *ptr) {
         assert(ptr == original);
         original = NULL;
     }
-    if (checking_join && releases == 2) {
-        // Both operands must be gone when the original join is released.
-        assert(ptr == join && ref == dr_head && ref->next == NULL);
-        join = NULL;
+    if (expected_joins == 2 && releases == 3) {
+        // The outer append must release the original inner join.
+        assert(ptr == join[0]);
+        join[0] = NULL;
+    }
+    if (expected_joins && releases == 2 * expected_joins) {
+        // Both operands must be gone when the original final join is released.
+        assert(joins == expected_joins && ptr == join[joins - 1]);
+        assert(ref == dr_head && ref->next == NULL);
+        join[joins - 1] = NULL;
     }
     releases++;
     dr_release(ptr);
@@ -75,16 +81,20 @@ int main(void) {
         assert(original == NULL && dr_head == NULL);
     }
     checking_identity = 0;
-    checking_join = 1;
-    for (size_t i = 0; i < 10000; i++) {
-        copies = joins = releases = 0;
-        assert(DREAM_JOIN_DISCARD_PROBE() == 1);
-        assert(join == NULL && dr_head == NULL && "discard the original join before returning");
-        assert(copies == 2 && joins == 1 && releases == 3);
+    for (expected_joins = 1; expected_joins <= 2; expected_joins++) {
+        for (size_t i = 0; i < 10000; i++) {
+            copies = joins = releases = 0;
+            int count = expected_joins == 1 ? DREAM_JOIN_DISCARD_PROBE() : DREAM_NESTED_JOIN_DISCARD_PROBE();
+            assert(count == 1);
+            assert(join[0] == NULL && join[1] == NULL && dr_head == NULL &&
+                   "discard the original final join before returning");
+            assert(copies == expected_joins + 1 && joins == expected_joins &&
+                   releases == 2 * expected_joins + 1);
+        }
     }
-    checking_join = 0;
+    expected_joins = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 18 && releases == 19 && dr_head == NULL);
+    assert(copies == 21 && releases == 24 && dr_head == NULL);
     return 0;
 }

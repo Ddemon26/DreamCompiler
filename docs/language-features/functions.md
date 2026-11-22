@@ -301,9 +301,10 @@ join. The assignment releases the current destination after the call finishes.
 See the [initializer rule](../development/string-ownership.md#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074)
 and [assignment rule for two returned appends](../development/string-ownership.md#complete-assignments-that-adopt-two-returned-appends-p0075).
 
-A standalone `joined();` call under the one-append proof releases the join
-immediately after the call returns. See the
-[discard rules](../development/string-ownership.md#standalone-calls-that-discard-returned-joins-p0066).
+A standalone `joined();` or `nested();` call releases the final join immediately
+after the call returns when up to two returned appends meet the factory proof.
+The call evaluates its arguments once. See the
+[discard rule](../development/string-ownership.md#standalone-calls-that-discard-two-returned-appends-p0076).
 
 In a complete `show(getText());` statement, the caller passes the original
 result and releases it after `show` returns if `show` is a synchronous void

@@ -244,7 +244,7 @@ string conditional = true ? nested() : "literal";`, modules)
 				"nestedJoin=dream_string_copy((1?" + prefix + `joined():"literal"));`,
 				"snapshot=" + prefix + "nested();",
 				"(char*)" + prefix + "nested();dr_release(target);target=__dream_owned_0;",
-				"*/" + prefix + "nested();",
+				"dr_release((void*)" + prefix + "nested());",
 				"dr_console_writeln(" + prefix + "nested());",
 				"conditional=dream_string_copy((1?" + prefix + `nested():"literal"));`,
 			} {

@@ -2,6 +2,35 @@
 
 **Date:** November 22, 2026 UTC
 
+**Pass:** P0076 - discard the final join from two returned appends
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0075 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0075 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44969995144).
+- `zig build test` discovered **187** entries. **169 passed**, **18 skipped**,
+  with zero failures or errors (162.29s). Report `test_results_20261122_000310_windows.json`
+  confirms the discard fixture's exact output and the same skip paths and reasons
+  as P0075.
+- Windows Go quick passed all **43** groups (394.374s, `-count=1`). The
+  focused assignment, discard, and initializer rerun passed (57.333s). The checked discard
+  harness verified 10,000 two-append calls per mode with once-only argument
+  evaluation and release of the original final pointer at reference count one.
+- All **60** allocation audit probes passed (215.615s). Eight standalone calls
+  left zero final joins live in each mode, down from eight on P0075. All 58
+  earlier measurements matched P0075.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is checked separately by CI.
+- Python runner unit tests passed **5/5** (0.121s).
+
+See the [P0076 record](passes/P0076-discard-nested-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0075 checkpoint
+
+**Date:** November 22, 2026 UTC
+
 **Pass:** P0075 - adopt the final join from two returned appends in a scalar assignment
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

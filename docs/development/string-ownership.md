@@ -1122,6 +1122,17 @@ the current value and installs the original final join. If an argument
 replaces the destination, the outer assignment releases that replacement.
 
 Assignment expressions and calls beyond two returned appends use their
-existing fallback. Standalone calls and argument consumers retain the
-one-append proof. See the
+existing fallback. See the
 [P0075 pass record](../../tasks/passes/P0075-assign-nested-returned-joins.md).
+
+## Standalone calls that discard two returned appends (P0076)
+
+A complete `nested();` statement uses the same two-append factory proof as a
+[direct scalar initializer](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074).
+The caller evaluates the call and its arguments once and releases the original
+final join immediately after normal return. This also applies to imported
+functions and parenthesized standalone calls.
+
+Loop headers, conditional expressions, nested arguments, and calls beyond two
+returned appends follow ordinary expression emission. See the
+[P0076 pass record](../../tasks/passes/P0076-discard-nested-returned-joins.md).
