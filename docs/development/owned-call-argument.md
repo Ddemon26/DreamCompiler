@@ -105,3 +105,7 @@ exception and async unwinding, and alias/container ownership remain separate wor
    The escape and sibling controls each still measure zero releases and one
    survivor. See the [pass record](../../tasks/passes/P0056-owned-call-argument.md)
    for regression and platform results.
+
+P0078 allows a proven factory with up to two returned appends as the complete
+argument to this wrapper shape. See
+[Console wrappers for two returned appends](string-ownership.md#console-wrappers-for-two-returned-appends-p0078).

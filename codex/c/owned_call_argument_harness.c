@@ -123,14 +123,14 @@ int main(void) {
     expected_joins = 2;
     copies = joins = releases = writes = lines = 0;
     for (size_t i = 1; i <= 10000; i++) {
-        assert(DREAM_NESTED_OUTPUT_PROBE() == 2);
+        assert(DREAM_NESTED_OUTPUT_PROBE() == 4);
         assert(!original && !intermediate && !observed && !dr_head);
-        assert(copies == 6 * i && joins == 4 * i && releases == 10 * i);
-        assert(writes == i && lines == i);
+        assert(copies == 12 * i && joins == 8 * i && releases == 20 * i);
+        assert(writes == 2 * i && lines == 2 * i);
     }
     expected_joins = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 21 && releases == 29 && !dr_head);
+    assert(copies == 27 && releases == 39 && !dr_head);
     return 0;
 }

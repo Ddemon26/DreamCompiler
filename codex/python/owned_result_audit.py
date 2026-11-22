@@ -30,6 +30,7 @@ P0074 adopts the final allocation from two direct appends in a scalar initialize
 P0075 adopts the final allocation from two returned appends in a scalar assignment.
 P0076 releases the final allocation from two returned appends after a standalone call.
 P0077 releases the final allocation from two returned appends after direct Console output.
+P0078 releases the final allocation from two returned appends after a Console wrapper returns.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -150,7 +151,7 @@ exercise();
     },
     {
         "name": "nested_join_wrapper",
-        "releases": 32, "live": 8,
+        "releases": 40, "live": 0,
         "source": COMMON + '''
 func string joined() {
     string text = "inner-";
@@ -160,12 +161,17 @@ func string nested() {
     string text = "outer-";
     return (text += joined());
 }
-func void view(string source) { Console.WriteLine(source); }
-for (int i = 0; i < 8; i++) view(nested());
+func void view(string source) { Console.Write(source); }
+func void line(string source) { Console.WriteLine(source); }
+for (int i = 0; i < 4; i++) {
+    view(nested());
+    line(nested());
+}
 ''',
-        "output": "outer-inner-owned\n" * 8,
+        "output": "outer-inner-ownedouter-inner-owned\n" * 4,
         "c": ["return__dream_string_append_owned(&text,@entry@joined());",
-              "@entry@view(@entry@nested());"],
+              argument_release("@entry@view", call="@entry@nested()"),
+              argument_release("@entry@line", call="@entry@nested()")],
     },
     {
         "name": "returned_join_append_wrapper",

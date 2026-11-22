@@ -752,9 +752,14 @@ Both writers read the original final join before its release. The eight-call
 audit leaves zero final joins live instead of eight. See
 [P0077](passes/P0077-print-nested-returned-joins.md).
 
-Broader T011 remains open. Verify P0077 publication and native CI, then
-qualify a two-append result passed to a proven Console wrapper. The
-`nested_join_wrapper` audit retains eight final joins after eight calls per mode.
+P0078 applies the two-append proof to complete calls to proven Console wrappers.
+The caller releases the original final join after the wrapper returns. The
+eight-call audit covers both writers and leaves zero final joins live per mode.
+See [P0078](passes/P0078-wrap-nested-returned-joins.md).
+
+Broader T011 remains open. Verify P0078 publication and native CI, then measure
+and qualify a two-append result used as the operand of a complete append
+statement. Check destination replacement during operand evaluation.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

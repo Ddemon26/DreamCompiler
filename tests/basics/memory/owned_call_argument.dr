@@ -9,7 +9,8 @@
 // Expected: startownedstartowned
 // Expected: 4
 // Expected: outer-startownedouter-startowned
-// Expected: 2
+// Expected: outer-startownedouter-startowned
+// Expected: 4
 func string factory() { string result = "owned"; return result; }
 func string joined(int value) { string result = "start"; return (result += factory()); }
 func string nested(int value) { string result = "outer-"; return (result += joined(value)); }
@@ -36,6 +37,8 @@ func int nestedOutputProbe() {
     int count = 0;
     if (true) Console.Write(nested(count++));
     Console.WriteLine(nested(count++));
+    if (true) view(nested(count++));
+    line(nested(count++));
     return count;
 }
 func void exercise() {

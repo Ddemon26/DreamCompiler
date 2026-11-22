@@ -1146,6 +1146,19 @@ The factory and its arguments run once. The writer reads the original final
 join, and the caller releases it immediately after the writer returns.
 
 This rule covers ordinary and imported factories. A compound Console operand
-or a factory beyond the two-append proof follows ordinary emission. Synchronous
-Console wrappers still use the one-append proof. See the
+or a factory beyond the two-append proof follows ordinary emission. See the
 [P0077 pass record](../../tasks/passes/P0077-print-nested-returned-joins.md).
+
+## Console wrappers for two returned appends (P0078)
+
+A complete `view(nested());` statement uses the
+[two-append factory proof](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074)
+when the resolved wrapper's entire body prints its sole scalar string parameter
+with `Console.Write` or `Console.WriteLine`. The factory and its arguments
+evaluate once. The wrapper receives the original final join, and the caller
+releases it after the wrapper returns. The rule also covers imported definitions.
+
+A deeper factory chain, a compound argument, or a consumer that fails the
+[wrapper proof](owned-call-argument.md#p0056-implementation-boundary) follows
+ordinary emission. See the
+[P0078 pass record](../../tasks/passes/P0078-wrap-nested-returned-joins.md).
