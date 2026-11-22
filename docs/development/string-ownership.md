@@ -971,7 +971,9 @@ The eight-call audit measures 32 nonnull releases per mode, with survivors
 down from eight to zero. Each mode checks 10,000 scopes with two assignments
 each, verifying the release order, original allocation bases, and a peak of
 four live allocations. Assignments to owned scalars inside headers,
-initializers and chained expressions use the string copying helper.
+initializers and chained expressions use the string copying helper. P0075
+extends complete assignments to
+[one additional returned append](#complete-assignments-that-adopt-two-returned-appends-p0075).
 See the [P0065 pass record](../../tasks/passes/P0065-assign-returned-joins.md).
 
 ## Standalone calls that discard returned joins (P0066)
@@ -1106,7 +1108,20 @@ Both functions must satisfy the existing binding and parameter checks, including
 for imported functions. Each append releases its operand and the caller's scope
 cleanup releases the original final join at reference count one.
 
-The initializer proof permits at most two returned appends. Complete assignments,
-standalone calls and argument consumers still use the one-append proof. A
-conditional initializer keeps its independent copy. See the
+The initializer proof permits at most two returned appends. A conditional
+initializer keeps its independent copy. See the
 [P0074 pass record](../../tasks/passes/P0074-adopt-nested-returned-joins.md).
+
+## Complete assignments that adopt two returned appends (P0075)
+
+A complete `target = nested();` statement can adopt the final allocation
+with the same two-append factory proof as a direct scalar initializer.
+The destination must be an already-owned scalar string identifier.
+The right-hand side evaluates once. After the call, the assignment releases
+the current value and installs the original final join. If an argument
+replaces the destination, the outer assignment releases that replacement.
+
+Assignment expressions and calls beyond two returned appends use their
+existing fallback. Standalone calls and argument consumers retain the
+one-append proof. See the
+[P0075 pass record](../../tasks/passes/P0075-assign-nested-returned-joins.md).

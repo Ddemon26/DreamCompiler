@@ -243,7 +243,7 @@ string conditional = true ? nested() : "literal";`, modules)
 				ownedArgumentBlock(prefix+"joined()", "dr_console_writeln", "dreamOwnedArgument0"),
 				"nestedJoin=dream_string_copy((1?" + prefix + `joined():"literal"));`,
 				"snapshot=" + prefix + "nested();",
-				"__dream_string_assign(&target," + prefix + "nested());",
+				"(char*)" + prefix + "nested();dr_release(target);target=__dream_owned_0;",
 				"*/" + prefix + "nested();",
 				"dr_console_writeln(" + prefix + "nested());",
 				"conditional=dream_string_copy((1?" + prefix + `nested():"literal"));`,

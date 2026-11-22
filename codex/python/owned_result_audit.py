@@ -27,6 +27,7 @@ P0071 releases the proven returned join in an append printed directly by Console
 P0072 releases the proven returned join in an append passed to a Console wrapper.
 P0073 releases the proven returned join in a directly returned append.
 P0074 adopts the final allocation from two direct appends in a scalar initializer.
+P0075 adopts the final allocation from two returned appends in a scalar assignment.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -53,6 +54,30 @@ def argument_release(consumer, leading_args="", call="@entry@owned()"):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "nested_join_assignment",
+        "releases": 48, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "inner-";
+    return (text += owned());
+}
+func string nested() {
+    string text = "outer-";
+    return (text += joined());
+}
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string target = "old";
+        target = nested();
+        Console.WriteLine(target);
+    }
+}
+exercise();
+''',
+        "output": "outer-inner-owned\n" * 8,
+        "c": ["(char*)@entry@nested();dr_release(target);target=__dream_owned_0;"],
+    },
     {
         "name": "nested_join_initializer",
         "releases": 40, "live": 0,

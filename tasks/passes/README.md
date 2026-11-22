@@ -76,8 +76,9 @@
 | [P0072](P0072-wrap-appends-with-returned-joins.md) | 2026-11-21 | Release a proven returned join in a string append passed to a Console wrapper | `Pass-ID: P0072` |
 | [P0073](P0073-return-appends-with-returned-joins.md) | 2026-11-21 | Release a proven returned join in a directly returned append | `Pass-ID: P0073` |
 | [P0074](P0074-adopt-nested-returned-joins.md) | 2026-11-21 | Adopt the final join from two proven returned appends in a scalar initializer | `Pass-ID: P0074` |
+| [P0075](P0075-assign-nested-returned-joins.md) | 2026-11-22 | Adopt the final join from two proven returned appends in a complete scalar assignment | `Pass-ID: P0075` |
 
-**Verify P0074 publication and native CI, then measure final-result retention when assigning a proven two-append return to an owned scalar.**
+**Verify P0075 publication and native CI, then measure final-result retention when calling a proven two-append factory as a standalone statement.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

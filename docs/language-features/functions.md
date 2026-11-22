@@ -295,9 +295,11 @@ A synchronous string function can also consume a proven `joined()` operand
 in `return (local += joined());` when `local` is an owned scalar string. The
 caller receives the concatenation after the intermediate join is released.
 See the [direct append return rule](../development/string-ownership.md#direct-append-returns-with-proven-returned-joins-p0073).
-When both returns satisfy the factory proof, a direct scalar initializer such
-as `string text = nested();` takes ownership of the final join and releases it
-at scope exit. See the [initializer rule for two returned appends](../development/string-ownership.md#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074).
+When both returns satisfy the factory proof, a direct scalar initializer or
+a complete assignment to an owned scalar string takes ownership of the final
+join. The assignment releases the current destination after the call finishes.
+See the [initializer rule](../development/string-ownership.md#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074)
+and [assignment rule for two returned appends](../development/string-ownership.md#complete-assignments-that-adopt-two-returned-appends-p0075).
 
 A standalone `joined();` call under the one-append proof releases the join
 immediately after the call returns. See the

@@ -1,5 +1,33 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 22, 2026 UTC
+
+**Pass:** P0075 - adopt the final join from two returned appends in a scalar assignment
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0074 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0074 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44939209746).
+- `zig build test` discovered **187** entries. **169 passed**, **18 skipped**,
+  with zero failures or errors (56.26s). Report `test_results_20261121_180340_windows.json`
+  shows identical skip paths and reasons to P0074.
+- The focused Go assignment and initializer regressions passed (13.047s,
+  `-count=1`). In each mode, 10,000 scopes checked the original pointers and
+  release order for two assignments per scope, including RHS argument replacement.
+- All **58** ownership audit probes passed (63.806s). Eight assignments left
+  zero live joins in each mode, down from eight on P0074. The other 56
+  measurements matched P0074.
+- Windows Go quick passed all **43** groups (133.490s, `-count=1`).
+- Windows native and Linux cross-builds passed **15/15** steps each.
+  Native Linux execution is checked separately by CI.
+- Python runner unit tests passed **5/5** (0.032s).
+
+See the [P0075 record](passes/P0075-assign-nested-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0074 checkpoint
+
 **Date:** November 21, 2026 UTC
 
 **Pass:** P0074 - adopt the final join from two returned appends

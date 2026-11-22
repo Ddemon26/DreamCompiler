@@ -153,3 +153,11 @@ regression covers both a snapshot of the old destination and a nested
 assignment that replaces the destination before the outer call copies it.
 The broader expression boundary from P0052 still applies. See the
 [P0065 pass record](../../tasks/passes/P0065-assign-returned-joins.md).
+
+## P0075 assignments of two returned appends
+
+Complete assignments use the
+[two-append proof](string-ownership.md#complete-assignments-that-adopt-two-returned-appends-p0075).
+The checked regression verifies the original allocation identities and release
+order for `target = nested(target)` and `target = nested(target = "new")` in
+ordinary and imported calls. See [P0075](../../tasks/passes/P0075-assign-nested-returned-joins.md).

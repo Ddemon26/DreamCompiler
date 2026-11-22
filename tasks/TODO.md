@@ -736,10 +736,16 @@ returned appends. The eight-call audit leaves zero allocations live instead of
 eight, and checked ordinary and imported calls release the original pointer.
 See [P0074](passes/P0074-adopt-nested-returned-joins.md).
 
-Broader T011 remains open. Verify P0074 publication and native CI, then measure
-final-result retention in a complete assignment to an already-owned scalar
-using the same two-append return. Check original-pointer identity and replacement
-ordering if the assignment qualifies.
+P0075 applies the same two-append proof to complete assignments to already-owned
+scalar strings. The eight-call audit leaves zero allocations live instead of
+eight. Checked ordinary and imported calls release the original allocations in
+order, including when a nested argument replaces the destination.
+See [P0075](passes/P0075-assign-nested-returned-joins.md).
+
+Broader T011 remains open. Verify P0075 publication and native CI, then measure
+final-result retention for a standalone call using the same two-append return.
+Check original-pointer release and once-only argument evaluation if the discard
+path qualifies.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

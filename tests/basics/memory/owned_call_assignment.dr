@@ -10,10 +10,16 @@ func string escaped() { const string result = "escaped \"value\""; return result
 func string nullFactory(string source) { string result = source; return result; }
 func string effect(int value) { string result = "effect"; return result; }
 func string joined(string source) { string result = source; return (result += factory()); }
+func string nested(string source) { string result = source; return (result += joined("-inner-")); }
 func void joinAssignmentProbe() {
     string target = "old";
     target = joined(target);
     target = joined(target = "new");
+}
+func void nestedJoinAssignmentProbe() {
+    string target = "old";
+    target = nested(target);
+    target = nested(target = "new");
 }
 func void identityProbe() { string identity = "old"; for (int k=0; k<10; k++) identity = factory(); }
 func string transfer() { string forwarded = "old"; forwarded = factory(); return forwarded; }

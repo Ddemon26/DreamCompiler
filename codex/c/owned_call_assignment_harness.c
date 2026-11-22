@@ -2,7 +2,7 @@
 #include "../../src/runtime/memory/memory.c"
 #include "../../src/runtime/extensions/custom.h"
 static size_t copies, joins, releases, peak;
-static int identity_probe, join_assignment_probe;
+static int identity_probe, join_assignment_probe, nested_join_assignment_probe;
 static void *originals[128];
 static size_t live_count(void) { size_t n=0; for(DrRef *r=dr_head;r;r=r->next) { assert(r->refcount==1); n++; } return n; }
 static void record_allocation(char *ptr) {
@@ -26,6 +26,13 @@ static char *checked_concat(const char *left, const char *right) {
         assert(joins < 2 && "execute each joined RHS once");
         assert(strcmp(ptr, joins == 0 ? "oldowned" : "newowned") == 0);
     }
+    if (nested_join_assignment_probe) {
+        static const char *const values[] = {
+            "-inner-owned", "old-inner-owned", "-inner-owned", "new-inner-owned"
+        };
+        assert(joins < sizeof values / sizeof values[0]);
+        assert(strcmp(ptr, values[joins]) == 0);
+    }
     record_allocation(ptr);
     joins++;
     return ptr;
@@ -42,6 +49,13 @@ static void checked_release(void *p) {
         // First join frees its operands, then old. The nested assignment frees
         // that join, then the second join frees its operands before new.
         static const size_t order[] = {1, 2, 0, 3, 5, 6, 4, 7};
+        assert(releases < sizeof order / sizeof order[0]);
+        assert(i == order[releases] && "release the original join and post-RHS slot in order");
+    }
+    if (nested_join_assignment_probe) {
+        // Release both pairs of append operands before the current target.
+        // The nested argument replaces the first original join with "new".
+        static const size_t order[] = {2, 3, 1, 4, 0, 5, 8, 9, 7, 10, 6, 11};
         assert(releases < sizeof order / sizeof order[0]);
         assert(i == order[releases] && "release the original join and post-RHS slot in order");
     }
@@ -83,6 +97,14 @@ int main(void) {
         assert(dr_head == NULL);
     }
     join_assignment_probe = 0;
+    nested_join_assignment_probe = 1;
+    for (size_t i = 0; i < 10000; i++) {
+        copies = joins = releases = peak = 0;
+        DREAM_NESTED_JOIN_ASSIGNMENT_PROBE();
+        assert(copies == 8 && joins == 4 && releases == 12 && peak == 5);
+        assert(dr_head == NULL);
+    }
+    nested_join_assignment_probe = 0;
     joins = 0;
     copies=releases=peak=0;
     assert(dream_entry_main()==0); assert(dr_head==NULL && copies==19 && copies==releases);
