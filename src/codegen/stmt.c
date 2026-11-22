@@ -1301,7 +1301,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
     if (expr->kind == ND_CONSOLE_CALL && !expr->as.console.read) {
       console_writer = expr->as.console.newline ? "dr_console_writeln" : "dr_console_write";
       // The runtime prints synchronously and does not store the pointer.
-      if (adopts_string_call_result(ctx, expr->as.console.arg, 1))
+      if (adopts_string_call_result(ctx, expr->as.console.arg, 2))
         owned_arg = expr->as.console.arg;
     } else if (!append_slot) {
       Node *arg = console_wrapper_argument(ctx, expr);

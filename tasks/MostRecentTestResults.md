@@ -2,6 +2,35 @@
 
 **Date:** November 22, 2026 UTC
 
+**Pass:** P0077 - release the final join from two returned appends after direct Console output
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0076 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0076 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44997427544).
+- `zig build test` discovered **187** entries. **169 passed**, **18 skipped**,
+  with zero failures or errors (66.04s). Report
+  `test_results_20261122_060729_windows.json` confirms exact output for both
+  writers and the same entry statuses, skip paths and reasons as P0076.
+- Both focused Go groups passed (11.509s, `-count=1`). Each writer read
+  the original final join before caller release in 10,000 checked calls per mode.
+- Windows Go quick passed all **43** groups (155.605s, `-count=1`).
+- All **62** allocation audit probes passed (77.149s). Eight direct writes
+  left zero final joins live per mode, down from eight on P0076. The 58
+  remaining P0076 measurements matched. Two new wrapper probes each left
+  eight final joins live.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is checked separately by CI.
+- Python runner unit tests passed **5/5** (0.067s).
+
+See the [P0077 record](passes/P0077-print-nested-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0076 checkpoint
+
+**Date:** November 22, 2026 UTC
+
 **Pass:** P0076 - discard the final join from two returned appends
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

@@ -1,23 +1,23 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0076 - discard the final join from two returned appends**.
-- Record: [P0076](passes/P0076-discard-nested-returned-joins.md).
-- Parent/fetched approved remote: `33603311d37daf7d5c24e85b4e4ef1a20e55673b` (P0075).
-- Resolve this pass commit by its exact `Pass-ID: P0076` trailer.
+- Current pass: **P0077 - release the final join from two returned appends after direct Console output**.
+- Record: [P0077](passes/P0077-print-nested-returned-joins.md).
+- Parent/fetched approved remote: `e259ff5cf3ba4c43387b7f19a8b72ee6722e097d` (P0076).
+- Resolve this pass commit by its exact `Pass-ID: P0077` trailer.
 - Delivery requires push and matching `git ls-remote`.
 
-P0075 CI passed on Windows and Ubuntu. P0076 releases the original final join
-after a standalone call that meets the proof for two returned appends. The
-caller evaluates the call and its arguments once.
+P0076 CI passed on Windows and Ubuntu. After either direct Console writer
+returns, P0077 releases the original final join from a call that meets the
+proof for two returned appends. The call and its arguments evaluate once.
 See [measured tests](MostRecentTestResults.md) and the
-[P0075 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44969995144).
+[P0076 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/44997427544).
 Eighteen unannotated Dream entries remain skipped.
 
 Next invocation:
 
-1. Verify P0076 publication and both exact-commit CI jobs. Repair any failed baseline.
-2. Qualify release of the final join after direct Console output and cover
-   both writers. The `returned_join_append_return` audit still retains eight
-   final joins after eight `Console.WriteLine(nested());` calls per mode.
+1. Verify P0077 publication and both exact-commit CI jobs. Repair any failed baseline.
+2. Qualify release of the final join after a proven Console wrapper returns
+   and cover both writers. The `nested_join_wrapper` audit retains eight
+   final joins after eight `view(nested());` calls per mode.
 3. General expression and argument ownership, async, and exception unwinding remain open.

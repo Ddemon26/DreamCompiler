@@ -306,6 +306,11 @@ after the call returns when up to two returned appends meet the factory proof.
 The call evaluates its arguments once. See the
 [discard rule](../development/string-ownership.md#standalone-calls-that-discard-two-returned-appends-p0076).
 
+Complete `Console.Write(nested());` and `Console.WriteLine(nested());`
+statements release the original final join after printing when up to two
+returned appends meet the factory proof. See the
+[Console output rule](../development/string-ownership.md#direct-console-output-of-two-returned-appends-p0077).
+
 In a complete `show(getText());` statement, the caller passes the original
 result and releases it after `show` returns if `show` is a synchronous void
 free function with one scalar string parameter and its entire body is one

@@ -34,20 +34,23 @@ func TestCompiler_OwnedCallArgument(t *testing.T) {
 			source := filepath.Join(work, "input.dr")
 			program := string(fixture)
 			var options []string
-			factory, wrapper, joined := "factory()", "view", "joined"
+			factory, wrapper, joined, nested := "factory()", "view", "joined", "nested"
 			if modules {
 				factory, wrapper = "__dream_module_1_factory()", "__dream_module_1_view"
 				joined = "__dream_module_1_joined"
+				nested = "__dream_module_1_nested"
 				options = append(options, "--multi-file")
 				program = "import labels;\n" + strings.Replace(program, "view(factory());", "labels.view(labels.factory());", 1)
 				program = strings.Replace(program, "Console.Write(factory());", "Console.Write(labels.factory());", 1)
 				program = strings.ReplaceAll(program, "joined(count++)", "labels.joined(count++)")
+				program = strings.ReplaceAll(program, "nested(count++)", "labels.nested(count++)")
 				program = strings.Replace(program, "view(labels.joined(count++));", "labels.view(labels.joined(count++));", 1)
 				program = strings.Replace(program, "Console.Write(source);", "Console.Write(source); Console.Write(source);", 1)
 				program += "\nfunc void importControls() { view(factory()); labels.line(factory()); }\n"
 				imported := `module labels;
 export func string factory() { string result = "owned"; return result; }
 export func string joined(int value) { string result = "start"; return (result += factory()); }
+export func string nested(int value) { string result = "outer-"; return (result += joined(value)); }
 export func void view(string source) { Console.Write(source); }
 export func void line(string source) { Console.WriteLine(source); Console.WriteLine(source); }`
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(imported), 0644); err != nil {
@@ -95,14 +98,16 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 				ownedArgumentBlock(joined+"((count++))", "dr_console_writeln", temp0),
 				"if(1)" + ownedArgumentBlock(joined+"((count++))", wrapper, temp0),
 				ownedArgumentBlock(joined+"((count++))", entry+"line", temp0),
+				"if(1)" + ownedArgumentBlock(nested+"((count++))", "dr_console_write", temp0),
+				ownedArgumentBlock(nested+"((count++))", "dr_console_writeln", temp0),
 			} {
 				if got := strings.Count(c, want); got != 1 {
 					t.Errorf("expected one %q, got %d", want, got)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 14 ||
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 16 ||
 				strings.Contains(c, "dr_retain(") {
-				t.Error("expected eight wrapper and six direct Console release sites without any retains")
+				t.Error("expected eight wrapper and eight direct Console release sites without any retains")
 			}
 			if modules && (!strings.Contains(c, entry+"view("+entry+"factory());") ||
 				!strings.Contains(c, "__dream_module_1_line("+entry+"factory());")) {
@@ -120,6 +125,7 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			args := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
 				"-DDREAM_IDENTITY_PROBE=" + entry + "identityProbe",
 				"-DDREAM_JOIN_OUTPUT_PROBE=" + entry + "joinOutputProbe",
+				"-DDREAM_NESTED_OUTPUT_PROBE=" + entry + "nestedOutputProbe",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"),
 				"-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -134,7 +140,7 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			}
 			binary := filepath.Join(work, "checked"+suffix)
 			command("zig", append(args, "-o", binary)...)
-			const want = "snapshot\neffect\n1\nowned\nowned\neffectowned\n2\nstartownedstartowned\nstartownedstartowned\n4\n"
+			const want = "snapshot\neffect\n1\nowned\nowned\neffectowned\n2\nstartownedstartowned\nstartownedstartowned\n4\nouter-startownedouter-startowned\n2\n"
 			if got := command(binary); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -147,6 +153,8 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			c := memberReturnEmission(t, tr, `
 func string factory() { string result = "owned"; return result; }
 func string joined() { string result = "start"; return (result += factory()); }
+func string nested() { string result = "outer-"; return (result += joined()); }
+func string deeper() { string result = "third-"; return (result += nested()); }
 func string unproven(string source) { string result = "start"; return (result += source); }
 func string absent() { string result; return result; }
 func string borrowed(string value) { return value; }
@@ -174,8 +182,11 @@ func void probe(string* values) {
     Console.WriteLine("literal");
     Console.Write(factory() + "!");
     Console.Write(joined() + "!");
+    Console.Write(nested() + "!");
+    Console.WriteLine(deeper());
     Console.WriteLine(unproven("source"));
     line(joined());
+    line(nested());
     forward(joined());
     line(unproven("source"));
     line(true ? joined() : "other");
@@ -200,8 +211,11 @@ func void probe(string* values) {
 				"dr_console_writeln(\"literal\");",
 				"dr_console_write((dream_concat(" + factory + ",\"!\")));",
 				"dr_console_write((dream_concat(" + entry + "joined(),\"!\")));",
+				"dr_console_write((dream_concat(" + entry + "nested(),\"!\")));",
+				"dr_console_writeln(" + entry + "deeper());",
 				"dr_console_writeln(" + entry + "unproven(\"source\"));",
 				ownedArgumentBlock(entry+"joined()", wrapper, "dreamOwnedArgument0"),
+				wrapper + "(" + entry + "nested());",
 				entry + "forward(" + entry + "joined());",
 				wrapper + "(" + entry + "unproven(\"source\"));",
 				wrapper + "((1?" + entry + "joined():\"other\"));",

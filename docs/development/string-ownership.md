@@ -1136,3 +1136,16 @@ functions and parenthesized standalone calls.
 Loop headers, conditional expressions, nested arguments, and calls beyond two
 returned appends follow ordinary expression emission. See the
 [P0076 pass record](../../tasks/passes/P0076-discard-nested-returned-joins.md).
+
+## Direct Console output of two returned appends (P0077)
+
+In a complete `Console.Write(nested());` or `Console.WriteLine(nested());`
+statement, the caller uses the same two-append factory proof as a
+[direct scalar initializer](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074).
+The factory and its arguments run once. The writer reads the original final
+join, and the caller releases it immediately after the writer returns.
+
+This rule covers ordinary and imported factories. A compound Console operand
+or a factory beyond the two-append proof follows ordinary emission. Synchronous
+Console wrappers still use the one-append proof. See the
+[P0077 pass record](../../tasks/passes/P0077-print-nested-returned-joins.md).

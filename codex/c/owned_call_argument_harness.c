@@ -4,8 +4,9 @@
 #include "../../src/runtime/io/console.h"
 
 static size_t copies, joins, releases, writes, lines;
-static int checking_identity, checking_join, observed;
-static char *original;
+static int checking_identity, observed;
+static size_t expected_joins;
+static char *original, *intermediate;
 
 static char *checked_copy(const char *source) {
     char *ptr = dream_string_copy(source);
@@ -21,24 +22,32 @@ static char *checked_copy(const char *source) {
 
 static char *checked_concat(const char *left, const char *right) {
     char *ptr = dream_concat(left, right);
-    if (checking_join) {
+    if (expected_joins) {
         assert(ptr && !original && !observed);
         assert(dr_head && (void *)(dr_head + 1) == ptr && dr_head->refcount == 1);
-        original = ptr;
+        if (expected_joins == 2 && joins % 2 == 0) {
+            assert(!intermediate && strcmp(ptr, "startowned") == 0);
+            intermediate = ptr;
+        } else {
+            original = ptr;
+        }
         joins++;
     }
     return ptr;
 }
 
 static void observe_original(const char *ptr) {
-    assert(ptr == original && !observed);
+    assert(ptr == original && !intermediate && !observed);
     assert(dr_head && !dr_head->next && dr_head->refcount == 1);
-    assert(strcmp(ptr, checking_join ? "startowned" : "owned") == 0);
+    const char *expected = "owned";
+    if (expected_joins == 1) expected = "startowned";
+    if (expected_joins == 2) expected = "outer-startowned";
+    assert(strcmp(ptr, expected) == 0);
     observed = 1;
 }
 
 static void checked_write(const char *ptr) {
-    if (!checking_identity && !checking_join) {
+    if (!checking_identity && !expected_joins) {
         dr_console_write(ptr);
         return;
     }
@@ -47,7 +56,7 @@ static void checked_write(const char *ptr) {
 }
 
 static void checked_writeln(const char *ptr) {
-    if (!checking_identity && !checking_join) {
+    if (!checking_identity && !expected_joins) {
         dr_console_writeln(ptr);
         return;
     }
@@ -60,7 +69,11 @@ static void checked_release(void *ptr) {
     DrRef *ref = dr_head;
     while (ref && (void *)(ref + 1) != ptr) ref = ref->next;
     assert(ref && ref->refcount == 1);
-    if (checking_identity || (checking_join && ptr == original)) {
+    if (intermediate && ptr == intermediate) {
+        assert(original && !observed);
+        intermediate = NULL;
+    }
+    if (checking_identity || (expected_joins && ptr == original)) {
         assert(ptr == original && observed);
         original = NULL;
         observed = 0;
@@ -99,7 +112,7 @@ int main(void) {
         assert(!original && !observed && !dr_head);
     }
     checking_identity = 0;
-    checking_join = 1;
+    expected_joins = 1;
     copies = releases = writes = lines = 0;
     for (size_t i = 1; i <= 10000; i++) {
         assert(DREAM_JOIN_OUTPUT_PROBE() == 4);
@@ -107,9 +120,17 @@ int main(void) {
         assert(copies == 8 * i && joins == 4 * i && releases == 12 * i);
         assert(writes == 2 * i && lines == 2 * i);
     }
-    checking_join = 0;
+    expected_joins = 2;
+    copies = joins = releases = writes = lines = 0;
+    for (size_t i = 1; i <= 10000; i++) {
+        assert(DREAM_NESTED_OUTPUT_PROBE() == 2);
+        assert(!original && !intermediate && !observed && !dr_head);
+        assert(copies == 6 * i && joins == 4 * i && releases == 10 * i);
+        assert(writes == i && lines == i);
+    }
+    expected_joins = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 15 && releases == 19 && !dr_head);
+    assert(copies == 21 && releases == 29 && !dr_head);
     return 0;
 }

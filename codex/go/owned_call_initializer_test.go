@@ -245,7 +245,7 @@ string conditional = true ? nested() : "literal";`, modules)
 				"snapshot=" + prefix + "nested();",
 				"(char*)" + prefix + "nested();dr_release(target);target=__dream_owned_0;",
 				"dr_release((void*)" + prefix + "nested());",
-				"dr_console_writeln(" + prefix + "nested());",
+				ownedArgumentBlock(prefix+"nested()", "dr_console_writeln", "dreamOwnedArgument0"),
 				"conditional=dream_string_copy((1?" + prefix + `nested():"literal"));`,
 			} {
 				if !strings.Contains(c, want) {

@@ -747,10 +747,14 @@ leaves zero final joins live instead of eight. Checked ordinary and imported
 calls evaluate the argument once and release the original final pointer.
 See [P0076](passes/P0076-discard-nested-returned-joins.md).
 
-Broader T011 remains open. Verify P0076 publication and native CI, then
-qualify release after direct Console output of `nested()` for both writers.
-The `returned_join_append_return` audit still retains eight final joins
-after eight calls per mode.
+P0077 applies the two-append proof to complete direct Console statements.
+Both writers read the original final join before its release. The eight-call
+audit leaves zero final joins live instead of eight. See
+[P0077](passes/P0077-print-nested-returned-joins.md).
+
+Broader T011 remains open. Verify P0077 publication and native CI, then
+qualify a two-append result passed to a proven Console wrapper. The
+`nested_join_wrapper` audit retains eight final joins after eight calls per mode.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller
