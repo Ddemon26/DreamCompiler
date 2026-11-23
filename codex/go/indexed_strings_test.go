@@ -452,6 +452,22 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "A+B\nA+B!\nnewnewB\n1\nnewnewB\nsamesame\nsamesameB\n", true)
 	})
 
+	t.Run("nested_join_initializer", func(t *testing.T) {
+		// Nine releases per iteration and nine for the changed slot.
+		// Borrowed self-append and the header account for ten more.
+		checkStorageOwnership(t, "owned_nested_join_append_initializer.dr", 90019, []string{
+			`return__dream_string_append_owned(&result,@entry@owned());`,
+			`return__dream_string_append_owned(&outer,@entry@joined("inner-"));`,
+			`snapshot=dream_string_copy(__dream_string_append_owned(&text,@entry@nested("outer-",0)));`,
+			`__dream_string_append(&text,"!");`,
+			`dr_release(snapshot);}`,
+			`constchar*snapshot=dream_string_copy(__dream_string_append_owned(&changed,@entry@nested(__dream_string_assign(&changed,"new"),(count++))));`,
+			`borrowedCopy=dream_string_copy(__dream_string_append(&alias,@entry@borrowed(alias)));`,
+			`header=dream_string_copy(__dream_string_append_owned(&alias,@entry@nested("outer-",0)));`,
+			`}dr_release(header);}`,
+		}, "A+outer-inner-B\nA+outer-inner-B!\nnewnewinner-B\n1\nnewnewinner-B\nsamesame\nsamesameouter-inner-B\n", true)
+	})
+
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
 	for _, modules := range []bool{false, true} {

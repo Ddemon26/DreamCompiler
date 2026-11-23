@@ -321,6 +321,11 @@ two proven returned appends to an owned scalar string, then releases the
 operand. The factory and its arguments run before the append reads `text`.
 See the [append statement rule](../development/string-ownership.md#complete-append-statements-with-two-returned-appends-p0079).
 
+In `string snapshot = (text += nested());`, the append also releases the
+final result of up to two proven returned appends. The snapshot receives its
+own managed copy of the updated destination. See the
+[append initializer rule](../development/string-ownership.md#append-initializers-with-two-returned-appends-p0080).
+
 Scalar string declarations initialized by other calls copy the readable result into
 independent managed storage. Borrowed calls and results used in contexts such as
 general arguments, append, or direct Console output keep their existing lifetime rules.

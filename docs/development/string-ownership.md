@@ -1175,3 +1175,19 @@ new concatenation begins with that replacement.
 
 The rule applies to complete statements in ordinary and module-entry code. See the
 [P0079 pass record](../../tasks/passes/P0079-append-nested-returned-joins.md).
+
+## Append initializers with two returned appends (P0080)
+
+In `string snapshot = (text += nested());`, the append accepts the
+[two-append factory proof](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074)
+when `text` is a known-owned scalar string identifier. The factory and its
+arguments run once. The append reads the current destination, installs the
+concatenation, and releases the factory's original final join. The declaration
+copies the installed value into independent managed storage.
+
+The same rule applies to const snapshots and `for`-header declarations.
+Borrowed operands still use the ordinary append helper. Both ordinary and
+module-entry regressions check replacement during argument evaluation,
+snapshot survival after destination replacement, and destination survival
+after snapshot cleanup. See the
+[P0080 pass record](../../tasks/passes/P0080-initialize-from-nested-join-appends.md).

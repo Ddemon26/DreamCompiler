@@ -2,6 +2,36 @@
 
 **Date:** November 23, 2026 UTC
 
+**Pass:** P0080 - release the final join from two returned appends in a snapshot initializer
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0079 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0079 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45092901302).
+- `zig build test` discovered **189** entries. **171 passed**, **18 skipped**,
+  with zero failures or errors. Report `test_results_20261123_015234_windows.json`
+  confirms exact fixture output and the same statuses and skip reasons for all
+  188 earlier entries.
+- Four focused Go groups passed (40.859s, `-count=1`). The checked ordinary and
+  module-entry executables each made 90,019 nonnull releases and left zero live
+  allocations before shutdown. The snapshot remained readable after destination
+  replacement, and the destination remained readable after snapshot cleanup.
+- Windows Go quick passed all **43** groups (166.191s, `-count=1`).
+- All **66** allocation audit probes passed (80.877s). Eight isolated
+  initializers made 72 releases and left zero factory joins live in each mode.
+  P0079 made 64 releases and left eight live. All 64 previous probes matched.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.045s).
+
+See the [P0080 record](passes/P0080-initialize-from-nested-join-appends.md) for scope and limits.
+
+---
+
+## Historical P0079 checkpoint
+
+**Date:** November 23, 2026 UTC
+
 **Pass:** P0079 - release the final join from two returned appends after a complete append statement
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

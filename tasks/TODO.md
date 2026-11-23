@@ -764,9 +764,16 @@ Eight isolated appends made 56 releases and left zero joins live per mode,
 compared with 48 releases and eight live joins on P0078.
 See [P0079](passes/P0079-append-nested-returned-joins.md).
 
-Broader T011 remains open. Verify P0079 publication and native CI, then measure
-and qualify the two-append factory operand in `string snapshot = (text += nested());`.
-Check independent destination and snapshot storage across replacement.
+P0080 applies the two-append proof in `string snapshot = (text += nested());`.
+The destination and snapshot have independent storage. The checked fixtures
+exercise replacement during operand evaluation, borrowed self-append, const
+snapshots, and `for`-header cleanup. Eight isolated initializers left zero
+factory joins live in each mode, down from eight on P0079.
+See [P0080](passes/P0080-initialize-from-nested-join-appends.md).
+
+Broader T011 remains open. Verify P0080 publication and native CI, then measure
+and qualify the two-append factory operand in `Console.WriteLine(text += nested());`
+and its `Console.Write` counterpart. Check that the destination remains readable.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

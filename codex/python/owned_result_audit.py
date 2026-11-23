@@ -32,6 +32,7 @@ P0076 releases the final allocation from two returned appends after a standalone
 P0077 releases the final allocation from two returned appends after direct Console output.
 P0078 releases the final allocation from two returned appends after a Console wrapper returns.
 P0079 releases the final allocation from two returned appends after a complete append statement.
+P0080 releases the final allocation from two returned appends in an append initializer.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -239,6 +240,35 @@ exercise();
         "output": "outer-startowned\nouter-startowned\n" * 8,
         "c": ["return__dream_string_append_owned(&text,@entry@owned());",
               "dr_console_writeln(__dream_string_append_owned(&text,@entry@joined()));"],
+    },
+    {
+        "name": "nested_join_append_initializer",
+        "releases": 72, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "inner-";
+    return (text += owned());
+}
+func string nested() {
+    string text = "outer-";
+    return (text += joined());
+}
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "start-";
+        {
+            string snapshot = (text += nested());
+            text += "!";
+            Console.WriteLine(snapshot);
+        }
+        Console.WriteLine(text);
+    }
+}
+exercise();
+''',
+        "output": "start-outer-inner-owned\nstart-outer-inner-owned!\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@joined());",
+              "snapshot=dream_string_copy(__dream_string_append_owned(&text,@entry@nested()));"],
     },
     {
         "name": "returned_join_append_initializer",

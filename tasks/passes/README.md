@@ -81,8 +81,9 @@
 | [P0077](P0077-print-nested-returned-joins.md) | 2026-11-22 | Release the final join from two proven returned appends after direct Console output | `Pass-ID: P0077` |
 | [P0078](P0078-wrap-nested-returned-joins.md) | 2026-11-22 | Release the final join from two proven returned appends after a Console wrapper returns | `Pass-ID: P0078` |
 | [P0079](P0079-append-nested-returned-joins.md) | 2026-11-23 | Release the final join from two proven returned appends after a complete append statement | `Pass-ID: P0079` |
+| [P0080](P0080-initialize-from-nested-join-appends.md) | 2026-11-23 | Release the final join from two proven returned appends in a snapshot initializer | `Pass-ID: P0080` |
 
-**Verify P0079 publication and native CI, then measure and qualify the two-append factory operand of an append that initializes a snapshot.**
+**Verify P0080 publication and native CI, then measure and qualify two-append factory operands in appends sent directly to Console.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not
