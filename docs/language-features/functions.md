@@ -326,6 +326,12 @@ final result of up to two proven returned appends. The snapshot receives its
 own managed copy of the updated destination. See the
 [append initializer rule](../development/string-ownership.md#append-initializers-with-two-returned-appends-p0080).
 
+In `Console.WriteLine(text += nested());` and `Console.Write(text += nested());`,
+the append releases the final result of up to two proven returned appends
+before printing. The updated `text` remains readable after either writer
+returns. See the
+[Console append rule](../development/string-ownership.md#console-output-of-appends-with-two-returned-appends-p0081).
+
 Scalar string declarations initialized by other calls copy the readable result into
 independent managed storage. Borrowed calls and results used in contexts such as
 general arguments, append, or direct Console output keep their existing lifetime rules.

@@ -771,9 +771,15 @@ snapshots, and `for`-header cleanup. Eight isolated initializers left zero
 factory joins live in each mode, down from eight on P0079.
 See [P0080](passes/P0080-initialize-from-nested-join-appends.md).
 
-Broader T011 remains open. Verify P0080 publication and native CI, then measure
-and qualify the two-append factory operand in `Console.WriteLine(text += nested());`
-and its `Console.Write` counterpart. Check that the destination remains readable.
+P0081 applies the two-append proof to `Console.WriteLine(text += nested());`
+and `Console.Write(text += nested());`. Both writers read the installed
+concatenation after the factory operand is released. Each eight-call audit
+left zero factory joins live per mode, down from eight on P0080.
+See [P0081](passes/P0081-print-appends-with-nested-joins.md).
+
+Broader T011 remains open. Verify P0081 publication and native CI, then measure
+and qualify the two-append factory operand in `view(text += nested());` when
+`view` is a proven Console wrapper. Check that the destination survives output.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

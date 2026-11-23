@@ -1145,8 +1145,9 @@ statement, the caller uses the same two-append factory proof as a
 The factory and its arguments run once. The writer reads the original final
 join, and the caller releases it immediately after the writer returns.
 
-This rule covers ordinary and imported factories. A compound Console operand
-or a factory beyond the two-append proof follows ordinary emission. See the
+This rule covers ordinary and imported factories. Appends have their own
+[Console rule](#console-output-of-appends-with-two-returned-appends-p0081).
+Factories beyond the two-append proof follow ordinary emission. See the
 [P0077 pass record](../../tasks/passes/P0077-print-nested-returned-joins.md).
 
 ## Console wrappers for two returned appends (P0078)
@@ -1191,3 +1192,18 @@ module-entry regressions check replacement during argument evaluation,
 snapshot survival after destination replacement, and destination survival
 after snapshot cleanup. See the
 [P0080 pass record](../../tasks/passes/P0080-initialize-from-nested-join-appends.md).
+
+## Console output of appends with two returned appends (P0081)
+
+In `Console.WriteLine(text += nested());` and `Console.Write(text += nested());`,
+an append to a known-owned scalar string accepts the
+[two-append factory proof](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074).
+The factory and its arguments run once. The append reads the current
+destination, installs the concatenation, and releases the factory's original
+final join before the writer runs. The writer reads the new concatenation,
+which stays owned by the destination after output.
+
+The ordinary and module-entry regressions cover both writers, argument
+evaluation that replaces the destination, and borrowed self-append through
+the ordinary append helper. See the
+[P0081 pass record](../../tasks/passes/P0081-print-appends-with-nested-joins.md).

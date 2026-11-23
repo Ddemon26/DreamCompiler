@@ -2,6 +2,36 @@
 
 **Date:** November 23, 2026 UTC
 
+**Pass:** P0081 - release the final join from two returned appends before printing an append
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0080 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0080 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45142890890).
+- `zig build test` discovered **190** entries. **172 passed**, **18 skipped**,
+  with zero failures or errors. Report `test_results_20261123_072451_windows.json`
+  confirms exact fixture output and the same statuses and skip reasons for all
+  189 earlier entries.
+- Four focused Go groups passed (38.045s, `-count=1`). Each checked binary
+  made 16 nonnull releases for the new regression and left zero allocations
+  live before shutdown. Both writers printed the installed string, which
+  remained readable as the destination afterward.
+- Windows Go quick passed all **43** groups (129.001s, `-count=1`).
+- All **70** allocation audit probes passed (62.467s). Eight calls to each
+  writer made 56 nonnull releases and left zero joins live in each mode.
+  P0080 made 48 releases and left eight live. All 66 earlier probes matched.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.031s).
+
+See the [P0081 record](passes/P0081-print-appends-with-nested-joins.md) for scope and limits.
+
+---
+
+## Historical P0080 checkpoint
+
+**Date:** November 23, 2026 UTC
+
 **Pass:** P0080 - release the final join from two returned appends in a snapshot initializer
 
 **Platform/toolchain:** Windows with Zig 0.17.1.
