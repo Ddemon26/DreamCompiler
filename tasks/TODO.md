@@ -757,9 +757,16 @@ The caller releases the original final join after the wrapper returns. The
 eight-call audit covers both writers and leaves zero final joins live per mode.
 See [P0078](passes/P0078-wrap-nested-returned-joins.md).
 
-Broader T011 remains open. Verify P0078 publication and native CI, then measure
-and qualify a two-append result used as the operand of a complete append
-statement. Check destination replacement during operand evaluation.
+P0079 releases the original final join after a complete `text += nested();`
+statement installs the new concatenation. The checked fixtures cover argument
+evaluation that replaces the destination before the append reads it.
+Eight isolated appends made 56 releases and left zero joins live per mode,
+compared with 48 releases and eight live joins on P0078.
+See [P0079](passes/P0079-append-nested-returned-joins.md).
+
+Broader T011 remains open. Verify P0079 publication and native CI, then measure
+and qualify the two-append factory operand in `string snapshot = (text += nested());`.
+Check independent destination and snapshot storage across replacement.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

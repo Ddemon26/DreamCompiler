@@ -393,6 +393,18 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "A+B\nnewnewB\n1\nnewnewBnewnewB\n", true)
 	})
 
+	t.Run("nested_join_operand", func(t *testing.T) {
+		// Seven releases per append, plus one for the argument's replacement
+		// and one for the borrowed self-append.
+		checkStorageOwnership(t, "owned_nested_join_append.dr", 70009, []string{
+			`return__dream_string_append_owned(&result,@entry@owned());`,
+			`return__dream_string_append_owned(&outer,@entry@joined("inner-"));`,
+			`{constchar*dreamOwnedArgument0=@entry@nested("outer-",0);__dream_string_append(&text,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,
+			`{constchar*dreamOwnedArgument0=@entry@nested(__dream_string_assign(&changed,"new"),(count++));__dream_string_append(&changed,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,
+			`__dream_string_append(&changed,@entry@borrowed(changed));`,
+		}, "A+outer-inner-B\nnewnewinner-B\n1\nnewnewinner-Bnewnewinner-B\n", true)
+	})
+
 	t.Run("owned_factory_return", func(t *testing.T) {
 		// The two proven direct Console calls now release their original joins.
 		// The eight joins from join(true), the result from join(false) and the

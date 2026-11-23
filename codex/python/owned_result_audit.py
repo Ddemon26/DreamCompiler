@@ -31,6 +31,7 @@ P0075 adopts the final allocation from two returned appends in a scalar assignme
 P0076 releases the final allocation from two returned appends after a standalone call.
 P0077 releases the final allocation from two returned appends after direct Console output.
 P0078 releases the final allocation from two returned appends after a Console wrapper returns.
+P0079 releases the final allocation from two returned appends after a complete append statement.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -284,6 +285,31 @@ exercise();
         "output": "outer-startowned\n" * 8,
         "c": ["return__dream_string_append_owned(&text,@entry@owned());",
               argument_release("__dream_string_append", "&text,", "@entry@joined()")],
+    },
+    {
+        "name": "nested_join_append",
+        "releases": 56, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "inner-";
+    return (text += owned());
+}
+func string nested() {
+    string text = "outer-";
+    return (text += joined());
+}
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "start-";
+        text += nested();
+        Console.WriteLine(text);
+    }
+}
+exercise();
+''',
+        "output": "start-outer-inner-owned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@joined());",
+              argument_release("__dream_string_append", "&text,", "@entry@nested()")],
     },
     {
         "name": "returned_join_wrapper",

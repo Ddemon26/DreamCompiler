@@ -316,6 +316,11 @@ result and releases it after `show` returns if `show` is a synchronous void
 free function with one scalar string parameter and its entire body is one
 `Console.Write` or `Console.WriteLine` statement using that parameter.
 
+A complete `text += nested();` statement appends the final result of up to
+two proven returned appends to an owned scalar string, then releases the
+operand. The factory and its arguments run before the append reads `text`.
+See the [append statement rule](../development/string-ownership.md#complete-append-statements-with-two-returned-appends-p0079).
+
 Scalar string declarations initialized by other calls copy the readable result into
 independent managed storage. Borrowed calls and results used in contexts such as
 general arguments, append, or direct Console output keep their existing lifetime rules.

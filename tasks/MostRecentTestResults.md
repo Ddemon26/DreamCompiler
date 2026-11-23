@@ -1,5 +1,34 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 23, 2026 UTC
+
+**Pass:** P0079 - release the final join from two returned appends after a complete append statement
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0078 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0078 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45058950909).
+- `zig build test` discovered **188** entries. **170 passed**, **18 skipped**,
+  with zero failures or errors (57.43s). Report
+  `test_results_20261122_180443_windows.json` confirms exact output for the new
+  fixture and the same statuses and skip reasons for all 187 earlier entries.
+- Four focused Go groups passed (40.277s, `-count=1`). The checked ordinary and
+  module-entry executables each made 70,009 releases, including the calls that
+  exercised replacement during argument evaluation and borrowed self-append.
+- Windows Go quick passed all **43** groups (136.797s, `-count=1`).
+- All **64** allocation audit probes passed (71.254s). Eight isolated appends
+  made 56 releases and left zero joins live in each mode, compared with 48
+  releases and eight live joins on P0078. All 62 previous probes matched.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.030s).
+
+See the [P0079 record](passes/P0079-append-nested-returned-joins.md) for scope and limits.
+
+---
+
+## Historical P0078 checkpoint
+
 **Date:** November 22, 2026 UTC
 
 **Pass:** P0078 - release the final join from two returned appends after a Console wrapper returns

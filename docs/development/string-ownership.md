@@ -1162,3 +1162,16 @@ A deeper factory chain, a compound argument, or a consumer that fails the
 [wrapper proof](owned-call-argument.md#p0056-implementation-boundary) follows
 ordinary emission. See the
 [P0078 pass record](../../tasks/passes/P0078-wrap-nested-returned-joins.md).
+
+## Complete append statements with two returned appends (P0079)
+
+A complete `text += nested();` statement accepts the existing
+[two-append factory proof](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074)
+when `text` is a known-owned scalar string identifier. The caller evaluates
+the factory and its arguments once and uses the original final join as the
+operand. The append then reads the current destination, installs the new
+concatenation, and releases the operand. If an argument replaces `text`, the
+new concatenation begins with that replacement.
+
+The rule applies to complete statements in ordinary and module-entry code. See the
+[P0079 pass record](../../tasks/passes/P0079-append-nested-returned-joins.md).

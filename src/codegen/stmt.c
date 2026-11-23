@@ -833,7 +833,7 @@ static int adopts_string_call_result(CGCtx *ctx, Node *call, int append_depth) {
          string_factory_result(fn, append_depth);
 }
 
-static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr, int allow_returned_join) {
+static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr, int append_depth) {
   if (!expr || expr->kind != ND_BINOP || expr->as.bin.op != TK_PLUSEQ ||
       expr->as.bin.lhs->kind != ND_IDENT) return NULL;
   Node *lhs = expr->as.bin.lhs;
@@ -841,7 +841,7 @@ static Node *owned_factory_append_slot(CGCtx *ctx, Node *expr, int allow_returne
   const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
   if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
       slot->indirections == 0 &&
-      adopts_string_call_result(ctx, expr->as.bin.rhs, allow_returned_join))
+      adopts_string_call_result(ctx, expr->as.bin.rhs, append_depth))
     return lhs;
   return NULL;
 }
@@ -1268,7 +1268,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   }
   case ND_EXPR_STMT: {
     Node *expr = n->as.expr_stmt.expr;
-    Node *append_slot = owned_factory_append_slot(ctx, expr, 1);
+    Node *append_slot = owned_factory_append_slot(ctx, expr, 2);
     Node *owned_arg = append_slot ? expr->as.bin.rhs : NULL;
     if (expr->kind == ND_BINOP && expr->as.bin.op == TK_EQ &&
         expr->as.bin.lhs->kind == ND_IDENT) {
