@@ -2,6 +2,37 @@
 
 **Date:** November 23, 2026 UTC
 
+**Pass:** P0082 - release the final join from two returned appends before a Console wrapper prints an append
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0081 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0081 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45194744940).
+- `zig build test` discovered **191** entries. **173 passed**, **18 skipped**,
+  with zero failures or errors. Report `test_results_20261123_130638_windows.json`
+  confirms exact fixture output and the same statuses and skip reasons for all
+  190 earlier entries.
+- Four focused Go groups passed (44.732s, `-count=1`). Each checked binary
+  made 22 nonnull releases for the new regression and retained only the join
+  from the extra-statement wrapper before shutdown. Both proven wrappers
+  printed the installed string, which remained readable afterward.
+- Windows Go quick passed all **43** groups (144.218s Go suite time, `-count=1`).
+- All **74** allocation audit probes passed (74.874s). Eight calls through each
+  wrapper made 56 nonnull releases and left zero factory joins live in each
+  mode. P0081 made 48 releases and left eight live. All 70 earlier probes
+  matched.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.048s).
+
+See the [P0082 record](passes/P0082-wrap-appends-with-nested-joins.md) for scope and limits.
+
+---
+
+## Historical P0081 checkpoint
+
+**Date:** November 23, 2026 UTC
+
 **Pass:** P0081 - release the final join from two returned appends before printing an append
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

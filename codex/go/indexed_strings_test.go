@@ -480,6 +480,20 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "newnewinner-B\nnewnewinner-B\nA+outer-inner-BA+outer-inner-B\n2\nA+outer-inner-BA+outer-inner-B\nA+outer-inner-BA+outer-inner-B\n", true)
 	})
 
+	t.Run("nested_join_wrapper_append", func(t *testing.T) {
+		// Each proven wrapper adds seven releases. Replacement of changed and
+		// the borrowed self-append add one apiece. The extra-statement wrapper
+		// adds six and leaves its factory operand live until shutdown.
+		checkStorageOwnershipWithLiveCount(t, "owned_nested_join_append_wrapper.dr", 22, []string{
+			`return__dream_string_append_owned(&inner,@entry@owned());`,
+			`return__dream_string_append_owned(&outer,@entry@joined());`,
+			`@entry@view(__dream_string_append_owned(&changed,@entry@nested(__dream_string_assign(&changed,"new"),(count++))));`,
+			`@entry@showText(__dream_string_append_owned(&text,@entry@nested("outer-",(count++))));`,
+			`@entry@view(__dream_string_append(&text,@entry@borrowed(text)));`,
+			`@entry@viewExtra(__dream_string_append(&fallback,@entry@nested("outer-",0)));`,
+		}, "newnewinner-B\nnewnewinner-B\nA+outer-inner-BA+outer-inner-B\n2\nA+outer-inner-BA+outer-inner-B\nA+outer-inner-BA+outer-inner-B\nstill-outer-inner-B\nextra\nstill-outer-inner-B\n", 1)
+	})
+
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
 	for _, modules := range []bool{false, true} {

@@ -1,0 +1,54 @@
+// Expected: newnewinner-B
+// Expected: newnewinner-B
+// Expected: A+outer-inner-BA+outer-inner-B
+// Expected: 2
+// Expected: A+outer-inner-BA+outer-inner-B
+// Expected: A+outer-inner-BA+outer-inner-B
+// Expected: still-outer-inner-B
+// Expected: extra
+// Expected: still-outer-inner-B
+
+func string owned() {
+    string result = "B";
+    return result;
+}
+
+func string joined() {
+    string inner = "inner-";
+    return (inner += owned());
+}
+
+func string nested(string source, int effect) {
+    string outer = source;
+    return (outer += joined());
+}
+
+func string borrowed(string source) { return source; }
+func void showText(string source) { Console.Write(source); }
+func void view(string source) { Console.WriteLine(source); }
+
+func void viewExtra(string source) {
+    Console.WriteLine(source);
+    Console.WriteLine("extra");
+}
+
+func void exercise() {
+    int count = 0;
+    string changed = "old";
+    if (true) view(changed += nested((changed = "new"), count++));
+    Console.WriteLine(changed);
+
+    string text = "A+";
+    showText(text += nested("outer-", count++));
+    Console.WriteLine(text);
+    Console.WriteLine(count);
+
+    view(text += borrowed(text));
+    Console.WriteLine(text);
+
+    string fallback = "still-";
+    viewExtra(fallback += nested("outer-", 0));
+    Console.WriteLine(fallback);
+}
+
+exercise();

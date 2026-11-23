@@ -1207,3 +1207,21 @@ The ordinary and module-entry regressions cover both writers, argument
 evaluation that replaces the destination, and borrowed self-append through
 the ordinary append helper. See the
 [P0081 pass record](../../tasks/passes/P0081-print-appends-with-nested-joins.md).
+
+## Console wrapper append arguments with two returned appends (P0082)
+
+A complete `view(text += nested());` call accepts the
+[two-append factory proof](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074)
+when `text` is an owned scalar string and `view` meets the
+[Console wrapper proof](owned-call-argument.md#p0056-implementation-boundary)
+for either writer. The operand and its arguments run once. The append uses
+the current destination after operand evaluation, installs the concatenation,
+and releases the original final join before calling the wrapper. The
+destination keeps the concatenation after the wrapper returns.
+
+Borrowed operands and wrappers with extra statements use ordinary append
+emission. The [checked fixture](../../tests/basics/memory/owned_nested_join_append_wrapper.dr)
+exercises both writers, replacement of the destination during argument
+evaluation, borrowed self-append, and the extra-statement wrapper in ordinary
+and module-entry modes. See the
+[P0082 pass record](../../tasks/passes/P0082-wrap-appends-with-nested-joins.md).

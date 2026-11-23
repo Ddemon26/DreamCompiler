@@ -203,10 +203,10 @@ operand. It evaluates the operand once, concatenates before releasing the old
 storage, and yields the new string. Null contributes empty text; a declaration
 initialized by the result receives an independent copy. Const updates and numeric,
 bool or char operands are rejected. Numeric `+=` keeps its existing behavior.
-An append also releases a proven factory operand when it directly initializes
-a scalar string or supplies the sole argument to a supported Console wrapper.
-The wrapper call also releases a proven returned join used as the append operand.
-See the [append ownership rules](../development/string-ownership.md#append-arguments-with-proven-returned-joins-p0072).
+An append also releases a proven factory operand with up to two returned
+appends when it directly initializes a scalar string or supplies the sole
+argument to a supported Console wrapper. See the
+[wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-two-returned-appends-p0082).
 A complete `text += joined();` statement releases a proven returned join
 after appending it. The destination owns the newly concatenated string.
 See the [returned join rule](../development/string-ownership.md#complete-appends-with-proven-returned-joins-p0069).

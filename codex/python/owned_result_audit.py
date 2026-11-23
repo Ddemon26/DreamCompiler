@@ -34,6 +34,7 @@ P0078 releases the final allocation from two returned appends after a Console wr
 P0079 releases the final allocation from two returned appends after a complete append statement.
 P0080 releases the final allocation from two returned appends in an append initializer.
 P0081 releases the final allocation from two returned appends in an append printed directly by either Console writer.
+P0082 releases the final allocation from two returned appends in an append passed to either proven Console wrapper.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -60,6 +61,35 @@ def argument_release(consumer, leading_args="", call="@entry@owned()"):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    *[
+        {
+            "name": f"nested_join_append_wrapper_{writer.lower()}",
+            "releases": 56, "live": 0,
+            "source": COMMON + '''
+func string joined() {
+    string text = "inner-";
+    return (text += owned());
+}
+func string nested() {
+    string text = "outer-";
+    return (text += joined());
+}
+func void view(string source) { Console.@writer@(source); }
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "start-";
+        view(text += nested());
+        Console.WriteLine(text);
+    }
+}
+exercise();
+'''.replace("@writer@", writer),
+            "output": ("start-outer-inner-owned" + separator + "start-outer-inner-owned\n") * 8,
+            "c": ["return__dream_string_append_owned(&text,@entry@joined());",
+                  "@entry@view(__dream_string_append_owned(&text,@entry@nested()));"],
+        }
+        for writer, separator in (("Write", ""), ("WriteLine", "\n"))
+    ],
     *[
         {
             "name": f"nested_join_append_console_{writer.lower()}",

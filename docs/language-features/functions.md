@@ -332,6 +332,12 @@ before printing. The updated `text` remains readable after either writer
 returns. See the
 [Console append rule](../development/string-ownership.md#console-output-of-appends-with-two-returned-appends-p0081).
 
+In a complete `view(text += nested());` statement to a proven Console
+wrapper, the same append rule releases the factory's final join before the
+wrapper receives the new value. The updated destination remains readable
+after the wrapper returns. See the
+[wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-two-returned-appends-p0082).
+
 Scalar string declarations initialized by other calls copy the readable result into
 independent managed storage. Borrowed calls and results used in contexts such as
 general arguments, append, or direct Console output keep their existing lifetime rules.

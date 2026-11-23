@@ -777,9 +777,16 @@ concatenation after the factory operand is released. Each eight-call audit
 left zero factory joins live per mode, down from eight on P0080.
 See [P0081](passes/P0081-print-appends-with-nested-joins.md).
 
-Broader T011 remains open. Verify P0081 publication and native CI, then measure
-and qualify the two-append factory operand in `view(text += nested());` when
-`view` is a proven Console wrapper. Check that the destination survives output.
+P0082 applies the two-append proof to `view(text += nested());` with a proven
+wrapper for either Console writer. The append releases the original final
+join before the wrapper runs, and the destination survives the call. Each
+eight-call audit left zero factory joins live per mode, down from eight on
+P0081. See [P0082](passes/P0082-wrap-appends-with-nested-joins.md).
+
+Broader T011 remains open. Verify P0082 publication and native CI, then measure
+and qualify the two-append factory operand in `return (text += nested());`
+for an owned scalar local in a synchronous string function. Check that the
+newly installed join survives return.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller
