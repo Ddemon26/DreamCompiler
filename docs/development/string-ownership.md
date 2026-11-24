@@ -1097,6 +1097,8 @@ The [checked fixture](../../tests/basics/memory/owned_returned_join_append_retur
 verifies caller access, destination replacement during argument evaluation,
 and a once-only side effect in both compiler modes. See the
 [P0073 pass record](../../tasks/passes/P0073-return-appends-with-returned-joins.md).
+P0083 extends this return rule to
+[two proven returned appends](#direct-append-returns-with-two-returned-appends-p0083).
 
 ## Scalar initializers that adopt a join of a returned join (P0074)
 
@@ -1225,3 +1227,20 @@ exercises both writers, replacement of the destination during argument
 evaluation, borrowed self-append, and the extra-statement wrapper in ordinary
 and module-entry modes. See the
 [P0082 pass record](../../tasks/passes/P0082-wrap-appends-with-nested-joins.md).
+
+## Direct append returns with two returned appends (P0083)
+
+In `return (text += nested());` from a synchronous string function, the
+append accepts the
+[two-append factory proof](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074)
+when `text` is an owned scalar local and the return is outside an exception
+region. The operand and its arguments run once. The append reads the current
+local, installs the concatenation, and releases the factory's original final
+join. The installed value survives the return and the caller can copy it.
+
+Borrowed operands and operands beyond two proven returned appends use ordinary
+append emission. Callers still use the existing two-append adoption limit.
+The [checked fixture](../../tests/basics/memory/owned_nested_join_append_return.dr)
+covers argument evaluation that replaces the destination, an unbraced conditional
+return, caller reads, and both fallback cases in ordinary and module-entry modes.
+See the [P0083 pass record](../../tasks/passes/P0083-return-appends-with-nested-joins.md).

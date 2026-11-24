@@ -1,0 +1,55 @@
+// Expected: start-outer-inner-B
+// Expected: once
+// Expected: newnewinner-B!
+// Expected: leftright
+// Expected: right
+// Expected: limit-start-outer-inner-B
+
+func string owned() { string result = "B"; return result; }
+func string borrowed(string source) { return source; }
+func int announce() { Console.WriteLine("once"); return 0; }
+
+func string joined() {
+    string inner = "inner-";
+    return (inner += owned());
+}
+
+func string nested(string source, int effect) {
+    string outer = source;
+    return (outer += joined());
+}
+
+func string extended() {
+    string text = "start-";
+    return (text += nested("outer-", 0));
+}
+
+func string updated(bool append) {
+    string text = "old";
+    if (append) return (text += nested((text = "new"), announce()));
+    return text;
+}
+
+func string borrowedJoin(string source) {
+    string text = "left";
+    return (text += borrowed(source));
+}
+
+func string beyond() {
+    string text = "limit-";
+    return (text += extended());
+}
+
+func void exercise() {
+    string snapshot = extended();
+    Console.WriteLine(snapshot);
+    string changed = updated(true);
+    changed += "!";
+    Console.WriteLine(changed);
+    string backing = "right";
+    Console.WriteLine(borrowedJoin(backing));
+    Console.WriteLine(backing);
+    Console.WriteLine(beyond());
+}
+
+exercise();
