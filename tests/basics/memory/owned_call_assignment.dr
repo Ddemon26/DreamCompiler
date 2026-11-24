@@ -1,6 +1,7 @@
 // Expected: old
 // Expected: changed
 // Expected: 2
+// Expected: start-outer-inner-owned
 // Expected: global
 func string factory() { string result = "owned"; return result; }
 func string clone(string source) { const string result = source; return result; }
@@ -11,6 +12,7 @@ func string nullFactory(string source) { string result = source; return result; 
 func string effect(int value) { string result = "effect"; return result; }
 func string joined(string source) { string result = source; return (result += factory()); }
 func string nested(string source) { string result = source; return (result += joined("-inner-")); }
+func string extended(string source) { string result = source; return (result += nested("-outer")); }
 func void joinAssignmentProbe() {
     string target = "old";
     target = joined(target);
@@ -20,6 +22,11 @@ func void nestedJoinAssignmentProbe() {
     string target = "old";
     target = nested(target);
     target = nested(target = "new");
+}
+func void tripleJoinAssignmentProbe() {
+    string target = "old";
+    target = extended(target);
+    target = extended(target = "new");
 }
 func void identityProbe() { string identity = "old"; for (int k=0; k<10; k++) identity = factory(); }
 func string transfer() { string forwarded = "old"; forwarded = factory(); return forwarded; }
@@ -38,6 +45,9 @@ func void exercise() {
     for (int j = 0; j < 0; j++) text = factory();
     { string __dream_owned_0 = "temp collision"; __dream_owned_0 = factory(); }
     { string __dream_string_adopt = "collision"; __dream_string_adopt = factory(); }
+    string triple = "start";
+    triple = extended(triple);
+    Console.WriteLine(triple);
 }
 exercise();
 string global = "old"; global = clone("global"); Console.WriteLine(global);

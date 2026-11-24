@@ -3,6 +3,7 @@
 #include "../../src/runtime/extensions/custom.h"
 static size_t copies, joins, releases, peak;
 static int identity_probe, join_assignment_probe, nested_join_assignment_probe;
+static int triple_join_assignment_probe;
 static void *originals[128];
 static size_t live_count(void) { size_t n=0; for(DrRef *r=dr_head;r;r=r->next) { assert(r->refcount==1); n++; } return n; }
 static void record_allocation(char *ptr) {
@@ -33,6 +34,14 @@ static char *checked_concat(const char *left, const char *right) {
         assert(joins < sizeof values / sizeof values[0]);
         assert(strcmp(ptr, values[joins]) == 0);
     }
+    if (triple_join_assignment_probe) {
+        static const char *const values[] = {
+            "-inner-owned", "-outer-inner-owned", "old-outer-inner-owned",
+            "-inner-owned", "-outer-inner-owned", "new-outer-inner-owned"
+        };
+        assert(joins < sizeof values / sizeof values[0]);
+        assert(strcmp(ptr, values[joins]) == 0);
+    }
     record_allocation(ptr);
     joins++;
     return ptr;
@@ -59,11 +68,19 @@ static void checked_release(void *p) {
         assert(releases < sizeof order / sizeof order[0]);
         assert(i == order[releases] && "release the original join and post-RHS slot in order");
     }
+    if (triple_join_assignment_probe) {
+        // The nested argument releases the first final join (7). The outer
+        // assignment releases the argument's replacement (8) after the call.
+        // Scope cleanup releases the second original final join (15).
+        static const size_t order[] = {3, 4, 2, 5, 1, 6, 0, 7, 11, 12, 10, 13, 9, 14, 8, 15};
+        assert(releases < sizeof order / sizeof order[0]);
+        assert(i == order[releases] && "release the original join and post-RHS slot in order");
+    }
     releases++; dr_release(p);
 }
 static void checked_shutdown(void) {
     assert(live_count()==1); assert(strcmp((char*)(dr_head+1),"global")==0);
-    assert((void*)(dr_head+1)==originals[copies-1]);
+    assert((void*)(dr_head+1)==originals[copies+joins-1]);
     checked_release(dr_head+1); assert(dr_head==NULL);
 }
 #define dream_string_copy checked_copy
@@ -105,8 +122,16 @@ int main(void) {
         assert(dr_head == NULL);
     }
     nested_join_assignment_probe = 0;
-    joins = 0;
-    copies=releases=peak=0;
-    assert(dream_entry_main()==0); assert(dr_head==NULL && copies==19 && copies==releases);
+    triple_join_assignment_probe = 1;
+    for (size_t i = 0; i < 10000; i++) {
+        copies = joins = releases = peak = 0;
+        DREAM_TRIPLE_JOIN_ASSIGNMENT_PROBE();
+        assert(copies == 10 && joins == 6 && releases == 16 && peak == 6);
+        assert(dr_head == NULL);
+    }
+    triple_join_assignment_probe = 0;
+    copies = joins = releases = peak = 0;
+    assert(dream_entry_main() == 0);
+    assert(dr_head == NULL && copies == 24 && joins == 3 && releases == 27);
     return 0;
 }

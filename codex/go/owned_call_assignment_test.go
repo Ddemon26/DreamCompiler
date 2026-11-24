@@ -25,18 +25,21 @@ func TestCompiler_OwnedCallAssignment(t *testing.T) {
 			text := string(data)
 			options := []string{}
 			entry, factory := "", "factory"
-			joined, nested := "joined", "nested"
+			joined, nested, extended := "joined", "nested", "extended"
 			if modules {
 				entry, factory = "__dream_module_0_", "__dream_module_1_factory"
 				joined, nested = "__dream_module_1_joined", "__dream_module_1_nested"
+				extended = "__dream_module_1_extended"
 				options = append(options, "--multi-file")
 				text = "import labels;\n" + strings.ReplaceAll(text, "= factory();", "= labels.factory();")
 				text = strings.ReplaceAll(text, "= joined(", "= labels.joined(")
 				text = strings.ReplaceAll(text, "= nested(", "= labels.nested(")
+				text = strings.ReplaceAll(text, "= extended(", "= labels.extended(")
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(`module labels;
 export func string factory() { string result = "owned"; return result; }
 export func string joined(string source) { string result = source; return (result += factory()); }
-export func string nested(string source) { string result = source; return (result += joined("-inner-")); }`), 0644); err != nil {
+export func string nested(string source) { string result = source; return (result += joined("-inner-")); }
+export func string extended(string source) { string result = source; return (result += nested("-outer")); }`), 0644); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -72,6 +75,8 @@ export func string nested(string source) { string result = source; return (resul
 				"(char*)" + joined + `(__dream_string_assign(&target,"new"));dr_release(target);target=__dream_owned_0;`,
 				"(char*)" + nested + "(target);dr_release(target);target=__dream_owned_0;",
 				"(char*)" + nested + `(__dream_string_assign(&target,"new"));dr_release(target);target=__dream_owned_0;`,
+				"(char*)" + extended + "(target);dr_release(target);target=__dream_owned_0;",
+				"(char*)" + extended + `(__dream_string_assign(&target,"new"));dr_release(target);target=__dream_owned_0;`,
 			} {
 				if !strings.Contains(c, want) {
 					t.Errorf("missing assignment %q", want)
@@ -95,6 +100,7 @@ export func string nested(string source) { string result = source; return (resul
 				"-DDREAM_IDENTITY_PROBE=" + entry + "identityProbe",
 				"-DDREAM_JOIN_ASSIGNMENT_PROBE=" + entry + "joinAssignmentProbe",
 				"-DDREAM_NESTED_JOIN_ASSIGNMENT_PROBE=" + entry + "nestedJoinAssignmentProbe",
+				"-DDREAM_TRIPLE_JOIN_ASSIGNMENT_PROBE=" + entry + "tripleJoinAssignmentProbe",
 				"-DDREAM_TRANSFER_PROBE=" + entry + "transfer",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"), "-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -110,7 +116,7 @@ export func string nested(string source) { string result = source; return (resul
 				binary += ".exe"
 			}
 			command("zig", append(args, "-o", binary)...)
-			want := "old\nchanged\n2\nglobal\n"
+			want := "old\nchanged\n2\nstart-outer-inner-owned\nglobal\n"
 			if got := strings.ReplaceAll(string(command(binary)), "\r\n", "\n"); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -144,7 +150,8 @@ func checkOwnedAssignmentContexts(t *testing.T, tr *TestRunner) {
 			{"join_chained", `string slot; string other; other = (slot=joined());`, `__dream_string_assign(&other,__dream_string_assign(&slot,` + prefix + `joined()))`},
 			{"join_parameter", `func void view(string slot) { slot=joined(); }`, `slot=` + prefix + `joined()`},
 			{"nested_join_initializer", `string slot; string other = (slot=nested());`, `dream_string_copy(__dream_string_assign(&slot,` + prefix + `nested()))`},
-			{"third_join", `string slot; slot=third();`, `__dream_string_assign(&slot,` + prefix + `third())`},
+			{"third_join_initializer", `string slot; string other = (slot=third());`, `dream_string_copy(__dream_string_assign(&slot,` + prefix + `third()))`},
+			{"fourth_join", `string slot; slot=fourth();`, `__dream_string_assign(&slot,` + prefix + `fourth())`},
 		} {
 			t.Run(fmt.Sprintf("%s/modules=%v", tc.name, modules), func(t *testing.T) {
 				c := memberReturnEmission(t, tr, `func string factory(){string result="owned";return result;}
@@ -152,6 +159,7 @@ func string borrow(){return "borrowed";}
 func string joined(){string result="start";return (result += factory());}
 func string nested(){string result="second";return (result += joined());}
 func string third(){string result="third";return (result += nested());}
+func string fourth(){string result="fourth";return (result += third());}
 `+tc.body, modules)
 				if !strings.Contains(c, tc.want) {
 					t.Fatalf("missing fallback %q: %s", tc.want, c)

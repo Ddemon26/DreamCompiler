@@ -2,6 +2,36 @@
 
 **Date:** November 24, 2026 UTC
 
+**Pass:** P0085 - adopt the final join from three returned appends in a complete scalar assignment
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0084 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0084 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45353940033).
+- `zig build test` discovered **192** entries. **174 passed**, **18 skipped**,
+  with zero failures or errors (57.48s). Report
+  `test_results_20261124_070517_windows.json` confirms the new assignment output
+  and the same entry statuses and skip reasons as P0084.
+- The focused assignment and initializer Go checks passed (10.967s, `-count=1`).
+  The lifetime harness repeated the paired assignments 10,000 times per mode
+  and verified original-pointer release order and an empty registry after each call.
+- The Windows Go quick protocol passed all **43** groups (156.826s Go suite time,
+  `-count=1`).
+- All **78** allocation audit probes passed (92.004s). Eight assignments in each
+  mode made 64 releases and left zero final joins live, down from eight on P0084.
+  The other 76 measurements matched P0084.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.051s).
+
+See the [P0085 record](passes/P0085-assign-three-returned-appends.md) for scope and limits.
+
+---
+
+## Historical P0084 checkpoint
+
+**Date:** November 24, 2026 UTC
+
 **Pass:** P0084 - adopt the final join from three returned appends in a direct scalar initializer
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

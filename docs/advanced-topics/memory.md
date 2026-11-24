@@ -10,11 +10,13 @@ the selected value. Plain assignment initializers such as
 `string copy = (source = "next")` evaluate the assignment once and copy its result;
 source and declaration have independent storage. The new declaration receives
 owned replacement and jump cleanup. Parameter, field and indexed assignment
-destinations retain their existing borrowed behavior. Calls copy their readable result without
-transferring ownership; fresh managed results can remain registered until shutdown.
-Plain `=` on qualified owned scalar bindings copies a readable replacement before
-releasing the old allocation. Self-assignment is safe; uninitialized scalar strings
-start as null. Local string arrays and `string*` bindings borrow their elements
+destinations retain their existing borrowed behavior. A direct initializer or complete
+`=` assignment to an owned scalar string can adopt a proven factory result, including
+a [factory with three returned appends](../development/string-ownership.md#complete-assignments-that-adopt-three-returned-appends-p0085).
+Other calls can leave a managed result registered until shutdown. Plain `=` finishes
+evaluating the replacement before releasing the current allocation. Self-assignment
+is safe and uninitialized scalar strings start as null. Local string arrays and
+`string*` bindings borrow their elements
 and target storage; normal block exit releases neither those bindings nor their
 elements. Managed backing must outlive alias use. Scalar copies and class-instance
 cleanup remain intact. This does not establish parameter, field, owning-container

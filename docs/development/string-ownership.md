@@ -1124,8 +1124,9 @@ The right-hand side evaluates once. After the call, the assignment releases
 the current value and installs the original final join. If an argument
 replaces the destination, the outer assignment releases that replacement.
 
-Assignment expressions and calls beyond two returned appends use their
-existing fallback. See the
+Assignment expressions keep their existing fallback. P0085 extends the
+[complete assignment proof](#complete-assignments-that-adopt-three-returned-appends-p0085)
+to a third returned append. See the
 [P0075 pass record](../../tasks/passes/P0075-assign-nested-returned-joins.md).
 
 ## Standalone calls that discard two returned appends (P0076)
@@ -1258,6 +1259,20 @@ at reference count one. Imported functions use the same proof on their lowered
 definitions. The call and each argument evaluate once.
 
 Calls beyond three returned appends and conditional initializers keep their
-copies. Complete assignments, standalone calls, and Console output still use
-a proof bounded at two returned appends. See the
+copies. Standalone calls and Console output use a proof bounded at two returned
+appends. See the
 [P0084 pass record](../../tasks/passes/P0084-adopt-three-returned-appends.md).
+
+## Complete assignments that adopt three returned appends (P0085)
+
+In `target = extended(target);`, a complete `=` statement to an owned scalar
+string takes the original final join when the factory meets the
+[three-append proof](#scalar-initializers-that-adopt-three-returned-appends-p0084).
+The temporary holds the result while the assignment releases the current slot.
+For `target = extended(target = "new");`, the argument replaces the first
+join and the outer assignment releases `"new"` after the call. Scope cleanup
+releases the second original join. The proof also applies to imported calls.
+
+Assignment expressions and calls with four returned appends keep their ordinary
+emission. See the [assignment contract](owned-call-assignment.md) and the
+[P0085 pass record](../../tasks/passes/P0085-assign-three-returned-appends.md).

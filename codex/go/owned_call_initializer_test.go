@@ -263,7 +263,7 @@ string conditionalExtended = true ? extended() : "literal";`, modules)
 				"dr_release((void*)" + prefix + "nested());",
 				ownedArgumentBlock(prefix+"nested()", "dr_console_writeln", "dreamOwnedArgument0"),
 				"conditional=dream_string_copy((1?" + prefix + `nested():"literal"));`,
-				"__dream_string_assign(&target," + prefix + "extended());",
+				"(char*)" + prefix + "extended();dr_release(target);target=__dream_owned_0;",
 				"*/" + prefix + "extended();",
 				"dr_console_writeln(" + prefix + "extended());",
 				"conditionalExtended=dream_string_copy((1?" + prefix + `extended():"literal"));`,

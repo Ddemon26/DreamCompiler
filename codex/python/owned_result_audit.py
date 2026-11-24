@@ -37,6 +37,7 @@ P0081 releases the final allocation from two returned appends in an append print
 P0082 releases the final allocation from two returned appends in an append passed to either proven Console wrapper.
 P0083 releases the final allocation from two returned appends in a directly returned append.
 P0084 adopts the final allocation from three returned appends in a direct scalar initializer.
+P0085 adopts the final allocation from three returned appends in a complete scalar assignment.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -63,6 +64,35 @@ def argument_release(consumer, leading_args="", call="@entry@owned()"):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    {
+        "name": "triple_join_assignment",
+        "releases": 64, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "inner-";
+    return (text += owned());
+}
+func string nested() {
+    string text = "outer-";
+    return (text += joined());
+}
+func string extended(string source) {
+    string text = source;
+    return (text += nested());
+}
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string target = "start-";
+        target = extended(target);
+        Console.WriteLine(target);
+    }
+}
+exercise();
+''',
+        "output": "start-outer-inner-owned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@nested());",
+              "(char*)@entry@extended(target);dr_release(target);target=__dream_owned_0;"],
+    },
     {
         "name": "nested_join_append_return",
         "releases": 56, "live": 0,

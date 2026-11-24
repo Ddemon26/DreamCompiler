@@ -795,10 +795,16 @@ and imported calls. After eight calls per mode, zero final joins remained
 live, down from eight on P0083. See
 [P0084](passes/P0084-adopt-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0084 publication and native CI, then measure
-retention in a complete assignment to an owned scalar string when its factory
-returns three proven appends. Check original-pointer identity and destination
-replacement during argument evaluation if the result qualifies for adoption.
+P0085 lets a complete assignment to an owned scalar string adopt the original
+third join. The checked release order covers an operand that uses the current
+destination and one that replaces it during argument evaluation. Eight calls
+per mode leave zero final joins live, down from eight on P0084. See
+[P0085](passes/P0085-assign-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0085 publication and native CI, then measure
+retention after a standalone call to a factory with three proven returned appends.
+If the discard qualifies for release, check original-pointer identity and once-only
+argument evaluation in ordinary and imported calls.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller
