@@ -85,8 +85,9 @@
 | [P0081](P0081-print-appends-with-nested-joins.md) | 2026-11-23 | Release the final join from two proven returned appends before printing an append | `Pass-ID: P0081` |
 | [P0082](P0082-wrap-appends-with-nested-joins.md) | 2026-11-23 | Release the final join from two proven returned appends before a Console wrapper prints an append | `Pass-ID: P0082` |
 | [P0083](P0083-return-appends-with-nested-joins.md) | 2026-11-24 | Release the final join from two proven returned appends in a directly returned append | `Pass-ID: P0083` |
+| [P0084](P0084-adopt-three-returned-appends.md) | 2026-11-24 | Adopt the final join from three proven returned appends in a direct scalar initializer | `Pass-ID: P0084` |
 
-**Verify P0083 publication and native CI, then measure retention when a direct scalar initializer calls a factory with three proven returned appends.**
+**Verify P0084 publication and native CI, then measure retention when a complete scalar assignment calls a factory with three proven returned appends.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

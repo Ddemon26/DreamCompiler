@@ -7,11 +7,14 @@
 // Expected: owned
 // Expected: 7
 // Expected: startowned
+// Expected: third-outer-startowned
+// Expected: 1
 // Expected: global
 // This function is also invoked independently by the identity/peak harness.
 func void identityProbe() { string identity = owned(); }
 func void appendProbe() { string snapshot = joined(); }
 func void nestedAppendProbe() { string snapshot = nestedJoin(); }
+func void tripleAppendProbe() { string snapshot = tripleJoin("third-"); }
 func void bare() { string early = owned(); return; }
 func int scalar() { string earlyScalar = owned(); return 7; }
 func string transfer() { string forwarded = owned(); return forwarded; }
@@ -36,12 +39,16 @@ func void exercise() {
     }
     bare(); Console.WriteLine(first); Console.WriteLine(scalar());
     string appended = joined(); Console.WriteLine(appended);
+    int evaluated = 0;
+    const string extended = tripleJoin((++evaluated == 1) ? "third-" : "unexpected-");
+    Console.WriteLine(extended); Console.WriteLine(evaluated);
     string __dream_return_0 = owned();
 }
 // Definitions after their uses must be proved from the registered program.
 func string owned() { string result = "owned"; return result; }
 func string joined() { string result = "start"; return (result += owned()); }
 func string nestedJoin() { string result = "outer-"; return (result += joined()); }
+func string tripleJoin(string prefix) { string result = prefix; return (result += nestedJoin()); }
 func string escapedFactory() { const string result = "escaped \"value\""; return (result); }
 func string emptyFactory() { string result = ""; return result; }
 func string absentFactory() { string result; return result; }

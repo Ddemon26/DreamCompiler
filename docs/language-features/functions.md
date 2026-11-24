@@ -297,11 +297,11 @@ operand returns up to two proven appends. The caller receives the concatenation
 after the intermediate join is released. See the
 [direct append return rule](../development/string-ownership.md#direct-append-returns-with-two-returned-appends-p0083).
 
-A direct scalar initializer or a complete assignment to an owned scalar
-string takes ownership of a factory's final join when the factory meets the
-proof with up to two returned appends. The assignment releases the current
-destination after the call finishes.
-See the [initializer rule](../development/string-ownership.md#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074)
+A direct scalar initializer takes ownership of a factory's final join when the
+factory meets the proof with up to three returned appends. A complete assignment
+to an owned scalar string uses a limit of two returned appends and releases the
+current destination after the call finishes.
+See the [initializer rule](../development/string-ownership.md#scalar-initializers-that-adopt-three-returned-appends-p0084)
 and [assignment rule for two returned appends](../development/string-ownership.md#complete-assignments-that-adopt-two-returned-appends-p0075).
 
 A standalone `joined();` or `nested();` call releases the final join immediately

@@ -372,18 +372,19 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 	})
 
 	t.Run("nested_join_return", func(t *testing.T) {
-		// Two originals copied by callers, the result with a borrowed operand,
-		// and both joins beyond the proof's depth remain live before shutdown.
+		// The direct initializer releases extended's original join. The copied
+		// updated result, the join with a borrowed operand, and both joins
+		// beyond the return proof's depth remain live before shutdown.
 		checkStorageOwnershipWithLiveCount(t, "owned_nested_join_append_return.dr", 25, []string{
 			`return__dream_string_append_owned(&inner,@entry@owned());`,
 			`return__dream_string_append_owned(&outer,@entry@joined());`,
 			`return__dream_string_append_owned(&text,@entry@nested("outer-",0));`,
 			`return__dream_string_append_owned(&text,@entry@nested(__dream_string_assign(&text,"new"),@entry@announce()));`,
-			`snapshot=dream_string_copy(@entry@extended());`,
+			`snapshot=@entry@extended();`,
 			`changed=dream_string_copy(@entry@updated(1));`,
 			`return__dream_string_append(&text,@entry@borrowed(source));`,
 			`return__dream_string_append(&text,@entry@extended());`,
-		}, "start-outer-inner-B\nonce\nnewnewinner-B!\nleftright\nright\nlimit-start-outer-inner-B\n", 5)
+		}, "start-outer-inner-B\nonce\nnewnewinner-B!\nleftright\nright\nlimit-start-outer-inner-B\n", 4)
 	})
 
 	t.Run("owned_factory_operand", func(t *testing.T) {

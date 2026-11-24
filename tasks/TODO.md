@@ -789,10 +789,16 @@ and returns the installed concatenation. Each eight-call audit left eight
 final results live per mode, down from sixteen total joins on P0082.
 See [P0083](passes/P0083-return-appends-with-nested-joins.md).
 
-Broader T011 remains open. Verify P0083 publication and native CI, then measure
-retention in a direct scalar initializer calling a factory with three proven
-returned appends. Check original-pointer identity if the initializer proof can
-qualify the result for adoption.
+P0084 lets direct scalar initializers adopt the original join from three
+proven returned appends. The allocator checks the release pointer in ordinary
+and imported calls. After eight calls per mode, zero final joins remained
+live, down from eight on P0083. See
+[P0084](passes/P0084-adopt-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0084 publication and native CI, then measure
+retention in a complete assignment to an owned scalar string when its factory
+returns three proven appends. Check original-pointer identity and destination
+replacement during argument evaluation if the result qualifies for adoption.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

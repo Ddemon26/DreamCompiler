@@ -99,12 +99,19 @@ int main(void) {
         assert(join == NULL && dr_head == NULL);
         assert(copies == 3 * (i + 1) && joins == 2 * (i + 1) && releases == 5 * (i + 1));
     }
+    copies = joins = releases = peak = 0;
+    append_result = "third-outer-startowned";
+    for (size_t i = 0; i < 10000; i++) {
+        DREAM_TRIPLE_APPEND_PROBE();
+        assert(join == NULL && dr_head == NULL);
+        assert(copies == 4 * (i + 1) && joins == 3 * (i + 1) && releases == 7 * (i + 1));
+    }
     append_result = NULL;
     copies = joins = releases = peak = 0;
     assert(dream_entry_main() == 0);
     assert(copies == DREAM_EXPECTED_COPIES);
-    // One extra release for the appended allocation; one global survives.
-    assert(joins == 1 && releases == copies + joins - 1);
+    // One join from joined(), three from tripleJoin(); one global survives.
+    assert(joins == 4 && releases == copies + joins - 1);
     assert(dr_head == NULL);
     return 0;
 }

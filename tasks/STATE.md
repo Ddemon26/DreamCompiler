@@ -1,23 +1,23 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0083 - release the final join from two returned appends in a directly returned append**.
-- Record: [P0083](passes/P0083-return-appends-with-nested-joins.md).
-- Parent/fetched approved remote: `bd6676eed26edba9f2d6c1d6f46c8f790af8d8e9` (P0082).
-- Resolve this pass commit by its exact `Pass-ID: P0083` trailer.
+- Current pass: **P0084 - adopt the final join from three returned appends in a direct scalar initializer**.
+- Record: [P0084](passes/P0084-adopt-three-returned-appends.md).
+- Parent/fetched approved remote: `196f12c48a8e76621ad733909b9802ff97433b85` (P0083).
+- Resolve this pass commit by its exact `Pass-ID: P0084` trailer.
 - Delivery requires push and matching `git ls-remote`.
 
-P0082 CI passed on Windows and Ubuntu. P0083 releases the original final join
-after a directly returned append installs the concatenation in an owned
-scalar local. The caller receives the installed value.
+P0083 CI passed on Windows and Ubuntu. In P0084 a direct scalar initializer
+adopts the original join from a factory with three proven returned appends.
+Eight calls in each allocation probe leave zero joins live.
 See [measured tests](MostRecentTestResults.md) and the
-[P0082 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45256716669).
+[P0083 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45309986340).
 Eighteen unannotated Dream entries remain skipped.
 
 Next invocation:
 
-1. Verify P0083 publication and both exact-commit CI jobs. Repair any failed baseline.
-2. Measure retention in a direct scalar initializer calling a factory with
-   three proven returned appends. Check original-pointer identity if the
-   initializer proof can qualify the result for adoption.
+1. Verify P0084 publication and both exact-commit CI jobs. Repair any failed baseline.
+2. Measure retention in a complete assignment to an owned scalar string when its
+   factory returns three proven appends. If the assignment qualifies for adoption,
+   check original-pointer identity and destination replacement during argument evaluation.
 3. General expression and argument ownership, async, and exception unwinding remain open.

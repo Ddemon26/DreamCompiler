@@ -1004,12 +1004,13 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         // Literals have static storage; indexed, identifier, member and call
         // values may be borrowed, including conditional and assignment results.
         // Only a proven free-function factory transfers its original allocation.
-        // Direct initializers can adopt a final join from two proven appends.
+        // A direct call initializer can adopt the final join of three proven
+        // appends because return emission can consume the first two.
         // Give all other scalar declarations an independent copy for cleanup.
         int copy_string = n->as.var_decl.type == TK_KW_STRING &&
                           !n->as.var_decl.is_pointer &&
                           copies_string_initializer(n->as.var_decl.init) &&
-                          !adopts_string_call_result(ctx, n->as.var_decl.init, 2);
+                          !adopts_string_call_result(ctx, n->as.var_decl.init, 3);
         Node *init = n->as.var_decl.init;
         Node *append_slot = copy_string ? owned_factory_append_slot(ctx, init, 2) : NULL;
         if (copy_string) c_out_write(b, "dream_string_copy(");

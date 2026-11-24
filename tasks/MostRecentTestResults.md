@@ -2,6 +2,37 @@
 
 **Date:** November 24, 2026 UTC
 
+**Pass:** P0084 - adopt the final join from three returned appends in a direct scalar initializer
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0083 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0083 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45309986340).
+- `zig build test` discovered **192** entries. **174 passed**, **18 skipped**,
+  with zero failures or errors (71.17s). Report
+  `test_results_20261124_010058_windows.json` confirms exact output in the
+  extended initializer fixture and the same statuses and skip reasons as P0083.
+- The focused initializer and returned-append Go checks passed (9.477s and
+  4.403s, `-count=1`). The lifetime harness released the original final join
+  in 10,000 repetitions per mode. The updated return fixture had four live
+  allocations before shutdown, down from five, with 25 releases per mode.
+- The Windows Go quick rerun passed all **43** groups (171.245s Go suite time,
+  `-count=1`).
+- All **76** allocation audit probes passed (113.453s). Eight calls in each
+  mode made 56 releases and left zero final joins live, down from eight on
+  P0083. The other 74 measurements matched P0083.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.066s).
+
+See the [P0084 record](passes/P0084-adopt-three-returned-appends.md) for scope and limits.
+
+---
+
+## Historical P0083 checkpoint
+
+**Date:** November 24, 2026 UTC
+
 **Pass:** P0083 - release the final join from two returned appends in a directly returned append
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

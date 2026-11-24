@@ -36,6 +36,7 @@ P0080 releases the final allocation from two returned appends in an append initi
 P0081 releases the final allocation from two returned appends in an append printed directly by either Console writer.
 P0082 releases the final allocation from two returned appends in an append passed to either proven Console wrapper.
 P0083 releases the final allocation from two returned appends in a directly returned append.
+P0084 adopts the final allocation from three returned appends in a direct scalar initializer.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -64,7 +65,7 @@ APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
     {
         "name": "nested_join_append_return",
-        "releases": 56, "live": 8,
+        "releases": 56, "live": 0,
         "source": COMMON + '''
 func string joined() {
     string text = "inner-";
@@ -88,7 +89,7 @@ exercise();
 ''',
         "output": "start-outer-inner-owned\n" * 8,
         "c": ["return__dream_string_append_owned(&text,@entry@nested());",
-              "snapshot=dream_string_copy(@entry@extended());"],
+              "snapshot=@entry@extended();"],
     },
     *[
         {

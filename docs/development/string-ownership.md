@@ -1110,14 +1110,15 @@ Both functions must satisfy the existing binding and parameter checks, including
 for imported functions. Each append releases its operand and the caller's scope
 cleanup releases the original final join at reference count one.
 
-The initializer proof permits at most two returned appends. A conditional
-initializer keeps its independent copy. See the
-[P0074 pass record](../../tasks/passes/P0074-adopt-nested-returned-joins.md).
+P0074 qualified two returned appends. P0084 extends direct initializer adoption
+to three. A conditional initializer keeps its independent copy. See the
+[P0074 pass record](../../tasks/passes/P0074-adopt-nested-returned-joins.md) and
+[current initializer rule](#scalar-initializers-that-adopt-three-returned-appends-p0084).
 
 ## Complete assignments that adopt two returned appends (P0075)
 
 A complete `target = nested();` statement can adopt the final allocation
-with the same two-append factory proof as a direct scalar initializer.
+with the factory proof bounded at two returned appends.
 The destination must be an already-owned scalar string identifier.
 The right-hand side evaluates once. After the call, the assignment releases
 the current value and installs the original final join. If an argument
@@ -1129,8 +1130,8 @@ existing fallback. See the
 
 ## Standalone calls that discard two returned appends (P0076)
 
-A complete `nested();` statement uses the same two-append factory proof as a
-[direct scalar initializer](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074).
+A complete `nested();` statement uses the factory proof bounded at two
+returned appends.
 The caller evaluates the call and its arguments once and releases the original
 final join immediately after normal return. This also applies to imported
 functions and parenthesized standalone calls.
@@ -1142,8 +1143,7 @@ returned appends follow ordinary expression emission. See the
 ## Direct Console output of two returned appends (P0077)
 
 In a complete `Console.Write(nested());` or `Console.WriteLine(nested());`
-statement, the caller uses the same two-append factory proof as a
-[direct scalar initializer](#scalar-initializers-that-adopt-a-join-of-a-returned-join-p0074).
+statement, the caller uses the factory proof bounded at two returned appends.
 The factory and its arguments run once. The writer reads the original final
 join, and the caller releases it immediately after the writer returns.
 
@@ -1239,8 +1239,25 @@ local, installs the concatenation, and releases the factory's original final
 join. The installed value survives the return and the caller can copy it.
 
 Borrowed operands and operands beyond two proven returned appends use ordinary
-append emission. Callers still use the existing two-append adoption limit.
-The [checked fixture](../../tests/basics/memory/owned_nested_join_append_return.dr)
-covers argument evaluation that replaces the destination, an unbraced conditional
-return, caller reads, and both fallback cases in ordinary and module-entry modes.
-See the [P0083 pass record](../../tasks/passes/P0083-return-appends-with-nested-joins.md).
+append emission. A direct scalar initializer can adopt the resulting third join
+when the entire factory meets the proof. The regression covers argument
+evaluation that replaces the destination, an unbraced conditional return, caller
+reads, and both fallback cases in ordinary and module-entry modes. See the
+[checked fixture](../../tests/basics/memory/owned_nested_join_append_return.dr),
+[P0083 pass record](../../tasks/passes/P0083-return-appends-with-nested-joins.md),
+and [current initializer rule](#scalar-initializers-that-adopt-three-returned-appends-p0084).
+
+## Scalar initializers that adopt three returned appends (P0084)
+
+In `string snapshot = extended();`, a direct initializer adopts the factory's
+original final join when `extended()` meets the factory proof with three returned
+appends. The outer factory declares one qualifying mutable scalar local and
+returns its append of a call that meets the two-append proof. Each returned
+append releases its operand, and scope cleanup releases the original final join
+at reference count one. Imported functions use the same proof on their lowered
+definitions. The call and each argument evaluate once.
+
+Calls beyond three returned appends and conditional initializers keep their
+copies. Complete assignments, standalone calls, and Console output still use
+a proof bounded at two returned appends. See the
+[P0084 pass record](../../tasks/passes/P0084-adopt-three-returned-appends.md).
