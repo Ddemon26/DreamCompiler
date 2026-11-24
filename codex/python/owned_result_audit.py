@@ -65,6 +65,28 @@ ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
     {
+        "name": "triple_join_discard",
+        "releases": 56, "live": 0,
+        "source": COMMON + '''
+func string joined() {
+    string text = "inner-";
+    return (text += owned());
+}
+func string nested() {
+    string text = "outer-";
+    return (text += joined());
+}
+func string extended() {
+    string text = "third-";
+    return (text += nested());
+}
+for (int i = 0; i < 8; i++) extended();
+''',
+        "output": "",
+        "c": ["return__dream_string_append_owned(&text,@entry@nested());",
+              "dr_release((void*)@entry@extended());"],
+    },
+    {
         "name": "triple_join_assignment",
         "releases": 64, "live": 0,
         "source": COMMON + '''

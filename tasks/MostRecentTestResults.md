@@ -2,6 +2,37 @@
 
 **Date:** November 24, 2026 UTC
 
+**Pass:** P0086 - discard the final join from three returned appends
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0085 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0085 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45411129575).
+- `zig build test` discovered **192** entries. **174 passed**, **18 skipped**,
+  with zero failures or errors (50.90s). Report
+  `test_results_20261124_130246_windows.json` verifies exact discard fixture
+  output and the same entry statuses and skip reasons as P0085.
+- The focused discard, assignment and initializer Go regressions passed
+  (10.971s, `-count=1`). The checked harness verified 10,000 three-append
+  calls per mode, including once-only argument evaluation, original-pointer
+  release and an empty registry after each call.
+- The Windows Go quick protocol passed all **43** groups (131.206s Go suite
+  time, `-count=1`).
+- All **80** allocation audit probes passed (83.517s). Eight standalone calls
+  in each mode made 56 releases and left zero final joins live, down from eight
+  on P0085. The other 78 measurements matched P0085.
+- Native Windows and Linux cross-builds passed **15/15** steps each. Native
+  Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.057s).
+
+See the [P0086 record](passes/P0086-discard-three-returned-appends.md) for scope and limits.
+
+---
+
+## Historical P0085 checkpoint
+
+**Date:** November 24, 2026 UTC
+
 **Pass:** P0085 - adopt the final join from three returned appends in a complete scalar assignment
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

@@ -801,10 +801,16 @@ destination and one that replaces it during argument evaluation. Eight calls
 per mode leave zero final joins live, down from eight on P0084. See
 [P0085](passes/P0085-assign-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0085 publication and native CI, then measure
-retention after a standalone call to a factory with three proven returned appends.
-If the discard qualifies for release, check original-pointer identity and once-only
-argument evaluation in ordinary and imported calls.
+P0086 releases the original third join after a standalone call. Eight calls
+per mode made 56 releases and left zero final joins live, compared with 48
+releases and eight live joins on P0085. The checked ordinary and imported
+calls verify original-pointer identity and once-only argument evaluation.
+See [P0086](passes/P0086-discard-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0086 publication and native CI. Then
+measure retention when complete direct `Console.Write` and `Console.WriteLine`
+statements print a factory result from three proven returned appends. Check
+that both writers read the original pointer before any release.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

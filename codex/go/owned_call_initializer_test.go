@@ -264,7 +264,7 @@ string conditionalExtended = true ? extended() : "literal";`, modules)
 				ownedArgumentBlock(prefix+"nested()", "dr_console_writeln", "dreamOwnedArgument0"),
 				"conditional=dream_string_copy((1?" + prefix + `nested():"literal"));`,
 				"(char*)" + prefix + "extended();dr_release(target);target=__dream_owned_0;",
-				"*/" + prefix + "extended();",
+				"dr_release((void*)" + prefix + "extended());",
 				"dr_console_writeln(" + prefix + "extended());",
 				"conditionalExtended=dream_string_copy((1?" + prefix + `extended():"literal"));`,
 			} {

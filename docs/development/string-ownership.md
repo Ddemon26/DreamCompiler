@@ -1276,3 +1276,16 @@ releases the second original join. The proof also applies to imported calls.
 Assignment expressions and calls with four returned appends keep their ordinary
 emission. See the [assignment contract](owned-call-assignment.md) and the
 [P0085 pass record](../../tasks/passes/P0085-assign-three-returned-appends.md).
+
+## Standalone calls that discard three returned appends (P0086)
+
+A complete call statement such as `deeper(count++);` now uses the existing
+factory proof with a limit of three returned appends. The caller passes the
+original final join to `dr_release` as soon as the factory returns. Each
+argument is evaluated once. The rule applies to resolved ordinary and imported
+factory definitions.
+
+Calls in loop headers, conditional expressions and nested arguments still
+follow ordinary expression emission. Standalone calls with four returned
+appends also follow ordinary emission. See the
+[P0086 pass record](../../tasks/passes/P0086-discard-three-returned-appends.md).

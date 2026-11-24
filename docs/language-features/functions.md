@@ -299,15 +299,15 @@ after the intermediate join is released. See the
 
 A direct scalar initializer takes ownership of a factory's final join when the
 factory meets the proof with up to three returned appends. A complete assignment
-to an owned scalar string uses a limit of two returned appends and releases the
+to an owned scalar string uses the same limit and releases the
 current destination after the call finishes.
 See the [initializer rule](../development/string-ownership.md#scalar-initializers-that-adopt-three-returned-appends-p0084)
-and [assignment rule for two returned appends](../development/string-ownership.md#complete-assignments-that-adopt-two-returned-appends-p0075).
+and [assignment rule](../development/string-ownership.md#complete-assignments-that-adopt-three-returned-appends-p0085).
 
-A standalone `joined();` or `nested();` call releases the final join immediately
-after the call returns when up to two returned appends meet the factory proof.
+A standalone factory call releases the final join immediately after the call
+returns when up to three returned appends meet the factory proof.
 The call evaluates its arguments once. See the
-[discard rule](../development/string-ownership.md#standalone-calls-that-discard-two-returned-appends-p0076).
+[discard rule](../development/string-ownership.md#standalone-calls-that-discard-three-returned-appends-p0086).
 
 Complete `Console.Write(nested());` and `Console.WriteLine(nested());`
 statements release the original final join after printing when up to two
