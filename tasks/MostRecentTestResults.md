@@ -2,7 +2,35 @@
 
 **Date:** November 25, 2026 UTC
 
-**Pass:** P0089 - release the final join from three returned appends after a complete append statement
+**Pass:** P0090 - release the final join from three returned appends in an append initializer
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0089 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0089 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45630310875).
+- `zig build test` discovered **194** entries. **176 passed**, **18 skipped**,
+  with zero failures or errors (54.79s). Report
+  `test_results_20261125_130206_windows.json` verifies exact output for the new
+  fixture and the same statuses and skip reasons for all 193 prior entries.
+- The focused Go append initializer regression passed in ordinary and module-entry
+  modes (3.107s, `-count=1`). The checked harness made 110,023 single-reference
+  releases per mode and verified an empty registry before shutdown cleanup.
+  It checked independent snapshot storage, destination replacement during
+  operand evaluation, and a once-only argument increment.
+- The Windows Go quick protocol passed all **43** groups (146.884s Go suite
+  time, `-count=1`).
+- All **92** allocation audit probes passed (99.092s). Eight append initializers
+  per mode made 88 releases with zero live final joins, down from eight live
+  joins on P0089. All 90 prior measurements matched P0089.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Native Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.041s).
+
+See the [P0090 record](passes/P0090-initialize-from-three-returned-appends.md) for scope and limits.
+
+---
+
+## Historical P0089 checkpoint
 
 **Platform/toolchain:** Windows with Zig 0.17.1.
 

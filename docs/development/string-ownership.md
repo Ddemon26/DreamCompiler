@@ -1196,7 +1196,9 @@ The same rule applies to const snapshots and `for`-header declarations.
 Borrowed operands still use the ordinary append helper. Both ordinary and
 module-entry regressions check replacement during argument evaluation,
 snapshot survival after destination replacement, and destination survival
-after snapshot cleanup. See the
+after snapshot cleanup. P0090 extends this rule to
+[three returned appends](#append-initializers-with-three-returned-appends-p0090).
+See the
 [P0080 pass record](../../tasks/passes/P0080-initialize-from-nested-join-appends.md).
 
 ## Console output of appends with two returned appends (P0081)
@@ -1331,6 +1333,23 @@ starts with the replacement. The caller releases the original join after
 installing the concatenation in `text`.
 
 Borrowed operands, conditional operands, and calls beyond three returned
-appends use ordinary emission. Append expressions used in initializers, output,
-wrapper calls, and returns use the two-append proof. See the
+appends use ordinary emission. P0090 applies the three-append proof to
+[scalar declaration initializers](#append-initializers-with-three-returned-appends-p0090).
+Append expressions used in output, wrapper calls, and returns use the
+two-append proof. See the
 [P0089 pass record](../../tasks/passes/P0089-append-three-returned-appends.md).
+
+## Append initializers with three returned appends (P0090)
+
+In `string snapshot = (text += deeper());`, an owned mutable scalar string
+destination can consume an operand that satisfies the
+[three-append factory proof](#scalar-initializers-that-adopt-three-returned-appends-p0084).
+The factory call and its arguments evaluate once. The append reads the current
+destination after evaluation, installs the concatenation, and releases the
+factory's original final join. The declaration copies the installed value
+into independent managed storage.
+
+The rule covers ordinary and module-entry declarations, including const
+snapshots and `for` headers. Borrowed and conditional operands and calls
+beyond three returned appends use ordinary append emission. See the
+[P0090 pass record](../../tasks/passes/P0090-initialize-from-three-returned-appends.md).

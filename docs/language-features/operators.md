@@ -204,17 +204,17 @@ storage, and yields the new string. Null contributes empty text; a declaration
 initialized by the result receives an independent copy. Const updates and numeric,
 bool or char operands are rejected. Numeric `+=` keeps its existing behavior.
 An append also releases a proven factory operand with up to two returned
-appends when it directly initializes a scalar string or supplies the sole
-argument to a supported Console wrapper. See the
+appends when it supplies the sole argument to a supported Console wrapper. See the
 [wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-two-returned-appends-p0082).
 A complete `text += deeper();` statement can release a factory's original
 join from up to three proven returned appends. The append reads the current
 destination after the factory call and releases the operand after installing
 the concatenation. See the
 [append statement rule](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
-A direct scalar initializer such as `string snapshot = (text += joined());`
-also releases a proven returned join. The snapshot owns a copy of the new
-destination value. See the [initializer rule](../development/string-ownership.md#append-initializers-with-proven-returned-joins-p0070).
+A direct scalar initializer such as `string snapshot = (text += deeper());`
+also releases the original join from up to three proven returned appends.
+The snapshot owns a copy of the new destination value. See the
+[initializer rule](../development/string-ownership.md#append-initializers-with-three-returned-appends-p0090).
 Borrowed parameter/field/index destinations and conditional operands remain
 unqualified; see the [string ownership contract](../development/string-ownership.md).
 

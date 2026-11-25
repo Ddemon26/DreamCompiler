@@ -827,10 +827,17 @@ calls verify the destination replacement, once-only argument evaluation, and
 borrowed self-append. Eight appends per mode leave zero final joins live, down
 from eight at the parent. See [P0089](passes/P0089-append-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0089 publication and native CI. Then measure
-retention in `string snapshot = (text += deeper());` with three proven returned
-appends. Check operand release and independent destination and snapshot storage
-when operand evaluation replaces the destination.
+P0090 releases the original third join in `string snapshot = (text += deeper());`.
+The checked ordinary and module-entry tests cover replacement during operand
+evaluation, independent snapshot storage, const declarations, and `for` headers.
+Eight initializers per mode leave zero final joins live, down from eight at the
+parent. See [P0090](passes/P0090-initialize-from-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0090 publication and native CI. Then measure
+retention in `Console.Write(text += deeper());` and
+`Console.WriteLine(text += deeper());`. Check release of the original third
+join, once-only argument evaluation, and that both writers read the updated
+destination when an argument replaces it.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

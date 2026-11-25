@@ -30,7 +30,7 @@ are copied independently. A complete append statement releases its eligible
 factory operand after installing the concatenation, including a final join
 from [up to three returned appends](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
 An append that directly initializes a scalar string can also release an eligible
-operand with [up to two returned appends](../development/string-ownership.md#append-initializers-with-two-returned-appends-p0080).
+operand with [up to three returned appends](../development/string-ownership.md#append-initializers-with-three-returned-appends-p0090).
 Other fresh managed operands can remain until shutdown. Const updates and
 non-string operands are rejected. See the checkpoint for remaining destination,
 expression and allocation limits.

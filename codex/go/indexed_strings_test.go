@@ -495,6 +495,21 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "A+outer-inner-B\nA+outer-inner-B!\nnewnewinner-B\n1\nnewnewinner-B\nsamesame\nsamesameouter-inner-B\n", true)
 	})
 
+	t.Run("triple_join_initializer", func(t *testing.T) {
+		// Eleven releases per iteration and eleven for the changed destination.
+		// Borrowed self-append and the header account for twelve more.
+		checkStorageOwnership(t, "owned_triple_join_append_initializer.dr", 110023, []string{
+			`return__dream_string_append_owned(&third,@entry@nested());`,
+			`snapshot=dream_string_copy(__dream_string_append_owned(&text,@entry@extended("third-",0)));`,
+			`__dream_string_append(&text,"!");`,
+			`dr_release(snapshot);}`,
+			`constchar*snapshot=dream_string_copy(__dream_string_append_owned(&changed,@entry@extended(__dream_string_assign(&changed,"new"),(count++))));`,
+			`borrowedCopy=dream_string_copy(__dream_string_append(&alias,@entry@borrowed(alias)));`,
+			`header=dream_string_copy(__dream_string_append_owned(&alias,@entry@extended("third-",0)));`,
+			`}dr_release(header);}`,
+		}, "A+third-outer-inner-B\nA+third-outer-inner-B!\nnewnewouter-inner-B\n1\nnewnewouter-inner-B\nsamesame\nsamesamethird-outer-inner-B\n", true)
+	})
+
 	t.Run("nested_join_console_append", func(t *testing.T) {
 		// Seven releases per owned append, plus one for the argument's
 		// destination replacement and one for the borrowed self-append.
