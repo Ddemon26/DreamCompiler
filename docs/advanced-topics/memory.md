@@ -26,9 +26,11 @@ cleanup remain intact. This does not establish parameter, field, owning-containe
 or array-element ownership. Qualified mutable owned scalar identifiers also support
 `+=` with a string/null operand: evaluate once, concatenate before releasing the old
 value, and yield the new pointer. Null contributes empty text. Declaration results
-are copied independently. A complete append statement or an append that directly
-initializes a scalar string releases its operand when the operand is an eligible
-factory call, including a [proven returned join](../development/string-ownership.md#append-initializers-with-proven-returned-joins-p0070).
+are copied independently. A complete append statement releases its eligible
+factory operand after installing the concatenation, including a final join
+from [up to three returned appends](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
+An append that directly initializes a scalar string can also release an eligible
+operand with [up to two returned appends](../development/string-ownership.md#append-initializers-with-two-returned-appends-p0080).
 Other fresh managed operands can remain until shutdown. Const updates and
 non-string operands are rejected. See the checkpoint for remaining destination,
 expression and allocation limits.

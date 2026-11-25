@@ -1269,7 +1269,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
   }
   case ND_EXPR_STMT: {
     Node *expr = n->as.expr_stmt.expr;
-    Node *append_slot = owned_factory_append_slot(ctx, expr, 2);
+    Node *append_slot = owned_factory_append_slot(ctx, expr, 3);
     Node *owned_arg = append_slot ? expr->as.bin.rhs : NULL;
     if (expr->kind == ND_BINOP && expr->as.bin.op == TK_EQ &&
         expr->as.bin.lhs->kind == ND_IDENT) {

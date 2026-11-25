@@ -421,6 +421,17 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "A+outer-inner-B\nnewnewinner-B\n1\nnewnewinner-Bnewnewinner-B\n", true)
 	})
 
+	t.Run("triple_join_operand", func(t *testing.T) {
+		// Nine releases per append, plus one for the argument's replacement
+		// and one for the borrowed self-append.
+		checkStorageOwnership(t, "owned_triple_join_append.dr", 90011, []string{
+			`return__dream_string_append_owned(&third,@entry@nested());`,
+			`{constchar*dreamOwnedArgument0=@entry@extended("third-",0);__dream_string_append(&text,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,
+			`{constchar*dreamOwnedArgument0=@entry@extended(__dream_string_assign(&changed,"new"),(count++));__dream_string_append(&changed,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,
+			`__dream_string_append(&changed,@entry@borrowed(changed));`,
+		}, "A+third-outer-inner-B\nnewnewouter-inner-B\n1\nnewnewouter-inner-Bnewnewouter-inner-B\n", true)
+	})
+
 	t.Run("owned_factory_return", func(t *testing.T) {
 		// The two proven direct Console calls now release their original joins.
 		// The eight joins from join(true), the result from join(false) and the

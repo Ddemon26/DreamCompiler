@@ -207,9 +207,11 @@ An append also releases a proven factory operand with up to two returned
 appends when it directly initializes a scalar string or supplies the sole
 argument to a supported Console wrapper. See the
 [wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-two-returned-appends-p0082).
-A complete `text += joined();` statement releases a proven returned join
-after appending it. The destination owns the newly concatenated string.
-See the [returned join rule](../development/string-ownership.md#complete-appends-with-proven-returned-joins-p0069).
+A complete `text += deeper();` statement can release a factory's original
+join from up to three proven returned appends. The append reads the current
+destination after the factory call and releases the operand after installing
+the concatenation. See the
+[append statement rule](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
 A direct scalar initializer such as `string snapshot = (text += joined());`
 also releases a proven returned join. The snapshot owns a copy of the new
 destination value. See the [initializer rule](../development/string-ownership.md#append-initializers-with-proven-returned-joins-p0070).

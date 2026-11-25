@@ -1179,8 +1179,9 @@ operand. The append then reads the current destination, installs the new
 concatenation, and releases the operand. If an argument replaces `text`, the
 new concatenation begins with that replacement.
 
-The rule applies to complete statements in ordinary and module-entry code. See the
-[P0079 pass record](../../tasks/passes/P0079-append-nested-returned-joins.md).
+The rule applies to complete statements in ordinary and module-entry code. P0089
+extends the limit to [three returned appends](#complete-append-statements-with-three-returned-appends-p0089).
+See the [P0079 pass record](../../tasks/passes/P0079-append-nested-returned-joins.md).
 
 ## Append initializers with two returned appends (P0080)
 
@@ -1318,3 +1319,18 @@ Four returned appends, conditional arguments, and forwarding wrappers follow
 ordinary emission. An append expression passed to a wrapper still accepts
 factory operands with up to two proven returned appends. See the
 [P0088 pass record](../../tasks/passes/P0088-wrap-three-returned-appends.md).
+
+## Complete append statements with three returned appends (P0089)
+
+In a complete `text += deeper();` statement, a direct factory operand can
+qualify under the [three-append proof](#scalar-initializers-that-adopt-three-returned-appends-p0084)
+when `text` is an owned mutable scalar string identifier. The caller evaluates
+the factory and its arguments once, then appends its original final join to
+the current value of `text`. If an argument replaces `text`, the concatenation
+starts with the replacement. The caller releases the original join after
+installing the concatenation in `text`.
+
+Borrowed operands, conditional operands, and calls beyond three returned
+appends use ordinary emission. Append expressions used in initializers, output,
+wrapper calls, and returns use the two-append proof. See the
+[P0089 pass record](../../tasks/passes/P0089-append-three-returned-appends.md).

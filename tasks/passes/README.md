@@ -90,8 +90,9 @@
 | [P0086](P0086-discard-three-returned-appends.md) | 2026-11-24 | Release the final join from three proven returned appends after a standalone call | `Pass-ID: P0086` |
 | [P0087](P0087-print-three-returned-appends.md) | 2026-11-25 | Release the final join from three proven returned appends after direct Console output | `Pass-ID: P0087` |
 | [P0088](P0088-wrap-three-returned-appends.md) | 2026-11-25 | Release the final join from three proven returned appends after a Console wrapper returns | `Pass-ID: P0088` |
+| [P0089](P0089-append-three-returned-appends.md) | 2026-11-25 | Release the final join from three proven returned appends after a complete append statement | `Pass-ID: P0089` |
 
-**Verify P0088 publication and native CI, then measure retention in a complete append statement whose factory operand returns three appends.**
+**Verify P0089 publication and native CI, then measure retention in a scalar initializer whose append operand returns three appends.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

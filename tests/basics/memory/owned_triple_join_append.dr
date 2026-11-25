@@ -1,0 +1,45 @@
+// Expected: A+third-outer-inner-B
+// Expected: newnewouter-inner-B
+// Expected: 1
+// Expected: newnewouter-inner-Bnewnewouter-inner-B
+
+func string owned() {
+    string result = "B";
+    return result;
+}
+
+func string joined() {
+    string inner = "inner-";
+    return (inner += owned());
+}
+
+func string nested() {
+    string outer = "outer-";
+    return (outer += joined());
+}
+
+func string extended(string source, int effect) {
+    string third = source;
+    return (third += nested());
+}
+
+func string borrowed(string source) { return source; }
+
+func void exercise() {
+    for (int i = 0; i < 10000; i++) {
+        string text = "A+";
+        text += extended("third-", 0);
+        if (i == 9999) Console.WriteLine(text);
+    }
+
+    string changed = "old";
+    int count = 0;
+    if (true) changed += extended((changed = "new"), count++);
+    Console.WriteLine(changed);
+    Console.WriteLine(count);
+
+    changed += borrowed(changed);
+    Console.WriteLine(changed);
+}
+
+exercise();

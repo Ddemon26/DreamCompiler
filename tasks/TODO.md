@@ -821,10 +821,16 @@ four eight-call probes made 56 releases with zero live final joins, compared
 with 48 releases and eight live joins at the parent. See
 [P0088](passes/P0088-wrap-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0088 publication and native CI. Then measure
-retention in a complete `text += deeper();` statement with three proven returned
-appends. Check release of the original operand and destination replacement during
-operand evaluation.
+P0089 releases the original third join after a complete `text += deeper();`
+statement installs the concatenation. The checked ordinary and module-entry
+calls verify the destination replacement, once-only argument evaluation, and
+borrowed self-append. Eight appends per mode leave zero final joins live, down
+from eight at the parent. See [P0089](passes/P0089-append-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0089 publication and native CI. Then measure
+retention in `string snapshot = (text += deeper());` with three proven returned
+appends. Check operand release and independent destination and snapshot storage
+when operand evaluation replaces the destination.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

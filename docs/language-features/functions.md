@@ -322,10 +322,10 @@ The factory may return up to three proven appends. The factory arguments
 evaluate once. See the
 [Console wrapper rule](../development/string-ownership.md#console-wrappers-for-three-returned-appends-p0088).
 
-A complete `text += nested();` statement appends the final result of up to
-two proven returned appends to an owned scalar string, then releases the
+A complete `text += deeper();` statement appends the final result of up to
+three proven returned appends to an owned scalar string, then releases the
 operand. The factory and its arguments run before the append reads `text`.
-See the [append statement rule](../development/string-ownership.md#complete-append-statements-with-two-returned-appends-p0079).
+See the [append statement rule](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
 
 In `string snapshot = (text += nested());`, the append also releases the
 final result of up to two proven returned appends. The snapshot receives its
