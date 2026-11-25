@@ -265,7 +265,7 @@ string conditionalExtended = true ? extended() : "literal";`, modules)
 				"conditional=dream_string_copy((1?" + prefix + `nested():"literal"));`,
 				"(char*)" + prefix + "extended();dr_release(target);target=__dream_owned_0;",
 				"dr_release((void*)" + prefix + "extended());",
-				"dr_console_writeln(" + prefix + "extended());",
+				ownedArgumentBlock(prefix+"extended()", "dr_console_writeln", "dreamOwnedArgument0"),
 				"conditionalExtended=dream_string_copy((1?" + prefix + `extended():"literal"));`,
 			} {
 				if !strings.Contains(c, want) {

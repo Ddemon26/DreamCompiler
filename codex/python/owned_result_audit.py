@@ -38,6 +38,8 @@ P0082 releases the final allocation from two returned appends in an append passe
 P0083 releases the final allocation from two returned appends in a directly returned append.
 P0084 adopts the final allocation from three returned appends in a direct scalar initializer.
 P0085 adopts the final allocation from three returned appends in a complete scalar assignment.
+P0086 releases the final allocation from three returned appends after a standalone call.
+P0087 releases the final allocation from three returned appends after either direct Console writer.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -64,6 +66,34 @@ def argument_release(consumer, leading_args="", call="@entry@owned()"):
 ARGUMENT_RELEASE = argument_release("@entry@view")
 APPEND_RELEASE = argument_release("__dream_string_append", "&text,")
 CASES = [
+    *[
+        {
+            "name": f"triple_join_console_{writer.lower()}",
+            "releases": 56, "live": 0,
+            "source": COMMON + '''
+func string joined() {
+    string text = "inner-";
+    return (text += owned());
+}
+func string nested() {
+    string text = "outer-";
+    return (text += joined());
+}
+func string extended() {
+    string text = "third-";
+    return (text += nested());
+}
+for (int i = 0; i < 8; i++) Console.@writer@(extended());
+'''.replace("@writer@", writer),
+            "output": ("third-outer-inner-owned" + separator) * 8,
+            "c": ["return__dream_string_append_owned(&text,@entry@nested());",
+                  argument_release(runtime, call="@entry@extended()")],
+        }
+        for writer, runtime, separator in (
+            ("Write", "dr_console_write", ""),
+            ("WriteLine", "dr_console_writeln", "\n"),
+        )
+    ],
     {
         "name": "triple_join_discard",
         "releases": 56, "live": 0,

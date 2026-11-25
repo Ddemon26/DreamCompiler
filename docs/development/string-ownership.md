@@ -1150,7 +1150,8 @@ join, and the caller releases it immediately after the writer returns.
 
 This rule covers ordinary and imported factories. Appends have their own
 [Console rule](#console-output-of-appends-with-two-returned-appends-p0081).
-Factories beyond the two-append proof follow ordinary emission. See the
+P0087 extends direct output to the
+[three-append proof](#direct-console-output-of-three-returned-appends-p0087). See the
 [P0077 pass record](../../tasks/passes/P0077-print-nested-returned-joins.md).
 
 ## Console wrappers for two returned appends (P0078)
@@ -1259,8 +1260,7 @@ at reference count one. Imported functions use the same proof on their lowered
 definitions. The call and each argument evaluate once.
 
 Calls beyond three returned appends and conditional initializers keep their
-copies. Standalone calls and Console output use a proof bounded at two returned
-appends. See the
+copies. See the
 [P0084 pass record](../../tasks/passes/P0084-adopt-three-returned-appends.md).
 
 ## Complete assignments that adopt three returned appends (P0085)
@@ -1289,3 +1289,15 @@ Calls in loop headers, conditional expressions and nested arguments still
 follow ordinary expression emission. Standalone calls with four returned
 appends also follow ordinary emission. See the
 [P0086 pass record](../../tasks/passes/P0086-discard-three-returned-appends.md).
+
+## Direct Console output of three returned appends (P0087)
+
+In `Console.Write(deeper(count++));` and `Console.WriteLine(deeper(count++));`,
+the complete statement uses the [three-append factory proof](#scalar-initializers-that-adopt-three-returned-appends-p0084)
+on the resolved ordinary or imported factory. The call and its arguments
+evaluate once. The writer reads the original final join while it is live,
+and the caller releases that pointer immediately after the writer returns.
+
+Four returned appends and compound operands use ordinary emission. Console
+wrappers and appended factory operands still use the two-append limit. See the
+[P0087 pass record](../../tasks/passes/P0087-print-three-returned-appends.md).

@@ -1,5 +1,36 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 25, 2026 UTC
+
+**Pass:** P0087 - release the final join from three returned appends after direct Console output
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0086 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0086 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45477398152).
+- `zig build test` discovered **192** entries. **174 passed**, **18 skipped**,
+  with zero failures or errors (52.48s). Report
+  `test_results_20261124_190441_windows.json` verifies exact Console fixture
+  output and the same entry statuses and skip reasons as P0086.
+- Focused argument, initializer and discard Go checks passed (11.941s,
+  `-count=1`). The checked harness ran each writer 10,000 times per mode
+  and verified original-pointer identity, release after the writer, once-only
+  argument evaluation, and an empty registry after each paired call.
+- The Windows Go quick protocol passed all **43** groups (140.193s Go suite
+  time, `-count=1`).
+- All **84** allocation audit probes passed (101.143s). Eight calls per writer
+  per mode made 56 releases and left zero final joins live, down from eight
+  live on P0086. The other 80 measurements matched P0086.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Native Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.042s).
+
+See the [P0087 record](passes/P0087-print-three-returned-appends.md) for scope and limits.
+
+---
+
+## Historical P0086 checkpoint
+
 **Date:** November 24, 2026 UTC
 
 **Pass:** P0086 - discard the final join from three returned appends

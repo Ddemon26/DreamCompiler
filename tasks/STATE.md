@@ -1,24 +1,24 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0086 - discard the final join from three returned appends**.
-- Record: [P0086](passes/P0086-discard-three-returned-appends.md).
-- Parent/fetched approved remote: `df949be00f946d46f6369d741a1e832111f2c64c` (P0085).
-- Resolve this pass commit by its exact `Pass-ID: P0086` trailer.
+- Current pass: **P0087 - release the final join from three returned appends after direct Console output**.
+- Record: [P0087](passes/P0087-print-three-returned-appends.md).
+- Parent/fetched approved remote: `428fe702006a8e90f9e7d6c2afe0d9a009728650` (P0086).
+- Resolve this pass commit by its exact `Pass-ID: P0087` trailer.
 - Delivery requires push and matching `git ls-remote`.
 
-P0085 CI passed on Windows and Ubuntu. P0086 releases the original final join
-after a standalone call to a factory with three proven returned appends. The
-checked ordinary and imported calls evaluate the argument once and release
-the original final pointer before returning to the probe.
+P0086 CI passed on Windows and Ubuntu. P0087 releases the original final join
+from three proven returned appends after a complete `Console.Write` or
+`Console.WriteLine` statement. The checked ordinary and imported calls evaluate
+the argument once, and each writer reads the original pointer before release.
 See [measured tests](MostRecentTestResults.md) and the
-[P0085 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45411129575).
+[P0086 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45477398152).
 Eighteen unannotated Dream entries remain skipped.
 
 Next invocation:
 
-1. Verify P0086 publication and both exact-commit CI jobs. Repair any failed baseline.
-2. Measure retention when complete `Console.Write` and `Console.WriteLine`
-   statements print a factory result from three proven returned appends.
-   Check that both writers read the original pointer before any release.
+1. Verify P0087 publication and both exact-commit CI jobs. Repair any failed baseline.
+2. Measure retention when a complete call to a proven Console wrapper receives
+   the result from three returned appends. Check that the original pointer stays
+   live through the wrapper and is released after it returns.
 3. General expression and argument ownership, async, and exception unwinding remain open.

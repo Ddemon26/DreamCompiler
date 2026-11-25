@@ -309,10 +309,10 @@ returns when up to three returned appends meet the factory proof.
 The call evaluates its arguments once. See the
 [discard rule](../development/string-ownership.md#standalone-calls-that-discard-three-returned-appends-p0086).
 
-Complete `Console.Write(nested());` and `Console.WriteLine(nested());`
-statements release the original final join after printing when up to two
+Complete `Console.Write(deeper());` and `Console.WriteLine(deeper());`
+statements release the original final join after printing when up to three
 returned appends meet the factory proof. See the
-[Console output rule](../development/string-ownership.md#direct-console-output-of-two-returned-appends-p0077).
+[Console output rule](../development/string-ownership.md#direct-console-output-of-three-returned-appends-p0087).
 
 In a complete `show(getText());` statement, the caller passes the original
 result and releases it after `show` returns if `show` is a synchronous void

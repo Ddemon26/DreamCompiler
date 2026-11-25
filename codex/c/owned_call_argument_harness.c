@@ -7,6 +7,9 @@ static size_t copies, joins, releases, writes, lines;
 static int checking_identity, observed;
 static size_t expected_joins;
 static char *original, *intermediate;
+static const char *const join_text[] = {
+    "startowned", "outer-startowned", "third-outer-startowned",
+};
 
 static char *checked_copy(const char *source) {
     char *ptr = dream_string_copy(source);
@@ -23,14 +26,17 @@ static char *checked_copy(const char *source) {
 static char *checked_concat(const char *left, const char *right) {
     char *ptr = dream_concat(left, right);
     if (expected_joins) {
-        assert(ptr && !original && !observed);
+        size_t index = joins % expected_joins;
+        assert(ptr && !intermediate && !observed);
         assert(dr_head && (void *)(dr_head + 1) == ptr && dr_head->refcount == 1);
-        if (expected_joins == 2 && joins % 2 == 0) {
-            assert(!intermediate && strcmp(ptr, "startowned") == 0);
-            intermediate = ptr;
+        assert(strcmp(ptr, join_text[index]) == 0);
+        if (index == 0) {
+            assert(!original);
         } else {
-            original = ptr;
+            assert(original && right == original);
+            intermediate = original;
         }
+        original = ptr;
         joins++;
     }
     return ptr;
@@ -39,9 +45,8 @@ static char *checked_concat(const char *left, const char *right) {
 static void observe_original(const char *ptr) {
     assert(ptr == original && !intermediate && !observed);
     assert(dr_head && !dr_head->next && dr_head->refcount == 1);
-    const char *expected = "owned";
-    if (expected_joins == 1) expected = "startowned";
-    if (expected_joins == 2) expected = "outer-startowned";
+    assert(!expected_joins || joins % expected_joins == 0);
+    const char *expected = expected_joins ? join_text[expected_joins - 1] : "owned";
     assert(strcmp(ptr, expected) == 0);
     observed = 1;
 }
@@ -128,9 +133,17 @@ int main(void) {
         assert(copies == 12 * i && joins == 8 * i && releases == 20 * i);
         assert(writes == 2 * i && lines == 2 * i);
     }
+    expected_joins = 3;
+    copies = joins = releases = writes = lines = 0;
+    for (size_t i = 1; i <= 10000; i++) {
+        assert(DREAM_TRIPLE_OUTPUT_PROBE() == 2);
+        assert(!original && !intermediate && !observed && !dr_head);
+        assert(copies == 8 * i && joins == 6 * i && releases == 14 * i);
+        assert(writes == i && lines == i);
+    }
     expected_joins = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 27 && releases == 39 && !dr_head);
+    assert(copies == 35 && releases == 53 && !dr_head);
     return 0;
 }
