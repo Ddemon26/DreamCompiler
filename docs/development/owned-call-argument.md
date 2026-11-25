@@ -106,6 +106,6 @@ exception and async unwinding, and alias/container ownership remain separate wor
    survivor. See the [pass record](../../tasks/passes/P0056-owned-call-argument.md)
    for regression and platform results.
 
-P0078 allows a proven factory with up to two returned appends as the complete
-argument to this wrapper shape. See
-[Console wrappers for two returned appends](string-ownership.md#console-wrappers-for-two-returned-appends-p0078).
+P0078 qualified factories with up to two returned appends as the complete
+argument to this wrapper shape. P0088 raises that limit to three. See
+[Console wrappers for three returned appends](string-ownership.md#console-wrappers-for-three-returned-appends-p0088).

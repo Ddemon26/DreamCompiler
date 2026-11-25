@@ -2,6 +2,38 @@
 
 **Date:** November 25, 2026 UTC
 
+**Pass:** P0088 - release the final join from three returned appends after Console wrapper calls
+
+**Platform/toolchain:** Windows with Zig 0.17.1.
+
+- P0087 CI passed on Windows and Ubuntu at the verified parent SHA.
+  See the [P0087 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45530946894).
+- `zig build test` discovered **192** entries. **174 passed**, **18 skipped**,
+  with zero failures or errors (69.33s). Report
+  `test_results_20261125_010137_windows.json` verifies exact fixture output
+  and the same entry statuses and skip reasons as P0087.
+- Focused Go argument, initializer and discard regressions passed (14.213s,
+  `-count=1`). Checked ordinary and imported paths ran each wrapper 10,000
+  times. Each Console writer read the original final join at reference count
+  one. The caller released that pointer after the wrapper returned, and the
+  factory argument ran once.
+- The Windows Go quick protocol passed all **43** groups (164.130s Go suite
+  time, `-count=1`).
+- All **88** allocation audit probes passed (105.656s). Eight calls per
+  wrapper per mode made 56 releases and left zero live final joins, down
+  from eight live joins on P0087. All 84 prior measurements matched P0087.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Native Linux execution is tracked in CI.
+- Python runner unit tests passed **5/5** (0.033s).
+
+See the [P0088 record](passes/P0088-wrap-three-returned-appends.md) for scope and limits.
+
+---
+
+## Historical P0087 checkpoint
+
+**Date:** November 25, 2026 UTC
+
 **Pass:** P0087 - release the final join from three returned appends after direct Console output
 
 **Platform/toolchain:** Windows with Zig 0.17.1.

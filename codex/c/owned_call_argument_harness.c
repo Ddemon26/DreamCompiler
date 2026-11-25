@@ -136,14 +136,14 @@ int main(void) {
     expected_joins = 3;
     copies = joins = releases = writes = lines = 0;
     for (size_t i = 1; i <= 10000; i++) {
-        assert(DREAM_TRIPLE_OUTPUT_PROBE() == 2);
+        assert(DREAM_TRIPLE_OUTPUT_PROBE() == 4);
         assert(!original && !intermediate && !observed && !dr_head);
-        assert(copies == 8 * i && joins == 6 * i && releases == 14 * i);
-        assert(writes == i && lines == i);
+        assert(copies == 16 * i && joins == 12 * i && releases == 28 * i);
+        assert(writes == 2 * i && lines == 2 * i);
     }
     expected_joins = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 35 && releases == 53 && !dr_head);
+    assert(copies == 43 && releases == 67 && !dr_head);
     return 0;
 }

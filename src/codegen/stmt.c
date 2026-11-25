@@ -1316,7 +1316,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         c_out_newline(b);
         break;
       }
-      if (adopts_string_call_result(ctx, arg, 2))
+      if (adopts_string_call_result(ctx, arg, 3))
         owned_arg = arg;
     }
     if (owned_arg) {

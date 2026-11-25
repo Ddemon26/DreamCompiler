@@ -814,10 +814,17 @@ ordinary and imported calls verify that each writer reads the original pointer
 while it is live and that the arguments evaluate once. See
 [P0087](passes/P0087-print-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0087 publication and native CI. Then measure
-retention in complete calls passing the result from three returned appends to
-proven Console wrappers. Check that the original pointer stays live through
-the wrapper and is released after it returns.
+P0088 releases the original third join after a complete call to either proven
+Console wrapper. Checked ordinary and imported calls verify once-only argument
+evaluation and the original pointer at reference count one during output. All
+four eight-call probes made 56 releases with zero live final joins, compared
+with 48 releases and eight live joins at the parent. See
+[P0088](passes/P0088-wrap-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0088 publication and native CI. Then measure
+retention in a complete `text += deeper();` statement with three proven returned
+appends. Check release of the original operand and destination replacement during
+operand evaluation.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

@@ -12,7 +12,8 @@
 // Expected: outer-startownedouter-startowned
 // Expected: 4
 // Expected: third-outer-startownedthird-outer-startowned
-// Expected: 2
+// Expected: third-outer-startownedthird-outer-startowned
+// Expected: 4
 func string factory() { string result = "owned"; return result; }
 func string joined(int value) { string result = "start"; return (result += factory()); }
 func string nested(int value) { string result = "outer-"; return (result += joined(value)); }
@@ -48,6 +49,8 @@ func int tripleOutputProbe() {
     int count = 0;
     if (true) Console.Write(deeper(count++));
     Console.WriteLine(deeper(count++));
+    if (true) view(deeper(count++));
+    line(deeper(count++));
     return count;
 }
 func void exercise() {

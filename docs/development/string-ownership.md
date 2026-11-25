@@ -1163,10 +1163,11 @@ with `Console.Write` or `Console.WriteLine`. The factory and its arguments
 evaluate once. The wrapper receives the original final join, and the caller
 releases it after the wrapper returns. The rule also covers imported definitions.
 
-A deeper factory chain, a compound argument, or a consumer that fails the
-[wrapper proof](owned-call-argument.md#p0056-implementation-boundary) follows
-ordinary emission. See the
-[P0078 pass record](../../tasks/passes/P0078-wrap-nested-returned-joins.md).
+Compound arguments and consumers that fail the
+[wrapper proof](owned-call-argument.md#p0056-implementation-boundary) follow
+ordinary emission. P0088 extends the factory limit to
+[three returned appends](#console-wrappers-for-three-returned-appends-p0088).
+See the [P0078 pass record](../../tasks/passes/P0078-wrap-nested-returned-joins.md).
 
 ## Complete append statements with two returned appends (P0079)
 
@@ -1298,6 +1299,22 @@ on the resolved ordinary or imported factory. The call and its arguments
 evaluate once. The writer reads the original final join while it is live,
 and the caller releases that pointer immediately after the writer returns.
 
-Four returned appends and compound operands use ordinary emission. Console
-wrappers and appended factory operands still use the two-append limit. See the
+Four returned appends and compound operands use ordinary emission. Appended
+factory operands still use the two-append limit. See the
 [P0087 pass record](../../tasks/passes/P0087-print-three-returned-appends.md).
+
+## Console wrappers for three returned appends (P0088)
+
+A complete statement such as `view(deeper(count++));` applies the
+[three-append factory proof](#scalar-initializers-that-adopt-three-returned-appends-p0084)
+to its sole argument when the resolved wrapper passes the
+[Console wrapper proof](owned-call-argument.md#p0056-implementation-boundary).
+The caller evaluates the factory and its arguments once. The wrapper passes
+the original final join to `Console.Write` or `Console.WriteLine` while it is
+live, and the caller releases the pointer immediately after the wrapper returns.
+The rule covers ordinary and imported definitions.
+
+Four returned appends, conditional arguments, and forwarding wrappers follow
+ordinary emission. An append expression passed to a wrapper still accepts
+factory operands with up to two proven returned appends. See the
+[P0088 pass record](../../tasks/passes/P0088-wrap-three-returned-appends.md).

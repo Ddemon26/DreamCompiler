@@ -318,6 +318,9 @@ In a complete `show(getText());` statement, the caller passes the original
 result and releases it after `show` returns if `show` is a synchronous void
 free function with one scalar string parameter and its entire body is one
 `Console.Write` or `Console.WriteLine` statement using that parameter.
+The factory may return up to three proven appends. The factory arguments
+evaluate once. See the
+[Console wrapper rule](../development/string-ownership.md#console-wrappers-for-three-returned-appends-p0088).
 
 A complete `text += nested();` statement appends the final result of up to
 two proven returned appends to an owned scalar string, then releases the
