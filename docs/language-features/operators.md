@@ -203,9 +203,9 @@ operand. It evaluates the operand once, concatenates before releasing the old
 storage, and yields the new string. Null contributes empty text; a declaration
 initialized by the result receives an independent copy. Const updates and numeric,
 bool or char operands are rejected. Numeric `+=` keeps its existing behavior.
-An append also releases a proven factory operand with up to two returned
-appends when it supplies the sole argument to a supported Console wrapper. See the
-[wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-two-returned-appends-p0082).
+In `view(text += deeper());`, the append releases the eligible final join from
+up to three returned appends before the proven Console wrapper runs. See the
+[wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-three-returned-appends-p0093).
 A complete `text += deeper();` statement can release a factory's original
 join from up to three proven returned appends. The append reads the current
 destination after the factory call and releases the operand after installing

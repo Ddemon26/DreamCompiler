@@ -842,10 +842,16 @@ prints `text += deeper()`. Both ordinary and module-entry tests verify exact
 output, destination replacement, once-only argument evaluation, and borrowed
 self-append. See [P0092](passes/P0092-print-appends-with-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0092 publication and native CI. Then measure
-retention in `view(text += deeper());` for proven wrappers for each writer.
-Check release before the wrapper call, once-only argument evaluation, and
-output from the updated destination when an argument replaces it.
+P0093 releases the original third join before `view(text += deeper());`
+calls a proven wrapper for either Console writer. Both compilation modes
+verify once-only argument evaluation, destination replacement, and exact
+output. Eight calls per writer and mode leave zero operand joins live, down
+from eight at P0092. See [P0093](passes/P0093-wrap-appends-with-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0093 publication and native CI. Then measure
+retention in `return (text += deeper());` for an owned scalar local in a
+synchronous string function. Verify release of the third operand join and
+the lifetime of the returned fourth join.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

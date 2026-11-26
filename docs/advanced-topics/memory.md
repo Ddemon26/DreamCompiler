@@ -34,6 +34,9 @@ operand with [up to three returned appends](../development/string-ownership.md#a
 An append printed directly by either Console writer releases an eligible final
 join from [up to three returned appends](../development/string-ownership.md#console-output-of-appends-with-three-returned-appends-p0092)
 before the writer reads the new value.
+An append that supplies the argument to a proven Console wrapper can release
+the [same eligible join](../development/string-ownership.md#console-wrapper-append-arguments-with-three-returned-appends-p0093)
+before the wrapper runs. The destination keeps the concatenation.
 Other fresh managed operands can remain until shutdown. Const updates and
 non-string operands are rejected. See the checkpoint for remaining destination,
 expression and allocation limits.

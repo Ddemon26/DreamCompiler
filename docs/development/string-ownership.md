@@ -1235,6 +1235,7 @@ exercises both writers, replacement of the destination during argument
 evaluation, borrowed self-append, and the extra-statement wrapper in ordinary
 and module-entry modes. See the
 [P0082 pass record](../../tasks/passes/P0082-wrap-appends-with-nested-joins.md).
+P0093 extends the operand proof to [three returned appends](#console-wrapper-append-arguments-with-three-returned-appends-p0093).
 
 ## Direct append returns with two returned appends (P0083)
 
@@ -1371,3 +1372,20 @@ The ordinary and module-entry regressions cover both writers, destination
 replacement during argument evaluation, and borrowed self-append. Borrowed
 operands and calls beyond the three-append proof use ordinary append emission.
 See the [P0092 pass record](../../tasks/passes/P0092-print-appends-with-three-returned-appends.md).
+
+## Console wrapper append arguments with three returned appends (P0093)
+
+A complete `view(text += deeper());` statement can consume an operand that
+meets the [three-append factory proof](#scalar-initializers-that-adopt-three-returned-appends-p0084)
+when `text` is an owned mutable scalar string and `view` meets the
+[Console wrapper proof](owned-call-argument.md#p0056-implementation-boundary)
+for either writer. The factory and its arguments evaluate once. The append
+reads the current destination, installs the concatenation, and releases the
+original final join before invoking the wrapper. The destination owns the
+concatenation after the wrapper returns.
+
+Borrowed operands, fourth joins, and wrappers outside the proof use ordinary
+append emission. The [checked fixture](../../tests/basics/memory/owned_triple_join_append_wrapper.dr)
+verifies both writers, replacement of the destination during argument evaluation,
+and borrowed self-append in ordinary and module-entry modes. See the
+[P0093 pass record](../../tasks/passes/P0093-wrap-appends-with-three-returned-appends.md).

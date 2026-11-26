@@ -1306,7 +1306,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         owned_arg = expr->as.console.arg;
     } else if (!append_slot) {
       Node *arg = console_wrapper_argument(ctx, expr);
-      Node *wrapped_append_slot = owned_factory_append_slot(ctx, arg, 2);
+      Node *wrapped_append_slot = owned_factory_append_slot(ctx, arg, 3);
       if (wrapped_append_slot) {
         // Pass the destination-owned join after consuming the factory operand.
         cg_emit_expr(ctx, b, expr->as.call.callee);

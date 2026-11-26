@@ -338,11 +338,11 @@ before printing. Each writer reads the concatenation in the updated `text`,
 which remains readable after the writer returns. See the
 [Console append rule](../development/string-ownership.md#console-output-of-appends-with-three-returned-appends-p0092).
 
-In a complete `view(text += nested());` statement to a proven Console
-wrapper, the append releases the factory's final join from up to two returned
-appends before the wrapper receives the new value. The updated destination
-remains readable after the wrapper returns. See the
-[wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-two-returned-appends-p0082).
+In a complete `view(text += deeper());` statement to a proven Console
+wrapper, the append releases the factory's final join from up to three proven
+returned appends before the wrapper receives the new value. The destination
+keeps the concatenation after the wrapper returns. See the
+[wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-three-returned-appends-p0093).
 
 Scalar string declarations initialized by other calls copy the readable result into
 independent managed storage. Borrowed calls and results used in contexts such as

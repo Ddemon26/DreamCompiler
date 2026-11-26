@@ -547,6 +547,17 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "newnewinner-B\nnewnewinner-B\nA+outer-inner-BA+outer-inner-B\n2\nA+outer-inner-BA+outer-inner-B\nA+outer-inner-BA+outer-inner-B\nstill-outer-inner-B\nextra\nstill-outer-inner-B\n", 1)
 	})
 
+	t.Run("triple_join_wrapper_append", func(t *testing.T) {
+		// Each owned append accounts for nine releases. The replacement,
+		// literal append, and borrowed alias account for four more.
+		checkStorageOwnership(t, "owned_triple_join_append_wrapper.dr", 22, []string{
+			`return__dream_string_append_owned(&third,@entry@nested());`,
+			`@entry@view(__dream_string_append_owned(&changed,@entry@extended(__dream_string_assign(&changed,"new"),(count++))));`,
+			`@entry@showText(__dream_string_append_owned(&text,@entry@extended("third-",(count++))));`,
+			`@entry@view(__dream_string_append(&alias,@entry@borrowed(alias)));`,
+		}, "newnewouter-inner-B\nnewnewouter-inner-B!\nA+third-outer-inner-BA+third-outer-inner-B\n2\nsamesame\nsamesame\n", true)
+	})
+
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
 	for _, modules := range []bool{false, true} {

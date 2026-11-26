@@ -218,6 +218,8 @@ func void probe(string* values) {
     forward(deeper());
     line(true ? deeper() : "other");
     line(text += deeper());
+    line(text += fourth());
+    forward(text += deeper());
     forward(nested());
     line(true ? nested() : "other");
     forward(joined());
@@ -257,7 +259,9 @@ func void probe(string* values) {
 				wrapper + "(" + entry + "fourth());",
 				entry + "forward(" + entry + "deeper());",
 				wrapper + "((1?" + entry + "deeper():\"other\"));",
-				wrapper + "(__dream_string_append(&text," + entry + "deeper()));",
+				wrapper + "(__dream_string_append_owned(&text," + entry + "deeper()));",
+				wrapper + "(__dream_string_append(&text," + entry + "fourth()));",
+				entry + "forward(__dream_string_append(&text," + entry + "deeper()));",
 				entry + "forward(" + entry + "nested());",
 				wrapper + "((1?" + entry + "nested():\"other\"));",
 				entry + "forward(" + entry + "joined());",
