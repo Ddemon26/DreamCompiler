@@ -292,10 +292,11 @@ See the [declaration](../development/string-ownership.md#scalar-initializers-tha
 and [assignment rules](../development/string-ownership.md#complete-assignments-that-adopt-returned-joins-p0065).
 
 A synchronous string function can also consume a proven factory operand in
-`return (local += nested());` when `local` is an owned scalar string and the
-operand returns up to two proven appends. The caller receives the concatenation
-after the intermediate join is released. See the
-[direct append return rule](../development/string-ownership.md#direct-append-returns-with-two-returned-appends-p0083).
+`return (local += deeper());` when `local` is an owned scalar string and the
+operand returns up to three proven appends. The operand and its arguments
+evaluate once. The caller receives the concatenation after the factory's
+original join is released. See the
+[direct append return rule](../development/string-ownership.md#direct-append-returns-with-three-returned-appends-p0094).
 
 A direct scalar initializer takes ownership of a factory's final join when the
 factory meets the proof with up to three returned appends. A complete assignment

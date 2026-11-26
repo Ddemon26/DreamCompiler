@@ -2,6 +2,36 @@
 
 **Date:** November 26, 2026 UTC
 
+**Pass:** P0094 - release three-append factory operands in direct append returns
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0093 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/45835953349)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **197** entries. **179 passed**, **18 skipped**,
+  and zero failed or errored (66.85s). Report `test_results_20261126_130004_windows.json`.
+  All 196 prior statuses, outputs, and skip reasons matched P0093.
+- The focused Go regressions passed in ordinary and module-entry modes
+  (5.864s, `-count=1`). The new fixture counted 32 releases and verified
+  six expected live results before shutdown. Both modes exercised
+  destination replacement, once-only argument evaluation, and caller use.
+- The Windows Go quick protocol passed all **43** groups (210.808s Go suite
+  time, `-count=1`).
+- All **102** allocation probes passed (150.499s). Eight direct append returns
+  per mode left eight live results, down from 16 live joins at P0093. All 100
+  prior measurements matched P0093.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Python runner unit tests passed **5/5** (0.051s).
+
+See the [P0094 record](passes/P0094-return-appends-with-three-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0093 checkpoint
+
+**Date:** November 26, 2026 UTC
+
 **Pass:** P0093 - release three-append factory operands before Console wrapper calls
 
 **Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.

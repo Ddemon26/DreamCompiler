@@ -848,10 +848,16 @@ verify once-only argument evaluation, destination replacement, and exact
 output. Eight calls per writer and mode leave zero operand joins live, down
 from eight at P0092. See [P0093](passes/P0093-wrap-appends-with-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0093 publication and native CI. Then measure
-retention in `return (text += deeper());` for an owned scalar local in a
-synchronous string function. Verify release of the third operand join and
-the lifetime of the returned fourth join.
+P0094 releases the original third join in `return (text += deeper());` from
+a synchronous string function with an owned scalar local. Both modes check
+once-only argument evaluation, destination replacement, and caller use of the
+fourth join. Eight calls per mode leave eight returned joins live, down from
+sixteen total joins at P0093. See [P0094](passes/P0094-return-appends-with-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0094 publication and native CI, then measure
+retention in `string snapshot = fourth();`. Check whether a complete scalar
+initializer can adopt the original fourth join with once-only arguments and
+release it at scope exit.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

@@ -95,8 +95,9 @@
 | [P0091](P0091-windows-ci-re2c.md) | 2026-11-26 | Provision verified re2c in a required Windows CI step | `Pass-ID: P0091` |
 | [P0092](P0092-print-appends-with-three-returned-appends.md) | 2026-11-26 | Release three-append factory operands before Console prints an append | `Pass-ID: P0092` |
 | [P0093](P0093-wrap-appends-with-three-returned-appends.md) | 2026-11-26 | Release three-append factory operands before proven Console wrapper calls | `Pass-ID: P0093` |
+| [P0094](P0094-return-appends-with-three-returned-appends.md) | 2026-11-26 | Release three-append factory operands in direct append returns | `Pass-ID: P0094` |
 
-**Verify P0093 publication and native CI, then measure retention in a direct append return with a three-append factory operand.**
+**Verify P0094 publication and native CI, then measure retention in a scalar initializer that receives a fourth returned join.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

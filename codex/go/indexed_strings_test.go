@@ -373,9 +373,9 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 
 	t.Run("nested_join_return", func(t *testing.T) {
 		// The direct initializer releases extended's original join. The copied
-		// updated result, the join with a borrowed operand, and both joins
-		// beyond the return proof's depth remain live before shutdown.
-		checkStorageOwnershipWithLiveCount(t, "owned_nested_join_append_return.dr", 25, []string{
+		// updated result, the join with a borrowed operand, and beyond's result
+		// remain live before shutdown.
+		checkStorageOwnershipWithLiveCount(t, "owned_nested_join_append_return.dr", 26, []string{
 			`return__dream_string_append_owned(&inner,@entry@owned());`,
 			`return__dream_string_append_owned(&outer,@entry@joined());`,
 			`return__dream_string_append_owned(&text,@entry@nested("outer-",0));`,
@@ -383,8 +383,21 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 			`snapshot=@entry@extended();`,
 			`changed=dream_string_copy(@entry@updated(1));`,
 			`return__dream_string_append(&text,@entry@borrowed(source));`,
-			`return__dream_string_append(&text,@entry@extended());`,
-		}, "start-outer-inner-B\nonce\nnewnewinner-B!\nleftright\nright\nlimit-start-outer-inner-B\n", 4)
+			`return__dream_string_append_owned(&text,@entry@extended());`,
+		}, "start-outer-inner-B\nonce\nnewnewinner-B!\nleftright\nright\nlimit-start-outer-inner-B\n", 3)
+	})
+
+	t.Run("triple_join_return", func(t *testing.T) {
+		// Six originals survive: fourth's result, both updated results,
+		// borrowedJoin's result, and the two joins across the depth limit.
+		checkStorageOwnershipWithLiveCount(t, "owned_triple_join_append_return.dr", 32, []string{
+			`return__dream_string_append_owned(&third,@entry@nested());`,
+			`return__dream_string_append_owned(&text,@entry@extended("third-",0));`,
+			`return__dream_string_append_owned(&text,@entry@extended(__dream_string_assign(&text,"new"),@entry@announce((count++))));`,
+			`snapshot=dream_string_copy(@entry@fourth());`,
+			`return__dream_string_append(&text,@entry@borrowed(source));`,
+			`return__dream_string_append(&text,@entry@fourth());`,
+		}, "start-third-outer-inner-B!\n7\nnewnewouter-inner-B\nold\nleftright\nright\nlimit-start-third-outer-inner-B\n", 6)
 	})
 
 	t.Run("owned_factory_operand", func(t *testing.T) {

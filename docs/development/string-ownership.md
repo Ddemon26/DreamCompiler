@@ -1247,14 +1247,15 @@ region. The operand and its arguments run once. The append reads the current
 local, installs the concatenation, and releases the factory's original final
 join. The installed value survives the return and the caller can copy it.
 
-Borrowed operands and operands beyond two proven returned appends use ordinary
-append emission. A direct scalar initializer can adopt the resulting third join
-when the entire factory meets the proof. The regression covers argument
-evaluation that replaces the destination, an unbraced conditional return, caller
-reads, and both fallback cases in ordinary and module-entry modes. See the
+P0083 used ordinary append emission for borrowed operands and operands beyond
+two proven returned appends. A direct scalar initializer can adopt the resulting
+third join when the entire factory meets the proof. The regression covers argument
+evaluation that replaces the destination, an unbraced conditional return, and
+caller reads in ordinary and module-entry modes. See the
 [checked fixture](../../tests/basics/memory/owned_nested_join_append_return.dr),
 [P0083 pass record](../../tasks/passes/P0083-return-appends-with-nested-joins.md),
 and [current initializer rule](#scalar-initializers-that-adopt-three-returned-appends-p0084).
+P0094 extends the operand proof to [three returned appends](#direct-append-returns-with-three-returned-appends-p0094).
 
 ## Scalar initializers that adopt three returned appends (P0084)
 
@@ -1339,7 +1340,9 @@ Borrowed operands, conditional operands, and calls beyond three returned
 appends use ordinary emission. P0090 applies the three-append proof to
 [scalar declaration initializers](#append-initializers-with-three-returned-appends-p0090).
 Append expressions used in output, wrapper calls, and returns use the
-two-append proof. See the
+three-append proof starting in [P0092](#console-output-of-appends-with-three-returned-appends-p0092),
+[P0093](#console-wrapper-append-arguments-with-three-returned-appends-p0093),
+and [P0094](#direct-append-returns-with-three-returned-appends-p0094), respectively. See the
 [P0089 pass record](../../tasks/passes/P0089-append-three-returned-appends.md).
 
 ## Append initializers with three returned appends (P0090)
@@ -1389,3 +1392,20 @@ append emission. The [checked fixture](../../tests/basics/memory/owned_triple_jo
 verifies both writers, replacement of the destination during argument evaluation,
 and borrowed self-append in ordinary and module-entry modes. See the
 [P0093 pass record](../../tasks/passes/P0093-wrap-appends-with-three-returned-appends.md).
+
+## Direct append returns with three returned appends (P0094)
+
+In `return (text += deeper());`, a synchronous string function can consume
+an operand that meets the
+[three-append factory proof](#scalar-initializers-that-adopt-three-returned-appends-p0084).
+The destination must be an owned scalar local and the return must be outside
+an exception region. The call and its arguments evaluate once. The append
+reads the current local, installs the concatenation, and releases the factory's
+original third join. The installed fourth join survives for the caller.
+
+Borrowed operands and calls that return four appends use ordinary append
+emission. A scalar initializer receiving the fourth join copies it into
+independent storage. The [checked fixture](../../tests/basics/memory/owned_triple_join_append_return.dr)
+covers an unbraced conditional return, argument evaluation that replaces the
+destination, caller use, and both operand fallbacks in ordinary and module-entry
+modes. See the [P0094 pass record](../../tasks/passes/P0094-return-appends-with-three-returned-appends.md).

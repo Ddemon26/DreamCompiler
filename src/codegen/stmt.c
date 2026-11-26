@@ -1218,7 +1218,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       Node *expr = n->as.ret.expr;
       Node *append_slot = ctx->is_sync_function && ctx->ret_type == TK_KW_STRING &&
                           ctx->exception_depth == 0
-                              ? owned_factory_append_slot(ctx, expr, 2) : NULL;
+                              ? owned_factory_append_slot(ctx, expr, 3) : NULL;
       c_out_write(b, "return");
       if (expr) {
         c_out_write(b, " ");

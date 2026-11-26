@@ -1,0 +1,64 @@
+// Expected: start-third-outer-inner-B!
+// Expected: 7
+// Expected: newnewouter-inner-B
+// Expected: old
+// Expected: leftright
+// Expected: right
+// Expected: limit-start-third-outer-inner-B
+
+func string owned() { string result = "B"; return result; }
+func string borrowed(string source) { return source; }
+func int announce(int effect) { Console.WriteLine(effect); return effect; }
+
+func string joined() {
+    string inner = "inner-";
+    return (inner += owned());
+}
+
+func string nested() {
+    string outer = "outer-";
+    return (outer += joined());
+}
+
+func string extended(string source, int effect) {
+    string third = source;
+    return (third += nested());
+}
+
+func string fourth() {
+    string text = "start-";
+    return (text += extended("third-", 0));
+}
+
+func string updated(bool append) {
+    string text = "old";
+    int count = 7;
+    if (append) return (text += extended((text = "new"), announce(count++)));
+    return text;
+}
+
+func string borrowedJoin(string source) {
+    string text = "left";
+    return (text += borrowed(source));
+}
+
+func string beyond() {
+    string text = "limit-";
+    return (text += fourth());
+}
+
+func void exercise() {
+    string snapshot = fourth();
+    snapshot += "!";
+    Console.WriteLine(snapshot);
+    string changed = updated(true);
+    Console.WriteLine(changed);
+    string stable = updated(false);
+    Console.WriteLine(stable);
+    string backing = "right";
+    Console.WriteLine(borrowedJoin(backing));
+    Console.WriteLine(backing);
+    Console.WriteLine(beyond());
+}
+
+exercise();
