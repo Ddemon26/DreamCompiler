@@ -1,24 +1,23 @@
 # Current project handoff
 
 - Integration branch: `codex/compiler-stabilization` on public `Ddemon26/DreamCompiler`.
-- Current pass: **P0091 - provision re2c in a required Windows CI step**.
-- Record: [P0091](passes/P0091-windows-ci-re2c.md).
-- Parent/fetched approved remote: `b75051c2acc2f8235176b777f16246eb2e71874a` (P0090).
-- Resolve this pass commit by its exact `Pass-ID: P0091` trailer.
+- Current pass: **P0092 - release three-append factory operands before Console prints an append**.
+- Record: [P0092](passes/P0092-print-appends-with-three-returned-appends.md).
+- Parent/fetched approved remote: `dd4c41132558c9fb238f75b75e7f75e60d51b305` (P0091).
+- Resolve this pass commit by its exact `Pass-ID: P0092` trailer.
 - Delivery requires push and matching `git ls-remote`.
 
-P0090 passed Ubuntu CI. Its Windows job could not run re2c after Chocolatey's
-package feed returned HTTP 503. P0091 builds re2c 3.0 from the upstream archive,
-checks its checksum, and exposes it to subsequent Windows CI steps only after
-the executable runs. See the [P0090 CI run](https://github.com/Ddemon26/DreamCompiler/actions/runs/45691819027)
-and [measured tests](MostRecentTestResults.md). Eighteen unannotated Dream entries
-remain skipped.
+Both [P0091 CI jobs](https://github.com/Ddemon26/DreamCompiler/actions/runs/45740317726)
+passed. P0092 applies the three-append proof when either direct Console writer
+prints `text += deeper()`. The original third join is released after the append
+installs the concatenation and before the writer reads it. See the
+[measured tests](MostRecentTestResults.md). Eighteen unannotated Dream entries remain skipped.
 
 Next invocation:
 
-1. Verify P0091 publication and both exact-commit CI jobs. Repair any failed baseline.
-2. Measure retention in `Console.Write(text += deeper());` and
-   `Console.WriteLine(text += deeper());` with three proven returned appends.
-   Check operand release, once-only argument evaluation, and output from the
-   current destination when an argument replaces it.
+1. Verify P0092 publication and both exact-commit CI jobs. Repair any failed baseline.
+2. Measure retention in `view(text += deeper());` for proven synchronous
+   wrappers for both Console writers. Check operand release before the call,
+   once-only argument evaluation, and output from the current destination
+   when an argument replaces it.
 3. General expression and argument ownership, async, and exception unwinding remain open.

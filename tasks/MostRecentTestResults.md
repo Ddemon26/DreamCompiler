@@ -2,6 +2,36 @@
 
 **Date:** November 26, 2026 UTC
 
+**Pass:** P0092 - release three-append factory operands before Console prints an append
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0091 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/45740317726)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **195** entries. **177 passed**, **18 skipped**, and
+  zero failed or errored (71.66s). Report `test_results_20261126_010640_windows.json`.
+  All 194 prior entry statuses, passing outputs, and skip reasons matched P0091.
+- The focused Go regression passed in ordinary and module-entry modes (3.110s,
+  `-count=1`). Each checked harness counted 22 releases and verified an empty
+  registry before shutdown cleanup. Both writers produced exact output with
+  once-only argument evaluation and the current destination value.
+- All **96** allocation probes passed (112.586s). Eight appends per writer
+  and mode left zero live joins, down from eight at P0091. All 92 previous
+  measurements matched P0090.
+- The Windows Go quick protocol passed all **43** groups (164.229s Go suite
+  time, `-count=1`).
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Python runner unit tests passed **5/5** (0.048s).
+
+See the [P0092 record](passes/P0092-print-appends-with-three-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0091 checkpoint
+
+**Date:** November 26, 2026 UTC
+
 **Pass:** P0091 - provision re2c in a required Windows CI step
 
 **Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0 built from upstream source.

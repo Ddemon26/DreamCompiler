@@ -43,6 +43,7 @@ P0087 releases the final allocation from three returned appends after either dir
 P0088 releases the same allocation after either proven Console wrapper returns.
 P0089 releases the final allocation from three returned appends after a complete append statement.
 P0090 releases the final allocation from three returned appends in an append initializer.
+P0092 releases the same allocation in an append printed directly by either Console writer.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -85,6 +86,29 @@ func string extended() {
 
 
 CASES = [
+    *[
+        {
+            "name": f"triple_join_append_console_{writer.lower()}",
+            "releases": 72, "live": 0,
+            "source": TRIPLE_JOINS + f"""
+func void exercise() {{
+    for (int i = 0; i < 8; i++) {{
+        string text = "start-";
+        Console.{writer}(text += extended());
+        Console.WriteLine(text);
+    }}
+}}
+exercise();
+""",
+            "output": ("start-third-outer-inner-owned" + separator + "start-third-outer-inner-owned\n") * 8,
+            "c": ["return__dream_string_append_owned(&text,@entry@nested());",
+                  f"{runtime}(__dream_string_append_owned(&text,@entry@extended()));"],
+        }
+        for writer, runtime, separator in (
+            ("Write", "dr_console_write", ""),
+            ("WriteLine", "dr_console_writeln", "\n"),
+        )
+    ],
     {
         "name": "triple_join_append_initializer",
         "releases": 88, "live": 0,

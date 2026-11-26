@@ -215,6 +215,10 @@ A direct scalar initializer such as `string snapshot = (text += deeper());`
 also releases the original join from up to three proven returned appends.
 The snapshot owns a copy of the new destination value. See the
 [initializer rule](../development/string-ownership.md#append-initializers-with-three-returned-appends-p0090).
+`Console.Write(text += deeper());` and `Console.WriteLine(text += deeper());`
+release an eligible final join from up to three returned appends before
+printing the updated destination. See the
+[Console append rule](../development/string-ownership.md#console-output-of-appends-with-three-returned-appends-p0092).
 Borrowed parameter/field/index destinations and conditional operands remain
 unqualified; see the [string ownership contract](../development/string-ownership.md).
 

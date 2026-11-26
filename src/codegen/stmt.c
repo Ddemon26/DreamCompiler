@@ -1352,7 +1352,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         c_out_newline(b);
       } else if (cg_is_string_expr(ctx, expr->as.console.arg)) {
         Node *arg = expr->as.console.arg;
-        Node *printed_append_slot = owned_factory_append_slot(ctx, arg, 2);
+        Node *printed_append_slot = owned_factory_append_slot(ctx, arg, 3);
         c_out_write(b, "%s(", console_writer);
         if (printed_append_slot)
           emit_owned_factory_append(ctx, b, printed_append_slot, arg->as.bin.rhs);

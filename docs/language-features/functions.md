@@ -332,16 +332,16 @@ final result of up to three proven returned appends. The snapshot receives its
 own managed copy of the updated destination. See the
 [append initializer rule](../development/string-ownership.md#append-initializers-with-three-returned-appends-p0090).
 
-In `Console.WriteLine(text += nested());` and `Console.Write(text += nested());`,
-the append releases the final result of up to two proven returned appends
-before printing. The updated `text` remains readable after either writer
-returns. See the
-[Console append rule](../development/string-ownership.md#console-output-of-appends-with-two-returned-appends-p0081).
+In `Console.WriteLine(text += deeper());` and `Console.Write(text += deeper());`,
+the append releases the final result of up to three proven returned appends
+before printing. Each writer reads the concatenation in the updated `text`,
+which remains readable after the writer returns. See the
+[Console append rule](../development/string-ownership.md#console-output-of-appends-with-three-returned-appends-p0092).
 
 In a complete `view(text += nested());` statement to a proven Console
-wrapper, the same append rule releases the factory's final join before the
-wrapper receives the new value. The updated destination remains readable
-after the wrapper returns. See the
+wrapper, the append releases the factory's final join from up to two returned
+appends before the wrapper receives the new value. The updated destination
+remains readable after the wrapper returns. See the
 [wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-two-returned-appends-p0082).
 
 Scalar string declarations initialized by other calls copy the readable result into

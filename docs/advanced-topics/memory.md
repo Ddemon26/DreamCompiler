@@ -31,6 +31,9 @@ factory operand after installing the concatenation, including a final join
 from [up to three returned appends](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
 An append that directly initializes a scalar string can also release an eligible
 operand with [up to three returned appends](../development/string-ownership.md#append-initializers-with-three-returned-appends-p0090).
+An append printed directly by either Console writer releases an eligible final
+join from [up to three returned appends](../development/string-ownership.md#console-output-of-appends-with-three-returned-appends-p0092)
+before the writer reads the new value.
 Other fresh managed operands can remain until shutdown. Const updates and
 non-string operands are rejected. See the checkpoint for remaining destination,
 expression and allocation limits.

@@ -522,6 +522,17 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "newnewinner-B\nnewnewinner-B\nA+outer-inner-BA+outer-inner-B\n2\nA+outer-inner-BA+outer-inner-B\nA+outer-inner-BA+outer-inner-B\n", true)
 	})
 
+	t.Run("triple_join_console_append", func(t *testing.T) {
+		// Nine releases per owned append, plus one for the argument's
+		// replacement, one for the literal append and two for the alias.
+		checkStorageOwnership(t, "owned_triple_join_append_console.dr", 22, []string{
+			`return__dream_string_append_owned(&third,@entry@nested());`,
+			`dr_console_writeln(__dream_string_append_owned(&changed,@entry@extended(__dream_string_assign(&changed,"new"),(count++))));`,
+			`dr_console_write(__dream_string_append_owned(&text,@entry@extended("third-",(count++))));`,
+			`dr_console_writeln(__dream_string_append(&alias,@entry@borrowed(alias)));`,
+		}, "newnewouter-inner-B\nnewnewouter-inner-B!\nA+third-outer-inner-BA+third-outer-inner-B\n2\nsamesame\nsamesame\n", true)
+	})
+
 	t.Run("nested_join_wrapper_append", func(t *testing.T) {
 		// Each proven wrapper adds seven releases. Replacement of changed and
 		// the borrowed self-append add one apiece. The extra-statement wrapper

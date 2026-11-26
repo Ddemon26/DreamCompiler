@@ -837,11 +837,15 @@ P0090 passed Ubuntu CI. Windows CI stopped at lexer generation after Chocolatey
 failed to install re2c. [P0091](passes/P0091-windows-ci-re2c.md) repairs Windows
 setup with a verified upstream re2c archive and a required build step.
 
-Broader T011 remains open. Verify P0091 publication and native CI. Then measure
-retention in `Console.Write(text += deeper());` and
-`Console.WriteLine(text += deeper());`. Check release of the original third
-join, once-only argument evaluation, and that both writers read the updated
-destination when an argument replaces it.
+P0092 releases the original third join before either direct Console writer
+prints `text += deeper()`. Both ordinary and module-entry tests verify exact
+output, destination replacement, once-only argument evaluation, and borrowed
+self-append. See [P0092](passes/P0092-print-appends-with-three-returned-appends.md).
+
+Broader T011 remains open. Verify P0092 publication and native CI. Then measure
+retention in `view(text += deeper());` for proven wrappers for each writer.
+Check release before the wrapper call, once-only argument evaluation, and
+output from the updated destination when an argument replaces it.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

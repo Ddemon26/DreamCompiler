@@ -1213,7 +1213,9 @@ which stays owned by the destination after output.
 
 The ordinary and module-entry regressions cover both writers, argument
 evaluation that replaces the destination, and borrowed self-append through
-the ordinary append helper. See the
+the ordinary append helper. P0092 applies the same rule to
+[three returned appends](#console-output-of-appends-with-three-returned-appends-p0092).
+See the
 [P0081 pass record](../../tasks/passes/P0081-print-appends-with-nested-joins.md).
 
 ## Console wrapper append arguments with two returned appends (P0082)
@@ -1353,3 +1355,19 @@ The rule covers ordinary and module-entry declarations, including const
 snapshots and `for` headers. Borrowed and conditional operands and calls
 beyond three returned appends use ordinary append emission. See the
 [P0090 pass record](../../tasks/passes/P0090-initialize-from-three-returned-appends.md).
+
+## Console output of appends with three returned appends (P0092)
+
+Complete `Console.Write(text += deeper());` and
+`Console.WriteLine(text += deeper());` statements accept the
+[three-append factory proof](#scalar-initializers-that-adopt-three-returned-appends-p0084)
+for an owned mutable scalar string destination. The factory and its arguments
+evaluate once. The append reads the current destination, installs the new
+concatenation, and releases the factory's original final join before the
+writer reads the concatenation. The destination owns the printed value after
+the writer returns.
+
+The ordinary and module-entry regressions cover both writers, destination
+replacement during argument evaluation, and borrowed self-append. Borrowed
+operands and calls beyond the three-append proof use ordinary append emission.
+See the [P0092 pass record](../../tasks/passes/P0092-print-appends-with-three-returned-appends.md).

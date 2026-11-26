@@ -209,6 +209,7 @@ func void probe(string* values) {
     Console.Write(deeper() + "!");
     string text = "start";
     Console.WriteLine(text += deeper());
+    Console.WriteLine(text += fourth());
     Console.WriteLine(unproven("source"));
     line(joined());
     line(nested());
@@ -247,7 +248,8 @@ func void probe(string* values) {
 				ownedArgumentBlock(entry+"deeper()", "dr_console_writeln", "dreamOwnedArgument0"),
 				"dr_console_writeln(" + entry + "fourth());",
 				"dr_console_write((dream_concat(" + entry + "deeper(),\"!\")));",
-				"dr_console_writeln(__dream_string_append(&text," + entry + "deeper()));",
+				"dr_console_writeln(__dream_string_append_owned(&text," + entry + "deeper()));",
+				"dr_console_writeln(__dream_string_append(&text," + entry + "fourth()));",
 				"dr_console_writeln(" + entry + "unproven(\"source\"));",
 				ownedArgumentBlock(entry+"joined()", wrapper, "dreamOwnedArgument0"),
 				ownedArgumentBlock(entry+"nested()", wrapper, "dreamOwnedArgument0"),
