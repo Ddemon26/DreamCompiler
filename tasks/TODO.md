@@ -833,7 +833,11 @@ evaluation, independent snapshot storage, const declarations, and `for` headers.
 Eight initializers per mode leave zero final joins live, down from eight at the
 parent. See [P0090](passes/P0090-initialize-from-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0090 publication and native CI. Then measure
+P0090 passed Ubuntu CI. Windows CI stopped at lexer generation after Chocolatey
+failed to install re2c. [P0091](passes/P0091-windows-ci-re2c.md) repairs Windows
+setup with a verified upstream re2c archive and a required build step.
+
+Broader T011 remains open. Verify P0091 publication and native CI. Then measure
 retention in `Console.Write(text += deeper());` and
 `Console.WriteLine(text += deeper());`. Check release of the original third
 join, once-only argument evaluation, and that both writers read the updated

@@ -32,12 +32,28 @@ jobs:
           sudo apt install -y build-essential make gdb re2c
           # Optional Python packages for full test functionality
           pip install matplotlib pandas seaborn || echo "Optional packages failed to install"
-      - name: Install dependencies (Windows)
+      - name: Build re2c 3.0 (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          choco install -y make mingw re2c
-          # Optional Python packages for full test functionality  
-          pip install matplotlib pandas seaborn
+          $PSNativeCommandUseErrorActionPreference = $true
+          $archive = Join-Path $env:RUNNER_TEMP 're2c-3.0.tar.xz'
+          $source = Join-Path $env:RUNNER_TEMP 're2c-3.0'
+          $build = Join-Path $env:RUNNER_TEMP 're2c-build'
+          Invoke-WebRequest -Uri 'https://github.com/skvadrik/re2c/releases/download/3.0/re2c-3.0.tar.xz' `
+            -OutFile $archive -MaximumRetryCount 2 -RetryIntervalSec 5
+          $expectedHash = 'B3BABBBB1461E13FE22C630A40C43885EFCFBBBB585830C6F4C0D791CF82BA0B'
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash -ne $expectedHash) {
+            throw 'The re2c 3.0 archive failed SHA-256 verification.'
+          }
+          tar -xf $archive -C $env:RUNNER_TEMP
+          cmake -S $source -B $build -A x64 -DRE2C_BUILD_RE2GO=OFF -DRE2C_BUILD_RE2RUST=OFF
+          cmake --build $build --config Release --target re2c --parallel 2
+          & (Join-Path $build 're2c.exe') --version
+          $build | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Install optional Python packages (Windows)
+        if: runner.os == 'Windows'
+        run: pip install matplotlib pandas seaborn
         continue-on-error: true
       - name: Build DreamCompiler
         run: zig build

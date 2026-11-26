@@ -1,5 +1,32 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 26, 2026 UTC
+
+**Pass:** P0091 - provision re2c in a required Windows CI step
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0 built from upstream source.
+
+- [P0090 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/45691819027)
+  passed on Ubuntu. The Windows job stopped before testing because Chocolatey
+  failed to install re2c and Zig could not start the lexer generator.
+- The corrected Windows setup verified the upstream archive, built re2c with
+  CMake and Visual Studio, and published the directory of the working executable.
+  Checksum corruption and a native command failure each stopped the step before
+  it could publish a PATH entry. `actionlint` passed.
+- A clean-cache Windows build passed **15/15** steps with the newly built re2c.
+  `zig build test` passed **176**, skipped **18**, and reported zero failures or
+  errors (63.27s). All 194 entry statuses, passing outputs, and skip reasons
+  matched P0090. Report `test_results_20261125_190358_windows.json` uses local time.
+- The Windows Go quick protocol passed all **43** groups (166.996s Go suite
+  time, `-count=1`). The cached Linux cross-build passed **15/15** steps.
+- Python runner unit tests passed **5/5** (0.043s).
+
+See the [P0091 record](passes/P0091-windows-ci-re2c.md) for the checks and handoff.
+
+---
+
+## Historical P0090 checkpoint
+
 **Date:** November 25, 2026 UTC
 
 **Pass:** P0090 - release the final join from three returned appends in an append initializer

@@ -88,6 +88,11 @@ then the required checks in `AGENTS.md`. Inspect the actual output and return co
 Do not run compiler tests concurrently when they share `build/bin/dream.c` and `dream`.
 Cross-builds may use a separate prefix; native runtime claims require native execution.
 
+Windows CI builds re2c 3.0 from the [upstream release archive](https://github.com/skvadrik/re2c/releases/tag/3.0)
+using the runner's CMake and Visual Studio tools. The setup step verifies the
+archive's SHA-256 and runs the executable before adding its directory to the job's
+PATH. A failure there stops the job. Optional Python packages have a separate step.
+
 Update the pass record, state, backlog, and any changed feature documentation. The
 current test snapshot lives in `tasks/MostRecentTestResults.md`; raw local reports in
 `test_results/` are ignored. Store concise counts and commands in the pass record so
