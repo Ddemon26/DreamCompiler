@@ -46,6 +46,7 @@ P0090 releases the final allocation from three returned appends in an append ini
 P0092 releases the same allocation in an append printed directly by either Console writer.
 P0093 releases the same allocation before either proven Console wrapper receives an append.
 P0094 releases the same allocation in a directly returned append.
+P0095 adopts the final allocation from four returned appends in a direct scalar initializer.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -85,17 +86,35 @@ func string extended() {
     return (text += nested());
 }
 '''
-
-
-CASES = [
-    {
-        "name": "triple_join_append_return",
-        "releases": 64, "live": 8,
-        "source": TRIPLE_JOINS + '''
+QUADRUPLE_JOINS = TRIPLE_JOINS + '''
 func string fourth() {
     string text = "start-";
     return (text += extended());
 }
+'''
+
+
+CASES = [
+    {
+        "name": "quadruple_join_initializer",
+        "releases": 72, "live": 0,
+        "source": QUADRUPLE_JOINS + '''
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string snapshot = fourth();
+        Console.WriteLine(snapshot);
+    }
+}
+exercise();
+''',
+        "output": "start-third-outer-inner-owned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@extended());",
+              "snapshot=@entry@fourth();"],
+    },
+    {
+        "name": "triple_join_append_return",
+        "releases": 64, "live": 8,
+        "source": QUADRUPLE_JOINS + '''
 func void exercise() {
     for (int i = 0; i < 8; i++) {
         Console.WriteLine(fourth());

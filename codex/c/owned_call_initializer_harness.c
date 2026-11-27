@@ -106,12 +106,19 @@ int main(void) {
         assert(join == NULL && dr_head == NULL);
         assert(copies == 4 * (i + 1) && joins == 3 * (i + 1) && releases == 7 * (i + 1));
     }
+    copies = joins = releases = peak = 0;
+    append_result = "fourth-third-outer-startowned";
+    for (size_t i = 0; i < 10000; i++) {
+        assert(DREAM_FOURTH_APPEND_PROBE() == 1);
+        assert(join == NULL && dr_head == NULL);
+        assert(copies == 5 * (i + 1) && joins == 4 * (i + 1) && releases == 9 * (i + 1));
+    }
     append_result = NULL;
     copies = joins = releases = peak = 0;
     assert(dream_entry_main() == 0);
     assert(copies == DREAM_EXPECTED_COPIES);
-    // One join from joined(), three from tripleJoin(); one global survives.
-    assert(joins == 4 && releases == copies + joins - 1);
+    // One join from joined(), three from tripleJoin(), four from fourthJoin().
+    assert(joins == 8 && releases == copies + joins - 1);
     assert(dr_head == NULL);
     return 0;
 }

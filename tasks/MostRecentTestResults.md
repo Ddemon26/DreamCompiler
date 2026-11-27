@@ -1,5 +1,34 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 27, 2026 UTC
+
+**Pass:** P0095 - adopt four returned appends in scalar initializers
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0094 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/45888665473)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **197** entries. **179 passed**, **18 skipped**,
+  and zero failed or errored (64.94s). Report `test_results_20261126_190729_windows.json`.
+  The initializer fixture printed two new expected lines. All other statuses,
+  outputs, and skip reasons matched P0094.
+- The focused Go tests passed (67.475s, `-count=1`). Ordinary and imported
+  factory calls verified original pointer identity, once-only argument
+  evaluation, and an empty registry after 10,000 independent scope exits each.
+- The Windows Go quick protocol passed all **43** groups (170.749s, `-count=1`).
+- All **104** allocation probes passed (129.14s). Eight direct scalar
+  initializers per mode left zero joins live, down from eight at P0094.
+  All 102 prior measurements matched.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Python runner unit tests passed **5/5** (0.047s).
+
+See the [P0095 record](passes/P0095-adopt-four-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0094 checkpoint
+
 **Date:** November 26, 2026 UTC
 
 **Pass:** P0094 - release three-append factory operands in direct append returns

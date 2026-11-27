@@ -299,10 +299,10 @@ original join is released. See the
 [direct append return rule](../development/string-ownership.md#direct-append-returns-with-three-returned-appends-p0094).
 
 A direct scalar initializer takes ownership of a factory's final join when the
-factory meets the proof with up to three returned appends. A complete assignment
-to an owned scalar string uses the same limit and releases the
-current destination after the call finishes.
-See the [initializer rule](../development/string-ownership.md#scalar-initializers-that-adopt-three-returned-appends-p0084)
+factory meets the proof with up to four returned appends. A complete assignment
+to an owned scalar string adopts a factory result with up to three returned
+appends and releases the current destination after the call finishes.
+See the [initializer rule](../development/string-ownership.md#scalar-initializers-that-adopt-four-returned-appends-p0095)
 and [assignment rule](../development/string-ownership.md#complete-assignments-that-adopt-three-returned-appends-p0085).
 
 A standalone factory call releases the final join immediately after the call

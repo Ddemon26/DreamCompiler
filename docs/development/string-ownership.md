@@ -1110,10 +1110,10 @@ Both functions must satisfy the existing binding and parameter checks, including
 for imported functions. Each append releases its operand and the caller's scope
 cleanup releases the original final join at reference count one.
 
-P0074 qualified two returned appends. P0084 extends direct initializer adoption
-to three. A conditional initializer keeps its independent copy. See the
-[P0074 pass record](../../tasks/passes/P0074-adopt-nested-returned-joins.md) and
-[current initializer rule](#scalar-initializers-that-adopt-three-returned-appends-p0084).
+P0074 qualified two returned appends. P0084 and P0095 extend direct initializer
+adoption to three and four. A conditional initializer keeps its independent
+copy. See the [P0074 pass record](../../tasks/passes/P0074-adopt-nested-returned-joins.md) and
+[current initializer rule](#scalar-initializers-that-adopt-four-returned-appends-p0095).
 
 ## Complete assignments that adopt two returned appends (P0075)
 
@@ -1254,7 +1254,7 @@ evaluation that replaces the destination, an unbraced conditional return, and
 caller reads in ordinary and module-entry modes. See the
 [checked fixture](../../tests/basics/memory/owned_nested_join_append_return.dr),
 [P0083 pass record](../../tasks/passes/P0083-return-appends-with-nested-joins.md),
-and [current initializer rule](#scalar-initializers-that-adopt-three-returned-appends-p0084).
+and [current initializer rule](#scalar-initializers-that-adopt-four-returned-appends-p0095).
 P0094 extends the operand proof to [three returned appends](#direct-append-returns-with-three-returned-appends-p0094).
 
 ## Scalar initializers that adopt three returned appends (P0084)
@@ -1267,8 +1267,8 @@ append releases its operand, and scope cleanup releases the original final join
 at reference count one. Imported functions use the same proof on their lowered
 definitions. The call and each argument evaluate once.
 
-Calls beyond three returned appends and conditional initializers keep their
-copies. See the
+P0095 extends [direct initializer adoption](#scalar-initializers-that-adopt-four-returned-appends-p0095)
+to a fourth returned append. Conditional initializers keep their copies. See the
 [P0084 pass record](../../tasks/passes/P0084-adopt-three-returned-appends.md).
 
 ## Complete assignments that adopt three returned appends (P0085)
@@ -1404,8 +1404,23 @@ reads the current local, installs the concatenation, and releases the factory's
 original third join. The installed fourth join survives for the caller.
 
 Borrowed operands and calls that return four appends use ordinary append
-emission. A scalar initializer receiving the fourth join copies it into
-independent storage. The [checked fixture](../../tests/basics/memory/owned_triple_join_append_return.dr)
+emission. A scalar initializer can [adopt the fourth join](#scalar-initializers-that-adopt-four-returned-appends-p0095)
+starting in P0095. The [checked fixture](../../tests/basics/memory/owned_triple_join_append_return.dr)
 covers an unbraced conditional return, argument evaluation that replaces the
 destination, caller use, and both operand fallbacks in ordinary and module-entry
 modes. See the [P0094 pass record](../../tasks/passes/P0094-return-appends-with-three-returned-appends.md).
+
+## Scalar initializers that adopt four returned appends (P0095)
+
+In `string snapshot = fourth();`, a complete scalar declaration initializer
+can adopt the original fourth join from a proven synchronous free function.
+The outer factory declares one qualifying mutable scalar string local and
+returns its append of a call that passes the
+[three-append proof](#scalar-initializers-that-adopt-three-returned-appends-p0084).
+Each append releases its original operand. The call and its arguments evaluate
+once, and scope cleanup releases the adopted fourth join at reference count one.
+
+The rule covers const declarations and supported `for` headers, including calls
+to imported factories. Calls beyond four returned appends and conditional
+initializers keep their copies. See the
+[P0095 pass record](../../tasks/passes/P0095-adopt-four-returned-appends.md).

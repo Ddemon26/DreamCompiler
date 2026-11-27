@@ -854,10 +854,15 @@ once-only argument evaluation, destination replacement, and caller use of the
 fourth join. Eight calls per mode leave eight returned joins live, down from
 sixteen total joins at P0093. See [P0094](passes/P0094-return-appends-with-three-returned-appends.md).
 
-Broader T011 remains open. Verify P0094 publication and native CI, then measure
-retention in `string snapshot = fourth();`. Check whether a complete scalar
-initializer can adopt the original fourth join with once-only arguments and
-release it at scope exit.
+P0095 lets a complete scalar declaration adopt the original fourth join.
+The checks cover const declarations, `for` headers, once-only argument
+evaluation, original allocation identity, and cleanup in ordinary and
+imported calls. See [P0095](passes/P0095-adopt-four-returned-appends.md).
+
+Broader T011 remains open. Verify P0095 publication and native CI, then measure
+retention in `target = fourth();` for an owned scalar target. Check whether a
+complete assignment can install the original fourth join after evaluating the
+arguments once and release the destination's current allocation.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

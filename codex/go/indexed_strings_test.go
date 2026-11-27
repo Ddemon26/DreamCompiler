@@ -388,16 +388,16 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 	})
 
 	t.Run("triple_join_return", func(t *testing.T) {
-		// Six originals survive: fourth's result, both updated results,
-		// borrowedJoin's result, and the two joins across the depth limit.
+		// Five originals survive: both updated results, borrowedJoin's
+		// result, and the two joins across the append operand depth limit.
 		checkStorageOwnershipWithLiveCount(t, "owned_triple_join_append_return.dr", 32, []string{
 			`return__dream_string_append_owned(&third,@entry@nested());`,
 			`return__dream_string_append_owned(&text,@entry@extended("third-",0));`,
 			`return__dream_string_append_owned(&text,@entry@extended(__dream_string_assign(&text,"new"),@entry@announce((count++))));`,
-			`snapshot=dream_string_copy(@entry@fourth());`,
+			`snapshot=@entry@fourth();`,
 			`return__dream_string_append(&text,@entry@borrowed(source));`,
 			`return__dream_string_append(&text,@entry@fourth());`,
-		}, "start-third-outer-inner-B!\n7\nnewnewouter-inner-B\nold\nleftright\nright\nlimit-start-third-outer-inner-B\n", 6)
+		}, "start-third-outer-inner-B!\n7\nnewnewouter-inner-B\nold\nleftright\nright\nlimit-start-third-outer-inner-B\n", 5)
 	})
 
 	t.Run("owned_factory_operand", func(t *testing.T) {

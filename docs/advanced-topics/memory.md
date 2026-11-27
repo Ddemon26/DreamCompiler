@@ -10,9 +10,11 @@ the selected value. Plain assignment initializers such as
 `string copy = (source = "next")` evaluate the assignment once and copy its result;
 source and declaration have independent storage. The new declaration receives
 owned replacement and jump cleanup. Parameter, field and indexed assignment
-destinations retain their existing borrowed behavior. A direct initializer or complete
-`=` assignment to an owned scalar string can adopt a proven factory result, including
-a [factory with three returned appends](../development/string-ownership.md#complete-assignments-that-adopt-three-returned-appends-p0085).
+destinations retain their existing borrowed behavior. A direct scalar initializer
+can adopt a proven factory result with
+[up to four returned appends](../development/string-ownership.md#scalar-initializers-that-adopt-four-returned-appends-p0095).
+A complete `=` assignment to an owned scalar string can adopt a proven factory result
+with [up to three returned appends](../development/string-ownership.md#complete-assignments-that-adopt-three-returned-appends-p0085).
 A [standalone call to a proven factory](../development/string-ownership.md#standalone-calls-that-discard-three-returned-appends-p0086)
 releases the original result immediately after the call, including a final join
 from up to three returned appends.

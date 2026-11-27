@@ -25,7 +25,7 @@ func TestCompiler_OwnedCallInitializer(t *testing.T) {
 			text := string(data)
 			options := []string{}
 			entry, identity, clone := "", "owned", "clone"
-			copies := 22
+			copies := 27
 			if modules {
 				copies++ // Independent copy of the imported borrowed result.
 				entry, identity, clone = "__dream_module_0_", "__dream_module_1_owned", "__dream_module_1_clone"
@@ -35,6 +35,7 @@ func TestCompiler_OwnedCallInitializer(t *testing.T) {
 				text = strings.ReplaceAll(text, " = joined()", " = labels.joined()")
 				text = strings.ReplaceAll(text, " = nestedJoin()", " = labels.nestedJoin()")
 				text = strings.ReplaceAll(text, " = tripleJoin(", " = labels.tripleJoin(")
+				text = strings.ReplaceAll(text, " = fourthJoin(", " = labels.fourthJoin(")
 				text = strings.ReplaceAll(text, "string first =", "string importedBorrow = labels.emptyFactory(); string first =")
 				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(`module labels;
 export func string owned() { string result = "owned"; return result; }
@@ -42,6 +43,7 @@ export func string clone(string source) { const string result = source; return r
 export func string joined() { string result = "start"; return (result += owned()); }
 export func string nestedJoin() { string result = "outer-"; return (result += joined()); }
 export func string tripleJoin(string prefix) { string result = prefix; return (result += nestedJoin()); }
+export func string fourthJoin(string prefix) { string result = prefix; return (result += tripleJoin("third-")); }
 export func string emptyFactory() { return ""; }`), 0644); err != nil {
 					t.Fatal(err)
 				}
@@ -87,6 +89,14 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 			if modules && !strings.Contains(c, "importedBorrow=dream_string_copy(__dream_module_1_emptyFactory());") {
 				t.Error("same-spelled imported borrowed factory must keep its copy")
 			}
+			fourthJoin := entry + "fourthJoin"
+			if modules {
+				fourthJoin = "__dream_module_1_fourthJoin"
+			}
+			if !strings.Contains(c, `snapshot=`+fourthJoin+`((((++evaluated)==1)?"fourth-":"unexpected-"));dr_release(snapshot);`) ||
+				!strings.Contains(c, `four=`+fourthJoin+`((((++evaluatedFourth)==1)?"fourth-":"unexpected-"));`) {
+				t.Errorf("const and for-header initializers must adopt %s", fourthJoin)
+			}
 			if t.Failed() {
 				return
 			}
@@ -97,9 +107,9 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 			if err := os.WriteFile(generated, []byte(checked), 0644); err != nil {
 				t.Fatal(err)
 			}
-			// Independent tally: 21 nonnull factory/backing copies in exercise,
-			// including four from tripleJoin's initial slots and leaf factory,
-			// plus one global (and one imported borrowed copy in module mode).
+			// Independent tally: 26 nonnull factory/backing copies in exercise,
+			// including four from tripleJoin and five from fourthJoin, plus
+			// one global (and one imported borrowed copy in module mode).
 			// Null factories allocate/release nothing. The identity
 			// and transfer probes run separately with explicit original-pointer checks.
 			args := []string{"cc", "-std=c11", "-D_GNU_SOURCE", "-fsanitize=undefined",
@@ -107,6 +117,7 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 				"-DDREAM_APPEND_PROBE=" + entry + "appendProbe",
 				"-DDREAM_NESTED_APPEND_PROBE=" + entry + "nestedAppendProbe",
 				"-DDREAM_TRIPLE_APPEND_PROBE=" + entry + "tripleAppendProbe",
+				"-DDREAM_FOURTH_APPEND_PROBE=" + entry + "fourthAppendProbe",
 				"-DDREAM_TRANSFER_PROBE=" + entry + "transfer",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"), "-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -134,7 +145,7 @@ export func string emptyFactory() { return ""; }`), 0644); err != nil {
 				!strings.Contains(c, "appended="+join+"();") {
 				t.Fatalf("direct append-return initializers must adopt %s", join)
 			}
-			want := "owned\nescaped \"value\"\nempty\nnull\nbacking\nchanged\nowned\n7\nstartowned\nthird-outer-startowned\n1\nglobal\n"
+			want := "owned\nescaped \"value\"\nempty\nnull\nbacking\nchanged\nowned\n7\nstartowned\nthird-outer-startowned\n1\nfourth-third-outer-startowned\n1\nglobal\n"
 			if got := strings.ReplaceAll(string(command(binary)), "\r\n", "\n"); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -201,7 +212,8 @@ func string owned() { string result = "owned"; return result; }
 func string joined() { string result = "start"; return (result += owned()); }
 func string nested() { string result = "outer"; return (result += joined()); }
 func string extended() { string result = "third"; return (result += nested()); }
-func string factory() { string result = "fourth"; return (result += extended()); }`, `factory()`},
+func string fourth() { string result = "fourth"; return (result += extended()); }
+func string factory() { string result = "fifth"; return (result += fourth()); }`, `factory()`},
 		} {
 			t.Run(fmt.Sprintf("fallback_%s/modules=%v", tc.name, modules), func(t *testing.T) {
 				c := memberReturnEmission(t, tr, tc.definition+` string probe = `+tc.call+`;`, modules)
