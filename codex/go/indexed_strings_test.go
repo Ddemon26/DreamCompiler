@@ -372,10 +372,10 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 	})
 
 	t.Run("nested_join_return", func(t *testing.T) {
-		// The direct initializer releases extended's original join. The copied
-		// updated result, the join with a borrowed operand, and beyond's result
-		// remain live before shutdown.
-		checkStorageOwnershipWithLiveCount(t, "owned_nested_join_append_return.dr", 26, []string{
+		// Scope cleanup releases extended's adopted join. Console releases
+		// beyond's fourth join after printing. The original updated result and
+		// the join with a borrowed operand remain live before shutdown.
+		checkStorageOwnershipWithLiveCount(t, "owned_nested_join_append_return.dr", 27, []string{
 			`return__dream_string_append_owned(&inner,@entry@owned());`,
 			`return__dream_string_append_owned(&outer,@entry@joined());`,
 			`return__dream_string_append_owned(&text,@entry@nested("outer-",0));`,
@@ -384,7 +384,9 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 			`changed=dream_string_copy(@entry@updated(1));`,
 			`return__dream_string_append(&text,@entry@borrowed(source));`,
 			`return__dream_string_append_owned(&text,@entry@extended());`,
-		}, "start-outer-inner-B\nonce\nnewnewinner-B!\nleftright\nright\nlimit-start-outer-inner-B\n", 3)
+			`dr_console_writeln(@entry@borrowedJoin(backing));`,
+			ownedArgumentBlock("@entry@beyond()", "dr_console_writeln", "dreamOwnedArgument0"),
+		}, "start-outer-inner-B\nonce\nnewnewinner-B!\nleftright\nright\nlimit-start-outer-inner-B\n", 2)
 	})
 
 	t.Run("triple_join_return", func(t *testing.T) {

@@ -1307,9 +1307,10 @@ on the resolved ordinary or imported factory. The call and its arguments
 evaluate once. The writer reads the original final join while it is live,
 and the caller releases that pointer immediately after the writer returns.
 
-Four returned appends and compound operands use ordinary emission. Appended
-factory operands still use the two-append limit. See the
-[P0087 pass record](../../tasks/passes/P0087-print-three-returned-appends.md).
+P0098 extends direct output to
+[four returned appends](#direct-console-output-of-four-returned-appends-p0098).
+See the [P0087 pass record](../../tasks/passes/P0087-print-three-returned-appends.md)
+for the original three-append checks.
 
 ## Console wrappers for three returned appends (P0088)
 
@@ -1455,3 +1456,17 @@ pointer identity and release at reference count one.
 Five-append results and calls inside loop headers, conditionals, or arguments
 use ordinary emission. See the
 [P0097 pass record](../../tasks/passes/P0097-discard-four-returned-appends.md).
+
+## Direct Console output of four returned appends (P0098)
+
+A complete `Console.Write(fourth(count++));` or
+`Console.WriteLine(fourth(count++));` statement evaluates the factory and its
+arguments once when the factory meets the
+[four-append proof](#scalar-initializers-that-adopt-four-returned-appends-p0095).
+The writer reads the original fourth join at reference count one. The caller
+releases that same allocation after the writer returns. Imported factories
+use the same rule.
+
+Five-append results, factory calls inside larger expressions, and fourth joins
+passed to wrappers or used as append operands continue through ordinary
+emission. See the [P0098 pass record](../../tasks/passes/P0098-print-four-returned-appends.md).

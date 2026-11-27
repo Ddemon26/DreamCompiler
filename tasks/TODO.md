@@ -871,9 +871,15 @@ five returned appends and calls inside larger expressions.
 Eight calls per mode leave zero original joins live, down from eight at P0096.
 See [P0097](passes/P0097-discard-four-returned-appends.md).
 
-Broader T011 remains open. Verify P0097 publication and native CI, then measure
-retention when complete `Console.Write(fourth());` and
-`Console.WriteLine(fourth());` statements print the original fourth join.
+P0098 releases the original fourth join after either direct Console writer
+returns. Both writers and compilation modes check exact output, original-pointer
+release, and once-only argument evaluation. Eight calls per writer and mode
+leave zero final joins live, down from eight at P0097.
+See [P0098](passes/P0098-print-four-returned-appends.md).
+
+Broader T011 remains open. Verify P0098 publication and native CI, then measure
+retention when a complete `view(fourth());` call passes the original fourth
+join to a proven synchronous wrapper for either Console writer.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

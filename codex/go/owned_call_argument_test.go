@@ -35,12 +35,14 @@ func TestCompiler_OwnedCallArgument(t *testing.T) {
 			program := string(fixture)
 			var options []string
 			factory, wrapper, joined, nested, deeper := "factory()", "view", "joined", "nested", "deeper"
+			fourth := "fourth"
 			lineWrapper := "line"
 			if modules {
 				factory, wrapper = "__dream_module_1_factory()", "__dream_module_1_view"
 				joined = "__dream_module_1_joined"
 				nested = "__dream_module_1_nested"
 				deeper = "__dream_module_1_deeper"
+				fourth = "__dream_module_1_fourth"
 				lineWrapper = "__dream_module_1_viewLine"
 				options = append(options, "--multi-file")
 				program = "import labels;\n" + strings.Replace(program, "view(factory());", "labels.view(labels.factory());", 1)
@@ -48,6 +50,7 @@ func TestCompiler_OwnedCallArgument(t *testing.T) {
 				program = strings.ReplaceAll(program, "joined(count++)", "labels.joined(count++)")
 				program = strings.ReplaceAll(program, "nested(count++)", "labels.nested(count++)")
 				program = strings.ReplaceAll(program, "deeper(count++)", "labels.deeper(count++)")
+				program = strings.ReplaceAll(program, "fourth(count++)", "labels.fourth(count++)")
 				program = strings.Replace(program, "view(labels.joined(count++));", "labels.view(labels.joined(count++));", 1)
 				program = strings.Replace(program, "view(labels.nested(count++));", "labels.view(labels.nested(count++));", 1)
 				program = strings.Replace(program, "line(labels.nested(count++));", "labels.viewLine(labels.nested(count++));", 1)
@@ -60,6 +63,7 @@ export func string factory() { string result = "owned"; return result; }
 export func string joined(int value) { string result = "start"; return (result += factory()); }
 export func string nested(int value) { string result = "outer-"; return (result += joined(value)); }
 export func string deeper(int value) { string result = "third-"; return (result += nested(value)); }
+export func string fourth(int value) { string result = "fourth-"; return (result += deeper(value)); }
 export func void view(string source) { Console.Write(source); }
 export func void viewLine(string source) { Console.WriteLine(source); }
 export func void line(string source) { Console.WriteLine(source); Console.WriteLine(source); }`
@@ -116,14 +120,16 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 				ownedArgumentBlock(deeper+"((count++))", "dr_console_writeln", temp0),
 				"if(1)" + ownedArgumentBlock(deeper+"((count++))", wrapper, temp0),
 				ownedArgumentBlock(deeper+"((count++))", lineWrapper, temp0),
+				"if(1)" + ownedArgumentBlock(fourth+"((count++))", "dr_console_write", temp0),
+				ownedArgumentBlock(fourth+"((count++))", "dr_console_writeln", temp0),
 			} {
 				if got := strings.Count(c, want); got != 1 {
 					t.Errorf("expected one %q, got %d", want, got)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 22 ||
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 24 ||
 				strings.Contains(c, "dr_retain(") {
-				t.Error("expected twelve wrapper and ten direct Console release sites without any retains")
+				t.Error("expected twelve wrapper and twelve direct Console release sites without any retains")
 			}
 			if modules && (!strings.Contains(c, entry+"view("+entry+"factory());") ||
 				!strings.Contains(c, "__dream_module_1_line("+entry+"factory());")) {
@@ -143,6 +149,7 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 				"-DDREAM_JOIN_OUTPUT_PROBE=" + entry + "joinOutputProbe",
 				"-DDREAM_NESTED_OUTPUT_PROBE=" + entry + "nestedOutputProbe",
 				"-DDREAM_TRIPLE_OUTPUT_PROBE=" + entry + "tripleOutputProbe",
+				"-DDREAM_FOURTH_OUTPUT_PROBE=" + entry + "fourthOutputProbe",
 				"-DDREAM_STRING_PROGRAM=\"" + filepath.ToSlash(generated) + "\"",
 				"-I" + filepath.Join(tr.projectRoot, "src/runtime/memory"),
 				"-I" + filepath.Join(tr.projectRoot, "build/libs"),
@@ -160,7 +167,8 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 			const want = "snapshot\neffect\n1\nowned\nowned\neffectowned\n2\n" +
 				"startownedstartowned\nstartownedstartowned\n4\n" +
 				"outer-startownedouter-startowned\nouter-startownedouter-startowned\n4\n" +
-				"third-outer-startownedthird-outer-startowned\nthird-outer-startownedthird-outer-startowned\n4\n"
+				"third-outer-startownedthird-outer-startowned\nthird-outer-startownedthird-outer-startowned\n4\n" +
+				"fourth-third-outer-startownedfourth-third-outer-startowned\n2\n"
 			if got := command(binary); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -176,6 +184,7 @@ func string joined() { string result = "start"; return (result += factory()); }
 func string nested() { string result = "outer-"; return (result += joined()); }
 func string deeper() { string result = "third-"; return (result += nested()); }
 func string fourth() { string result = "fourth-"; return (result += deeper()); }
+func string fifth() { string result = "fifth-"; return (result += fourth()); }
 func string unproven(string source) { string result = "start"; return (result += source); }
 func string absent() { string result; return result; }
 func string borrowed(string value) { return value; }
@@ -206,6 +215,8 @@ func void probe(string* values) {
     Console.Write(nested() + "!");
     Console.WriteLine(deeper());
     Console.WriteLine(fourth());
+    Console.WriteLine(fifth());
+    Console.Write(fourth() + "!");
     Console.Write(deeper() + "!");
     string text = "start";
     Console.WriteLine(text += deeper());
@@ -248,7 +259,9 @@ func void probe(string* values) {
 				"dr_console_write((dream_concat(" + entry + "joined(),\"!\")));",
 				"dr_console_write((dream_concat(" + entry + "nested(),\"!\")));",
 				ownedArgumentBlock(entry+"deeper()", "dr_console_writeln", "dreamOwnedArgument0"),
-				"dr_console_writeln(" + entry + "fourth());",
+				ownedArgumentBlock(entry+"fourth()", "dr_console_writeln", "dreamOwnedArgument0"),
+				"dr_console_writeln(" + entry + "fifth());",
+				"dr_console_write((dream_concat(" + entry + "fourth(),\"!\")));",
 				"dr_console_write((dream_concat(" + entry + "deeper(),\"!\")));",
 				"dr_console_writeln(__dream_string_append_owned(&text," + entry + "deeper()));",
 				"dr_console_writeln(__dream_string_append(&text," + entry + "fourth()));",
@@ -275,8 +288,8 @@ func void probe(string* values) {
 					t.Errorf("missing context %q", want)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 7 {
-				t.Error("only the seven eligible complete statements should release")
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 8 {
+				t.Error("only the eight eligible complete statements should release")
 			}
 		})
 	}

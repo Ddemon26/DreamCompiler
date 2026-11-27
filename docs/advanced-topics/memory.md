@@ -18,6 +18,8 @@ with [up to four returned appends](../development/string-ownership.md#complete-a
 A [standalone call to a proven factory](../development/string-ownership.md#standalone-calls-that-discard-four-returned-appends-p0097)
 releases the original result immediately after the call, including a final join
 from up to four returned appends.
+Direct `Console.Write` and `Console.WriteLine` statements
+[release the same kind of result after printing](../development/string-ownership.md#direct-console-output-of-four-returned-appends-p0098).
 Other calls can leave a managed result registered until shutdown. Plain `=` finishes
 evaluating the replacement before releasing the current allocation. Self-assignment
 is safe and uninitialized scalar strings start as null. Local string arrays and

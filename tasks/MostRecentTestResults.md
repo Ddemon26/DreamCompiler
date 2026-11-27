@@ -2,6 +2,37 @@
 
 **Date:** November 27, 2026 UTC
 
+**Pass:** P0098 - release four returned appends after direct Console output
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0097 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/46013496222)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **197** entries. **179 passed**, **18 skipped**,
+  and zero failed or errored (63.88s). Report `test_results_20261127_130110_windows.json`.
+  The Console fixture added two expected lines. The other 196 entries matched
+  P0097's statuses, outputs, and skip reasons.
+- The focused Go tests passed (18.539s, `-count=1`). In each mode, 10,000 paired
+  calls verified once-only argument evaluation and release of the original
+  fourth join after either writer observed it.
+- The Windows Go quick retry passed all **43** groups (174.044s, `-count=1`)
+  after the existing return fixture was updated to require the additional
+  release. Its expected output stayed the same.
+- All **110** allocation probes passed (136.866s). Eight calls per writer and
+  mode left zero live fourth joins, down from eight at P0097. The other 106
+  measurements matched P0097.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Python runner tests passed **5/5** (0.054s).
+
+See the [P0098 record](passes/P0098-print-four-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0097 checkpoint
+
+**Date:** November 27, 2026 UTC
+
 **Pass:** P0097 - discard the final join from four returned appends
 
 **Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.

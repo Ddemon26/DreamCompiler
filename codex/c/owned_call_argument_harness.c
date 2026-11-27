@@ -9,6 +9,7 @@ static size_t expected_joins;
 static char *original, *intermediate;
 static const char *const join_text[] = {
     "startowned", "outer-startowned", "third-outer-startowned",
+    "fourth-third-outer-startowned",
 };
 
 static char *checked_copy(const char *source) {
@@ -141,9 +142,17 @@ int main(void) {
         assert(copies == 16 * i && joins == 12 * i && releases == 28 * i);
         assert(writes == 2 * i && lines == 2 * i);
     }
+    expected_joins = 4;
+    copies = joins = releases = writes = lines = 0;
+    for (size_t i = 1; i <= 10000; i++) {
+        assert(DREAM_FOURTH_OUTPUT_PROBE() == 2);
+        assert(!original && !intermediate && !observed && !dr_head);
+        assert(copies == 10 * i && joins == 8 * i && releases == 18 * i);
+        assert(writes == i && lines == i);
+    }
     expected_joins = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 43 && releases == 67 && !dr_head);
+    assert(copies == 53 && releases == 85 && !dr_head);
     return 0;
 }

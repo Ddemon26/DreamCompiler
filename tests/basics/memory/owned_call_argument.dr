@@ -14,10 +14,13 @@
 // Expected: third-outer-startownedthird-outer-startowned
 // Expected: third-outer-startownedthird-outer-startowned
 // Expected: 4
+// Expected: fourth-third-outer-startownedfourth-third-outer-startowned
+// Expected: 2
 func string factory() { string result = "owned"; return result; }
 func string joined(int value) { string result = "start"; return (result += factory()); }
 func string nested(int value) { string result = "outer-"; return (result += joined(value)); }
 func string deeper(int value) { string result = "third-"; return (result += nested(value)); }
+func string fourth(int value) { string result = "fourth-"; return (result += deeper(value)); }
 func string clone(string source) { string result = source; return result; }
 func string effect(int value) { string result = "effect"; return result; }
 func void view(string source) { Console.Write(source); }
@@ -53,6 +56,12 @@ func int tripleOutputProbe() {
     line(deeper(count++));
     return count;
 }
+func int fourthOutputProbe() {
+    int count = 0;
+    if (true) Console.Write(fourth(count++));
+    Console.WriteLine(fourth(count++));
+    return count;
+}
 func void exercise() {
     string dreamOwnedArgument0 = "snapshot";
     int count = 0;
@@ -72,3 +81,4 @@ exercise();
 Console.WriteLine(joinOutputProbe());
 Console.WriteLine(nestedOutputProbe());
 Console.WriteLine(tripleOutputProbe());
+Console.WriteLine(fourthOutputProbe());

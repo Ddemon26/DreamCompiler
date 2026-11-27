@@ -310,10 +310,10 @@ returns when up to four returned appends meet the factory proof.
 The call evaluates its arguments once. See the
 [discard rule](../development/string-ownership.md#standalone-calls-that-discard-four-returned-appends-p0097).
 
-Complete `Console.Write(deeper());` and `Console.WriteLine(deeper());`
-statements release the original final join after printing when up to three
+Complete `Console.Write(fourth());` and `Console.WriteLine(fourth());`
+statements release the original final join after printing when up to four
 returned appends meet the factory proof. See the
-[Console output rule](../development/string-ownership.md#direct-console-output-of-three-returned-appends-p0087).
+[Console output rule](../development/string-ownership.md#direct-console-output-of-four-returned-appends-p0098).
 
 In a complete `show(getText());` statement, the caller passes the original
 result and releases it after `show` returns if `show` is a synchronous void

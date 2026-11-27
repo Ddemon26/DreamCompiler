@@ -49,6 +49,7 @@ P0094 releases the same allocation in a directly returned append.
 P0095 adopts the final allocation from four returned appends in a direct scalar initializer.
 P0096 adopts the final allocation from four returned appends in a complete scalar assignment.
 P0097 releases the final allocation from four returned appends after a standalone call.
+P0098 releases the final allocation from four returned appends after either direct Console writer.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -145,22 +146,28 @@ exercise();
         "c": ["return__dream_string_append_owned(&text,@entry@extended());",
               "snapshot=@entry@fourth();"],
     },
-    {
-        "name": "triple_join_append_return",
-        "releases": 64, "live": 8,
-        "source": QUADRUPLE_JOINS + '''
-func void exercise() {
-    for (int i = 0; i < 8; i++) {
-        Console.WriteLine(fourth());
-    }
-}
+    *[
+        {
+            "name": f"quadruple_join_console_{writer.lower()}",
+            "releases": 72, "live": 0,
+            "source": QUADRUPLE_JOINS + f"""
+func void exercise() {{
+    for (int i = 0; i < 8; i++) {{
+        Console.{writer}(fourth());
+    }}
+}}
 exercise();
-''',
-        "output": "start-third-outer-inner-owned\n" * 8,
-        "c": ["return__dream_string_append_owned(&text,@entry@nested());",
-              "return__dream_string_append_owned(&text,@entry@extended());",
-              "dr_console_writeln(@entry@fourth());"],
-    },
+""",
+            "output": ("start-third-outer-inner-owned" + separator) * 8,
+            "c": ["return__dream_string_append_owned(&text,@entry@nested());",
+                  "return__dream_string_append_owned(&text,@entry@extended());",
+                  argument_release(runtime, call="@entry@fourth()")],
+        }
+        for writer, runtime, separator in (
+            ("Write", "dr_console_write", ""),
+            ("WriteLine", "dr_console_writeln", "\n"),
+        )
+    ],
     *[
         {
             "name": f"triple_join_append_wrapper_{writer.lower()}",
