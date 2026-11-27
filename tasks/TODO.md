@@ -859,10 +859,15 @@ The checks cover const declarations, `for` headers, once-only argument
 evaluation, original allocation identity, and cleanup in ordinary and
 imported calls. See [P0095](passes/P0095-adopt-four-returned-appends.md).
 
-Broader T011 remains open. Verify P0095 publication and native CI, then measure
-retention in `target = fourth();` for an owned scalar target. Check whether a
-complete assignment can install the original fourth join after evaluating the
-arguments once and release the destination's current allocation.
+P0096 lets a complete assignment to an owned scalar string adopt the original
+fourth join. Both modes check a destination read, a replacement during argument
+evaluation, once-only argument evaluation, and original-pointer cleanup. Eight
+assignments per mode leave zero original joins live, down from eight at P0095.
+See [P0096](passes/P0096-assign-four-returned-appends.md).
+
+Broader T011 remains open. Verify P0096 publication and native CI, then measure
+retention after a complete `fourth();` statement. Check whether it can release
+the original fourth join after evaluating the arguments once.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

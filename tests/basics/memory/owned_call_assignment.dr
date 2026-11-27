@@ -2,6 +2,8 @@
 // Expected: changed
 // Expected: 2
 // Expected: start-outer-inner-owned
+// Expected: start-third-outer-inner-owned
+// Expected: 1
 // Expected: global
 func string factory() { string result = "owned"; return result; }
 func string clone(string source) { const string result = source; return result; }
@@ -13,6 +15,7 @@ func string effect(int value) { string result = "effect"; return result; }
 func string joined(string source) { string result = source; return (result += factory()); }
 func string nested(string source) { string result = source; return (result += joined("-inner-")); }
 func string extended(string source) { string result = source; return (result += nested("-outer")); }
+func string fourth(string source, int callNumber) { string result = source; return (result += extended("-third")); }
 func void joinAssignmentProbe() {
     string target = "old";
     target = joined(target);
@@ -27,6 +30,13 @@ func void tripleJoinAssignmentProbe() {
     string target = "old";
     target = extended(target);
     target = extended(target = "new");
+}
+func int fourthJoinAssignmentProbe() {
+    string target = "old";
+    int count = 0;
+    target = fourth(target, count++);
+    target = fourth(target = "new", count++);
+    return count;
 }
 func void identityProbe() { string identity = "old"; for (int k=0; k<10; k++) identity = factory(); }
 func string transfer() { string forwarded = "old"; forwarded = factory(); return forwarded; }
@@ -48,6 +58,11 @@ func void exercise() {
     string triple = "start";
     triple = extended(triple);
     Console.WriteLine(triple);
+    string fourthResult = "start";
+    int fourthCount = 0;
+    fourthResult = fourth(fourthResult, fourthCount++);
+    Console.WriteLine(fourthResult);
+    Console.WriteLine(fourthCount);
 }
 exercise();
 string global = "old"; global = clone("global"); Console.WriteLine(global);

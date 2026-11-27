@@ -2,6 +2,35 @@
 
 **Date:** November 27, 2026 UTC
 
+**Pass:** P0096 - adopt four returned appends in complete scalar assignments
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0095 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/45927057532)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **197** entries. **179 passed**, **18 skipped**,
+  and zero failed or errored (68.22s). Report `test_results_20261127_010426_windows.json`.
+  The assignment fixture printed the fourth join and its argument count. The
+  other 196 entries matched P0095's statuses, outputs, and skip reasons.
+- The focused Go tests passed (12.485s, `-count=1`). In each mode, the harness
+  ran 10,000 paired assignments and verified once-only arguments, release of the
+  current destination after the call, and an empty registry at scope exit.
+- The Windows Go quick protocol passed all **43** groups (178.724s, `-count=1`).
+- All **106** allocation probes passed (124.685s). Eight assignments per mode
+  left zero original joins live, down from eight at P0095. All 104 prior
+  measurements matched.
+- The Windows build and Linux cross-build passed **15/15** steps each. Python
+  runner tests passed **5/5** (0.049s).
+
+See the [P0096 record](passes/P0096-assign-four-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0095 checkpoint
+
+**Date:** November 27, 2026 UTC
+
 **Pass:** P0095 - adopt four returned appends in scalar initializers
 
 **Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.

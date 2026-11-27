@@ -14,7 +14,7 @@ destinations retain their existing borrowed behavior. A direct scalar initialize
 can adopt a proven factory result with
 [up to four returned appends](../development/string-ownership.md#scalar-initializers-that-adopt-four-returned-appends-p0095).
 A complete `=` assignment to an owned scalar string can adopt a proven factory result
-with [up to three returned appends](../development/string-ownership.md#complete-assignments-that-adopt-three-returned-appends-p0085).
+with [up to four returned appends](../development/string-ownership.md#complete-assignments-that-adopt-four-returned-appends-p0096).
 A [standalone call to a proven factory](../development/string-ownership.md#standalone-calls-that-discard-three-returned-appends-p0086)
 releases the original result immediately after the call, including a final join
 from up to three returned appends.

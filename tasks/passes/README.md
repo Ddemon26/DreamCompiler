@@ -97,8 +97,9 @@
 | [P0093](P0093-wrap-appends-with-three-returned-appends.md) | 2026-11-26 | Release three-append factory operands before proven Console wrapper calls | `Pass-ID: P0093` |
 | [P0094](P0094-return-appends-with-three-returned-appends.md) | 2026-11-26 | Release three-append factory operands in direct append returns | `Pass-ID: P0094` |
 | [P0095](P0095-adopt-four-returned-appends.md) | 2026-11-27 | Adopt the original fourth join in a direct scalar initializer | `Pass-ID: P0095` |
+| [P0096](P0096-assign-four-returned-appends.md) | 2026-11-27 | Adopt the original fourth join in a complete scalar assignment | `Pass-ID: P0096` |
 
-**Verify P0095 publication and native CI, then measure retention in a complete scalar assignment that receives a fourth returned join.**
+**Verify P0096 publication and native CI, then measure retention after a standalone call that discards a fourth returned join.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not

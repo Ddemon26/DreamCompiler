@@ -1281,8 +1281,9 @@ For `target = extended(target = "new");`, the argument replaces the first
 join and the outer assignment releases `"new"` after the call. Scope cleanup
 releases the second original join. The proof also applies to imported calls.
 
-Assignment expressions and calls with four returned appends keep their ordinary
-emission. See the [assignment contract](owned-call-assignment.md) and the
+P0096 extends [complete assignment adoption](#complete-assignments-that-adopt-four-returned-appends-p0096)
+to the fourth join. Assignment expressions keep their copy behavior. See the
+[assignment contract](owned-call-assignment.md) and the
 [P0085 pass record](../../tasks/passes/P0085-assign-three-returned-appends.md).
 
 ## Standalone calls that discard three returned appends (P0086)
@@ -1424,3 +1425,17 @@ The rule covers const declarations and supported `for` headers, including calls
 to imported factories. Calls beyond four returned appends and conditional
 initializers keep their copies. See the
 [P0095 pass record](../../tasks/passes/P0095-adopt-four-returned-appends.md).
+
+## Complete assignments that adopt four returned appends (P0096)
+
+In `target = fourth(target);`, a complete `=` statement to an owned scalar
+string can adopt the original fourth join using the
+[four-append factory proof](#scalar-initializers-that-adopt-four-returned-appends-p0095).
+The call and its arguments evaluate once. When an argument assigns `"new"`
+to `target`, the outer assignment releases that replacement after the call
+returns. Scope cleanup releases the installed fourth join at reference count one.
+The same rule applies to imported definitions.
+
+Five-append calls, assignments nested in expressions, and `for` updates
+continue to copy the result. See the
+[P0096 pass record](../../tasks/passes/P0096-assign-four-returned-appends.md).

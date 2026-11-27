@@ -3,7 +3,7 @@
 #include "../../src/runtime/extensions/custom.h"
 static size_t copies, joins, releases, peak;
 static int identity_probe, join_assignment_probe, nested_join_assignment_probe;
-static int triple_join_assignment_probe;
+static int triple_join_assignment_probe, fourth_join_assignment_probe;
 static void *originals[128];
 static size_t live_count(void) { size_t n=0; for(DrRef *r=dr_head;r;r=r->next) { assert(r->refcount==1); n++; } return n; }
 static void record_allocation(char *ptr) {
@@ -42,6 +42,15 @@ static char *checked_concat(const char *left, const char *right) {
         assert(joins < sizeof values / sizeof values[0]);
         assert(strcmp(ptr, values[joins]) == 0);
     }
+    if (fourth_join_assignment_probe) {
+        static const char *const values[] = {
+            "-inner-owned", "-outer-inner-owned", "-third-outer-inner-owned",
+            "old-third-outer-inner-owned", "-inner-owned", "-outer-inner-owned",
+            "-third-outer-inner-owned", "new-third-outer-inner-owned"
+        };
+        assert(joins < sizeof values / sizeof values[0]);
+        assert(strcmp(ptr, values[joins]) == 0);
+    }
     record_allocation(ptr);
     joins++;
     return ptr;
@@ -73,6 +82,16 @@ static void checked_release(void *p) {
         // assignment releases the argument's replacement (8) after the call.
         // Scope cleanup releases the second original final join (15).
         static const size_t order[] = {3, 4, 2, 5, 1, 6, 0, 7, 11, 12, 10, 13, 9, 14, 8, 15};
+        assert(releases < sizeof order / sizeof order[0]);
+        assert(i == order[releases] && "release the original join and post-RHS slot in order");
+    }
+    if (fourth_join_assignment_probe) {
+        // The first factory consumes its operands before releasing old (0).
+        // The nested assignment releases the first join (9), and the outer
+        // assignment releases new (10) only after the second factory returns.
+        static const size_t order[] = {
+            4, 5, 3, 6, 2, 7, 1, 8, 0, 9, 14, 15, 13, 16, 12, 17, 11, 18, 10, 19
+        };
         assert(releases < sizeof order / sizeof order[0]);
         assert(i == order[releases] && "release the original join and post-RHS slot in order");
     }
@@ -130,8 +149,16 @@ int main(void) {
         assert(dr_head == NULL);
     }
     triple_join_assignment_probe = 0;
+    fourth_join_assignment_probe = 1;
+    for (size_t i = 0; i < 10000; i++) {
+        copies = joins = releases = peak = 0;
+        assert(DREAM_FOURTH_JOIN_ASSIGNMENT_PROBE() == 2);
+        assert(copies == 12 && joins == 8 && releases == 20 && peak == 7);
+        assert(dr_head == NULL);
+    }
+    fourth_join_assignment_probe = 0;
     copies = joins = releases = peak = 0;
     assert(dream_entry_main() == 0);
-    assert(dr_head == NULL && copies == 24 && joins == 3 && releases == 27);
+    assert(dr_head == NULL && copies == 30 && joins == 7 && releases == 37);
     return 0;
 }

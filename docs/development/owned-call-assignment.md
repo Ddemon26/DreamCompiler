@@ -167,5 +167,13 @@ ordinary and imported calls. See [P0075](../../tasks/passes/P0075-assign-nested-
 Complete assignments to owned scalar strings also accept the
 [three-append proof](string-ownership.md#complete-assignments-that-adopt-three-returned-appends-p0085).
 The lifetime check verifies the original joins and the replacement installed
-during argument evaluation. Assignment expressions and four-append calls keep
-their copy path. See [P0085](../../tasks/passes/P0085-assign-three-returned-appends.md).
+during argument evaluation. See [P0085](../../tasks/passes/P0085-assign-three-returned-appends.md).
+
+## P0096 assignments of four returned appends
+
+Complete assignments to owned scalar strings also accept the
+[four-append proof](string-ownership.md#complete-assignments-that-adopt-four-returned-appends-p0096).
+The caller holds the original fourth join in a temporary, releases the current
+destination after argument evaluation, and adopts the join. Five-append calls,
+assignments in expressions, and `for` updates continue to copy the result.
+See [P0096](../../tasks/passes/P0096-assign-four-returned-appends.md).

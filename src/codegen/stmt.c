@@ -1277,7 +1277,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
       const VarBinding *slot = cgctx_binding(ctx, name.start, name.len);
       if (slot && slot->owns_string && slot->type == TK_KW_STRING &&
           slot->indirections == 0 &&
-          adopts_string_call_result(ctx, expr->as.bin.rhs, 3)) {
+          adopts_string_call_result(ctx, expr->as.bin.rhs, 4)) {
         // A statement-local temporary avoids a new global helper namespace.
         // Finish the RHS before reading/releasing the current destination: an
         // argument may itself replace that destination or snapshot its backing.

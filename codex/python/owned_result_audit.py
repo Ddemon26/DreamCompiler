@@ -47,6 +47,7 @@ P0092 releases the same allocation in an append printed directly by either Conso
 P0093 releases the same allocation before either proven Console wrapper receives an append.
 P0094 releases the same allocation in a directly returned append.
 P0095 adopts the final allocation from four returned appends in a direct scalar initializer.
+P0096 adopts the final allocation from four returned appends in a complete scalar assignment.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -95,6 +96,23 @@ func string fourth() {
 
 
 CASES = [
+    {
+        "name": "quadruple_join_assignment",
+        "releases": 73, "live": 0,
+        "source": QUADRUPLE_JOINS + '''
+func void exercise() {
+    string target = "old";
+    for (int i = 0; i < 8; i++) {
+        target = fourth();
+        Console.WriteLine(target);
+    }
+}
+exercise();
+''',
+        "output": "start-third-outer-inner-owned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@extended());",
+              "(char*)@entry@fourth();dr_release(target);target=__dream_owned_0;"],
+    },
     {
         "name": "quadruple_join_initializer",
         "releases": 72, "live": 0,
