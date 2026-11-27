@@ -2,6 +2,35 @@
 
 **Date:** November 27, 2026 UTC
 
+**Pass:** P0097 - discard the final join from four returned appends
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0096 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/45963647397)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **197** entries. **179 passed**, **18 skipped**,
+  and zero failed or errored (66.00s). Report `test_results_20261127_070424_windows.json`.
+  The discard fixture printed one new expected argument count. The other 196
+  entries matched P0096's statuses, outputs, and skip reasons.
+- The focused Go tests passed (16.372s, `-count=1`). In each mode the discard
+  harness ran 10,000 fourth-join calls and verified once-only arguments,
+  original-pointer release at reference count one, and an empty registry.
+- The Windows Go quick protocol passed all **43** groups (175.573s, `-count=1`).
+- All **108** allocation probes passed (132.007s). Eight standalone calls per
+  mode left zero original joins live, down from eight at P0096. All 106 prior
+  measurements matched.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Python runner tests passed **5/5** (0.033s).
+
+See the [P0097 record](passes/P0097-discard-four-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0096 checkpoint
+
+**Date:** November 27, 2026 UTC
+
 **Pass:** P0096 - adopt four returned appends in complete scalar assignments
 
 **Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.

@@ -1439,3 +1439,19 @@ The same rule applies to imported definitions.
 Five-append calls, assignments nested in expressions, and `for` updates
 continue to copy the result. See the
 [P0096 pass record](../../tasks/passes/P0096-assign-four-returned-appends.md).
+
+## Standalone calls that discard four returned appends (P0097)
+
+In `fourth(count++);`, a standalone call that meets the
+[four-append factory proof](#scalar-initializers-that-adopt-four-returned-appends-p0095)
+evaluates its arguments once and releases the original fourth join as soon as the
+call returns. The release consumes the sole reference to the original allocation.
+This also applies to imported factories. The
+[checked fixture](../../tests/basics/memory/owned_call_discard.dr)
+verifies evaluation count. The
+[lifetime harness](../../codex/c/owned_call_discard_harness.c) verifies original
+pointer identity and release at reference count one.
+
+Five-append results and calls inside loop headers, conditionals, or arguments
+use ordinary emission. See the
+[P0097 pass record](../../tasks/passes/P0097-discard-four-returned-appends.md).

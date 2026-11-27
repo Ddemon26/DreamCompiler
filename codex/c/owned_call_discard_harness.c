@@ -6,10 +6,10 @@ static size_t copies, joins, releases;
 static int checking_identity;
 static size_t expected_joins;
 static void *original;
-static char *join[3];
 static const char *const join_text[] = {
-    "startowned", "outer-startowned", "third-outer-startowned",
+    "startowned", "outer-startowned", "third-outer-startowned", "fourth-third-outer-startowned",
 };
+static char *join[sizeof join_text / sizeof join_text[0]];
 
 static char *checked_concat(const char *left, const char *right) {
     char *result = dream_concat(left, right);
@@ -87,14 +87,17 @@ int main(void) {
     checking_identity = 0;
     int (*const probes[])(void) = {
         DREAM_JOIN_DISCARD_PROBE, DREAM_NESTED_JOIN_DISCARD_PROBE, DREAM_TRIPLE_JOIN_DISCARD_PROBE,
+        DREAM_FOURTH_JOIN_DISCARD_PROBE,
     };
     for (expected_joins = 1; expected_joins <= sizeof probes / sizeof probes[0]; expected_joins++) {
         for (size_t i = 0; i < 10000; i++) {
             copies = joins = releases = 0;
             int count = probes[expected_joins - 1]();
             assert(count == 1);
-            assert(join[0] == NULL && join[1] == NULL && join[2] == NULL && dr_head == NULL &&
-                   "discard the original final join before returning");
+            assert(dr_head == NULL && "discard the original final join before returning");
+            for (size_t j = 0; j < expected_joins; j++) {
+                assert(join[j] == NULL);
+            }
             assert(copies == expected_joins + 1 && joins == expected_joins &&
                    releases == 2 * expected_joins + 1);
         }
@@ -102,6 +105,6 @@ int main(void) {
     expected_joins = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 25 && releases == 31 && dr_head == NULL);
+    assert(copies == 30 && releases == 40 && dr_head == NULL);
     return 0;
 }

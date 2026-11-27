@@ -306,9 +306,9 @@ See the [initializer rule](../development/string-ownership.md#scalar-initializer
 and [assignment rule](../development/string-ownership.md#complete-assignments-that-adopt-four-returned-appends-p0096).
 
 A standalone factory call releases the final join immediately after the call
-returns when up to three returned appends meet the factory proof.
+returns when up to four returned appends meet the factory proof.
 The call evaluates its arguments once. See the
-[discard rule](../development/string-ownership.md#standalone-calls-that-discard-three-returned-appends-p0086).
+[discard rule](../development/string-ownership.md#standalone-calls-that-discard-four-returned-appends-p0097).
 
 Complete `Console.Write(deeper());` and `Console.WriteLine(deeper());`
 statements release the original final join after printing when up to three

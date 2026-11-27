@@ -1370,7 +1370,7 @@ void cg_emit_stmt(CGCtx *ctx, COut *b, Node *n, const char *src_file) {
         c_out_write(b, ");");
         c_out_newline(b);
       }
-    } else if (adopts_string_call_result(ctx, expr, 3)) {
+    } else if (adopts_string_call_result(ctx, expr, 4)) {
       // The discarded result has no destination to own its transferred reference.
       c_out_write(b, "dr_release((void *)");
       cg_emit_expr(ctx, b, expr);

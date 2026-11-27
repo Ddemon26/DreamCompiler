@@ -48,6 +48,7 @@ P0093 releases the same allocation before either proven Console wrapper receives
 P0094 releases the same allocation in a directly returned append.
 P0095 adopts the final allocation from four returned appends in a direct scalar initializer.
 P0096 adopts the final allocation from four returned appends in a complete scalar assignment.
+P0097 releases the final allocation from four returned appends after a standalone call.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -96,6 +97,21 @@ func string fourth() {
 
 
 CASES = [
+    {
+        "name": "quadruple_join_discard",
+        "releases": 72, "live": 0,
+        "source": QUADRUPLE_JOINS + '''
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        fourth();
+    }
+}
+exercise();
+''',
+        "output": "",
+        "c": ["return__dream_string_append_owned(&text,@entry@extended());",
+              "dr_release((void*)@entry@fourth());"],
+    },
     {
         "name": "quadruple_join_assignment",
         "releases": 73, "live": 0,

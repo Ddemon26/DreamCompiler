@@ -4,6 +4,7 @@
 // Expected: 1
 // Expected: 1
 // Expected: 1
+// Expected: 1
 func void identityProbe() { factory(); }
 func int joinDiscardProbe() {
     int count = 0;
@@ -20,10 +21,16 @@ func int tripleJoinDiscardProbe() {
     (deeper(count++));
     return count;
 }
+func int fourthJoinDiscardProbe() {
+    int count = 0;
+    (fourth(count++));
+    return count;
+}
 func string factory() { string result = "owned"; return result; }
 func string joined(int value) { string result = "start"; return (result += factory()); }
 func string nested(int value) { string result = "outer-"; return (result += joined(value)); }
 func string deeper(int value) { string result = "third-"; return (result += nested(value)); }
+func string fourth(int value) { string result = "fourth-"; return (result += deeper(value)); }
 func string clone(string source) { const string result = source; return result; }
 func string empty() { string result = ""; return result; }
 func string escaped() { const string result = "escaped \"value\""; return result; }
@@ -76,3 +83,4 @@ exercise();
 Console.WriteLine(joinDiscardProbe());
 Console.WriteLine(nestedJoinDiscardProbe());
 Console.WriteLine(tripleJoinDiscardProbe());
+Console.WriteLine(fourthJoinDiscardProbe());

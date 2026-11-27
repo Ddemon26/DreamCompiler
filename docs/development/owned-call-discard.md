@@ -129,3 +129,5 @@ P0076 extends the same release to
 [two qualifying returned appends](string-ownership.md#standalone-calls-that-discard-two-returned-appends-p0076).
 P0086 extends it to
 [three qualifying returned appends](string-ownership.md#standalone-calls-that-discard-three-returned-appends-p0086).
+P0097 extends it to
+[four qualifying returned appends](string-ownership.md#standalone-calls-that-discard-four-returned-appends-p0097).

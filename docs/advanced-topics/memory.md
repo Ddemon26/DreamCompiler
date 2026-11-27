@@ -15,9 +15,9 @@ can adopt a proven factory result with
 [up to four returned appends](../development/string-ownership.md#scalar-initializers-that-adopt-four-returned-appends-p0095).
 A complete `=` assignment to an owned scalar string can adopt a proven factory result
 with [up to four returned appends](../development/string-ownership.md#complete-assignments-that-adopt-four-returned-appends-p0096).
-A [standalone call to a proven factory](../development/string-ownership.md#standalone-calls-that-discard-three-returned-appends-p0086)
+A [standalone call to a proven factory](../development/string-ownership.md#standalone-calls-that-discard-four-returned-appends-p0097)
 releases the original result immediately after the call, including a final join
-from up to three returned appends.
+from up to four returned appends.
 Other calls can leave a managed result registered until shutdown. Plain `=` finishes
 evaluating the replacement before releasing the current allocation. Self-assignment
 is safe and uninitialized scalar strings start as null. Local string arrays and

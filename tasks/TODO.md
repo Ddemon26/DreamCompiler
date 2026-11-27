@@ -865,9 +865,15 @@ evaluation, once-only argument evaluation, and original-pointer cleanup. Eight
 assignments per mode leave zero original joins live, down from eight at P0095.
 See [P0096](passes/P0096-assign-four-returned-appends.md).
 
-Broader T011 remains open. Verify P0096 publication and native CI, then measure
-retention after a complete `fourth();` statement. Check whether it can release
-the original fourth join after evaluating the arguments once.
+P0097 releases the original fourth join immediately after a standalone call.
+The checks cover once-only arguments, original-pointer release, and fallback for
+five returned appends and calls inside larger expressions.
+Eight calls per mode leave zero original joins live, down from eight at P0096.
+See [P0097](passes/P0097-discard-four-returned-appends.md).
+
+Broader T011 remains open. Verify P0097 publication and native CI, then measure
+retention when complete `Console.Write(fourth());` and
+`Console.WriteLine(fourth());` statements print the original fourth join.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller
