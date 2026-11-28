@@ -291,6 +291,14 @@ func TestCompiler_AssignmentInitializers(t *testing.T) {
 }
 
 func TestCompiler_AppendedStrings(t *testing.T) {
+	withFourthJoinImports := func(program string) (string, string) {
+		factories, exercise, _ := strings.Cut(program, "func void exercise()")
+		exercise = strings.NewReplacer("fourth(", "labels.fourth(", "fifth(", "labels.fifth(",
+			"borrowed(", "labels.borrowed(").Replace(exercise)
+		return "import labels;\nfunc void exercise()" + exercise,
+			"module labels;\n" + strings.ReplaceAll(factories, "\nfunc string ", "\nexport func string ")
+	}
+
 	// 43 exercise releases, four method releases, two top-level replacements.
 	checkStringOwnership(t, "appended_string_copy.dr", 49, []string{
 		`staticchar*__dream_string_append(constchar**slot,constchar*text)`,
@@ -448,13 +456,6 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 	})
 
 	t.Run("fourth_join_operand", func(t *testing.T) {
-		withImports := func(program string) (string, string) {
-			factories, exercise, _ := strings.Cut(program, "func void exercise()")
-			exercise = strings.NewReplacer("fourth(", "labels.fourth(", "fifth(", "labels.fifth(",
-				"borrowed(", "labels.borrowed(").Replace(exercise)
-			return "import labels;\nfunc void exercise()" + exercise,
-				"module labels;\n" + strings.ReplaceAll(factories, "\nfunc string ", "\nexport func string ")
-		}
 		// Eleven releases per append, plus one for the argument's replacement
 		// and one for the borrowed self-append.
 		checkStorageOwnershipWithModule(t, "owned_fourth_join_append.dr", 110013, []string{
@@ -463,7 +464,7 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 			`{constchar*dreamOwnedArgument0=@module@fourth(__dream_string_assign(&changed,"new"),(count++));__dream_string_append(&changed,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,
 			`__dream_string_append(&changed,@module@borrowed(changed));`,
 			`__dream_string_append(&changed,@module@fifth());`,
-		}, "A+fourth-third-outer-inner-B\nnewnewthird-outer-inner-B\n1\nnewnewthird-outer-inner-Bnewnewthird-outer-inner-B\n", 0, withImports)
+		}, "A+fourth-third-outer-inner-B\nnewnewthird-outer-inner-B\n1\nnewnewthird-outer-inner-Bnewnewthird-outer-inner-B\n", 0, withFourthJoinImports)
 	})
 
 	t.Run("owned_factory_return", func(t *testing.T) {
@@ -542,6 +543,21 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 			`header=dream_string_copy(__dream_string_append_owned(&alias,@entry@extended("third-",0)));`,
 			`}dr_release(header);}`,
 		}, "A+third-outer-inner-B\nA+third-outer-inner-B!\nnewnewouter-inner-B\n1\nnewnewouter-inner-B\nsamesame\nsamesamethird-outer-inner-B\n", true)
+	})
+
+	t.Run("fourth_join_initializer", func(t *testing.T) {
+		// Thirteen releases per iteration and thirteen for the changed slot.
+		// Borrowed self-append and the header account for fourteen more.
+		checkStorageOwnershipWithModule(t, "owned_fourth_join_append_initializer.dr", 130027, []string{
+			`return__dream_string_append_owned(&last,@module@extended());`,
+			`snapshot=dream_string_copy(__dream_string_append_owned(&text,@module@fourth("fourth-",0)));`,
+			`__dream_string_append(&text,"!");`, `dr_release(snapshot);}`,
+			`constchar*snapshot=dream_string_copy(__dream_string_append_owned(&changed,@module@fourth(__dream_string_assign(&changed,"new"),(count++))));`,
+			`beyond=dream_string_copy(__dream_string_append(&changed,@module@fifth()));`,
+			`borrowedCopy=dream_string_copy(__dream_string_append(&alias,@module@borrowed(alias)));`,
+			`header=dream_string_copy(__dream_string_append_owned(&alias,@module@fourth("fourth-",0)));`,
+			`}dr_release(header);}`,
+		}, "A+fourth-third-outer-inner-B\nA+fourth-third-outer-inner-B!\nnewnewthird-outer-inner-B\n1\nnewnewthird-outer-inner-B\nsamesame\nsamesamefourth-third-outer-inner-B\n", 0, withFourthJoinImports)
 	})
 
 	t.Run("nested_join_console_append", func(t *testing.T) {

@@ -889,10 +889,17 @@ arguments, the post-argument destination, and borrowed self-append. Eight
 isolated appends per mode leave zero final joins live, down from eight at P0099.
 See [P0100](passes/P0100-append-four-returned-appends.md).
 
-Broader T011 remains open. Verify P0100 publication and native CI, then measure
-retention in `string snapshot = (text += fourth());`. Check that the append
-uses the post-argument destination and that the destination and snapshot
-own independent storage in ordinary and imported calls.
+P0101 releases the original fourth join when an append initializes an owned
+scalar string. The mutable destination reflects argument side effects, and the
+snapshot owns an independent copy. Ordinary and imported calls are checked with
+mutable and const snapshots, a zero-iteration `for` header, and borrowed
+self-append. Eight isolated initializers per mode leave zero fourth joins live,
+down from eight at P0100. See [P0101](passes/P0101-initialize-from-four-returned-appends.md).
+
+Broader T011 remains open. Verify P0101 publication and native CI, then measure
+fourth-join retention when either Console writer receives `text += fourth()`.
+Check exact output, once-only arguments, and the destination's lifetime in
+ordinary and imported calls.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

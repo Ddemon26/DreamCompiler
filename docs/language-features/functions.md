@@ -323,15 +323,15 @@ The factory may return up to four proven appends. The factory arguments
 evaluate once. See the
 [Console wrapper rule](../development/string-ownership.md#console-wrappers-for-four-returned-appends-p0099).
 
-A complete `text += deeper();` statement appends the final result of up to
-three proven returned appends to an owned scalar string, then releases the
+A complete `text += fourth();` statement appends the final result of up to
+four proven returned appends to an owned scalar string, then releases the
 operand. The factory and its arguments run before the append reads `text`.
-See the [append statement rule](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
+See the [append statement rule](../development/string-ownership.md#complete-append-statements-with-four-returned-appends-p0100).
 
-In `string snapshot = (text += deeper());`, the append also releases the
-final result of up to three proven returned appends. The snapshot receives its
+In `string snapshot = (text += fourth());`, the append also releases the
+final result of up to four proven returned appends. The snapshot receives its
 own managed copy of the updated destination. See the
-[append initializer rule](../development/string-ownership.md#append-initializers-with-three-returned-appends-p0090).
+[append initializer rule](../development/string-ownership.md#append-initializers-with-four-returned-appends-p0101).
 
 In `Console.WriteLine(text += deeper());` and `Console.Write(text += deeper());`,
 the append releases the final result of up to three proven returned appends

@@ -1497,7 +1497,24 @@ arguments evaluate once. If an argument replaces `text`, the append reads that
 replacement, installs the concatenation, and releases the original fourth join.
 Imported factory calls follow the same rule.
 
-Borrowed operands, conditional operands, calls beyond four returned appends,
-and fourth joins in nested append expressions use ordinary append emission.
+Borrowed operands, conditional operands, and calls beyond four returned
+appends use ordinary append emission. Direct scalar initializers follow the
+[initializer rule below](#append-initializers-with-four-returned-appends-p0101).
 See the [checked fixture](../../tests/basics/memory/owned_fourth_join_append.dr)
 and [P0100 pass record](../../tasks/passes/P0100-append-four-returned-appends.md).
+
+## Append initializers with four returned appends (P0101)
+
+In `string snapshot = (text += fourth());`, the append to an owned mutable
+scalar string can consume an operand that meets the
+[four-append proof](#scalar-initializers-that-adopt-four-returned-appends-p0095).
+The factory and its arguments evaluate once. The append reads the destination
+after argument evaluation, installs the concatenation, and releases the original
+fourth join. The initializer then copies the installed value so changes to
+`text` and cleanup of `snapshot` leave the other string valid.
+
+The rule covers const declarations and supported `for` headers, including
+calls to imported factories. Borrowed and conditional operands and calls beyond
+four returned appends use ordinary append emission. See the
+[checked fixture](../../tests/basics/memory/owned_fourth_join_append_initializer.dr)
+and [P0101 pass record](../../tasks/passes/P0101-initialize-from-four-returned-appends.md).

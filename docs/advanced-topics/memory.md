@@ -35,9 +35,9 @@ or array-element ownership. Qualified mutable owned scalar identifiers also supp
 value, and yield the new pointer. Null contributes empty text. Declaration results
 are copied independently. A complete append statement releases its eligible
 factory operand after installing the concatenation, including a final join
-from [up to three returned appends](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
+from [up to four returned appends](../development/string-ownership.md#complete-append-statements-with-four-returned-appends-p0100).
 An append that directly initializes a scalar string can also release an eligible
-operand with [up to three returned appends](../development/string-ownership.md#append-initializers-with-three-returned-appends-p0090).
+operand with [up to four returned appends](../development/string-ownership.md#append-initializers-with-four-returned-appends-p0101).
 An append printed directly by either Console writer releases an eligible final
 join from [up to three returned appends](../development/string-ownership.md#console-output-of-appends-with-three-returned-appends-p0092)
 before the writer reads the new value.

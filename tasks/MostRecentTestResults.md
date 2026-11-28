@@ -2,6 +2,33 @@
 
 **Date:** November 28, 2026 UTC
 
+**Pass:** P0101 - release four returned appends in snapshot initializers
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0100 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/46124891497)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **199** entries. **181 passed**, **18 skipped**,
+  and zero failed or errored (67.57s). Report `test_results_20261128_070518_windows.json`.
+  The new snapshot fixture matched exact output. All 198 previous entries
+  matched P0100's statuses, outputs, and skip reasons.
+- Both focused Go tests passed (6.210s, `-count=1`). For the snapshot fixture,
+  the harness verified 130,027 live releases in each mode and an empty registry
+  before shutdown.
+- The Windows Go quick protocol passed all **43** groups (247.270s, `-count=1`).
+- All **118** allocation probes passed (164.331s). In each mode, eight snapshot
+  initializers made 104 releases and left zero fourth joins live, down from
+  eight at P0100. All 116 previous measurements matched.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Python runner tests passed **5/5** (0.049s).
+
+See the [P0101 record](passes/P0101-initialize-from-four-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0100 checkpoint
+
 **Pass:** P0100 - release four returned appends after a complete append statement
 
 **Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.

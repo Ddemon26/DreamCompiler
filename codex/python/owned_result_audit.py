@@ -52,6 +52,7 @@ P0097 releases the final allocation from four returned appends after a standalon
 P0098 releases the final allocation from four returned appends after either direct Console writer.
 P0099 releases the final allocation from four returned appends after either proven Console wrapper.
 P0100 releases the final allocation from four returned appends after a complete append statement.
+P0101 releases the same allocation in an append that initializes a snapshot.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -100,6 +101,29 @@ func string fourth() {
 
 
 CASES = [
+    {
+        "name": "quadruple_join_append_initializer",
+        "releases": 104, "live": 0,
+        "source": QUADRUPLE_JOINS + '''
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "left-";
+        {
+            string snapshot = (text += fourth());
+            text += "!";
+            Console.WriteLine(snapshot);
+        }
+        Console.WriteLine(text);
+    }
+}
+exercise();
+''',
+        "output": "left-start-third-outer-inner-owned\nleft-start-third-outer-inner-owned!\n" * 8,
+        "c": [
+            "return__dream_string_append_owned(&text,@entry@extended());",
+            "snapshot=dream_string_copy(__dream_string_append_owned(&text,@entry@fourth()));",
+        ],
+    },
     {
         "name": "quadruple_join_append",
         "releases": 88, "live": 0,

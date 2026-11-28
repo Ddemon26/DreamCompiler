@@ -206,15 +206,15 @@ bool or char operands are rejected. Numeric `+=` keeps its existing behavior.
 In `view(text += deeper());`, the append releases the eligible final join from
 up to three returned appends before the proven Console wrapper runs. See the
 [wrapper append rule](../development/string-ownership.md#console-wrapper-append-arguments-with-three-returned-appends-p0093).
-A complete `text += deeper();` statement can release a factory's original
-join from up to three proven returned appends. The append reads the current
+A complete `text += fourth();` statement can release a factory's original
+join from up to four proven returned appends. The append reads the current
 destination after the factory call and releases the operand after installing
 the concatenation. See the
-[append statement rule](../development/string-ownership.md#complete-append-statements-with-three-returned-appends-p0089).
-A direct scalar initializer such as `string snapshot = (text += deeper());`
-also releases the original join from up to three proven returned appends.
+[append statement rule](../development/string-ownership.md#complete-append-statements-with-four-returned-appends-p0100).
+A direct scalar initializer such as `string snapshot = (text += fourth());`
+also releases the original join from up to four proven returned appends.
 The snapshot owns a copy of the new destination value. See the
-[initializer rule](../development/string-ownership.md#append-initializers-with-three-returned-appends-p0090).
+[initializer rule](../development/string-ownership.md#append-initializers-with-four-returned-appends-p0101).
 `Console.Write(text += deeper());` and `Console.WriteLine(text += deeper());`
 release an eligible final join from up to three returned appends before
 printing the updated destination. See the

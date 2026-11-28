@@ -102,8 +102,9 @@
 | [P0098](P0098-print-four-returned-appends.md) | 2026-11-27 | Release the original fourth join after direct Console output | `Pass-ID: P0098` |
 | [P0099](P0099-wrap-four-returned-appends.md) | 2026-11-28 | Release the original fourth join after a proven Console wrapper returns | `Pass-ID: P0099` |
 | [P0100](P0100-append-four-returned-appends.md) | 2026-11-28 | Release the original fourth join after a complete append statement | `Pass-ID: P0100` |
+| [P0101](P0101-initialize-from-four-returned-appends.md) | 2026-11-28 | Release the original fourth join in an append initializer | `Pass-ID: P0101` |
 
-**Verify P0100 publication and native CI, then measure retention when an append that consumes a fourth returned join initializes a snapshot.**
+**Verify P0101 publication and native CI, then measure fourth-join retention when either Console writer receives an append.**
 Verify current git history and delivery before allocating another ID.
 Allocate monotonically, never reuse a committed ID, and record a blocked attempt
 without presenting it as a delivered pass. A run that only reports a blocker need not
