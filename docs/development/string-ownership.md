@@ -1323,10 +1323,11 @@ the original final join to `Console.Write` or `Console.WriteLine` while it is
 live, and the caller releases the pointer immediately after the wrapper returns.
 The rule covers ordinary and imported definitions.
 
-Four returned appends, conditional arguments, and forwarding wrappers follow
-ordinary emission. An append expression passed to a wrapper still accepts
-factory operands with up to two proven returned appends. See the
+At P0088, conditional arguments, forwarding wrappers, and four returned appends
+followed ordinary emission. See the
 [P0088 pass record](../../tasks/passes/P0088-wrap-three-returned-appends.md).
+P0099 extends the direct wrapper argument to
+[four returned appends](#console-wrappers-for-four-returned-appends-p0099).
 
 ## Complete append statements with three returned appends (P0089)
 
@@ -1468,5 +1469,20 @@ releases that same allocation after the writer returns. Imported factories
 use the same rule.
 
 Five-append results, factory calls inside larger expressions, and fourth joins
-passed to wrappers or used as append operands continue through ordinary
-emission. See the [P0098 pass record](../../tasks/passes/P0098-print-four-returned-appends.md).
+used as append operands use ordinary emission. See the
+[P0098 pass record](../../tasks/passes/P0098-print-four-returned-appends.md).
+
+## Console wrappers for four returned appends (P0099)
+
+A complete `view(fourth(count++));` statement evaluates the factory and its
+arguments once when the factory meets the
+[four-append proof](#scalar-initializers-that-adopt-four-returned-appends-p0095)
+and `view` meets the [Console wrapper proof](owned-call-argument.md#p0056-implementation-boundary).
+The wrapper passes the original fourth join to `Console.Write` or
+`Console.WriteLine` at reference count one. The caller releases the same
+allocation immediately after the wrapper returns. This also applies when the
+factory and wrapper are imported.
+
+Five-append results, conditional arguments, forwarding wrappers, and fourth
+joins used as append operands use ordinary emission. See the
+[P0099 pass record](../../tasks/passes/P0099-wrap-four-returned-appends.md).

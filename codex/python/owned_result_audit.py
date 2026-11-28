@@ -50,6 +50,7 @@ P0095 adopts the final allocation from four returned appends in a direct scalar 
 P0096 adopts the final allocation from four returned appends in a complete scalar assignment.
 P0097 releases the final allocation from four returned appends after a standalone call.
 P0098 releases the final allocation from four returned appends after either direct Console writer.
+P0099 releases the final allocation from four returned appends after either proven Console wrapper.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -167,6 +168,20 @@ exercise();
             ("Write", "dr_console_write", ""),
             ("WriteLine", "dr_console_writeln", "\n"),
         )
+    ],
+    *[
+        {
+            "name": f"quadruple_join_wrapper_{writer.lower()}",
+            "releases": 72, "live": 0,
+            "source": QUADRUPLE_JOINS + f"""
+func void view(string source) {{ Console.{writer}(source); }}
+for (int i = 0; i < 8; i++) view(fourth());
+""",
+            "output": ("start-third-outer-inner-owned" + separator) * 8,
+            "c": ["return__dream_string_append_owned(&text,@entry@extended());",
+                  argument_release("@entry@view", call="@entry@fourth()")],
+        }
+        for writer, separator in (("Write", ""), ("WriteLine", "\n"))
     ],
     *[
         {

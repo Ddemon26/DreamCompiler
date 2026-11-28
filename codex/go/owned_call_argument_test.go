@@ -56,6 +56,8 @@ func TestCompiler_OwnedCallArgument(t *testing.T) {
 				program = strings.Replace(program, "line(labels.nested(count++));", "labels.viewLine(labels.nested(count++));", 1)
 				program = strings.Replace(program, "view(labels.deeper(count++));", "labels.view(labels.deeper(count++));", 1)
 				program = strings.Replace(program, "line(labels.deeper(count++));", "labels.viewLine(labels.deeper(count++));", 1)
+				program = strings.Replace(program, "view(labels.fourth(count++));", "labels.view(labels.fourth(count++));", 1)
+				program = strings.Replace(program, "line(labels.fourth(count++));", "labels.viewLine(labels.fourth(count++));", 1)
 				program = strings.Replace(program, "Console.Write(source);", "Console.Write(source); Console.Write(source);", 1)
 				program += "\nfunc void importControls() { view(factory()); labels.line(factory()); }\n"
 				imported := `module labels;
@@ -122,14 +124,16 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 				ownedArgumentBlock(deeper+"((count++))", lineWrapper, temp0),
 				"if(1)" + ownedArgumentBlock(fourth+"((count++))", "dr_console_write", temp0),
 				ownedArgumentBlock(fourth+"((count++))", "dr_console_writeln", temp0),
+				"if(1)" + ownedArgumentBlock(fourth+"((count++))", wrapper, temp0),
+				ownedArgumentBlock(fourth+"((count++))", lineWrapper, temp0),
 			} {
 				if got := strings.Count(c, want); got != 1 {
 					t.Errorf("expected one %q, got %d", want, got)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 24 ||
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 26 ||
 				strings.Contains(c, "dr_retain(") {
-				t.Error("expected twelve wrapper and twelve direct Console release sites without any retains")
+				t.Error("expected fourteen wrapper and twelve direct Console release sites without any retains")
 			}
 			if modules && (!strings.Contains(c, entry+"view("+entry+"factory());") ||
 				!strings.Contains(c, "__dream_module_1_line("+entry+"factory());")) {
@@ -168,7 +172,8 @@ export func void line(string source) { Console.WriteLine(source); Console.WriteL
 				"startownedstartowned\nstartownedstartowned\n4\n" +
 				"outer-startownedouter-startowned\nouter-startownedouter-startowned\n4\n" +
 				"third-outer-startownedthird-outer-startowned\nthird-outer-startownedthird-outer-startowned\n4\n" +
-				"fourth-third-outer-startownedfourth-third-outer-startowned\n2\n"
+				"fourth-third-outer-startownedfourth-third-outer-startowned\n" +
+				"fourth-third-outer-startownedfourth-third-outer-startowned\n4\n"
 			if got := command(binary); got != want {
 				t.Fatalf("checked output: %q, want %q", got, want)
 			}
@@ -226,6 +231,9 @@ func void probe(string* values) {
     line(nested());
     line(deeper());
     line(fourth());
+    line(fifth());
+    forward(fourth());
+    line(true ? fourth() : "other");
     forward(deeper());
     line(true ? deeper() : "other");
     line(text += deeper());
@@ -269,7 +277,10 @@ func void probe(string* values) {
 				ownedArgumentBlock(entry+"joined()", wrapper, "dreamOwnedArgument0"),
 				ownedArgumentBlock(entry+"nested()", wrapper, "dreamOwnedArgument0"),
 				ownedArgumentBlock(entry+"deeper()", wrapper, "dreamOwnedArgument0"),
-				wrapper + "(" + entry + "fourth());",
+				ownedArgumentBlock(entry+"fourth()", wrapper, "dreamOwnedArgument0"),
+				wrapper + "(" + entry + "fifth());",
+				entry + "forward(" + entry + "fourth());",
+				wrapper + "((1?" + entry + "fourth():\"other\"));",
 				entry + "forward(" + entry + "deeper());",
 				wrapper + "((1?" + entry + "deeper():\"other\"));",
 				wrapper + "(__dream_string_append_owned(&text," + entry + "deeper()));",
@@ -288,8 +299,8 @@ func void probe(string* values) {
 					t.Errorf("missing context %q", want)
 				}
 			}
-			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 8 {
-				t.Error("only the eight eligible complete statements should release")
+			if strings.Count(c, "dr_release((void*)dreamOwnedArgument") != 9 {
+				t.Error("only the nine eligible complete statements should release")
 			}
 		})
 	}

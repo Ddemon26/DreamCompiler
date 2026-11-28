@@ -20,6 +20,9 @@ releases the original result immediately after the call, including a final join
 from up to four returned appends.
 Direct `Console.Write` and `Console.WriteLine` statements
 [release the same kind of result after printing](../development/string-ownership.md#direct-console-output-of-four-returned-appends-p0098).
+A complete call to a proven Console wrapper
+[releases the original result after the wrapper returns](../development/string-ownership.md#console-wrappers-for-four-returned-appends-p0099),
+including a final join from up to four returned appends.
 Other calls can leave a managed result registered until shutdown. Plain `=` finishes
 evaluating the replacement before releasing the current allocation. Self-assignment
 is safe and uninitialized scalar strings start as null. Local string arrays and

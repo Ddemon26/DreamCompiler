@@ -1,5 +1,34 @@
 # Most Recent Test Results - DreamCompiler
 
+**Date:** November 28, 2026 UTC
+
+**Pass:** P0099 - release four returned appends after a proven Console wrapper
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0098 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/46061777001)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **197** entries. **179 passed**, **18 skipped**,
+  and zero failed or errored (64.76s). Report `test_results_20261127_190827_windows.json`.
+  The wrapper fixture adds one output line and reports four argument evaluations.
+  The other 196 entries matched P0098's statuses, outputs, and skip reasons.
+- The focused Go tests passed (17.980s, `-count=1`). In each mode, 10,000 groups
+  verified once-only arguments and original-pointer release for two direct and
+  two wrapper calls per group.
+- The Windows Go quick protocol passed all **43** groups (175.945s, `-count=1`).
+- All **114** allocation probes passed (137.943s). Eight calls per wrapper and
+  mode left zero fourth joins live, down from eight at P0098. All 110 prior
+  measurements matched.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Python runner tests passed **5/5** (0.050s).
+
+See the [P0099 record](passes/P0099-wrap-four-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0098 checkpoint
+
 **Date:** November 27, 2026 UTC
 
 **Pass:** P0098 - release four returned appends after direct Console output

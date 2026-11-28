@@ -107,5 +107,6 @@ exception and async unwinding, and alias/container ownership remain separate wor
    for regression and platform results.
 
 P0078 qualified factories with up to two returned appends as the complete
-argument to this wrapper shape. P0088 raises that limit to three. See
-[Console wrappers for three returned appends](string-ownership.md#console-wrappers-for-three-returned-appends-p0088).
+argument to this wrapper shape. P0088 raised the limit to three and P0099
+raises it to four. See
+[Console wrappers for four returned appends](string-ownership.md#console-wrappers-for-four-returned-appends-p0099).

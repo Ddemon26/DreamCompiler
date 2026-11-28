@@ -145,14 +145,14 @@ int main(void) {
     expected_joins = 4;
     copies = joins = releases = writes = lines = 0;
     for (size_t i = 1; i <= 10000; i++) {
-        assert(DREAM_FOURTH_OUTPUT_PROBE() == 2);
+        assert(DREAM_FOURTH_OUTPUT_PROBE() == 4);
         assert(!original && !intermediate && !observed && !dr_head);
-        assert(copies == 10 * i && joins == 8 * i && releases == 18 * i);
-        assert(writes == i && lines == i);
+        assert(copies == 20 * i && joins == 16 * i && releases == 36 * i);
+        assert(writes == 2 * i && lines == 2 * i);
     }
     expected_joins = 0;
     copies = releases = 0;
     assert(dream_entry_main() == 0);
-    assert(copies == 53 && releases == 85 && !dr_head);
+    assert(copies == 63 && releases == 103 && !dr_head);
     return 0;
 }
