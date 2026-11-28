@@ -883,10 +883,16 @@ once-only argument evaluation, and exact output. Eight calls per writer and
 mode leave zero final joins live, down from eight at P0098.
 See [P0099](passes/P0099-wrap-four-returned-appends.md).
 
-Broader T011 remains open. Verify P0099 publication and native CI, then measure
-retention when a complete `text += fourth();` statement consumes the original
-fourth join. Check once-only arguments, destination lifetime, and release
-after the append installs the concatenation in ordinary and imported calls.
+P0100 releases the original fourth join after a complete append statement
+installs the concatenation. The ordinary and imported fixture checks once-only
+arguments, the post-argument destination, and borrowed self-append. Eight
+isolated appends per mode leave zero final joins live, down from eight at P0099.
+See [P0100](passes/P0100-append-four-returned-appends.md).
+
+Broader T011 remains open. Verify P0100 publication and native CI, then measure
+retention in `string snapshot = (text += fourth());`. Check that the append
+uses the post-argument destination and that the destination and snapshot
+own independent storage in ordinary and imported calls.
 Static pointer/array shape emission, class-parameter syntax and
 local/struct/nested/base receivers remain separate.
 Keep general borrowed/member/index/call/compound result lifetime and other caller

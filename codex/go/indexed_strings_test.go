@@ -447,6 +447,25 @@ func TestCompiler_AppendedStrings(t *testing.T) {
 		}, "A+third-outer-inner-B\nnewnewouter-inner-B\n1\nnewnewouter-inner-Bnewnewouter-inner-B\n", true)
 	})
 
+	t.Run("fourth_join_operand", func(t *testing.T) {
+		withImports := func(program string) (string, string) {
+			factories, exercise, _ := strings.Cut(program, "func void exercise()")
+			exercise = strings.NewReplacer("fourth(", "labels.fourth(", "fifth(", "labels.fifth(",
+				"borrowed(", "labels.borrowed(").Replace(exercise)
+			return "import labels;\nfunc void exercise()" + exercise,
+				"module labels;\n" + strings.ReplaceAll(factories, "\nfunc string ", "\nexport func string ")
+		}
+		// Eleven releases per append, plus one for the argument's replacement
+		// and one for the borrowed self-append.
+		checkStorageOwnershipWithModule(t, "owned_fourth_join_append.dr", 110013, []string{
+			`return__dream_string_append_owned(&last,@module@extended());`,
+			`{constchar*dreamOwnedArgument0=@module@fourth("fourth-",0);__dream_string_append(&text,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,
+			`{constchar*dreamOwnedArgument0=@module@fourth(__dream_string_assign(&changed,"new"),(count++));__dream_string_append(&changed,dreamOwnedArgument0);dr_release((void*)dreamOwnedArgument0);}`,
+			`__dream_string_append(&changed,@module@borrowed(changed));`,
+			`__dream_string_append(&changed,@module@fifth());`,
+		}, "A+fourth-third-outer-inner-B\nnewnewthird-outer-inner-B\n1\nnewnewthird-outer-inner-Bnewnewthird-outer-inner-B\n", 0, withImports)
+	})
+
 	t.Run("owned_factory_return", func(t *testing.T) {
 		// The two proven direct Console calls now release their original joins.
 		// The eight joins from join(true), the result from join(false) and the
@@ -968,6 +987,11 @@ func TestCompiler_LocalStringReturn(t *testing.T) {
 
 func checkStorageOwnershipWithLiveCount(t *testing.T, fixture string, releases int, emittedChecks []string, want string, liveCount int, forbiddenChecks ...string) {
 	t.Helper()
+	checkStorageOwnershipWithModule(t, fixture, releases, emittedChecks, want, liveCount, nil, forbiddenChecks...)
+}
+
+func checkStorageOwnershipWithModule(t *testing.T, fixture string, releases int, emittedChecks []string, want string, liveCount int, withImports func(string) (string, string), forbiddenChecks ...string) {
+	t.Helper()
 	tr := NewTestRunner(t)
 	defer tr.Cleanup()
 	program, err := os.ReadFile(filepath.Join(tr.projectRoot, "tests", "basics", "memory", fixture))
@@ -980,14 +1004,19 @@ func checkStorageOwnershipWithLiveCount(t *testing.T, fixture string, releases i
 			text := string(program)
 			options := []string{}
 			if mode == "module_entry" {
-				if fixture == "indexed_string_copy.dr" {
-					text = strings.ReplaceAll(text, "\"literal\";", "labels.literal();")
+				module := "module labels; export func string literal() { return \"literal\"; }"
+				if withImports != nil {
+					text, module = withImports(text)
 				} else {
-					text += "\nlabels.literal();\n"
+					if fixture == "indexed_string_copy.dr" {
+						text = strings.ReplaceAll(text, "\"literal\";", "labels.literal();")
+					} else {
+						text += "\nlabels.literal();\n"
+					}
+					text = "import labels;\n" + text
 				}
-				text = "import labels;\n" + text
 				options = append(options, "--multi-file")
-				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte("module labels; export func string literal() { return \"literal\"; }"), 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(work, "labels.dr"), []byte(module), 0644); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -1014,13 +1043,14 @@ func checkStorageOwnershipWithLiveCount(t *testing.T, fixture string, releases i
 				t.Fatal(err)
 			}
 			c := strings.Join(strings.Fields(string(data)), "")
+			// Entry and imported functions get distinct prefixes in module mode.
+			entry, module := "", ""
+			if mode == "module_entry" {
+				entry, module = "__dream_module_0_", "__dream_module_1_"
+			}
+			symbols := strings.NewReplacer("@entry@", entry, "@module@", module)
 			for _, emitted := range emittedChecks {
-				// Entry functions are lowered in module mode; methods keep their names.
-				prefix := ""
-				if mode == "module_entry" {
-					prefix = "__dream_module_0_"
-				}
-				emitted = strings.ReplaceAll(emitted, "@entry@", prefix)
+				emitted = symbols.Replace(emitted)
 				if !strings.Contains(c, emitted) {
 					t.Fatalf("missing ownership emission %q", emitted)
 				}

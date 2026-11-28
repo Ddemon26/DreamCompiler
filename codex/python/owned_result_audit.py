@@ -51,6 +51,7 @@ P0096 adopts the final allocation from four returned appends in a complete scala
 P0097 releases the final allocation from four returned appends after a standalone call.
 P0098 releases the final allocation from four returned appends after either direct Console writer.
 P0099 releases the final allocation from four returned appends after either proven Console wrapper.
+P0100 releases the final allocation from four returned appends after a complete append statement.
 The real generated C, allocator and unchanged checked harness are used throughout.
 """
 
@@ -99,6 +100,23 @@ func string fourth() {
 
 
 CASES = [
+    {
+        "name": "quadruple_join_append",
+        "releases": 88, "live": 0,
+        "source": QUADRUPLE_JOINS + '''
+func void exercise() {
+    for (int i = 0; i < 8; i++) {
+        string text = "left-";
+        text += fourth();
+        Console.WriteLine(text);
+    }
+}
+exercise();
+''',
+        "output": "left-start-third-outer-inner-owned\n" * 8,
+        "c": ["return__dream_string_append_owned(&text,@entry@extended());",
+              argument_release("__dream_string_append", "&text,", "@entry@fourth()")],
+    },
     {
         "name": "quadruple_join_discard",
         "releases": 72, "live": 0,

@@ -2,7 +2,31 @@
 
 **Date:** November 28, 2026 UTC
 
-**Pass:** P0099 - release four returned appends after a proven Console wrapper
+**Pass:** P0100 - release four returned appends after a complete append statement
+
+**Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
+
+- [P0099 CI](https://github.com/Ddemon26/DreamCompiler/actions/runs/46097089086)
+  passed on Windows and Ubuntu at the verified parent SHA.
+- `zig build test` discovered **198** entries. **180 passed**, **18 skipped**,
+  and zero failed or errored (67.24s). Report `test_results_20261128_010833_windows.json`.
+  The new append fixture matched exact output. All 197 previous entries matched
+  P0099's statuses, outputs, and skip reasons.
+- The focused Go test passed in both modes (3.267s, `-count=1`). The harness
+  verified 110,013 live releases per mode and an empty registry before shutdown.
+- The Windows Go quick protocol passed all **43** groups (180.507s, `-count=1`).
+- All **116** allocation probes passed (147.110s). Eight complete appends per
+  mode left zero fourth joins live, down from eight at P0099. All 114 previous
+  measurements matched.
+- The native Windows build and Linux cross-build passed **15/15** steps each.
+  Python runner tests passed **5/5** (0.059s).
+
+See the [P0100 record](passes/P0100-append-four-returned-appends.md)
+for baseline and handoff details.
+
+---
+
+## Historical P0099 checkpoint
 
 **Platform/toolchain:** Windows with Zig 0.17.1 and re2c 3.0.
 

@@ -1339,8 +1339,9 @@ the current value of `text`. If an argument replaces `text`, the concatenation
 starts with the replacement. The caller releases the original join after
 installing the concatenation in `text`.
 
-Borrowed operands, conditional operands, and calls beyond three returned
-appends use ordinary emission. P0090 applies the three-append proof to
+Borrowed and conditional operands use ordinary emission. P0100 extends the
+complete statement proof to [four returned appends](#complete-append-statements-with-four-returned-appends-p0100).
+P0090 applies the three-append proof to
 [scalar declaration initializers](#append-initializers-with-three-returned-appends-p0090).
 Append expressions used in output, wrapper calls, and returns use the
 three-append proof starting in [P0092](#console-output-of-appends-with-three-returned-appends-p0092),
@@ -1468,8 +1469,8 @@ The writer reads the original fourth join at reference count one. The caller
 releases that same allocation after the writer returns. Imported factories
 use the same rule.
 
-Five-append results, factory calls inside larger expressions, and fourth joins
-used as append operands use ordinary emission. See the
+Five-append results and fourth joins used inside a larger Console argument
+use ordinary emission. See the
 [P0098 pass record](../../tasks/passes/P0098-print-four-returned-appends.md).
 
 ## Console wrappers for four returned appends (P0099)
@@ -1484,5 +1485,19 @@ allocation immediately after the wrapper returns. This also applies when the
 factory and wrapper are imported.
 
 Five-append results, conditional arguments, forwarding wrappers, and fourth
-joins used as append operands use ordinary emission. See the
+joins used inside larger wrapper arguments use ordinary emission. See the
 [P0099 pass record](../../tasks/passes/P0099-wrap-four-returned-appends.md).
+
+## Complete append statements with four returned appends (P0100)
+
+In `text += fourth();`, a complete append statement can consume an operand
+that meets the [four-append proof](#scalar-initializers-that-adopt-four-returned-appends-p0095).
+The destination is an owned mutable scalar string identifier. The call and its
+arguments evaluate once. If an argument replaces `text`, the append reads that
+replacement, installs the concatenation, and releases the original fourth join.
+Imported factory calls follow the same rule.
+
+Borrowed operands, conditional operands, calls beyond four returned appends,
+and fourth joins in nested append expressions use ordinary append emission.
+See the [checked fixture](../../tests/basics/memory/owned_fourth_join_append.dr)
+and [P0100 pass record](../../tasks/passes/P0100-append-four-returned-appends.md).
